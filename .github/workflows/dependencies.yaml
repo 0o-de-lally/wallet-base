@@ -16,10 +16,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install packages
+        if: always()
         run: npm install
 
       - name: Install expo
+        if: always()
         run: npx expo install --check
 
       - name: Build packages
+        if: always()
         run: npx expo-doctor
+
+      - name: do deps need updates
+        if: always()
+        run: npm update
+
+      - name: what updates are available
+        if: always()
+        run: npx npm-check-updates

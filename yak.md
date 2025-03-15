@@ -39,3 +39,9 @@ Your project may not work correctly until you install the expected versions of t
 # doctor again
 ❯ npx expo-doctor
 15/15 checks passed. No issues detected!
+
+
+# add eas globally
+```
+npm install -g eas-cli
+```
