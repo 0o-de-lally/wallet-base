@@ -76,3 +76,8 @@ eas init --id ccd33245-8aca-43cc-89d5-d224e10b1298
       "package": "app.carpe.wallet_base
 },
 ```
+
+# eas build failed. failed to find Andoid keystore
+```
+eas build --platform android
+```
