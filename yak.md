@@ -50,3 +50,29 @@ npm install -g eas-cli
 ```
 eas init --id ccd33245-8aca-43cc-89d5-d224e10b1298
 ```
+
+# need to create eas.json for eas build triggers
+```
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  }
+}
+```
+
+# eas build failed, app.json was missing android.package field
+```    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "app.carpe
+
+```
