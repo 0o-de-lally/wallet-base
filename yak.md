@@ -73,6 +73,6 @@ eas init --id ccd33245-8aca-43cc-89d5-d224e10b1298
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.carpe
-
+      "package": "app.carpe.wallet_base
+},
 ```

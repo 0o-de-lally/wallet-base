@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.carpe.wallet-base"
+      "package": "app.carpe.wallet_base"
     },
     "web": {
       "bundler": "metro",
