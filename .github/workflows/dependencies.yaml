@@ -1,0 +1,25 @@
+name: dependencies
+
+on:
+  schedule:
+    - cron: "30 01 * * *"
+  push:
+    branches: ['*']
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repository
+        uses: actions/checkout@v4
+
+      - name: Install packages
+        run: npm install
+
+      - name: Install expo
+        run: npx expo install --check
+
+      - name: Build packages
+        run: npx expo-doctor
