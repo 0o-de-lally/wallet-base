@@ -1,0 +1,22 @@
+name: tests
+
+on:
+  schedule:
+    - cron: "30 01 * * *"
+  push:
+    branches: ['*']
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repository
+        uses: actions/checkout@v4
+
+      - name: Install packages
+        run: npm install
+
+      - name: Jest tests
+        run: npm run test
