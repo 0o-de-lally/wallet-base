@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "wallet-test",
-    "slug": "wallet-test",
+    "slug": "wallet-base",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ccd33245-8aca-43cc-89d5-d224e10b1298"
+      }
+    },
+    "owner": "ol-carpe"
   }
 }
