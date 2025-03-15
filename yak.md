@@ -45,3 +45,8 @@ Your project may not work correctly until you install the expected versions of t
 ```
 npm install -g eas-cli
 ```
+
+# init project for eas
+```
+eas init --id ccd33245-8aca-43cc-89d5-d224e10b1298
+```
