@@ -1,16 +1,17 @@
-import React from 'react';
+import { useReducer } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useAppContext } from '../app/context/AppContext';
+import { appReducer } from '../app/context/AppContext';
 import { CustomText } from './CustomText';
 
 export default function NetworkDetails() {
-  const { network_config } = useAppContext();
+  const [state, _dispatch] = useReducer(appReducer, {});
+
 
   return (
     <View style={styles.container}>
-      <CustomText>Network: {network_config.type}</CustomText>
-      <CustomText>Chain ID: {network_config.chainId}</CustomText>
-      <CustomText>RPC URL: {network_config.rpcUrl}</CustomText>
+      <CustomText>Network: {state.network_config.type}</CustomText>
+      <CustomText>Chain ID: {state.network_config.chainId}</CustomText>
+      <CustomText>RPC URL: {state.network_config.rpcUrl}</CustomText>
     </View>
   );
 }

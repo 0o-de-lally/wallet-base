@@ -1,23 +1,25 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useReducer, Dispatch } from 'react';
 import { ChainName, NetworkConfig } from '@/types/networkTypes';
 
-interface AppContextType {
-  chain_name: ChainName;
-  network_config: NetworkConfig;
+// Action Types
+enum AppAction {
+  Update = "update",
+  Create = "create",
+}
+interface AppGlobalState {
+  network_config: NetworkConfig
 }
 
-const AppContext = createContext<AppContextType>({
-  chain_name: ChainName.MAINNET,
-  network_config: {} as NetworkConfig
-});
-
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppContext.Provider');
+export const appReducer = (state: AppGlobalState, action: AppAction): AppGlobalState => {
+  switch (action) {
+    case AppAction.Update:
+      console.log('Updating state');
+      return state;
+    case AppAction.Create:
+      console.log('Creating state');
+      return state;
+    default: {
+      throw Error('Unknown action: ' + action);
+    }
   }
-  return context;
 };
-
-export { AppContext };
-export default AppContext;

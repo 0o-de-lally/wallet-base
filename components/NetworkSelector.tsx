@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { ChainName } from '../types/networkTypes';
-import { NetworkConfigGenerator } from '../util/networkSettings';
+import { appReducer } from '../app/context/AppContext';
 
 export default function NetworkSelector() {
+  const [state, dispatch] = useReducer(appReducer, {});
+
   const [selectedNetwork, setPickerValue] = useState<ChainName>(ChainName.MAINNET);
 
   return (
     <View style={styles.container}>
       <Picker
-        selectedValue={selectedNetwork}
+        selectedValue={state.network_config.type}
         onValueChange={async (value: ChainName) => {
           console.log('Selected network:', value);
           setPickerValue(value);
-          const networkConfig = NetworkConfigGenerator.generateConfig(value);
-          await NetworkConfigGenerator.saveConfig(networkConfig);
+          dispatch('update');
         }}>
         {Object.values(ChainName).map((type) => (
           <Picker.Item key={type} label={type} value={type} />
