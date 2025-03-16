@@ -1,19 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
 import NetworkSelector from '../components/NetworkSelector';
 import NetworkDetails from '../components/NetworkDetails';
-import { useNetwork } from '../contexts/AppContext';
+import { useAppContext } from './context/AppContext';
 
 export default function NetworkScreen() {
+  const { network_config } = useAppContext();
 
-  // if (error) {
-  //   return (
-  //     <View style={styles.container}>
-  //       <Text style={styles.error}>Error: {error}</Text>
-  //     </View>
-  //   );
-  // }
-
-  if (!networkConfig) {
+  if (!network_config) {
     return (
       <View style={styles.container}>
         <Text>Loading network configuration...</Text>
