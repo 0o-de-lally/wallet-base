@@ -36,17 +36,37 @@ export async function saveObjectToConfigPath(filename: string, obj: any): Promis
   return filePath
 }
 
-export async function readObjectFromConfigPath<T>(filename: string): Promise<T | null> {
-  const configDir = getConfigDir();
-  const filePath = `${configDir}${filename}`;
-  const fileInfo = await FileSystem.getInfoAsync(filePath);
+export async function deleteConfigFile(filename: string): Promise<void> {
+  try {
+    const configDir = getConfigDir();
+    const filePath = `${configDir}${filename}`;
+    const fileInfo = await FileSystem.getInfoAsync(filePath);
 
-  if (!fileInfo.exists) {
-    return null;
+    if (fileInfo.exists) {
+      await FileSystem.deleteAsync(filePath);
+    }
+  } catch (error) {
+    console.error('Failed to delete config file:', error);
+    throw error;
   }
+}
 
-  const content = await FileSystem.readAsStringAsync(filePath);
-  return JSON.parse(content) as T;
+export async function readObjectFromConfigPath<T>(filename: string): Promise<T | null> {
+  try {
+    const configDir = getConfigDir();
+    const filePath = `${configDir}${filename}`;
+    const fileInfo = await FileSystem.getInfoAsync(filePath);
+
+    if (!fileInfo.exists) {
+      return null;
+    }
+
+    const content = await FileSystem.readAsStringAsync(filePath);
+    return JSON.parse(content) as T;
+  } catch (error) {
+    console.error('Failed to read object from config path:', error);
+    throw error;
+  }
 }
 
 export async function saveNetworkConfig(config: NetworkConfigFile): Promise<void> {
