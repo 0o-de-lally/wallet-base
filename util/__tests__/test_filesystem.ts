@@ -1,5 +1,5 @@
-import * as FileSystem from 'expo-file-system';
-import { ensureConfigDirectory, getConfigFilePath, readObjectFromConfigPath, saveNetworkConfig, saveObjectToConfigPath } from '../fileSystem';
+// import * as FileSystem from 'expo-file-system';
+import { ensureConfigDirectory, getConfigFilePath, readObjectFromConfigPath, saveObjectToConfigPath } from '../fileSystem';
 
 describe('Expo FileSystem Basics', () => {
   it('should handle directory creation', async () => {

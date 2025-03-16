@@ -1,21 +1,37 @@
-import * as FileSystem from 'expo-file-system';
+import { RuntimePlatform, getPlatform } from './platform';
+import { StorageSystem } from './storage/types';
+import { MobileStorage } from './storage/mobile';
+import { WebStorage } from './storage/web';
 import { NetworkConfigFile } from '../types/networkTypes';
 
 const CONFIG_FILENAME = 'network-config.json';
 
-function getConfigDir(): string {
-  if (!FileSystem.documentDirectory) {
-    return 'temppath/configs/';
+function getStorage(): StorageSystem {
+  const platform = getPlatform();
+  switch (platform) {
+    case RuntimePlatform.Mobile:
+      return new MobileStorage();
+    case RuntimePlatform.Web:
+      return new WebStorage();
+    case RuntimePlatform.Desktop:
+      return new MobileStorage(); // For now, using mobile implementation for desktop
+    default:
+      throw new Error(`Unsupported platform: ${platform}`);
   }
-  return `${FileSystem.documentDirectory}configs/`;
+}
+
+const storage = getStorage();
+
+function getConfigDir(): string {
+  return `${storage.getDocumentDirectory()}configs/`;
 }
 
 export async function ensureConfigDirectory(): Promise<void> {
   try {
     const configDir = getConfigDir();
-    const dirInfo = await FileSystem.getInfoAsync(configDir);
-    if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(configDir, { intermediates: true });
+    const exists = await storage.exists(configDir);
+    if (!exists) {
+      await storage.makeDirectory(configDir);
     }
   } catch (error) {
     console.error('Failed to ensure config directory:', error);
@@ -28,22 +44,21 @@ export async function getConfigFilePath(): Promise<string> {
   return getConfigDir() + CONFIG_FILENAME;
 }
 
-
 export async function saveObjectToConfigPath(filename: string, obj: any): Promise<string> {
   const configDir = getConfigDir();
   const filePath = `${configDir}${filename}`;
-  await FileSystem.writeAsStringAsync(filePath, JSON.stringify(obj, null, 2));
-  return filePath
+  await storage.writeFile(filePath, JSON.stringify(obj, null, 2));
+  return filePath;
 }
 
 export async function deleteConfigFile(filename: string): Promise<void> {
   try {
     const configDir = getConfigDir();
     const filePath = `${configDir}${filename}`;
-    const fileInfo = await FileSystem.getInfoAsync(filePath);
+    const exists = await storage.exists(filePath);
 
-    if (fileInfo.exists) {
-      await FileSystem.deleteAsync(filePath);
+    if (exists) {
+      await storage.deleteFile(filePath);
     }
   } catch (error) {
     console.error('Failed to delete config file:', error);
@@ -55,13 +70,13 @@ export async function readObjectFromConfigPath<T>(filename: string): Promise<T |
   try {
     const configDir = getConfigDir();
     const filePath = `${configDir}${filename}`;
-    const fileInfo = await FileSystem.getInfoAsync(filePath);
+    const exists = await storage.exists(filePath);
 
-    if (!fileInfo.exists) {
+    if (!exists) {
       return null;
     }
 
-    const content = await FileSystem.readAsStringAsync(filePath);
+    const content = await storage.readFile(filePath);
     return JSON.parse(content) as T;
   } catch (error) {
     console.error('Failed to read object from config path:', error);
@@ -71,17 +86,17 @@ export async function readObjectFromConfigPath<T>(filename: string): Promise<T |
 
 export async function saveNetworkConfig(config: NetworkConfigFile): Promise<void> {
   const filePath = await getConfigFilePath();
-  await FileSystem.writeAsStringAsync(filePath, JSON.stringify(config, null, 2));
+  await storage.writeFile(filePath, JSON.stringify(config, null, 2));
 }
 
 export async function loadNetworkConfig(): Promise<NetworkConfigFile | null> {
   const filePath = await getConfigFilePath();
-  const fileInfo = await FileSystem.getInfoAsync(filePath);
+  const exists = await storage.exists(filePath);
 
-  if (!fileInfo.exists) {
+  if (!exists) {
     return null;
   }
 
-  const content = await FileSystem.readAsStringAsync(filePath);
+  const content = await storage.readFile(filePath);
   return JSON.parse(content) as NetworkConfigFile;
 }

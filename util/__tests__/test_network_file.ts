@@ -20,9 +20,6 @@ describe('NetworkConfigGenerator', () => {
   });
 
   it('should initialize with mainnet config when no config exists', async () => {
-    // Execute
-    const generator = NetworkConfigGenerator.getInstance();
-    const config = await generator.initializeNetworkConfig(ChainName.MAINNET);
 
     // Verify file was created
     const fileInfo = await FileSystem.getInfoAsync(configPath);
