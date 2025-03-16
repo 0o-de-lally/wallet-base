@@ -2,6 +2,8 @@ import { PropsWithChildren } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import NetworkScreen from './network';
 
+
+
 export const CustomText = ({ children }: PropsWithChildren) => <Text>{children}</Text>;
 
 export default function HomeScreen() {

@@ -24,7 +24,15 @@ export class NetworkConfigGenerator {
     return new NetworkConfigGenerator(ChainName.CUSTOM, rpcUrl, chainId);
   }
 
-  generateConfig(type: ChainName, customConfig?: NetworkConfigGenerator): NetworkConfig {
+  static async saveConfig(config: NetworkConfig): Promise<void> {
+    const networkConfigFile: NetworkConfigFile = {
+      activeNetwork: config,
+      lastUpdated: new Date().toISOString()
+    };
+    await saveNetworkConfig(networkConfigFile);
+  }
+
+  static generateConfig(type: ChainName, customConfig?: NetworkConfigGenerator): NetworkConfig {
     switch (type) {
       case ChainName.MAINNET:
         return {
@@ -69,7 +77,7 @@ export class NetworkConfigGenerator {
     }
 
     const newConfig: NetworkConfigFile = {
-      activeNetwork: this.generateConfig(type),
+      activeNetwork: NetworkConfigGenerator.generateConfig(type),
       lastUpdated: new Date().toISOString()
     };
 
@@ -79,7 +87,7 @@ export class NetworkConfigGenerator {
 
   async updateNetwork(type: ChainName, customConfig?: NetworkConfigGenerator): Promise<void> {
     const newConfig: NetworkConfigFile = {
-      activeNetwork: this.generateConfig(type, customConfig),
+      activeNetwork: NetworkConfigGenerator.generateConfig(type, customConfig),
       lastUpdated: new Date().toISOString()
     };
 

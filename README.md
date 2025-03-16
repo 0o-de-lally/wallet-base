@@ -1,8 +1,13 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Wallet Base
 
 ## Get started
+
+0. Install global tools
+Pre-heat some cli tools you will use with `npx`
+```
+npx expo
+npx jest
+```
 
 1. Install dependencies
 
