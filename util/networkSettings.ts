@@ -1,37 +1,88 @@
-import { NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
+import { ChainName, NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
 import { loadNetworkConfig, saveNetworkConfig } from './fileSystem';
 
-const DEFAULT_NETWORKS: NetworkConfig[] = [
-  {
-    name: 'Ethereum Mainnet',
-    rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your-api-key',
-    chainId: 1,
-    symbol: 'ETH',
-    blockExplorer: 'https://etherscan.io'
+export class NetworkConfigGenerator {
+  private static instance: NetworkConfigGenerator;
+
+  private constructor(
+    private readonly _chainType: ChainName = ChainName.MAINNET,
+    private readonly _rpcUrl: string = '',
+    private readonly _chainId: number = 1
+  ) {}
+
+  static getInstance(): NetworkConfigGenerator {
+    if (!NetworkConfigGenerator.instance) {
+      NetworkConfigGenerator.instance = new NetworkConfigGenerator();
+    }
+    return NetworkConfigGenerator.instance;
   }
-];
 
-export async function initializeNetworkConfig(): Promise<NetworkConfigFile> {
-  const existingConfig = await loadNetworkConfig();
-
-  if (existingConfig) {
-    return existingConfig;
+  static createCustomConfig(
+    rpcUrl: string,
+    chainId: number
+  ): NetworkConfigGenerator {
+    return new NetworkConfigGenerator(ChainName.CUSTOM, rpcUrl, chainId);
   }
 
-  const newConfig: NetworkConfigFile = {
-    networks: DEFAULT_NETWORKS,
-    lastUpdated: new Date().toISOString()
-  };
+  generateConfig(type: ChainName, customConfig?: NetworkConfigGenerator): NetworkConfig {
+    switch (type) {
+      case ChainName.MAINNET:
+        return {
+          type: ChainName.MAINNET,
+          rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your-api-key',
+          chainId: 1
+        };
+      case ChainName.TESTNET:
+        return {
+          type: ChainName.TESTNET,
+          rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/your-api-key',
+          chainId: 11155111
+        };
+      case ChainName.LOCAL:
+        return {
+          type: ChainName.LOCAL,
+          rpcUrl: 'http://127.0.0.1:8545',
+          chainId: 1337
+        };
+      case ChainName.CUSTOM:
+        if (!customConfig) {
+          throw new Error('Custom config is required for custom network type');
+        }
+        return {
+          type: ChainName.CUSTOM,
+          rpcUrl: customConfig.rpcUrl,
+          chainId: customConfig.chainId
+        };
+    }
+  }
 
-  await saveNetworkConfig(newConfig);
-  return newConfig;
-}
+  // Getters for private fields
+  get chainType(): ChainName { return this._chainType; }
+  get rpcUrl(): string { return this._rpcUrl; }
+  get chainId(): number { return this._chainId; }
 
-export async function updateNetworkConfig(networks: NetworkConfig[]): Promise<void> {
-  const config: NetworkConfigFile = {
-    networks,
-    lastUpdated: new Date().toISOString()
-  };
+  async initializeNetworkConfig(type: ChainName): Promise<NetworkConfigFile> {
+    const existingConfig = await loadNetworkConfig();
 
-  await saveNetworkConfig(config);
+    if (existingConfig) {
+      return existingConfig;
+    }
+
+    const newConfig: NetworkConfigFile = {
+      activeNetwork: this.generateConfig(type),
+      lastUpdated: new Date().toISOString()
+    };
+
+    await saveNetworkConfig(newConfig);
+    return newConfig;
+  }
+
+  async updateNetwork(type: ChainName, customConfig?: NetworkConfigGenerator): Promise<void> {
+    const newConfig: NetworkConfigFile = {
+      activeNetwork: this.generateConfig(type, customConfig),
+      lastUpdated: new Date().toISOString()
+    };
+
+    await saveNetworkConfig(newConfig);
+  }
 }

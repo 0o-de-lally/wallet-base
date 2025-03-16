@@ -1,12 +1,17 @@
+export enum ChainName {
+  MAINNET = 'mainnet',
+  TESTNET = 'testnet',
+  LOCAL = 'local',
+  CUSTOM = 'custom'
+}
+
 export interface NetworkConfig {
-  name: string;
+  type: ChainName;
   rpcUrl: string;
   chainId: number;
-  symbol: string;
-  blockExplorer?: string;
 }
 
 export interface NetworkConfigFile {
-  networks: NetworkConfig[];
+  activeNetwork: NetworkConfig;
   lastUpdated: string;
 }
