@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChainName, NetworkConfig, NetworkConfigFile } from '../../types/networkTypes';
+import { NetworkConfig, NetworkConfigFile } from '../../types/networkTypes';
 import { saveNetworkConfig } from '../../util/fileSystem';
+import { Network } from 'open-libra-sdk';
 
 const initialState: NetworkConfig = {
-  type: ChainName.MAINNET,
+  type: Network.MAINNET,
   chainId: 1,
   rpcUrl: ''
 };
