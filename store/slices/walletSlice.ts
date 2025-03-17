@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { LibraWallet, Network } from 'open-libra-sdk';
+import { LibraWallet, Network } from 'open-libra-sdk';
 
 interface WalletState {
   walletConfig: {
