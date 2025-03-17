@@ -4,6 +4,7 @@ import { CustomText } from '../components/CustomText';
 import { Provider } from 'react-redux';
 import { store } from '../store/store';
 import React from 'react';
+import LedgerIndex from '@/components/LedgerIndex';
 
 export default function HomeScreen() {
 
@@ -12,6 +13,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <CustomText>Welcome!</CustomText>
         <NetworkScreen />
+        <LedgerIndex />
       </View>
     </Provider>
   );

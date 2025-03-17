@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
 import { NetworkConfig } from '../types/networkTypes';
-import { CustomText } from '../components/CustomText';
-import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk/dist/browser';
+import { CustomText } from './CustomText';
+import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk';
 
-export const LedgerIndex: React.FC = () => {
+export const LedgerIndex = () => {
   const network = useSelector((state: { network: NetworkConfig }) => state.network);
-  const wallet = new LibraWallet(ALICE_MNEM, Network.TESTNET, network.rpcUrl, null, null);
+  const wallet = new LibraWallet(ALICE_MNEM, Network.TESTNET, network.rpcUrl);
   const [blockHeight, setBlockHeight] = useState<string>('Loading...');
 
   useEffect(() => {
