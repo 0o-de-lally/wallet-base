@@ -1,29 +1,12 @@
-import '@/util/polyfills';
-import { StyleSheet, View } from 'react-native';
-import NetworkScreen from '../components/network/NetworkScreen';
-import { Provider } from 'react-redux';
-import React, { useEffect } from 'react';
-import LedgerIndex from '@/components/LedgerIndex';
-import { store, initializeWallet } from '@/store';
-
-function AppContent() {
-  useEffect(() => {
-    initializeWallet();
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <NetworkScreen />
-      <LedgerIndex />
-    </View>
-  );
-}
+import { View, Text, StyleSheet } from "react-native";
+import { LibraWallet, ALICE_MNEM } from "open-libra-sdk";
+const wallet = new LibraWallet(ALICE_MNEM);
 
 export default function HomeScreen() {
   return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
+    <View style={styles.container}>
+      <Text>Open up App.tsx to start working on your app!</Text>
+    </View>
   );
 }
 
