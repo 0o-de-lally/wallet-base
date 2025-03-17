@@ -1,5 +1,5 @@
 import { noop } from '../../util/noop';
-import { LOCAL_TESTNET_API, testnetDown, testnetUp } from 'open-libra-sdk/dist/index.cjs';
+import { LOCAL_TESTNET_API, testnetDown, testnetUp } from 'open-libra-sdk';
 import axios from 'axios';
 
 beforeEach(async () => {
