@@ -1,8 +1,8 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CustomText } from './CustomText';
-import { ChainName, setNetworkConfig } from '../types/networkTypes';
-import { RootState } from '../store/store';
+import { ChainName } from '../types/networkTypes';
+import { RootState, setNetworkConfig } from '../store';
 import { NetworkConfigGenerator } from '../util/networkSettings';
 
 export default function NetworkSelector() {

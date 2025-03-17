@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import NetworkScreen from './network';
 import { CustomText } from '../components/CustomText';
 import { Provider } from 'react-redux';
-import { store } from '../store/store';
+import { store } from '../src';
 import React from 'react';
 import LedgerIndex from '@/components/LedgerIndex';
 
