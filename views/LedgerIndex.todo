@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { NetworkConfig } from '../types/networkTypes';
 import { CustomText } from '../components/CustomText';
-import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk'
+import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk/dist/browser';
 
 export const LedgerIndex: React.FC = () => {
   const network = useSelector((state: { network: NetworkConfig }) => state.network);

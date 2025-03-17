@@ -1,0 +1,13 @@
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+// Add custom package resolution
+config.resolver.extraNodeModules = {
+  'open-libra-sdk': require.resolve('open-libra-sdk')
+};
+
+// Add sourceExts to resolve .cjs files
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'cjs'];
+
+module.exports = config;
