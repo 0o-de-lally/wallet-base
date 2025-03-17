@@ -1,15 +1,15 @@
-import { TESTNET_CONFIG } from '@/util/networkSettings';
+// import { TESTNET_CONFIG } from '@/util/networkSettings';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk';
 
 interface WalletState {
-  walletConfig: LibraWallet;
+  walletConfig: LibraWallet | null;
   blockHeight: string;
   error: string | null;
 }
 
 const initialState: WalletState = {
-  walletConfig: new LibraWallet(ALICE_MNEM, Network.MAINNET, TESTNET_CONFIG.rpcUrl),
+  walletConfig: null,
   blockHeight: 'Loading...',
   error: null,
 };
@@ -32,6 +32,6 @@ export const walletSlice = createSlice({
   },
 });
 
-export const { setWallet, setBlockHeight, setError } = walletSlice.actions;
+export const { setWallet, setBlockHeight, setError, initializeWallet } = walletSlice.actions;
 
 export default walletSlice.reducer;
