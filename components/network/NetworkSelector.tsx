@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CustomText } from '../CustomText';
-import { ChainName } from '../../types/networkTypes';
+import { Network } from 'open-libra-sdk';
 import { RootState, setNetworkConfig } from '../../store';
 import { NetworkConfigGenerator } from '../../util/networkSettings';
 
@@ -9,25 +9,25 @@ export default function NetworkSelector() {
   const dispatch = useDispatch();
   const currentNetwork = useSelector((state: RootState) => state.network);
 
-  const networks = Object.values(ChainName);
+  const networks = Object.values(Network);
 
-  const handleNetworkSelect = (chainName: ChainName) => {
-    const config = NetworkConfigGenerator.generateConfig(chainName);
+  const handleNetworkSelect = (network: Network) => {
+    const config = NetworkConfigGenerator.generateConfig(network);
     dispatch(setNetworkConfig(config));
   };
 
   return (
     <View style={styles.container}>
-      {networks.map((chainName) => (
+      {networks.map((network) => (
         <TouchableOpacity
-          key={chainName}
+          key={network}
           style={[
             styles.networkButton,
-            currentNetwork.type === chainName && styles.selectedNetwork
+            currentNetwork.type === network && styles.selectedNetwork
           ]}
-          onPress={() => handleNetworkSelect(chainName)}
+          onPress={() => handleNetworkSelect(network)}
         >
-          <CustomText style={styles.networkText}>{chainName}</CustomText>
+          <CustomText style={styles.networkText}>{network}</CustomText>
         </TouchableOpacity>
       ))}
     </View>

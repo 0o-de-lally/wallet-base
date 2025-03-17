@@ -1,12 +1,7 @@
-export enum ChainName {
-  MAINNET = 'mainnet',
-  TESTNET = 'testnet',
-  LOCAL = 'local',
-  // CUSTOM = 'custom'
-}
+import { Network } from "open-libra-sdk";
 
 export interface NetworkConfig {
-  type: ChainName;
+  type: Network;
   rpcUrl: string;
   chainId: number;
 }

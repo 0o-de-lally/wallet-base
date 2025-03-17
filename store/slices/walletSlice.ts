@@ -1,18 +1,15 @@
+import { TESTNET_CONFIG } from '@/util/networkSettings';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LibraWallet, Network } from 'open-libra-sdk';
+import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk';
 
 interface WalletState {
-  walletConfig: {
-    mnemonic: string;
-    network: Network;
-    rpcUrl: string;
-  } | null;
+  walletConfig: LibraWallet;
   blockHeight: string;
   error: string | null;
 }
 
 const initialState: WalletState = {
-  walletConfig: null,
+  walletConfig: new LibraWallet(ALICE_MNEM, Network.MAINNET, TESTNET_CONFIG.rpcUrl),
   blockHeight: 'Loading...',
   error: null,
 };
@@ -21,8 +18,8 @@ export const walletSlice = createSlice({
   name: 'wallet',
   initialState,
   reducers: {
-    setWallet: (state, action: PayloadAction<{ mnemonic: string; network: Network; rpcUrl: string }>) => {
-      state.walletConfig = action.payload;
+    setWallet: (state, action: PayloadAction<{ wallet: LibraWallet }>) => {
+      state.walletConfig = action.payload.wallet;
       state.error = null;
     },
     setBlockHeight: (state, action: PayloadAction<string>) => {
@@ -36,12 +33,5 @@ export const walletSlice = createSlice({
 });
 
 export const { setWallet, setBlockHeight, setError } = walletSlice.actions;
-
-// Helper function to create wallet instance from state
-export const getWalletFromState = (state: WalletState): LibraWallet | null => {
-  if (!state.walletConfig) return null;
-  const { mnemonic, network, rpcUrl } = state.walletConfig;
-  return new LibraWallet(mnemonic, network, rpcUrl);
-};
 
 export default walletSlice.reducer;

@@ -1,20 +1,21 @@
-import { ChainName, NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
+import { Network } from 'open-libra-sdk';
+import { NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
 import { loadNetworkConfig, saveNetworkConfig } from './fileSystem';
 
-const MAINNET_CONFIG: NetworkConfig = {
-  type: ChainName.MAINNET,
+export const MAINNET_CONFIG: NetworkConfig = {
+  type: Network.MAINNET,
   rpcUrl: 'https://rpc.scan.openlibra.world/v1',
   chainId: 1
 };
 
-const TESTNET_CONFIG: NetworkConfig = {
-  type: ChainName.TESTNET,
+export const TESTNET_CONFIG: NetworkConfig = {
+  type: Network.TESTNET,
   rpcUrl: 'https://testnet.openlibra.io/v1',
   chainId: 2
 };
 
-const LOCAL_CONFIG: NetworkConfig = {
-  type: ChainName.LOCAL,
+export const LOCAL_CONFIG: NetworkConfig = {
+  type: Network.LOCAL,
   rpcUrl: 'http://127.0.0.1:8380',
   chainId: 2
 };
@@ -23,7 +24,7 @@ export class NetworkConfigGenerator {
   private static instance: NetworkConfigGenerator;
 
   private constructor(
-    private readonly _chainType: ChainName = ChainName.MAINNET,
+    private readonly _chainType: Network = Network.MAINNET,
     private readonly _rpcUrl: string = '',
     private readonly _chainId: number = 1
   ) {}
@@ -35,13 +36,6 @@ export class NetworkConfigGenerator {
     return NetworkConfigGenerator.instance;
   }
 
-  // static createCustomConfig(
-  //   rpcUrl: string,
-  //   chainId: number
-  // ): NetworkConfigGenerator {
-  //   return new NetworkConfigGenerator(ChainName.CUSTOM, rpcUrl, chainId);
-  // }
-
   static async saveConfig(config: NetworkConfig): Promise<void> {
     const networkConfigFile: NetworkConfigFile = {
       activeNetwork: config,
@@ -50,32 +44,25 @@ export class NetworkConfigGenerator {
     await saveNetworkConfig(networkConfigFile);
   }
 
-  static generateConfig(type: ChainName, customConfig?: NetworkConfigGenerator): NetworkConfig {
+  static generateConfig(type: Network, customConfig?: NetworkConfigGenerator): NetworkConfig {
     switch (type) {
-      case ChainName.MAINNET:
+      case Network.MAINNET:
         return MAINNET_CONFIG;
-      case ChainName.TESTNET:
+      case Network.TESTNET:
         return TESTNET_CONFIG;
-      case ChainName.LOCAL:
+      case Network.LOCAL:
         return LOCAL_CONFIG;
-      // case ChainName.CUSTOM:
-      //   if (!customConfig) {
-      //     throw new Error('Custom config is required for custom network type');
-      //   }
-      //   return {
-      //     type: ChainName.CUSTOM,
-      //     rpcUrl: customConfig.rpcUrl,
-      //     chainId: customConfig.chainId
-      //   };
+      default:
+        return MAINNET_CONFIG;
     }
   }
 
   // Getters for private fields
-  get chainType(): ChainName { return this._chainType; }
+  get chainType(): Network { return this._chainType; }
   get rpcUrl(): string { return this._rpcUrl; }
   get chainId(): number { return this._chainId; }
 
-  async initializeNetworkConfig(type: ChainName): Promise<NetworkConfigFile> {
+  async initializeNetworkConfig(type: Network): Promise<NetworkConfigFile> {
     const existingConfig = await loadNetworkConfig();
 
     if (existingConfig) {
@@ -91,7 +78,7 @@ export class NetworkConfigGenerator {
     return newConfig;
   }
 
-  async updateNetwork(type: ChainName, customConfig?: NetworkConfigGenerator): Promise<void> {
+  async updateNetwork(type: Network, customConfig?: NetworkConfigGenerator): Promise<void> {
     const newConfig: NetworkConfigFile = {
       activeNetwork: NetworkConfigGenerator.generateConfig(type, customConfig),
       lastUpdated: new Date().toISOString()

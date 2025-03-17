@@ -45,7 +45,7 @@ export async function getConfigFilePath(): Promise<string> {
   return getConfigDir() + CONFIG_FILENAME;
 }
 
-export async function saveObjectToConfigPath(filename: string, obj: any): Promise<string> {
+export async function saveObjectToConfigPath(filename: string, obj: object): Promise<string> {
   const configDir = getConfigDir();
   const filePath = `${configDir}${filename}`;
   await storage.writeFile(filePath, JSON.stringify(obj, null, 2));

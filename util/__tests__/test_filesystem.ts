@@ -4,12 +4,12 @@ import { ensureConfigDirectory, getConfigFilePath, readObjectFromConfigPath, sav
 describe('Expo FileSystem Basics', () => {
   it('should handle directory creation', async () => {
 
-    let a = await getConfigFilePath();
+    const a = await getConfigFilePath();
     console.log(a);
     await ensureConfigDirectory();
 
     await saveObjectToConfigPath('test.json', { test: "test"});
-    let b = await readObjectFromConfigPath('test.json');
+    const b = await readObjectFromConfigPath('test.json');
     console.log(b)
   });
 
