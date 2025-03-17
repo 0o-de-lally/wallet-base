@@ -1,40 +1,56 @@
-import { useReducer, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { ChainName } from '../types/networkTypes';
-import { appReducer } from '../app/context/AppContext';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { CustomText } from './CustomText';
+import { ChainName, NetworkConfig, setNetworkConfig } from '../types/networkTypes';
+import { RootState } from '../store/store';
 
 export default function NetworkSelector() {
-  const [state, dispatch] = useReducer(appReducer, {});
+  const dispatch = useDispatch();
+  const currentNetwork = useSelector((state: RootState) => state.network);
 
-  const [selectedNetwork, setPickerValue] = useState<ChainName>(ChainName.MAINNET);
+  const networks: NetworkConfig[] = [
+    { type: ChainName.MAINNET, chainId: 1, rpcUrl: 'https://eth-mainnet.api.com' },
+    { type: ChainName.TESTNET, chainId: 5, rpcUrl: 'https://eth-goerli.api.com' },
+    { type: ChainName.LOCAL, chainId: 1337, rpcUrl: 'http://localhost:8545' }
+  ];
+
+  const handleNetworkSelect = (network: NetworkConfig) => {
+    dispatch(setNetworkConfig(network));
+  };
 
   return (
     <View style={styles.container}>
-      <Picker
-        selectedValue={state.network_config.type}
-        onValueChange={async (value: ChainName) => {
-          console.log('Selected network:', value);
-          setPickerValue(value);
-          dispatch('update');
-        }}>
-        {Object.values(ChainName).map((type) => (
-          <Picker.Item key={type} label={type} value={type} />
-        ))}
-      </Picker>
-
-      {/* {selectedNetwork === NetworkType.CUSTOM && (
-        <CustomNetworkForm
-          initialValues={MAINNET_CONFIG}
-          onSubmit={handleCustomSubmit}
-        />
-      )} */}
+      {networks.map((network) => (
+        <TouchableOpacity
+          key={network.type}
+          style={[
+            styles.networkButton,
+            currentNetwork.type === network.type && styles.selectedNetwork
+          ]}
+          onPress={() => handleNetworkSelect(network)}
+        >
+          <CustomText style={styles.networkText}>{network.type}</CustomText>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+    gap: 8,
     padding: 16,
+  },
+  networkButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  selectedNetwork: {
+    backgroundColor: '#007AFF',
+  },
+  networkText: {
+    textTransform: 'capitalize',
   },
 });
