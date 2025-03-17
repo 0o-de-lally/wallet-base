@@ -1,4 +1,4 @@
-import { Text, TextStyle, StyleSheet } from 'react-native';
+import { Text, TextStyle} from 'react-native';
 import React from 'react';
 
 interface CustomTextProps {

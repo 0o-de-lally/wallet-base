@@ -1,7 +1,6 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import NetworkSelector from '../components/NetworkSelector';
 import NetworkDetails from '../components/NetworkDetails';
-import { useReducer } from 'react';
 
 export default function NetworkScreen() {
 

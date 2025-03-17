@@ -33,8 +33,9 @@ export async function ensureConfigDirectory(): Promise<void> {
     if (!exists) {
       await storage.makeDirectory(configDir);
     }
-  } catch (error) {
-    console.error('Failed to ensure config directory:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Failed to ensure config directory:', errorMessage);
     throw error;
   }
 }
