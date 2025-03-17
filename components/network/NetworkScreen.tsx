@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
-import NetworkSelector from '../components/NetworkSelector';
-import NetworkDetails from '../components/NetworkDetails';
+import NetworkSelector from './NetworkSelector';
+import NetworkDetails from './NetworkDetails';
 
 export default function NetworkScreen() {
 

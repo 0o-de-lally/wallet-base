@@ -1,7 +1,7 @@
 import '@/util/polyfills';
 
 import { StyleSheet, View } from 'react-native';
-import NetworkScreen from './network';
+import NetworkScreen from '../components/network/NetworkScreen';
 import { CustomText } from '../components/CustomText';
 import { Provider } from 'react-redux';
 import React from 'react';

@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
-import { CustomText } from './CustomText';
-import { RootState } from '../store';
+import { CustomText } from '../CustomText';
+import { RootState } from '../../store';
 
 export default function NetworkDetails() {
   const networkConfig = useSelector((state: RootState) => state.network);
