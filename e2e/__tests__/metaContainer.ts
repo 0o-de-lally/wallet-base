@@ -3,11 +3,15 @@ import { LOCAL_TESTNET_API, testnetDown, testnetUp } from 'open-libra-sdk';
 import axios from 'axios';
 
 beforeEach(async () => {
-  console.log("testnet setup");
-  console.log(LOCAL_TESTNET_API);
-  // make sure we teardown any zombies first
-  await testnetDown();
-  await testnetUp();
+  try {
+    console.log("testnet setup");
+    console.log(LOCAL_TESTNET_API);
+    await testnetDown();
+    await testnetUp();
+  } catch (error) {
+    console.error("Failed to setup testnet:", error);
+    throw error;
+  }
 }, 60 * 1000); // 60 second timeout
 
 afterEach(async () => {
@@ -23,7 +27,12 @@ describe('noop', () => {
 
 describe('LOCAL_TESTNET_API', () => {
   it('should respond to a GET request', async () => {
-    const response = await axios.get(LOCAL_TESTNET_API);
-    expect(response.status).toBe(200);
+    try {
+      const response = await axios.get(LOCAL_TESTNET_API);
+      expect(response.status).toBe(200);
+    } catch (error) {
+      console.error("API request failed:", error);
+      throw error;
+    }
   });
 });

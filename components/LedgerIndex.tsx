@@ -1,4 +1,3 @@
-import '../utils/polyfills';
 import React from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';

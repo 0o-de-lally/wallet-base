@@ -1,3 +1,5 @@
+import '@/util/polyfills';
+
 import { StyleSheet, View } from 'react-native';
 import NetworkScreen from './network';
 import { CustomText } from '../components/CustomText';
