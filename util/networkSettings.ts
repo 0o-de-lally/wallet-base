@@ -1,6 +1,24 @@
 import { ChainName, NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
 import { loadNetworkConfig, saveNetworkConfig } from './fileSystem';
 
+const MAINNET_CONFIG: NetworkConfig = {
+  type: ChainName.MAINNET,
+  rpcUrl: 'https://rpc.scan.openlibra.world/v1',
+  chainId: 1
+};
+
+const TESTNET_CONFIG: NetworkConfig = {
+  type: ChainName.TESTNET,
+  rpcUrl: 'https://testnet.openlibra.io/v1',
+  chainId: 2
+};
+
+const LOCAL_CONFIG: NetworkConfig = {
+  type: ChainName.LOCAL,
+  rpcUrl: 'http://127.0.0.1:8380',
+  chainId: 2
+};
+
 export class NetworkConfigGenerator {
   private static instance: NetworkConfigGenerator;
 
@@ -17,12 +35,12 @@ export class NetworkConfigGenerator {
     return NetworkConfigGenerator.instance;
   }
 
-  static createCustomConfig(
-    rpcUrl: string,
-    chainId: number
-  ): NetworkConfigGenerator {
-    return new NetworkConfigGenerator(ChainName.CUSTOM, rpcUrl, chainId);
-  }
+  // static createCustomConfig(
+  //   rpcUrl: string,
+  //   chainId: number
+  // ): NetworkConfigGenerator {
+  //   return new NetworkConfigGenerator(ChainName.CUSTOM, rpcUrl, chainId);
+  // }
 
   static async saveConfig(config: NetworkConfig): Promise<void> {
     const networkConfigFile: NetworkConfigFile = {
@@ -35,32 +53,20 @@ export class NetworkConfigGenerator {
   static generateConfig(type: ChainName, customConfig?: NetworkConfigGenerator): NetworkConfig {
     switch (type) {
       case ChainName.MAINNET:
-        return {
-          type: ChainName.MAINNET,
-          rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your-api-key',
-          chainId: 1
-        };
+        return MAINNET_CONFIG;
       case ChainName.TESTNET:
-        return {
-          type: ChainName.TESTNET,
-          rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/your-api-key',
-          chainId: 11155111
-        };
+        return TESTNET_CONFIG;
       case ChainName.LOCAL:
-        return {
-          type: ChainName.LOCAL,
-          rpcUrl: 'http://127.0.0.1:8545',
-          chainId: 1337
-        };
-      case ChainName.CUSTOM:
-        if (!customConfig) {
-          throw new Error('Custom config is required for custom network type');
-        }
-        return {
-          type: ChainName.CUSTOM,
-          rpcUrl: customConfig.rpcUrl,
-          chainId: customConfig.chainId
-        };
+        return LOCAL_CONFIG;
+      // case ChainName.CUSTOM:
+      //   if (!customConfig) {
+      //     throw new Error('Custom config is required for custom network type');
+      //   }
+      //   return {
+      //     type: ChainName.CUSTOM,
+      //     rpcUrl: customConfig.rpcUrl,
+      //     chainId: customConfig.chainId
+      //   };
     }
   }
 

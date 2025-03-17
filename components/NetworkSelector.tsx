@@ -1,35 +1,33 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CustomText } from './CustomText';
-import { ChainName, NetworkConfig, setNetworkConfig } from '../types/networkTypes';
+import { ChainName, setNetworkConfig } from '../types/networkTypes';
 import { RootState } from '../store/store';
+import { NetworkConfigGenerator } from '../util/networkSettings';
 
 export default function NetworkSelector() {
   const dispatch = useDispatch();
   const currentNetwork = useSelector((state: RootState) => state.network);
 
-  const networks: NetworkConfig[] = [
-    { type: ChainName.MAINNET, chainId: 1, rpcUrl: 'https://eth-mainnet.api.com' },
-    { type: ChainName.TESTNET, chainId: 5, rpcUrl: 'https://eth-goerli.api.com' },
-    { type: ChainName.LOCAL, chainId: 1337, rpcUrl: 'http://localhost:8545' }
-  ];
+  const networks = Object.values(ChainName);
 
-  const handleNetworkSelect = (network: NetworkConfig) => {
-    dispatch(setNetworkConfig(network));
+  const handleNetworkSelect = (chainName: ChainName) => {
+    const config = NetworkConfigGenerator.generateConfig(chainName);
+    dispatch(setNetworkConfig(config));
   };
 
   return (
     <View style={styles.container}>
-      {networks.map((network) => (
+      {networks.map((chainName) => (
         <TouchableOpacity
-          key={network.type}
+          key={chainName}
           style={[
             styles.networkButton,
-            currentNetwork.type === network.type && styles.selectedNetwork
+            currentNetwork.type === chainName && styles.selectedNetwork
           ]}
-          onPress={() => handleNetworkSelect(network)}
+          onPress={() => handleNetworkSelect(chainName)}
         >
-          <CustomText style={styles.networkText}>{network.type}</CustomText>
+          <CustomText style={styles.networkText}>{chainName}</CustomText>
         </TouchableOpacity>
       ))}
     </View>

@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { saveNetworkConfig } from '../util/fileSystem';
 
 export enum ChainName {
   MAINNET = 'mainnet',
   TESTNET = 'testnet',
   LOCAL = 'local',
-  CUSTOM = 'custom'
+  // CUSTOM = 'custom'
 }
 
 export interface NetworkConfig {
@@ -32,6 +33,11 @@ export const networkSlice = createSlice({
       state.type = action.payload.type;
       state.chainId = action.payload.chainId;
       state.rpcUrl = action.payload.rpcUrl;
+      const networkConfigFile: NetworkConfigFile = {
+        activeNetwork: action.payload,
+        lastUpdated: new Date().toISOString()
+      };
+      saveNetworkConfig(networkConfigFile).catch(console.error); // Fire and forget, we don't want to await here
     }
   }
 });

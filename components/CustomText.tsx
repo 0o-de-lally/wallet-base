@@ -1,4 +1,11 @@
-import { PropsWithChildren } from 'react';
-import { Text } from 'react-native';
+import { Text, TextStyle, StyleSheet } from 'react-native';
+import React from 'react';
 
-export const CustomText = ({ children }: PropsWithChildren) => <Text>{children}</Text>;
+interface CustomTextProps {
+  children: React.ReactNode;
+  style?: TextStyle | TextStyle[];
+}
+
+export const CustomText: React.FC<CustomTextProps> = ({ children, style }) => {
+  return <Text style={style}>{children}</Text>;
+};
