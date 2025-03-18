@@ -2,15 +2,11 @@ import '@/util/polyfills';
 import { StyleSheet, View } from 'react-native';
 import NetworkScreen from '../components/network/NetworkScreen';
 import { Provider } from 'react-redux';
-import React, { useEffect } from 'react';
 import LedgerIndex from '@/components/LedgerIndex';
-import { store, initializeWallet } from '@/store';
+import { store } from '@/store';
 import Boot from './boot';
 
 function AppContent() {
-  useEffect(() => {
-    initializeWallet();
-  }, []);
 
   return (
     <View style={styles.container}>

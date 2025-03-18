@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NetworkConfig, NetworkConfigFile } from '../../types/networkTypes';
 import { saveNetworkConfig } from '../../util/fileSystem';
 import { Network } from 'open-libra-sdk';
+import { initClient } from '@/util/init';
 
 const initialState: NetworkConfig = {
   type: Network.MAINNET,
@@ -24,6 +25,10 @@ export const networkSlice = createSlice({
         lastUpdated: new Date().toISOString()
       };
       saveNetworkConfig(networkConfigFile).catch(console.error);
+
+      initClient(type, rpcUrl).then(() => {
+        console.log('Client initialized with network:', type);
+      }).catch(console.error);
     }
   }
 });

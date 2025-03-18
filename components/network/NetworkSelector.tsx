@@ -2,8 +2,9 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CustomText } from '../CustomText';
 import { Network } from 'open-libra-sdk';
-import { RootState, setNetworkConfig } from '../../store';
+import { RootState } from '../../store';
 import { NetworkConfigGenerator } from '../../util/networkSettings';
+import { setNetworkConfig } from '@/store/slices/networkSlice';
 
 export default function NetworkSelector() {
   const dispatch = useDispatch();
