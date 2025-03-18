@@ -1,6 +1,6 @@
 // import { TESTNET_CONFIG } from '@/util/networkSettings';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ALICE_MNEM, LibraWallet, Network } from 'open-libra-sdk';
+import { LibraWallet } from 'open-libra-sdk';
 
 interface WalletState {
   walletConfig: LibraWallet | null;

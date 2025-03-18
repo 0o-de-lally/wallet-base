@@ -1,5 +1,4 @@
 import * as FileSystem from 'expo-file-system';
-import { NetworkConfigGenerator } from '../networkSettings';
 import { NetworkConfigFile } from '../../types/networkTypes';
 import { getConfigFilePath, ensureConfigDirectory } from '../fileSystem';
 import { Network } from 'open-libra-sdk';

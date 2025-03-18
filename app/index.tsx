@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import React, { useEffect } from 'react';
 import LedgerIndex from '@/components/LedgerIndex';
 import { store, initializeWallet } from '@/store';
+import Boot from './boot';
 
 function AppContent() {
   useEffect(() => {
@@ -13,6 +14,8 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
+      <Boot />
+
       <NetworkScreen />
       <LedgerIndex />
     </View>

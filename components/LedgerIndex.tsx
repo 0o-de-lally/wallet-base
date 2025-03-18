@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Button } from 'react-native';
+import { useState } from 'react';
+import { View, } from 'react-native';
 import { useSelector } from 'react-redux';
 import { CustomText } from './CustomText';
 import { RootState } from '../store';
