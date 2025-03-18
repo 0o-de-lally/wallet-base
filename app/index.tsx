@@ -11,9 +11,9 @@ function AppContent() {
   return (
     <View style={styles.container}>
       <Boot />
+      <LedgerIndex />
 
       <NetworkScreen />
-      <LedgerIndex />
     </View>
   );
 }

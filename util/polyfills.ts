@@ -1,13 +1,14 @@
 import { Buffer } from 'buffer';
+import * as Crypto from 'expo-crypto';
 
 try {
   if (typeof global.Buffer === 'undefined') {
     global.Buffer = Buffer;
   }
 
-  // if (typeof global.process === 'undefined') {
-  //   global.process = { env: {} };
-  // }
+  if (typeof global.crypto === 'undefined') {
+    global.crypto = Crypto;
+  }
 
   // // Required by some crypto libraries
   // if (typeof global.btoa === 'undefined') {
