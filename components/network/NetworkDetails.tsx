@@ -1,11 +1,11 @@
 import { View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { observer } from '@legendapp/state/react';
 import { CustomText } from '../CustomText';
-import { RootState } from '../../store';
+import { networkStore$ } from '@/util/networkSettings';
 import { sharedStyles } from '@/styles/shared';
 
-export default function NetworkDetails() {
-  const networkConfig = useSelector((state: RootState) => state.network);
+export default observer(function NetworkDetails() {
+  const networkConfig = networkStore$.activeNetwork.get();
 
   return (
     <View>
@@ -15,4 +15,4 @@ export default function NetworkDetails() {
       <CustomText style={sharedStyles.label}>RPC URL: {networkConfig.rpcUrl}</CustomText>
     </View>
   );
-}
+});

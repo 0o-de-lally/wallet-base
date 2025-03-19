@@ -1,39 +1,49 @@
-import { View, TouchableOpacity } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { View } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { CustomText } from '../CustomText';
 import { Network } from 'open-libra-sdk';
-import { RootState } from '../../store';
-import { NetworkConfigGenerator } from '../../util/networkSettings';
-import { setNetworkConfig } from '@/store/slices/networkSlice';
+import { observer } from '@legendapp/state/react';
+import { networkStore$, updateNetwork } from '@/util/networkSettings';
 import { sharedStyles } from '@/styles/shared';
 
-export default function NetworkSelector() {
-  const dispatch = useDispatch();
-  const currentNetwork = useSelector((state: RootState) => state.network);
-  const networks = Object.values(Network);
-
+export default observer(function NetworkSelector() {
   const handleNetworkSelect = (network: Network) => {
-    const config = NetworkConfigGenerator.generateConfig(network);
-    dispatch(setNetworkConfig(config));
+    updateNetwork(network);
   };
 
+  const currentNetwork = networkStore$.activeNetwork.get();
+  const networks = [Network.MAINNET, Network.TESTNET, Network.LOCAL];
+
   return (
-    <View>
+    <View style={{ gap: 10 }}>
       <CustomText style={sharedStyles.heading}>Select Network</CustomText>
-      <View style={sharedStyles.row}>
-        {networks.map((network) => (
-          <TouchableOpacity
-            key={network}
-            style={[
-              sharedStyles.button,
-              currentNetwork.type === network && { backgroundColor: '#004999' }
-            ]}
-            onPress={() => handleNetworkSelect(network)}
-          >
-            <CustomText style={sharedStyles.buttonText}>{network}</CustomText>
-          </TouchableOpacity>
-        ))}
+      <View>
+        <CustomText>Current Network: {currentNetwork.type}</CustomText>
+        <CustomText style={{ fontSize: 12, color: '#666' }}>
+          RPC URL: {currentNetwork.rpcUrl}
+        </CustomText>
+      </View>
+      <View style={{
+        borderWidth: 1,
+        borderColor: '#004999',
+        borderRadius: 4,
+        marginTop: 5
+      }}>
+        <Picker
+          selectedValue={currentNetwork.type}
+          onValueChange={handleNetworkSelect}
+          style={{ color: '#fff' }}
+        >
+          {networks.map((network) => (
+            <Picker.Item
+              key={network}
+              label={network}
+              value={network}
+              color={currentNetwork.type === network ? '#004999' : undefined}
+            />
+          ))}
+        </Picker>
       </View>
     </View>
   );
-}
+});

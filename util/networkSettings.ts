@@ -1,6 +1,9 @@
 import { Network } from 'open-libra-sdk';
-import { NetworkConfig, NetworkConfigFile } from '../types/networkTypes';
-import { loadNetworkConfig, saveNetworkConfig } from './fileSystem';
+import { NetworkConfig } from '../types/networkTypes';
+import { observable } from '@legendapp/state';
+import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv';
+import { syncObservable } from '@legendapp/state/sync';
+import { initClient } from './init';
 
 export const MAINNET_CONFIG: NetworkConfig = {
   type: Network.MAINNET,
@@ -20,70 +23,36 @@ export const LOCAL_CONFIG: NetworkConfig = {
   chainId: 2
 };
 
-export class NetworkConfigGenerator {
-  private static instance: NetworkConfigGenerator;
+// Create an observable store
+export const networkStore$ = observable({
+  activeNetwork: MAINNET_CONFIG,
+  lastUpdated: new Date().toISOString()
+});
 
-  private constructor(
-    private readonly _chainType: Network = Network.MAINNET,
-    private readonly _rpcUrl: string = '',
-    private readonly _chainId: number = 1
-  ) {}
-
-  static getInstance(): NetworkConfigGenerator {
-    if (!NetworkConfigGenerator.instance) {
-      NetworkConfigGenerator.instance = new NetworkConfigGenerator();
-    }
-    return NetworkConfigGenerator.instance;
+// Configure persistence
+syncObservable(networkStore$, {
+  persist: {
+    name: 'network-store',
+    plugin: ObservablePersistMMKV
   }
+});
 
-  static async saveConfig(config: NetworkConfig): Promise<void> {
-    const networkConfigFile: NetworkConfigFile = {
-      activeNetwork: config,
-      lastUpdated: new Date().toISOString()
-    };
-    await saveNetworkConfig(networkConfigFile);
+export function generateConfig(type: Network): NetworkConfig {
+  switch (type) {
+    case Network.MAINNET:
+      return MAINNET_CONFIG;
+    case Network.TESTNET:
+      return TESTNET_CONFIG;
+    case Network.LOCAL:
+      return LOCAL_CONFIG;
+    default:
+      return MAINNET_CONFIG;
   }
+}
 
-  static generateConfig(type: Network, customConfig?: NetworkConfigGenerator): NetworkConfig {
-    switch (type) {
-      case Network.MAINNET:
-        return MAINNET_CONFIG;
-      case Network.TESTNET:
-        return TESTNET_CONFIG;
-      case Network.LOCAL:
-        return LOCAL_CONFIG;
-      default:
-        return MAINNET_CONFIG;
-    }
-  }
-
-  // Getters for private fields
-  get chainType(): Network { return this._chainType; }
-  get rpcUrl(): string { return this._rpcUrl; }
-  get chainId(): number { return this._chainId; }
-
-  async initializeNetworkConfig(type: Network): Promise<NetworkConfigFile> {
-    const existingConfig = await loadNetworkConfig();
-
-    if (existingConfig) {
-      return existingConfig;
-    }
-
-    const newConfig: NetworkConfigFile = {
-      activeNetwork: NetworkConfigGenerator.generateConfig(type),
-      lastUpdated: new Date().toISOString()
-    };
-
-    await saveNetworkConfig(newConfig);
-    return newConfig;
-  }
-
-  async updateNetwork(type: Network, customConfig?: NetworkConfigGenerator): Promise<void> {
-    const newConfig: NetworkConfigFile = {
-      activeNetwork: NetworkConfigGenerator.generateConfig(type, customConfig),
-      lastUpdated: new Date().toISOString()
-    };
-
-    await saveNetworkConfig(newConfig);
-  }
+export function updateNetwork(type: Network): void {
+  networkStore$.activeNetwork.set(generateConfig(type));
+  networkStore$.lastUpdated.set(new Date().toISOString());
+  let cfg = generateConfig(type);
+  initClient(type, cfg.rpcUrl);
 }

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { observer } from '@legendapp/state/react';
 import { CustomText } from './CustomText';
-import { RootState } from '../store';
 import { client } from '@/util/init';
 import { sharedStyles } from '@/styles/shared';
+import { networkStore$ } from '@/util/networkSettings';
 
-export const LedgerIndex = () => {
-  const network = useSelector((state: RootState) => state.network);
+export const LedgerIndex = observer(() => {
   const [blockHeight, setBlockHeight] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const network = networkStore$.activeNetwork.get();
 
   const fetchLedgerInfo = async () => {
     try {
@@ -29,7 +29,7 @@ export const LedgerIndex = () => {
 
   useEffect(() => {
     fetchLedgerInfo();
-  }, [network]); // Refetch when network changes
+  }, [network]);
 
   return (
     <View style={sharedStyles.container}>
@@ -44,6 +44,6 @@ export const LedgerIndex = () => {
       </View>
     </View>
   );
-};
+});
 
 export default LedgerIndex;
