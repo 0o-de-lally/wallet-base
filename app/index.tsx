@@ -5,14 +5,16 @@ import { Provider } from 'react-redux';
 import LedgerIndex from '@/components/LedgerIndex';
 import { store } from '@/store';
 import Boot from './boot';
+import { TaskList } from '@/components/TaskList/TaskList';
 
 function AppContent() {
 
   return (
     <View style={styles.container}>
       <Boot />
-      <LedgerIndex />
+      <TaskList />
 
+      <LedgerIndex />
       <NetworkScreen />
     </View>
   );
