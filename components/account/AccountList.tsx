@@ -12,7 +12,7 @@ interface UserAccount {
   view_only: boolean
 }
 
-export const TaskList = observer(() => {
+export const AccountList = observer(() => {
   const [newAccount, setNewAccount] = useState('')
   const [newNickname, setNewNickname] = useState('')
   const [newBalance, setNewBalance] = useState('')

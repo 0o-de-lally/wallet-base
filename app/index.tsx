@@ -1,11 +1,9 @@
 import '@/util/polyfills';
 import { StyleSheet, ScrollView, SafeAreaView, View } from 'react-native';
 import NetworkScreen from '../components/network/NetworkScreen';
-import { Provider } from 'react-redux';
 import LedgerIndex from '@/components/LedgerIndex';
-import { store } from '@/store';
 import Boot from './boot';
-import { TaskList } from '@/components/TaskList/TaskList';
+import { AccountList } from '@/components/account/AccountList';
 
 function AppContent() {
   return (
@@ -19,7 +17,7 @@ function AppContent() {
         </View>
 
         <View style={styles.section}>
-          <TaskList />
+          <AccountList />
         </View>
 
         <View style={styles.section}>
@@ -36,9 +34,7 @@ function AppContent() {
 
 export default function HomeScreen() {
   return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
+    <AppContent />
   );
 }
 
