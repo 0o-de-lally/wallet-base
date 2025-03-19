@@ -14,11 +14,24 @@ export default observer(function NetworkSelector() {
   const currentNetwork = networkStore$.activeNetwork.get();
   const networks = [Network.MAINNET, Network.TESTNET, Network.LOCAL];
 
+  const getNetworkName = (network: Network) => {
+    switch (network) {
+      case Network.MAINNET:
+        return 'Mainnet';
+      case Network.TESTNET:
+        return 'Testnet';
+      case Network.LOCAL:
+        return 'Local Network';
+      default:
+        return network;
+    }
+  };
+
   return (
     <View style={{ gap: 10 }}>
       <CustomText style={sharedStyles.heading}>Select Network</CustomText>
       <View>
-        <CustomText>Current Network: {currentNetwork.type}</CustomText>
+        <CustomText>Current Network: {getNetworkName(currentNetwork.type)}</CustomText>
         <CustomText style={{ fontSize: 12, color: '#666' }}>
           RPC URL: {currentNetwork.rpcUrl}
         </CustomText>
@@ -32,12 +45,12 @@ export default observer(function NetworkSelector() {
         <Picker
           selectedValue={currentNetwork.type}
           onValueChange={handleNetworkSelect}
-          style={{ color: '#fff' }}
+          style={{ color: '#000' }}
         >
           {networks.map((network) => (
             <Picker.Item
               key={network}
-              label={network}
+              label={getNetworkName(network)}
               value={network}
               color={currentNetwork.type === network ? '#004999' : undefined}
             />
