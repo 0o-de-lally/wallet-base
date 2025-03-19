@@ -1,25 +1,17 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import NetworkSelector from './NetworkSelector';
 import NetworkDetails from './NetworkDetails';
+import { sharedStyles } from '@/styles/shared';
 
 export default function NetworkScreen() {
-
   return (
-    <View style={styles.container}>
-      <NetworkSelector />
-      <NetworkDetails />
+    <View style={sharedStyles.container}>
+      <View style={sharedStyles.card}>
+        <NetworkSelector />
+      </View>
+      <View style={sharedStyles.card}>
+        <NetworkDetails />
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    justifyContent: 'center',
-  },
-  error: {
-    color: 'red',
-    fontSize: 16,
-  },
-});

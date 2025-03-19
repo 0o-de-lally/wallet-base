@@ -1,5 +1,5 @@
 import '@/util/polyfills';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, View } from 'react-native';
 import NetworkScreen from '../components/network/NetworkScreen';
 import { Provider } from 'react-redux';
 import LedgerIndex from '@/components/LedgerIndex';
@@ -8,15 +8,29 @@ import Boot from './boot';
 import { TaskList } from '@/components/TaskList/TaskList';
 
 function AppContent() {
-
   return (
-    <View style={styles.container}>
-      <Boot />
-      <TaskList />
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.section}>
+          <Boot />
+        </View>
 
-      <LedgerIndex />
-      <NetworkScreen />
-    </View>
+        <View style={styles.section}>
+          <TaskList />
+        </View>
+
+        <View style={styles.section}>
+          <LedgerIndex />
+        </View>
+
+        <View style={styles.section}>
+          <NetworkScreen />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -29,10 +43,20 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 60, // Add padding for status bar
+    paddingBottom: 20,
+  },
+  section: {
+    marginBottom: 20,
+    width: '100%',
+    paddingHorizontal: 16,
+  }
 });

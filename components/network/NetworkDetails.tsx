@@ -1,23 +1,18 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { CustomText } from '../CustomText';
 import { RootState } from '../../store';
+import { sharedStyles } from '@/styles/shared';
 
 export default function NetworkDetails() {
   const networkConfig = useSelector((state: RootState) => state.network);
 
   return (
-    <View style={styles.container}>
-      <CustomText>Network: {networkConfig.type}</CustomText>
-      <CustomText>Chain ID: {networkConfig.chainId}</CustomText>
-      <CustomText>RPC URL: {networkConfig.rpcUrl}</CustomText>
+    <View>
+      <CustomText style={sharedStyles.heading}>Network Details</CustomText>
+      <CustomText style={sharedStyles.text}>Network: {networkConfig.type}</CustomText>
+      <CustomText style={sharedStyles.text}>Chain ID: {networkConfig.chainId}</CustomText>
+      <CustomText style={sharedStyles.label}>RPC URL: {networkConfig.rpcUrl}</CustomText>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    gap: 8,
-  },
-});

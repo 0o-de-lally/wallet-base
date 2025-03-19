@@ -1,7 +1,8 @@
-import { View, Text, Button, FlatList, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native'
 import { observer } from '@legendapp/state/react'
 import { store$ } from './store'
 import { useState } from 'react'
+import { sharedStyles } from '@/styles/shared'
 
 interface UserAccount {
   id: number
@@ -39,60 +40,47 @@ export const TaskList = observer(() => {
   }
 
   const renderItem = ({ item }: { item: UserAccount }) => (
-    <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <View style={sharedStyles.card}>
       <View>
-        <Text style={{ fontWeight: 'bold' }}>{item.nickname}</Text>
-        <Text style={{ fontSize: 12, color: '#666' }}>{item.account}</Text>
-        <Text>Balance: ${item.balance.toFixed(2)}</Text>
-        <Text style={{ color: item.view_only ? 'gray' : 'green' }}>
+        <Text style={sharedStyles.heading}>{item.nickname}</Text>
+        <Text style={sharedStyles.label}>{item.account}</Text>
+        <Text style={sharedStyles.text}>Balance: ${item.balance.toFixed(2)}</Text>
+        <Text style={[sharedStyles.text, { color: item.view_only ? 'gray' : 'green' }]}>
           {item.view_only ? 'View Only' : 'Full Access'}
         </Text>
       </View>
-      <TouchableOpacity onPress={() => deleteAccount(item.id)}>
-        <Text style={{ color: 'red', fontSize: 20 }}>×</Text>
+      <TouchableOpacity onPress={() => deleteAccount(item.id)} style={sharedStyles.button}>
+        <Text style={sharedStyles.buttonText}>Delete</Text>
       </TouchableOpacity>
     </View>
   )
 
   return (
-    <View>
-      <Text>User Accounts: {store$.userAccounts.length}</Text>
-      <View style={{ padding: 10, gap: 10 }}>
+    <View style={sharedStyles.container}>
+      <Text style={sharedStyles.heading}>User Accounts: {store$.userAccounts.length}</Text>
+      <View style={sharedStyles.card}>
         <TextInput
           value={newAccount}
           onChangeText={setNewAccount}
           placeholder="Enter account address"
-          style={{
-            borderWidth: 1,
-            borderColor: '#ccc',
-            padding: 8,
-            borderRadius: 4
-          }}
+          style={sharedStyles.input}
         />
         <TextInput
           value={newNickname}
           onChangeText={setNewNickname}
           placeholder="Enter nickname (optional)"
-          style={{
-            borderWidth: 1,
-            borderColor: '#ccc',
-            padding: 8,
-            borderRadius: 4
-          }}
+          style={sharedStyles.input}
         />
         <TextInput
           value={newBalance}
           onChangeText={setNewBalance}
           placeholder="Enter initial balance"
           keyboardType="numeric"
-          style={{
-            borderWidth: 1,
-            borderColor: '#ccc',
-            padding: 8,
-            borderRadius: 4
-          }}
+          style={sharedStyles.input}
         />
-        <Button title="Add Account" onPress={addAccount} />
+        <TouchableOpacity onPress={addAccount} style={sharedStyles.button}>
+          <Text style={sharedStyles.buttonText}>Add Account</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={store$.userAccounts.get()}

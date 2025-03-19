@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, } from 'react-native';
+import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { CustomText } from './CustomText';
 import { RootState } from '../store';
 import { client } from '@/util/init';
+import { sharedStyles } from '@/styles/shared';
 
 export const LedgerIndex = () => {
   const network = useSelector((state: RootState) => state.network);
@@ -31,11 +32,16 @@ export const LedgerIndex = () => {
   }, [network]); // Refetch when network changes
 
   return (
-    <View>
-      <CustomText>Ledger Information</CustomText>
-      <CustomText>Active RPC URL: {network.rpcUrl}</CustomText>
-      <CustomText>Block Height: {error || blockHeight || 'Loading...'}</CustomText>
-      {/* <Button title="Refresh Ledger Info" onPress={fetchLedgerInfo} /> */}
+    <View style={sharedStyles.container}>
+      <View style={sharedStyles.card}>
+        <CustomText style={sharedStyles.heading}>Ledger Information</CustomText>
+        <CustomText style={sharedStyles.text}>
+          Active RPC URL: {network.rpcUrl}
+        </CustomText>
+        <CustomText style={sharedStyles.text}>
+          Block Height: {error || blockHeight || 'Loading...'}
+        </CustomText>
+      </View>
     </View>
   );
 };
