@@ -1,9 +1,10 @@
 import '@/util/polyfills';
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { initWallet, wallet, initClient } from "../util/init";
 import { LibraClient, Network } from 'open-libra-sdk';
 import { ErrorLogger } from '../util/errorLogging';
+import { sharedStyles } from '@/styles/shared';
 
 export default function Boot() {
   const [addr, setAddr] = useState<string>('loading...');
@@ -32,36 +33,21 @@ export default function Boot() {
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.error}>Error: {error}</Text>
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.error}>Error: {error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Libra Wallet Demo </Text>
-      <Text>{addr}</Text>
-      <Text>{client?.config.network}</Text>
+    <View style={sharedStyles.container}>
+      <Text style={sharedStyles.heading}>Libra Wallet Demo</Text>
+      <View style={sharedStyles.card}>
+        <Text style={sharedStyles.label}>Address:</Text>
+        <Text style={sharedStyles.text}>{addr}</Text>
+        <Text style={sharedStyles.label}>Network:</Text>
+        <Text style={sharedStyles.text}>{client?.config.network}</Text>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  error: {
-    color: 'red',
-    fontSize: 16,
-    textAlign: 'center',
-  }
-});
