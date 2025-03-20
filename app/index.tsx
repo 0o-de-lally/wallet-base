@@ -4,6 +4,12 @@ import NetworkScreen from '../components/network/NetworkScreen';
 import LedgerIndex from '@/components/LedgerIndex';
 import Boot from './boot';
 import { AccountList } from '@/components/account/AccountList';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { setupGlobalErrorHandler } from '@/util/errorLogging';
+import Debug from './debug';
+
+// Initialize global error handling
+setupGlobalErrorHandler();
 
 function AppContent() {
   return (
@@ -27,6 +33,9 @@ function AppContent() {
         <View style={styles.section}>
           <NetworkScreen />
         </View>
+        <View style={styles.section}>
+          <Debug />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -34,7 +43,9 @@ function AppContent() {
 
 export default function HomeScreen() {
   return (
-    <AppContent />
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
 

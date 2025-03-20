@@ -5,6 +5,7 @@ import { CustomText } from './CustomText';
 import { client } from '@/util/init';
 import { sharedStyles } from '@/styles/shared';
 import { networkStore$ } from '@/util/networkSettings';
+import { ErrorLogger } from '@/util/errorLogging';
 
 export const LedgerIndex = observer(() => {
   const [blockHeight, setBlockHeight] = useState<number | null>(null);
@@ -22,6 +23,7 @@ export const LedgerIndex = observer(() => {
       setError(null);
     } catch (err) {
       console.error(err);
+      ErrorLogger.logError(err);
       setError('Failed to fetch block height');
       setBlockHeight(null);
     }

@@ -53,6 +53,6 @@ export function generateConfig(type: Network): NetworkConfig {
 export function updateNetwork(type: Network): void {
   networkStore$.activeNetwork.set(generateConfig(type));
   networkStore$.lastUpdated.set(new Date().toISOString());
-  let cfg = generateConfig(type);
+  const cfg = generateConfig(type);
   initClient(type, cfg.rpcUrl);
 }

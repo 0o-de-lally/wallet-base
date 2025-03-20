@@ -1,9 +1,9 @@
 import { LibraClient, LibraWallet, Network } from "open-libra-sdk";
 import '@/util/polyfills';
+import { ErrorLogger } from './errorLogging';
 
 export let wallet: LibraWallet;
 export let client: LibraClient;
-
 
 export async function initWallet(mnem: string): Promise<LibraWallet> {
   try {
@@ -11,6 +11,7 @@ export async function initWallet(mnem: string): Promise<LibraWallet> {
     return wallet;
   } catch (error) {
     console.error('Failed to initialize wallet:', error);
+    ErrorLogger.logError(error);
     throw error;
   }
 }
@@ -21,6 +22,7 @@ export async function initClient(network: Network, fullnode: string): Promise<Li
     return client;
   } catch (error) {
     console.error('Failed to initialize wallet:', error);
+    ErrorLogger.logError(error);
     throw error;
   }
 }

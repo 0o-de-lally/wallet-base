@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { initWallet, wallet, initClient } from "../util/init";
 import { LibraClient, Network } from 'open-libra-sdk';
+import { ErrorLogger } from '../util/errorLogging';
 
 export default function Boot() {
   const [addr, setAddr] = useState<string>('loading...');
@@ -20,6 +21,7 @@ export default function Boot() {
         setClient(c);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        ErrorLogger.logError(err); // Add error logging
         setError(errorMessage);
         setAddr('Error loading address');
       }
