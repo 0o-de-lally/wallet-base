@@ -1,4 +1,5 @@
 import '@/util/polyfills';
+import '@/i18n';  // Import i18n configuration
 import { StyleSheet, ScrollView, SafeAreaView, View } from 'react-native';
 import NetworkScreen from '../components/network/NetworkScreen';
 import LedgerIndex from '@/components/LedgerIndex';
@@ -7,6 +8,7 @@ import { AccountList } from '@/components/account/AccountList';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { setupGlobalErrorHandler } from '@/util/errorLogging';
 import Debug from './debug';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // Initialize global error handling
 setupGlobalErrorHandler();
@@ -14,6 +16,9 @@ setupGlobalErrorHandler();
 function AppContent() {
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.section}>
+        <LanguageSwitcher />
+      </View>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

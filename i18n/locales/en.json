@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Welcome!",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "language": {
+      "title": "Language",
+      "en": "English",
+      "es": "Spanish"
+    }
+  },
+  "network": {
+    "title": "Network Details",
+    "select": "Select Network",
+    "current": "Current Network",
+    "rpcUrl": "RPC URL"
+  },
+  "account": {
+    "title": "User Accounts",
+    "addAccount": "Add Account",
+    "enterAddress": "Enter account address",
+    "enterNickname": "Enter nickname (optional)",
+    "enterBalance": "Enter initial balance",
+    "delete": "Delete"
+  }
+}

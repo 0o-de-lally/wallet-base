@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "¡Bienvenido!",
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "language": {
+      "title": "Idioma",
+      "en": "Inglés",
+      "es": "Español"
+    }
+  },
+  "network": {
+    "title": "Detalles de Red",
+    "select": "Seleccionar Red",
+    "current": "Red Actual",
+    "rpcUrl": "URL RPC"
+  },
+  "account": {
+    "title": "Cuentas de Usuario",
+    "addAccount": "Agregar Cuenta",
+    "enterAddress": "Ingrese dirección de cuenta",
+    "enterNickname": "Ingrese apodo (opcional)",
+    "enterBalance": "Ingrese saldo inicial",
+    "delete": "Eliminar"
+  }
+}
