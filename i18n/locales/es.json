@@ -23,5 +23,15 @@
     "enterNickname": "Ingrese apodo (opcional)",
     "enterBalance": "Ingrese saldo inicial",
     "delete": "Eliminar"
+  },
+  "wallet": {
+    "title": "Demo de Billetera Libra",
+    "address": "Dirección",
+    "network": "Red"
+  },
+  "debug": {
+    "title": "Panel de Depuración",
+    "exportLogs": "Exportar Registros",
+    "clearLogs": "Limpiar Registros"
   }
 }

@@ -23,5 +23,15 @@
     "enterNickname": "Enter nickname (optional)",
     "enterBalance": "Enter initial balance",
     "delete": "Delete"
+  },
+  "wallet": {
+    "title": "Libra Wallet Demo",
+    "address": "Address",
+    "network": "Network"
+  },
+  "debug": {
+    "title": "Debug Panel",
+    "exportLogs": "Export Logs",
+    "clearLogs": "Clear Logs"
   }
 }

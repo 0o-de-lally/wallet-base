@@ -5,8 +5,10 @@ import { initWallet, wallet, initClient } from "../util/init";
 import { LibraClient, Network } from 'open-libra-sdk';
 import { ErrorLogger } from '../util/errorLogging';
 import { sharedStyles } from '@/styles/shared';
+import { useTranslation } from 'react-i18next';
 
 export default function Boot() {
+  const { t } = useTranslation();
   const [addr, setAddr] = useState<string>('loading...');
   const [error, setError] = useState<string | null>(null);
   const [client, setClient] = useState<LibraClient | null>(null);
@@ -41,11 +43,11 @@ export default function Boot() {
 
   return (
     <View style={sharedStyles.container}>
-      <Text style={sharedStyles.heading}>Libra Wallet Demo</Text>
+      <Text style={sharedStyles.heading}>{t('wallet.title')}</Text>
       <View style={sharedStyles.card}>
-        <Text style={sharedStyles.label}>Address:</Text>
+        <Text style={sharedStyles.label}>{t('wallet.address')}:</Text>
         <Text style={sharedStyles.text}>{addr}</Text>
-        <Text style={sharedStyles.label}>Network:</Text>
+        <Text style={sharedStyles.label}>{t('wallet.network')}:</Text>
         <Text style={sharedStyles.text}>{client?.config.network}</Text>
       </View>
     </View>

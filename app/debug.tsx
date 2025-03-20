@@ -3,8 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { observer } from '@legendapp/state/react';
 import { ErrorLogger, errorStore$ } from '@/util/errorLogging';
 import { sharedStyles } from '@/styles/shared';
+import { useTranslation } from 'react-i18next';
 
 export default observer(function DebugScreen() {
+  const { t } = useTranslation();
   const logs = errorStore$.logs.get();
 
   const handleExport = async () => {
@@ -22,12 +24,13 @@ export default observer(function DebugScreen() {
 
   return (
     <View style={sharedStyles.container}>
+      <Text style={sharedStyles.heading}>{t('debug.title')}</Text>
       <View style={sharedStyles.row}>
         <TouchableOpacity style={sharedStyles.button} onPress={handleExport}>
-          <Text style={sharedStyles.buttonText}>Export Logs</Text>
+          <Text style={sharedStyles.buttonText}>{t('debug.exportLogs')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={sharedStyles.button} onPress={handleClear}>
-          <Text style={sharedStyles.buttonText}>Clear Logs</Text>
+          <Text style={sharedStyles.buttonText}>{t('debug.clearLogs')}</Text>
         </TouchableOpacity>
       </View>
 
