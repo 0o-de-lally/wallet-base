@@ -45,3 +45,39 @@ Your project may not work correctly until you install the expected versions of t
 ```
 npm install -g eas-cli
 ```
+
+# init project for eas
+```
+eas init --id ccd33245-8aca-43cc-89d5-d224e10b1298
+```
+
+# need to create eas.json for eas build triggers
+```
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  }
+}
+```
+
+# eas build failed, app.json was missing android.package field
+```    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "app.carpe.wallet_base
+},
+```
+
+# eas build failed. failed to find Andoid keystore
+```
+eas build --platform android
+```

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HomeScreen /> SnapShot: CustomText renders correctly 1`] = `
+<Text>
+  Some text
+</Text>
+`;
