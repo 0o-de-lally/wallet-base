@@ -34,6 +34,13 @@ export const AccountList = observer(() => {
 
       if (mnemonic.trim()) {
         try {
+          // Check if secure storage is available
+          if (!KeychainService.isAvailable()) {
+            setError('Secure storage is not available on this platform. Cannot store private keys.');
+            ErrorLogger.logError(new Error('Secure storage unavailable'), { context: 'AccountList' });
+            return;
+          }
+
           const wallet = await initWallet(mnemonic.trim());
           const address = wallet.getAddress().toString();
 
@@ -47,10 +54,15 @@ export const AccountList = observer(() => {
           const accountId = Date.now().toString();
           const privateKey = wallet.account.privateKey;
 
-          const success = await KeychainService.storePrivateKey(accountId, JSON.stringify(privateKey));
+          // Stringify the private key for storage
+          const privateKeyString = typeof privateKey === 'string'
+            ? privateKey
+            : JSON.stringify(privateKey);
+
+          const success = await KeychainService.storePrivateKey(accountId, privateKeyString);
           if (!success) {
             const keyError = new Error('Failed to store private key');
-            ErrorLogger.logError(keyError);
+            ErrorLogger.logError(keyError, { accountId });
             throw keyError;
           }
 
@@ -75,7 +87,7 @@ export const AccountList = observer(() => {
           setError('')
         } catch (keyError) {
           ErrorLogger.logError(keyError);
-          throw new Error('Failed to store account credentials: ' + keyError.message);
+          setError('Failed to store account credentials: ' + (keyError instanceof Error ? keyError.message : 'Unknown error'));
         }
       } else {
         // Just track path
@@ -115,8 +127,16 @@ export const AccountList = observer(() => {
     }
   }
 
-  const deleteAccount = (id: number) => {
+  const deleteAccount = async (id: number) => {
     try {
+      const accounts = store$.userAccounts.get();
+      const accountToDelete = accounts.find(acc => acc.id === id);
+
+      if (accountToDelete && accountToDelete.hasStoredKey) {
+        // Remove stored private key when deleting account
+        await KeychainService.removePrivateKey(id.toString());
+      }
+
       const index = store$.userAccounts.findIndex(account => account.get().id === id)
       if (index !== -1) {
         store$.userAccounts.splice(index, 1)

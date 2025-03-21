@@ -47,8 +47,6 @@ export default function Boot() {
       <View style={sharedStyles.card}>
         <Text style={sharedStyles.label}>{t('wallet.address')}:</Text>
         <Text style={sharedStyles.text}>{addr}</Text>
-        <Text style={sharedStyles.label}>{t('wallet.network')}:</Text>
-        <Text style={sharedStyles.text}>{client?.config.network}</Text>
       </View>
     </View>
   );

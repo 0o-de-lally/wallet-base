@@ -40,7 +40,19 @@ export default observer(function DebugScreen() {
             <Text style={sharedStyles.heading}>{log.message}</Text>
             <Text style={sharedStyles.label}>{log.timestamp}</Text>
             {log.stack && (
-              <Text style={[sharedStyles.text, { fontSize: 12 }]}>{log.stack}</Text>
+              <ScrollView
+                style={{
+                  maxHeight: 50,
+                  marginVertical: 8,
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  borderRadius: 4,
+                  padding: 8,
+                }}
+                nestedScrollEnabled={true}
+              >
+                <Text style={[sharedStyles.text, { fontSize: 12 }]}>{log.stack}</Text>
+              </ScrollView>
             )}
             {log.metadata && (
               <Text style={sharedStyles.text}>
