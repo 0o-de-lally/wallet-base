@@ -21,7 +21,7 @@ export function SecureStorageForm({
   onDelete,
   onClearAll,
   isLoading,
-  disabled = false
+  disabled = false,
 }: SecureStorageFormProps) {
   const handleClearAll = () => {
     if (!onClearAll) return;
@@ -34,9 +34,9 @@ export function SecureStorageForm({
         {
           text: "Clear All",
           onPress: onClearAll,
-          style: "destructive"
-        }
-      ]
+          style: "destructive",
+        },
+      ],
     );
   };
 
@@ -85,7 +85,11 @@ export function SecureStorageForm({
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <TouchableOpacity
-            style={[styles.button, styles.dangerButton, disabled && styles.disabledButton]}
+            style={[
+              styles.button,
+              styles.dangerButton,
+              disabled && styles.disabledButton,
+            ]}
             onPress={handleClearAll}
             disabled={isLoading || disabled}
           >

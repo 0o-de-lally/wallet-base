@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 
 /**
  * Saves a key-value pair to secure storage.
@@ -12,7 +12,7 @@ export async function saveValue(key: string, value: string): Promise<void> {
   try {
     await SecureStore.setItemAsync(key, value);
   } catch (error) {
-    console.error('Error saving to secure store:', error);
+    console.error("Error saving to secure store:", error);
     throw error;
   }
 }
@@ -28,7 +28,7 @@ export async function getValue(key: string): Promise<string | null> {
   try {
     return await SecureStore.getItemAsync(key);
   } catch (error) {
-    console.error('Error retrieving from secure store:', error);
+    console.error("Error retrieving from secure store:", error);
     throw error;
   }
 }
@@ -44,7 +44,7 @@ export async function deleteValue(key: string): Promise<void> {
   try {
     await SecureStore.deleteItemAsync(key);
   } catch (error) {
-    console.error('Error deleting from secure store:', error);
+    console.error("Error deleting from secure store:", error);
     throw error;
   }
 }
@@ -64,7 +64,7 @@ export async function clearAllSecureStorage(keys?: string[]): Promise<void> {
   try {
     // If specific keys are provided, delete those
     if (keys && keys.length > 0) {
-      await Promise.all(keys.map(key => deleteValue(key)));
+      await Promise.all(keys.map((key) => deleteValue(key)));
       console.log(`Cleared ${keys.length} specified secure storage keys`);
       return;
     }
@@ -72,20 +72,20 @@ export async function clearAllSecureStorage(keys?: string[]): Promise<void> {
     // Otherwise, delete all known application keys
     // Add all your application's secure storage keys here
     const appKeys = [
-      'user_pin',  // Added the actual PIN storage key
-      'user_pin_hash',
-      'user_pin_salt',
-      'user_token',
-      'private_key',
-      'walletData',
-      'settings',
+      "user_pin", // Added the actual PIN storage key
+      "user_pin_hash",
+      "user_pin_salt",
+      "user_token",
+      "private_key",
+      "walletData",
+      "settings",
       // Add other keys your app uses
     ];
 
-    await Promise.all(appKeys.map(key => deleteValue(key)));
+    await Promise.all(appKeys.map((key) => deleteValue(key)));
     console.log(`Cleared all ${appKeys.length} secure storage keys`);
   } catch (error) {
-    console.error('Error clearing secure storage:', error);
+    console.error("Error clearing secure storage:", error);
     throw error;
   }
 }

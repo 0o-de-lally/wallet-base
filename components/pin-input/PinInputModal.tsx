@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Modal,
   View,
@@ -6,31 +6,31 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-} from 'react-native';
-import { getValue } from '../../util/secure_store';
-import { comparePins, HashedPin } from '../../util/pin_security';
-import { styles } from '../../styles/styles';
+} from "react-native";
+import { getValue } from "../../util/secure_store";
+import { comparePins, HashedPin } from "../../util/pin_security";
+import { styles } from "../../styles/styles";
 
 interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
   onPinVerified: (pin: string) => void;
-  purpose: 'save' | 'retrieve' | 'delete';
+  purpose: "save" | "retrieve" | "delete";
 }
 
 export function PinInputModal({
   visible,
   onClose,
   onPinVerified,
-  purpose
+  purpose,
 }: PinInputModalProps) {
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
 
   const verifyPin = async () => {
     if (!pin.trim()) {
-      setError('PIN is required');
+      setError("PIN is required");
       return;
     }
 
@@ -39,10 +39,10 @@ export function PinInputModal({
       setError(null);
 
       // Get the stored hashed PIN
-      const savedPinJson = await getValue('user_pin');
+      const savedPinJson = await getValue("user_pin");
 
       if (!savedPinJson) {
-        setError('No PIN has been set up. Please set up a PIN first.');
+        setError("No PIN has been set up. Please set up a PIN first.");
         return;
       }
 
@@ -56,16 +56,16 @@ export function PinInputModal({
         if (isPinValid) {
           // PIN verified successfully
           onPinVerified(pin.toString());
-          setPin('');
+          setPin("");
         } else {
-          setError('Incorrect PIN. Please try again.');
+          setError("Incorrect PIN. Please try again.");
         }
       } catch (parseError) {
-        console.error('Error parsing stored PIN:', parseError);
-        setError('PIN verification failed. Please set up your PIN again.');
+        console.error("Error parsing stored PIN:", parseError);
+        setError("PIN verification failed. Please set up your PIN again.");
       }
     } catch (error) {
-      setError('Error verifying PIN. Please try again.');
+      setError("Error verifying PIN. Please try again.");
       console.error(error);
     } finally {
       setIsVerifying(false);
@@ -73,7 +73,7 @@ export function PinInputModal({
   };
 
   const handleCancel = () => {
-    setPin('');
+    setPin("");
     setError(null);
     onClose();
   };
@@ -81,10 +81,14 @@ export function PinInputModal({
   // Get action text based on purpose
   const getActionText = () => {
     switch (purpose) {
-      case 'save': return 'save';
-      case 'retrieve': return 'retrieve';
-      case 'delete': return 'delete';
-      default: return 'access';
+      case "save":
+        return "save";
+      case "retrieve":
+        return "retrieve";
+      case "delete":
+        return "delete";
+      default:
+        return "access";
     }
   };
 

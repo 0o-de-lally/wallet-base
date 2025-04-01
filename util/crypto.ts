@@ -15,7 +15,7 @@ const INTEGRITY_CHECK = "VALID_DECRYPTION_TOKEN_123";
  * @returns The encrypted string in base64 format
  */
 export function encryptWithPin(value: string, pin: string): string {
-  if (!value) return '';
+  if (!value) return "";
 
   // Add integrity check to the value before encryption
   const valueWithCheck = value + "|" + INTEGRITY_CHECK;
@@ -24,9 +24,10 @@ export function encryptWithPin(value: string, pin: string): string {
   const key = createRepeatingKey(pin, valueWithCheck.length);
 
   // XOR each character with the corresponding key character
-  let encrypted = '';
+  let encrypted = "";
   for (let i = 0; i < valueWithCheck.length; i++) {
-    const charCode = valueWithCheck.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+    const charCode =
+      valueWithCheck.charCodeAt(i) ^ key.charCodeAt(i % key.length);
     encrypted += String.fromCharCode(charCode);
   }
 
@@ -43,7 +44,10 @@ export function encryptWithPin(value: string, pin: string): string {
  * @returns An object with the decrypted string and verification status,
  *          or null if decryption fails or verification fails
  */
-export function decryptWithPin(encryptedValue: string, pin: string): { value: string, verified: boolean } | null {
+export function decryptWithPin(
+  encryptedValue: string,
+  pin: string,
+): { value: string; verified: boolean } | null {
   if (!encryptedValue) return null;
 
   try {
@@ -54,7 +58,7 @@ export function decryptWithPin(encryptedValue: string, pin: string): { value: st
     const key = createRepeatingKey(pin, encrypted.length);
 
     // XOR each character with the corresponding key character
-    let decrypted = '';
+    let decrypted = "";
     for (let i = 0; i < encrypted.length; i++) {
       const charCode = encrypted.charCodeAt(i) ^ key.charCodeAt(i % key.length);
       decrypted += String.fromCharCode(charCode);
@@ -73,7 +77,7 @@ export function decryptWithPin(encryptedValue: string, pin: string): { value: st
       return { value: "", verified: false };
     }
   } catch (error) {
-    console.error('Decryption error:', error);
+    console.error("Decryption error:", error);
     return null;
   }
 }
@@ -87,7 +91,7 @@ export function decryptWithPin(encryptedValue: string, pin: string): { value: st
  */
 function createRepeatingKey(pin: string, length: number): string {
   // Repeat the PIN until it's long enough
-  let key = '';
+  let key = "";
   while (key.length < length) {
     key += pin;
   }

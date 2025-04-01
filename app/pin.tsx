@@ -1,9 +1,9 @@
-import React from 'react';
-import { View } from 'react-native';
-import { styles } from '../styles/styles';
-import { appConfig } from '../util/settings';
-import { observer } from '@legendapp/state/react';
-import EnterPinScreen from '../components/pin-input/PinManagement';
+import React from "react";
+import { View } from "react-native";
+import { styles } from "../styles/styles";
+import { appConfig } from "../util/settings";
+import { observer } from "@legendapp/state/react";
+import EnterPinScreen from "../components/pin-input/PinManagement";
 
 export default observer(function PinScreen() {
   const backgroundColor = appConfig.theme.backgroundColor.get();

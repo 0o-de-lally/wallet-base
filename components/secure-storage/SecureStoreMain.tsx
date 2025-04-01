@@ -4,7 +4,7 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { useSecureStorage } from "../../hooks/useSecureStorage";
 import { SecureStorageForm } from "./SecureStorageForm";
@@ -26,11 +26,11 @@ export default function SecureStorageScreen() {
     handleSave,
     handleRetrieve,
     handleDelete,
-    handleClearAll,  // Get the handleClearAll method
+    handleClearAll, // Get the handleClearAll method
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
-    currentAction
+    currentAction,
   } = useSecureStorage();
 
   return (
@@ -43,8 +43,8 @@ export default function SecureStorageScreen() {
           <Text style={styles.title}>PIN-Protected Storage</Text>
 
           <Text style={styles.description}>
-            Enter private information to be encrypted and stored securely with PIN protection.
-            All data is stored under a single private key.
+            Enter private information to be encrypted and stored securely with
+            PIN protection. All data is stored under a single private key.
           </Text>
 
           <SecureStorageForm
@@ -53,7 +53,7 @@ export default function SecureStorageScreen() {
             onSave={handleSave}
             onRetrieve={handleRetrieve}
             onDelete={handleDelete}
-            onClearAll={handleClearAll}  // Pass the method here
+            onClearAll={handleClearAll} // Pass the method here
             isLoading={isLoading}
           />
 
@@ -64,7 +64,7 @@ export default function SecureStorageScreen() {
             visible={pinModalVisible}
             onClose={() => setPinModalVisible(false)}
             onPinVerified={handlePinVerified}
-            purpose={currentAction || 'retrieve'}
+            purpose={currentAction || "retrieve"}
           />
         </View>
       </ScrollView>

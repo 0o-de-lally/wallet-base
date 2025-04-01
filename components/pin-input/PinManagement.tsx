@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert
-} from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import { saveValue, getValue } from "../../util/secure_store";
-import { hashPin, validatePin, comparePins, HashedPin } from "../../util/pin_security";
+import {
+  hashPin,
+  validatePin,
+  comparePins,
+  HashedPin,
+} from "../../util/pin_security";
 import { styles } from "../../styles/styles";
 
 /**
@@ -135,7 +134,11 @@ export default function EnterPinScreen() {
           disabled={isLoading}
         >
           <Text style={styles.buttonText}>
-            {isLoading ? "Processing..." : (hasSavedPin ? "Update PIN" : "Save PIN")}
+            {isLoading
+              ? "Processing..."
+              : hasSavedPin
+                ? "Update PIN"
+                : "Save PIN"}
           </Text>
         </TouchableOpacity>
       </View>

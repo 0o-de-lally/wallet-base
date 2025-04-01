@@ -1,7 +1,7 @@
-import { observable } from '@legendapp/state';
-import { persistObservable } from '@legendapp/state/persist';
-import { configureObservablePersistence } from '@legendapp/state/persist';
-import { ObservablePersistAsyncStorage } from '@legendapp/state/persist-plugins/async-storage';
+import { observable } from "@legendapp/state";
+import { persistObservable } from "@legendapp/state/persist";
+import { configureObservablePersistence } from "@legendapp/state/persist";
+import { ObservablePersistAsyncStorage } from "@legendapp/state/persist-plugins/async-storage";
 
 /**
  * Defines the structure of the application configuration.
@@ -20,9 +20,9 @@ export type AppConfig = {
  */
 const defaultConfig: AppConfig = {
   theme: {
-    backgroundColor: '#86f7ff',
-    primaryColor: '#11aaee',
-    textColor: '#000000',
+    backgroundColor: "#86f7ff",
+    primaryColor: "#11aaee",
+    textColor: "#000000",
   },
 };
 
@@ -33,7 +33,7 @@ const defaultConfig: AppConfig = {
 export function initializeSettings(): void {
   configureObservablePersistence({
     // Use AsyncStorage for React Native
-    pluginLocal: ObservablePersistAsyncStorage
+    pluginLocal: ObservablePersistAsyncStorage,
   });
 }
 
@@ -48,5 +48,5 @@ export const appConfig = observable<AppConfig>(defaultConfig);
  * This enables config to survive app restarts.
  */
 persistObservable(appConfig, {
-  local: 'app-config', // Storage key
+  local: "app-config", // Storage key
 });

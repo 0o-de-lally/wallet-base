@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react';
-import { View, StatusBar, TouchableOpacity, Text } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import SecureStorageScreen from '../components/secure-storage/SecureStoreMain';
-import { appConfig, initializeSettings } from '../util/settings';
-import { observer } from '@legendapp/state/react';
-import { Link } from 'expo-router';
-import { styles } from '../styles/styles';
+import React, { useEffect } from "react";
+import { View, StatusBar, TouchableOpacity, Text } from "react-native";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
+import { appConfig, initializeSettings } from "../util/settings";
+import { observer } from "@legendapp/state/react";
+import { Link } from "expo-router";
+import { styles } from "../styles/styles";
 
 // Main App component that combines the functionality
 export default function App() {
@@ -45,7 +48,7 @@ const AppContent = observer(() => {
               paddingLeft: insets.left,
               paddingRight: insets.right,
               backgroundColor: primaryColor,
-            }
+            },
           ]}
         >
           <SecureStorageScreen />

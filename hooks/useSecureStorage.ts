@@ -1,7 +1,12 @@
-import { useState } from 'react';
-import { Alert } from 'react-native';
-import { saveValue, getValue, deleteValue, clearAllSecureStorage } from '../util/secure_store';
-import { encryptWithPin, decryptWithPin } from '../util/crypto';
+import { useState } from "react";
+import { Alert } from "react-native";
+import {
+  saveValue,
+  getValue,
+  deleteValue,
+  clearAllSecureStorage,
+} from "../util/secure_store";
+import { encryptWithPin, decryptWithPin } from "../util/crypto";
 
 // Fixed key for all secure storage operations
 const FIXED_KEY = "private_key";
@@ -11,9 +16,11 @@ export function useSecureStorage() {
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
-  const [currentAction, setCurrentAction] = useState<'save' | 'retrieve' | 'delete' | null>(null);
+  const [currentAction, setCurrentAction] = useState<
+    "save" | "retrieve" | "delete" | null
+  >(null);
 
-  const requestPinForAction = (action: 'save' | 'retrieve' | 'delete') => {
+  const requestPinForAction = (action: "save" | "retrieve" | "delete") => {
     setCurrentAction(action);
     setPinModalVisible(true);
   };
@@ -22,13 +29,13 @@ export function useSecureStorage() {
     setPinModalVisible(false);
 
     switch (currentAction) {
-      case 'save':
+      case "save":
         await saveWithPin(pin);
         break;
-      case 'retrieve':
+      case "retrieve":
         await retrieveWithPin(pin);
         break;
-      case 'delete':
+      case "delete":
         await deleteSecurely();
         break;
     }
@@ -46,9 +53,12 @@ export function useSecureStorage() {
       setIsLoading(true);
 
       // First verify this is really the user's PIN by checking if it's stored
-      const savedPinJson = await getValue('user_pin');
+      const savedPinJson = await getValue("user_pin");
       if (!savedPinJson) {
-        Alert.alert("Error", "Please set up a PIN in the PIN Management screen first");
+        Alert.alert(
+          "Error",
+          "Please set up a PIN in the PIN Management screen first",
+        );
         return;
       }
 
@@ -94,7 +104,6 @@ export function useSecureStorage() {
 
       // Only set the stored value if verification passed
       setStoredValue(decryptResult.value);
-
     } catch (error) {
       Alert.alert("Error", "Failed to retrieve or decrypt value");
       console.error(error);
@@ -138,15 +147,15 @@ export function useSecureStorage() {
       Alert.alert("Error", "Please enter a value to store");
       return;
     }
-    requestPinForAction('save');
+    requestPinForAction("save");
   };
 
   const handleRetrieve = () => {
-    requestPinForAction('retrieve');
+    requestPinForAction("retrieve");
   };
 
   const handleDelete = () => {
-    requestPinForAction('delete');
+    requestPinForAction("delete");
   };
 
   return {
@@ -161,6 +170,6 @@ export function useSecureStorage() {
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
-    currentAction
+    currentAction,
   };
 }
