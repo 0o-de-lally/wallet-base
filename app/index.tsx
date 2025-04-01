@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StatusBar, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { View, StatusBar, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import SecureStorageScreen from '../components/secure-storage/SecureStoreMain';
 import { appConfig, initializeSettings } from '../util/settings';
@@ -27,13 +27,8 @@ const SafeAreaWrapper = observer(() => {
       ]}
     >
       <SecureStorageScreen />
-      <View style={styles.buttonContainer}>
-        <Link href="/secure_store" asChild>
-          <TouchableOpacity style={styles.navButton}>
-            <Text style={styles.navButtonText}>Secure Storage Demo</Text>
-          </TouchableOpacity>
-        </Link>
 
+      <View style={styles.buttonContainer}>
         <Link href="/pin" asChild>
           <TouchableOpacity style={styles.navButton}>
             <Text style={styles.navButtonText}>PIN Management</Text>
