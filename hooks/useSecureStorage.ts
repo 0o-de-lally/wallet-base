@@ -3,8 +3,10 @@ import { Alert } from 'react-native';
 import { saveValue, getValue, deleteValue } from '../util/secure_store';
 import { encryptWithPin, decryptWithPin } from '../util/crypto';
 
+// Fixed key for all secure storage operations
+const FIXED_KEY = "private_key";
+
 export function useSecureStorage() {
-  const [key, setKey] = useState("");
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,8 +37,8 @@ export function useSecureStorage() {
   };
 
   const saveWithPin = async (pin: string) => {
-    if (!key.trim() || !value.trim()) {
-      Alert.alert("Error", "Both key and value are required");
+    if (!value.trim()) {
+      Alert.alert("Error", "Please enter a value to store");
       return;
     }
 
@@ -44,7 +46,7 @@ export function useSecureStorage() {
       setIsLoading(true);
       // Encrypt the value with the PIN before saving
       const encryptedValue = encryptWithPin(value, pin);
-      await saveValue(key, encryptedValue);
+      await saveValue(FIXED_KEY, encryptedValue);
       Alert.alert("Success", "Value saved securely and encrypted");
       setValue("");
     } catch (error) {
@@ -56,18 +58,13 @@ export function useSecureStorage() {
   };
 
   const retrieveWithPin = async (pin: string) => {
-    if (!key.trim()) {
-      Alert.alert("Error", "Key is required");
-      return;
-    }
-
     try {
       setIsLoading(true);
-      const encryptedResult = await getValue(key);
+      const encryptedResult = await getValue(FIXED_KEY);
 
       if (encryptedResult === null) {
         setStoredValue(null);
-        Alert.alert("Info", "No value found for this key");
+        Alert.alert("Info", "No value found");
         return;
       }
 
@@ -87,14 +84,9 @@ export function useSecureStorage() {
   };
 
   const deleteSecurely = async () => {
-    if (!key.trim()) {
-      Alert.alert("Error", "Key is required");
-      return;
-    }
-
     try {
       setIsLoading(true);
-      await deleteValue(key);
+      await deleteValue(FIXED_KEY);
       setStoredValue(null);
       Alert.alert("Success", "Value deleted");
     } catch (error) {
@@ -106,32 +98,22 @@ export function useSecureStorage() {
   };
 
   const handleSave = () => {
-    if (!key.trim() || !value.trim()) {
-      Alert.alert("Error", "Both key and value are required");
+    if (!value.trim()) {
+      Alert.alert("Error", "Please enter a value to store");
       return;
     }
     requestPinForAction('save');
   };
 
   const handleRetrieve = () => {
-    if (!key.trim()) {
-      Alert.alert("Error", "Key is required");
-      return;
-    }
     requestPinForAction('retrieve');
   };
 
   const handleDelete = () => {
-    if (!key.trim()) {
-      Alert.alert("Error", "Key is required");
-      return;
-    }
     requestPinForAction('delete');
   };
 
   return {
-    key,
-    setKey,
     value,
     setValue,
     storedValue,
