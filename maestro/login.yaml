@@ -1,0 +1,10 @@
+appId: app.carpe.wallet_base
+---
+- launchApp
+- assertVisible: "PIN Management"
+- assertVisible: "Create PIN"
+- tapOn: "Enter 6-digit PIN:"
+- inputText: "123456"
+- tapOn: "Save PIN"
+- assertVisible: "Success"
+- assertVisible: "PIN saved successfully"
