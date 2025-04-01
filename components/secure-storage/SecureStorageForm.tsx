@@ -10,6 +10,7 @@ interface SecureStorageFormProps {
   onDelete: () => void;
   onClearAll?: () => void;
   isLoading: boolean;
+  disabled?: boolean;
 }
 
 export function SecureStorageForm({
@@ -19,7 +20,8 @@ export function SecureStorageForm({
   onRetrieve,
   onDelete,
   onClearAll,
-  isLoading
+  isLoading,
+  disabled = false
 }: SecureStorageFormProps) {
   const handleClearAll = () => {
     if (!onClearAll) return;
@@ -43,36 +45,37 @@ export function SecureStorageForm({
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Private Value:</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, disabled && styles.disabledInput]}
           value={value}
           onChangeText={onValueChange}
           placeholder="Enter sensitive value to store"
           multiline={true}
           numberOfLines={3}
+          editable={!disabled}
         />
       </View>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, disabled && styles.disabledButton]}
           onPress={onSave}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Save</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, disabled && styles.disabledButton]}
           onPress={onRetrieve}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Retrieve</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, disabled && styles.disabledButton]}
           onPress={onDelete}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
@@ -82,9 +85,9 @@ export function SecureStorageForm({
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <TouchableOpacity
-            style={[styles.button, styles.dangerButton]}
+            style={[styles.button, styles.dangerButton, disabled && styles.disabledButton]}
             onPress={handleClearAll}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           >
             <Text style={styles.buttonText}>Clear All Secure Storage</Text>
           </TouchableOpacity>

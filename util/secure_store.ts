@@ -72,6 +72,7 @@ export async function clearAllSecureStorage(keys?: string[]): Promise<void> {
     // Otherwise, delete all known application keys
     // Add all your application's secure storage keys here
     const appKeys = [
+      'user_pin',  // Added the actual PIN storage key
       'user_pin_hash',
       'user_pin_salt',
       'user_token',
