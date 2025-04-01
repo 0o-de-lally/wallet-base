@@ -26,6 +26,7 @@ export default function SecureStorageScreen() {
     handleSave,
     handleRetrieve,
     handleDelete,
+    handleClearAll,  // Get the handleClearAll method
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
@@ -52,6 +53,7 @@ export default function SecureStorageScreen() {
             onSave={handleSave}
             onRetrieve={handleRetrieve}
             onDelete={handleDelete}
+            onClearAll={handleClearAll}  // Pass the method here
             isLoading={isLoading}
           />
 

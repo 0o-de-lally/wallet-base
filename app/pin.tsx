@@ -56,7 +56,8 @@ export default function EnterPinScreen() {
       setIsLoading(true);
       // Hash the PIN with salt before saving
       const hashedPin = hashPin(newPin);
-      await saveValue("user_pin", hashedPin);
+      // Convert HashedPin to string before saving
+      await saveValue("user_pin", String(hashedPin));
 
       Alert.alert("Success", "PIN saved successfully");
       setNewPin("");
@@ -91,7 +92,8 @@ export default function EnterPinScreen() {
       // Hash the test PIN and compare with saved PIN
       const hashedTestPin = hashPin(testPin);
 
-      if (hashedTestPin === savedPin) {
+      // Convert both to string for comparison
+      if (String(hashedTestPin) === savedPin) {
         Alert.alert("Success", "PIN verified successfully");
       } else {
         Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");

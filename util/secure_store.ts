@@ -48,3 +48,43 @@ export async function deleteValue(key: string): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Clears all application secure storage by deleting the specified keys.
+ *
+ * @param keys - Array of keys to delete from secure storage
+ * @returns A Promise that resolves when all delete operations complete
+ * @throws Will throw an error if any delete operation fails
+ *
+ * @remarks
+ * This is a destructive operation and cannot be undone.
+ * Use with caution, typically for logout, reset, or troubleshooting.
+ */
+export async function clearAllSecureStorage(keys?: string[]): Promise<void> {
+  try {
+    // If specific keys are provided, delete those
+    if (keys && keys.length > 0) {
+      await Promise.all(keys.map(key => deleteValue(key)));
+      console.log(`Cleared ${keys.length} specified secure storage keys`);
+      return;
+    }
+
+    // Otherwise, delete all known application keys
+    // Add all your application's secure storage keys here
+    const appKeys = [
+      'user_pin_hash',
+      'user_pin_salt',
+      'user_token',
+      'private_key',
+      'walletData',
+      'settings',
+      // Add other keys your app uses
+    ];
+
+    await Promise.all(appKeys.map(key => deleteValue(key)));
+    console.log(`Cleared all ${appKeys.length} secure storage keys`);
+  } catch (error) {
+    console.error('Error clearing secure storage:', error);
+    throw error;
+  }
+}

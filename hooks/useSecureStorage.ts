@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { saveValue, getValue, deleteValue } from '../util/secure_store';
+import { saveValue, getValue, deleteValue, clearAllSecureStorage } from '../util/secure_store';
 import { encryptWithPin, decryptWithPin } from '../util/crypto';
 
 // Fixed key for all secure storage operations
@@ -191,6 +191,21 @@ export function useSecureStorage() {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      setIsLoading(true);
+      await clearAllSecureStorage();
+      setStoredValue(null);
+      setValue("");
+      Alert.alert("Success", "All secure storage data has been cleared");
+    } catch (error) {
+      Alert.alert("Error", "Failed to clear secure storage");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSave = () => {
     if (!value.trim()) {
       Alert.alert("Error", "Please enter a value to store");
@@ -215,6 +230,7 @@ export function useSecureStorage() {
     handleSave,
     handleRetrieve,
     handleDelete,
+    handleClearAll,
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,

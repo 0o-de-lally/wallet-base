@@ -74,4 +74,22 @@ export const styles = StyleSheet.create({
     color: "#666",
     lineHeight: 20,
   },
+  // Danger zone section
+  dangerZone: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    alignItems: "center",
+  },
+  dangerTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#d32f2f",
+    marginBottom: 10,
+  },
+  dangerButton: {
+    backgroundColor: "#d32f2f",
+    borderColor: "#b71c1c",
+  },
 });

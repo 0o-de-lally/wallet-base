@@ -38,6 +38,14 @@ export function PinInputModal({
       setIsVerifying(true);
       setError(null);
 
+      // If purpose is 'save', we don't need to verify against existing PIN
+      if (purpose === 'save') {
+        // For saving, we just pass the PIN as a string
+        onPinVerified(pin.toString());
+        setPin('');
+        return;
+      }
+
       // Get the stored hashed PIN
       const savedPin = await getValue('user_pin');
 
@@ -49,9 +57,10 @@ export function PinInputModal({
       // Hash the entered PIN to compare with stored PIN
       const hashedInputPin = hashPin(pin);
 
-      if (hashedInputPin === savedPin) {
+      // Convert both values to string for comparison
+      if (String(hashedInputPin) === String(savedPin)) {
         // PIN verified successfully
-        onPinVerified(pin);
+        onPinVerified(pin.toString());
         setPin('');
       } else {
         setError('Incorrect PIN. Please try again.');

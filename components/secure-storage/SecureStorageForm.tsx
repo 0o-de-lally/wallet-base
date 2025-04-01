@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import { styles } from "./styles";
 
 interface SecureStorageFormProps {
@@ -8,6 +8,7 @@ interface SecureStorageFormProps {
   onSave: () => void;
   onRetrieve: () => void;
   onDelete: () => void;
+  onClearAll?: () => void;
   isLoading: boolean;
 }
 
@@ -17,8 +18,26 @@ export function SecureStorageForm({
   onSave,
   onRetrieve,
   onDelete,
+  onClearAll,
   isLoading
 }: SecureStorageFormProps) {
+  const handleClearAll = () => {
+    if (!onClearAll) return;
+
+    Alert.alert(
+      "Clear All Secure Storage",
+      "This will delete ALL secure data and cannot be undone. Continue?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear All",
+          onPress: onClearAll,
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   return (
     <>
       <View style={styles.inputContainer}>
@@ -58,6 +77,19 @@ export function SecureStorageForm({
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
       </View>
+
+      {onClearAll && (
+        <View style={styles.dangerZone}>
+          <Text style={styles.dangerTitle}>Danger Zone</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.dangerButton]}
+            onPress={handleClearAll}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>Clear All Secure Storage</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </>
   );
 }
