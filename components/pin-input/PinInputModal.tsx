@@ -121,7 +121,7 @@ export function PinInputModal({
               onPress={handleCancel}
               disabled={isVerifying}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

@@ -7,65 +7,58 @@ import { observer } from '@legendapp/state/react';
 import { Link } from 'expo-router';
 import { styles } from '../styles/styles';
 
-// Create a wrapper component that uses hook instead of Consumer
-const SafeAreaWrapper = observer(() => {
-  const insets = useSafeAreaInsets();
-  const primaryColor = appConfig.theme.primaryColor.get();
-
-  return (
-    <View
-      style={[
-        styles.container,
-        {
-          // Apply padding based on insets
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-          backgroundColor: primaryColor,
-        }
-      ]}
-    >
-      <SecureStorageScreen />
-
-      <View style={styles.buttonContainer}>
-        <Link href="/pin" asChild>
-          <TouchableOpacity style={styles.navButton}>
-            <Text style={styles.navButtonText}>PIN Management</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-    </View>
-  );
-});
-
+// Main App component that combines the functionality
 export default function App() {
   // Initialize settings on app startup
   useEffect(() => {
-    // Initialize legend-state configuration
     initializeSettings();
-    console.log('App settings initialized');
   }, []);
 
-  // Get colors from the app config
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
+  );
+}
+
+// Content component with observer for reactive updates
+const AppContent = observer(() => {
+  const insets = useSafeAreaInsets();
   const backgroundColor = appConfig.theme.backgroundColor.get();
+  const primaryColor = appConfig.theme.primaryColor.get();
 
   return (
     <>
-      {/* Set status bar color and style */}
       <StatusBar
-        backgroundColor={appConfig.theme.primaryColor.get()}
+        backgroundColor={primaryColor}
         barStyle="dark-content"
         translucent={true}
       />
 
-      {/* Root view with background color */}
       <View style={[styles.root, { backgroundColor }]}>
-        {/* Provide SafeArea context */}
-        <SafeAreaProvider>
-          <SafeAreaWrapper />
-        </SafeAreaProvider>
+        <View
+          style={[
+            styles.container,
+            {
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+              paddingLeft: insets.left,
+              paddingRight: insets.right,
+              backgroundColor: primaryColor,
+            }
+          ]}
+        >
+          <SecureStorageScreen />
+
+          <View style={styles.buttonContainer}>
+            <Link href="/pin" asChild>
+              <TouchableOpacity style={styles.navButton}>
+                <Text style={styles.navButtonText}>PIN Management</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </View>
       </View>
     </>
   );
-}
+});

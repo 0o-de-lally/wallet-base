@@ -49,7 +49,15 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: "white",
+    color: "#FFFFFF", // Ensuring white text for better contrast
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  cancelButton: {
+    backgroundColor: "#f2f2f2",
+  },
+  cancelButtonText: {
+    color: "#000000",
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -93,57 +101,57 @@ export const styles = StyleSheet.create({
     borderColor: "#b71c1c",
   },
   disabledInput: {
-    backgroundColor: '#f5f5f5',
-    color: '#999',
+    backgroundColor: "#f5f5f5",
+    color: "#999",
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
+    backgroundColor: "#cccccc",
     opacity: 0.7,
   },
 
   // Modal styles (from PinInputModal)
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    width: '80%',
+    width: "80%",
     maxWidth: 400,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
   pinInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 8,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginTop: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   modalButton: {
@@ -152,13 +160,13 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     flex: 1,
     marginHorizontal: 4,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
   },
   confirmButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
 
   // PIN Screen styles (from pin.tsx)

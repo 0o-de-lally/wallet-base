@@ -4,10 +4,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+  Alert
 } from "react-native";
 import { saveValue, getValue } from "../../util/secure_store";
 import { hashPin, validatePin, comparePins, HashedPin } from "../../util/pin_security";
@@ -111,71 +108,66 @@ export default function EnterPinScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Text style={styles.title}>PIN Management</Text>
+    <View style={styles.content}>
+      <Text style={styles.title}>PIN Management</Text>
 
-          {/* PIN Creation Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {hasSavedPin ? "Change PIN" : "Create PIN"}
-            </Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Enter 6-digit PIN:</Text>
-              <TextInput
-                style={styles.input}
-                value={newPin}
-                onChangeText={setNewPin}
-                placeholder="Enter 6-digit PIN"
-                keyboardType="number-pad"
-                secureTextEntry={true}
-                maxLength={6}
-              />
-            </View>
+      {/* PIN Creation Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
+          {hasSavedPin ? "Change PIN" : "Create PIN"}
+        </Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Enter 6-digit PIN:</Text>
+          <TextInput
+            style={styles.input}
+            value={newPin}
+            onChangeText={setNewPin}
+            placeholder="Enter 6-digit PIN"
+            keyboardType="number-pad"
+            secureTextEntry={true}
+            maxLength={6}
+          />
+        </View>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSavePin}
-              disabled={isLoading}
-            >
-              <Text style={styles.buttonText}>
-                {hasSavedPin ? "Update PIN" : "Save PIN"}
-              </Text>
-            </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.disabledButton]}
+          onPress={handleSavePin}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Processing..." : (hasSavedPin ? "Update PIN" : "Save PIN")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* PIN Verification Section */}
+      {hasSavedPin && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Verify PIN</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Enter your PIN:</Text>
+            <TextInput
+              style={styles.input}
+              value={testPin}
+              onChangeText={setTestPin}
+              placeholder="Enter your PIN"
+              keyboardType="number-pad"
+              secureTextEntry={true}
+              maxLength={6}
+            />
           </View>
 
-          {/* PIN Verification Section */}
-          {hasSavedPin && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Verify PIN</Text>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Enter your PIN:</Text>
-                <TextInput
-                  style={styles.input}
-                  value={testPin}
-                  onChangeText={setTestPin}
-                  placeholder="Enter your PIN"
-                  keyboardType="number-pad"
-                  secureTextEntry={true}
-                  maxLength={6}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleVerifyPin}
-                disabled={isLoading}
-              >
-                <Text style={styles.buttonText}>Verify PIN</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.disabledButton]}
+            onPress={handleVerifyPin}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? "Verifying..." : "Verify PIN"}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      )}
+    </View>
   );
 }
