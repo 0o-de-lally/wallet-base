@@ -17,20 +17,20 @@ jobs:
 
       - name: Install packages
         if: always()
-        run: npm install
+        run: bun install
 
       - name: Install expo
         if: always()
-        run: npx expo install --check
+        run: bunx expo install --check
 
       - name: Build packages
         if: always()
-        run: npx expo-doctor
+        run: bunx expo-doctor
 
       - name: do deps need updates
         if: always()
-        run: npm update
+        run: bun update
 
       - name: what updates are available
         if: always()
-        run: npx npm-check-updates
+        run: bun outdated

@@ -10,8 +10,10 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx}\""
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --check \"**/*.{ts,tsx}\"",
+    "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
+    "fix": "bun format:fix && bun lint:fix"
   },
   "jest": {
     "preset": "jest-expo"
