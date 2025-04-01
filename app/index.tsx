@@ -5,17 +5,13 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
-import { appConfig, initializeSettings } from "../util/settingsStore";
+import { appConfig } from "../util/settingsStore";
 import { observer } from "@legendapp/state/react";
 import { Link } from "expo-router";
 import { styles } from "../styles/styles";
 
 // Main App component that combines the functionality
 export default function App() {
-  // Initialize settings on app startup
-  useEffect(() => {
-    initializeSettings();
-  }, []);
 
   return (
     <SafeAreaProvider>

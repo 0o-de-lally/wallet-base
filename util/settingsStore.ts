@@ -1,8 +1,27 @@
 import { observable } from "@legendapp/state";
 import { persistObservable } from "@legendapp/state/persist";
-import { configureObservablePersistence } from "@legendapp/state/persist";
-import { ObservablePersistAsyncStorage } from "@legendapp/state/persist-plugins/async-storage";
+import { configureObservablePersistence } from '@legendapp/state/persist'
+import { ObservablePersistLocalStorage } from '@legendapp/state/persist-plugins/local-storage'
+import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 
+const isMobile = (): boolean => {
+  return typeof window !== 'undefined' && typeof process === 'object';
+};
+// Global configuration
+if (isMobile()) {
+  // Disable persistence for mobile devices
+  configureObservablePersistence({
+    pluginLocal: ObservablePersistMMKV
+  })
+} else {
+  // Enable persistence for web
+  configureObservablePersistence({
+    pluginLocal: ObservablePersistLocalStorage
+  })
+}
+configureObservablePersistence({
+  pluginLocal: ObservablePersistLocalStorage
+})
 /**
  * Defines the structure of the application configuration.
  */
@@ -26,16 +45,8 @@ const defaultConfig: AppConfig = {
   },
 };
 
-/**
- * Initializes the persistent settings framework.
- * Should be called once at application startup.
- */
-export function initializeSettings(): void {
-  configureObservablePersistence({
-    // Use AsyncStorage for React Native
-    pluginLocal: ObservablePersistAsyncStorage,
-  });
-}
+
+
 
 /**
  * Observable application configuration state.

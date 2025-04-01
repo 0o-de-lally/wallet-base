@@ -1,10 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import App from '../../app/index';
+import App from '../app/index';
 
 describe('App', () => {
-  it('renders PIN Management button', () => {
+  it('renders home', () => {
     const { getByText } = render(<App />);
-    expect(getByText('PIN Management')).toBeTruthy();
+    expect(getByText('PIN-Protected Storage')).toBeTruthy();
   });
 });
