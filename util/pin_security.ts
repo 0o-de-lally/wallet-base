@@ -34,10 +34,10 @@ export function validatePin(pin: string): boolean {
 /**
  * Hashes a PIN with SHA-256 using salt and multiple iterations for security.
  * @param pin The PIN to hash
- * @param iterations Number of hash iterations for key stretching (default: 10000)
+ * @param iterations Number of hash iterations for key stretching (default: 1000)
  * @returns The hashed PIN with salt and iteration info
  */
-export async function hashPin(pin: string, iterations = 10000): Promise<HashedPin> {
+export async function hashPin(pin: string, iterations = 1000): Promise<HashedPin> {
   try {
     // Generate a random salt (16 bytes converted to hex = 32 characters)
     const saltBytes = crypto.getRandomBytes(16);

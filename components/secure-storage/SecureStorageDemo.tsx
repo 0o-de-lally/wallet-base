@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { SecureStorageForm } from "./SecureStorageForm";
 import { saveValue, getValue, deleteValue, clearAllSecureStorage } from "../../util/secure_store";
+import { Link } from "expo-router";
 
 // The key used for demo storage
 const STORAGE_KEY = "secure_demo_value";
@@ -10,6 +11,25 @@ export function SecureStorageDemo() {
   const [value, setValue] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [hasPinSetup, setHasPinSetup] = useState<boolean>(false);
+
+  // Check if PIN is set up
+  useEffect(() => {
+    const checkPinSetup = async () => {
+      try {
+        const savedPin = await getValue("user_pin");
+        setHasPinSetup(savedPin !== null);
+
+        if (!savedPin) {
+          setStatusMessage("Please set up a PIN in the PIN Management screen first");
+        }
+      } catch (error) {
+        console.error("Error checking PIN setup:", error);
+      }
+    };
+
+    checkPinSetup();
+  }, []);
 
   const handleSave = async () => {
     if (!value.trim()) {
@@ -87,6 +107,17 @@ export function SecureStorageDemo() {
     <View style={demoStyles.container}>
       <Text style={demoStyles.title}>Secure Storage Demo</Text>
 
+      {!hasPinSetup && (
+        <View style={demoStyles.warningBox}>
+          <Text style={demoStyles.warningText}>
+            PIN is not set up. Please set up a PIN first.
+          </Text>
+          <Link href="/pin" style={demoStyles.linkText}>
+            Go to PIN Management
+          </Link>
+        </View>
+      )}
+
       <SecureStorageForm
         value={value}
         onValueChange={setValue}
@@ -95,6 +126,7 @@ export function SecureStorageDemo() {
         onDelete={handleDelete}
         onClearAll={handleClearAll}
         isLoading={isLoading}
+        disabled={!hasPinSetup}
       />
 
       {isLoading && <ActivityIndicator style={demoStyles.loader} />}
@@ -125,5 +157,21 @@ const demoStyles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     borderRadius: 5,
     textAlign: "center",
+  },
+  warningBox: {
+    backgroundColor: '#fff3cd',
+    borderColor: '#ffeeba',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 16,
+  },
+  warningText: {
+    color: '#856404',
+    marginBottom: 8,
+  },
+  linkText: {
+    color: '#007bff',
+    fontWeight: 'bold',
   },
 });
