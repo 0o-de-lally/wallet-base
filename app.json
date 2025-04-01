@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "wallet-test",
-    "slug": "wallet-base",
+    "slug": "wallet-test",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -32,7 +32,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
