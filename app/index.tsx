@@ -33,7 +33,7 @@ const SafeAreaWrapper = observer(() => {
           </TouchableOpacity>
         </Link>
 
-        <Link href="/enter_pin" asChild>
+        <Link href="/pin" asChild>
           <TouchableOpacity style={styles.navButton}>
             <Text style={styles.navButtonText}>PIN Management</Text>
           </TouchableOpacity>

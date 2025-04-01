@@ -11,7 +11,7 @@ import {
   ScrollView
 } from "react-native";
 import { saveValue, getValue } from "../util/secure_store";
-import { hashPin, validatePin } from "../util/security";
+import { hashPin, validatePin } from "../util/pin_security";
 
 export default function EnterPinScreen() {
   // State variables
