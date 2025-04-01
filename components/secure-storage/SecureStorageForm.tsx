@@ -3,9 +3,7 @@ import { Text, View, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "./styles";
 
 interface SecureStorageFormProps {
-  key: string;
   value: string;
-  onKeyChange: (text: string) => void;
   onValueChange: (text: string) => void;
   onSave: () => void;
   onRetrieve: () => void;
@@ -14,9 +12,7 @@ interface SecureStorageFormProps {
 }
 
 export function SecureStorageForm({
-  key,
   value,
-  onKeyChange,
   onValueChange,
   onSave,
   onRetrieve,
@@ -26,22 +22,14 @@ export function SecureStorageForm({
   return (
     <>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Key:</Text>
-        <TextInput
-          style={styles.input}
-          value={key}
-          onChangeText={onKeyChange}
-          placeholder="Enter storage key"
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Value:</Text>
+        <Text style={styles.label}>Private Value:</Text>
         <TextInput
           style={styles.input}
           value={value}
           onChangeText={onValueChange}
-          placeholder="Enter value to store"
+          placeholder="Enter sensitive value to store"
+          multiline={true}
+          numberOfLines={3}
         />
       </View>
 

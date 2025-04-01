@@ -9,23 +9,27 @@ import {
 import { useSecureStorage } from "../hooks/useSecureStorage";
 import { SecureStorageForm } from "../components/secure-storage/SecureStorageForm";
 import { SecureStorageResult } from "../components/secure-storage/SecureStorageResult";
+import { PinInputModal } from "../components/pin-input/PinInputModal";
 import { styles } from "../components/secure-storage/styles";
 
 /**
  * Demo screen component for secure storage operations.
- * Allows saving, retrieving, and deleting values from secure storage.
+ * Allows saving, retrieving, and deleting encrypted values from secure storage.
+ * Values are encrypted using the user's PIN and stored under a fixed key.
  */
 export default function SecureStorageScreen() {
   const {
-    key,
-    setKey,
     value,
     setValue,
     storedValue,
     isLoading,
     handleSave,
     handleRetrieve,
-    handleDelete
+    handleDelete,
+    pinModalVisible,
+    setPinModalVisible,
+    handlePinVerified,
+    currentAction
   } = useSecureStorage();
 
   return (
@@ -35,12 +39,15 @@ export default function SecureStorageScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Secure Storage Demo</Text>
+          <Text style={styles.title}>PIN-Protected Storage</Text>
+
+          <Text style={styles.description}>
+            Enter private information to be encrypted and stored securely with PIN protection.
+            All data is stored under a single private key.
+          </Text>
 
           <SecureStorageForm
-            key={key}
             value={value}
-            onKeyChange={setKey}
             onValueChange={setValue}
             onSave={handleSave}
             onRetrieve={handleRetrieve}
@@ -49,6 +56,14 @@ export default function SecureStorageScreen() {
           />
 
           <SecureStorageResult storedValue={storedValue} />
+
+          {/* PIN Input Modal */}
+          <PinInputModal
+            visible={pinModalVisible}
+            onClose={() => setPinModalVisible(false)}
+            onPinVerified={handlePinVerified}
+            purpose={currentAction || 'retrieve'}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -67,4 +67,11 @@ export const styles = StyleSheet.create({
   resultValue: {
     fontSize: 16,
   },
+  description: {
+    fontSize: 14,
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#666",
+    lineHeight: 20,
+  },
 });
