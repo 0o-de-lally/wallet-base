@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { SecureStorageForm } from "./SecureStorageForm";
 import { saveValue, getValue, deleteValue, clearAllSecureStorage } from "../../util/secure_store";
 import { Link } from "expo-router";

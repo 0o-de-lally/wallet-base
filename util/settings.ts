@@ -50,15 +50,3 @@ export const appConfig = observable<AppConfig>(defaultConfig);
 persistObservable(appConfig, {
   local: 'app-config', // Storage key
 });
-
-/**
- * Updates the application configuration with new values.
- *
- * @param newConfig - Partial configuration object with updated values
- */
-export function updateAppConfig(newConfig: Partial<AppConfig>): void {
-  appConfig.set(prev => ({
-    ...prev,
-    ...newConfig,
-  }));
-}

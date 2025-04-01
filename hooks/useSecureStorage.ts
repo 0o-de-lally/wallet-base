@@ -12,88 +12,14 @@ export function useSecureStorage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<'save' | 'retrieve' | 'delete' | null>(null);
-  const [pinError, setPinError] = useState<string | null>(null);
-  const [modalStyle, setModalStyle] = useState({
-    width: '80%',
-    maxWidth: 300,
-    padding: 20,
-    borderRadius: 10,
-  });
-
-  // Update UI configuration for the PIN modal with more explicit settings
-  const [pinInputConfig, setPinInputConfig] = useState({
-    // Explicitly remove placeholder text
-    placeholder: '',
-    placeholderTextColor: 'transparent',
-
-    // More visible label
-    label: 'Enter PIN',
-    labelStyle: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#000000',
-      marginBottom: 10,
-    },
-
-    // Input field styling
-    inputStyle: {
-      height: 50,
-      borderWidth: 1,
-      borderColor: '#CCCCCC',
-      borderRadius: 5,
-      paddingHorizontal: 10,
-      fontSize: 16,
-      backgroundColor: '#FFFFFF',
-    },
-
-    // Enhanced button configuration
-    submitButtonText: 'Submit',
-    cancelButtonText: 'Cancel',
-
-    // More prominent button styles
-    submitButtonStyle: {
-      backgroundColor: '#007AFF',
-      padding: 12,
-      borderRadius: 5,
-      marginTop: 20,
-      alignItems: 'center',
-    },
-    submitButtonTextStyle: {
-      color: '#FFFFFF',
-      fontWeight: 'bold',
-      fontSize: 16,
-      textAlign: 'center',
-    },
-
-    // Cancel button styling
-    cancelButtonStyle: {
-      marginTop: 10,
-      padding: 12,
-      alignItems: 'center',
-    },
-    cancelButtonTextStyle: {
-      color: '#007AFF',
-      fontSize: 16,
-    },
-  });
-
-  // Function to update PIN input configuration
-  const updatePinInputConfig = (config: Partial<typeof pinInputConfig>) => {
-    setPinInputConfig(prev => ({
-      ...prev,
-      ...config
-    }));
-  };
 
   const requestPinForAction = (action: 'save' | 'retrieve' | 'delete') => {
     setCurrentAction(action);
-    setPinError(null); // Reset any previous errors
     setPinModalVisible(true);
   };
 
   const handlePinVerified = async (pin: string) => {
     setPinModalVisible(false);
-    setPinError(null);
 
     switch (currentAction) {
       case 'save':
@@ -108,26 +34,6 @@ export function useSecureStorage() {
     }
 
     setCurrentAction(null);
-  };
-
-  // Function to handle pin input validation errors
-  const handlePinError = (errorMessage: string) => {
-    setPinError(errorMessage);
-  };
-
-  // Function to adjust modal styling if needed
-  const adjustModalStyle = (styleUpdates: Record<string, any>) => {
-    setModalStyle(prevStyle => ({
-      ...prevStyle,
-      ...styleUpdates
-    }));
-  };
-
-  // Function to cancel pin input
-  const cancelPinInput = () => {
-    setPinModalVisible(false);
-    setCurrentAction(null);
-    setPinError(null);
   };
 
   const saveWithPin = async (pin: string) => {
@@ -255,13 +161,6 @@ export function useSecureStorage() {
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
-    currentAction,
-    pinError,
-    handlePinError,
-    modalStyle,
-    adjustModalStyle,
-    cancelPinInput,
-    pinInputConfig,
-    updatePinInputConfig
+    currentAction
   };
 }
