@@ -15,7 +15,11 @@
 import * as crypto from 'expo-crypto';
 
 // Define a custom type for the hashed PIN
-export type HashedPin = string;
+export type HashedPin = {
+  salt: string;
+  hash: string;
+  iterations: number;
+};
 
 /**
  * Validates a PIN format.
@@ -28,19 +32,38 @@ export function validatePin(pin: string): boolean {
 }
 
 /**
- * Hashes a PIN with SHA-256.
+ * Hashes a PIN with SHA-256 using salt and multiple iterations for security.
  * @param pin The PIN to hash
- * @returns The hashed PIN
+ * @param iterations Number of hash iterations for key stretching (default: 10000)
+ * @returns The hashed PIN with salt and iteration info
  */
-export function hashPin(pin: string): HashedPin {
+export async function hashPin(pin: string, iterations = 10000): Promise<HashedPin> {
   try {
-    // Use a consistent hashing method for the PIN
-    const hashedPin = crypto.digestStringAsync(
+    // Generate a random salt (16 bytes converted to hex = 32 characters)
+    const saltBytes = crypto.getRandomBytes(16);
+    const salt = Array.from(saltBytes)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Initial hash with salt
+    let hash = await crypto.digestStringAsync(
       crypto.CryptoDigestAlgorithm.SHA256,
-      pin
+      salt + pin
     );
 
-    return hashedPin as unknown as HashedPin;
+    // Key stretching - multiple iterations of hashing
+    for (let i = 1; i < iterations; i++) {
+      hash = await crypto.digestStringAsync(
+        crypto.CryptoDigestAlgorithm.SHA256,
+        hash
+      );
+    }
+
+    return {
+      salt,
+      hash,
+      iterations
+    };
   } catch (error) {
     console.error('Error hashing PIN:', error);
     throw new Error('Failed to hash PIN');
@@ -49,10 +72,30 @@ export function hashPin(pin: string): HashedPin {
 
 /**
  * Securely compares two hashed PINs.
- * @param hashedPin1 First hashed PIN
- * @param hashedPin2 Second hashed PIN
- * @returns true if the PINs match, false otherwise
+ * @param storedHashedPin Stored hashed PIN
+ * @param inputPin Raw PIN input to verify
+ * @returns Promise resolving to true if the PINs match, false otherwise
  */
-export function comparePins(hashedPin1: HashedPin, hashedPin2: HashedPin): boolean {
-  return String(hashedPin1) === String(hashedPin2);
+export async function comparePins(storedHashedPin: HashedPin, inputPin: string): Promise<boolean> {
+  try {
+    // Hash the input PIN with the same salt and iterations
+    let hash = await crypto.digestStringAsync(
+      crypto.CryptoDigestAlgorithm.SHA256,
+      storedHashedPin.salt + inputPin
+    );
+
+    // Apply the same number of iterations
+    for (let i = 1; i < storedHashedPin.iterations; i++) {
+      hash = await crypto.digestStringAsync(
+        crypto.CryptoDigestAlgorithm.SHA256,
+        hash
+      );
+    }
+
+    // Compare the resulting hash with the stored hash
+    return hash === storedHashedPin.hash;
+  } catch (error) {
+    console.error('Error comparing PINs:', error);
+    return false;
+  }
 }
