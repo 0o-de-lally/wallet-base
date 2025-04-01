@@ -9,9 +9,9 @@ import {
   Platform,
   ScrollView
 } from "react-native";
-import { saveValue, getValue } from "../util/secure_store";
-import { hashPin, validatePin, comparePins, HashedPin } from "../util/pin_security";
-import { styles } from "../styles/styles";
+import { saveValue, getValue } from "../../util/secure_store";
+import { hashPin, validatePin, comparePins, HashedPin } from "../../util/pin_security";
+import { styles } from "../../styles/styles";
 
 /**
  * Screen component for PIN creation and verification.
