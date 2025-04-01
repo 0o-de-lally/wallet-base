@@ -1,6 +1,9 @@
 /**
  * Hashes a PIN with a predefined salt using a simple algorithm.
- * In a production app, you might want to use a more robust crypto library.
+ *
+ * @param pin - The PIN string to hash (expected to be 6 digits)
+ * @returns A hexadecimal string representation of the hashed PIN
+ * @remarks In a production app, use a more robust crypto library
  */
 export function hashPin(pin: string): string {
   // Salt is hardcoded as per requirements
@@ -22,7 +25,10 @@ export function hashPin(pin: string): string {
 }
 
 /**
- * Validates if a PIN meets the requirements (6 digits)
+ * Validates if a PIN meets the requirements.
+ *
+ * @param pin - The PIN string to validate
+ * @returns True if the PIN is exactly 6 digits, false otherwise
  */
 export function validatePin(pin: string): boolean {
   // Check if PIN is exactly 6 digits

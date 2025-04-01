@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Text,
@@ -13,12 +12,20 @@ import {
 } from "react-native";
 import { saveValue, getValue, deleteValue } from "../util/secure_store";
 
+/**
+ * Demo screen component for secure storage operations.
+ * Allows saving, retrieving, and deleting values from secure storage.
+ */
 export default function SecureStorageScreen() {
   const [key, setKey] = useState("");
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  /**
+   * Handles saving a key-value pair to secure storage.
+   * Validates that both key and value are provided before saving.
+   */
   const handleSave = async () => {
     if (!key.trim() || !value.trim()) {
       Alert.alert("Error", "Both key and value are required");
@@ -37,6 +44,10 @@ export default function SecureStorageScreen() {
     }
   };
 
+  /**
+   * Retrieves a value from secure storage using the provided key.
+   * Updates the storedValue state with the result.
+   */
   const handleRetrieve = async () => {
     if (!key.trim()) {
       Alert.alert("Error", "Key is required");
@@ -58,6 +69,10 @@ export default function SecureStorageScreen() {
     }
   };
 
+  /**
+   * Deletes a value from secure storage using the provided key.
+   * Resets the storedValue state on successful deletion.
+   */
   const handleDelete = async () => {
     if (!key.trim()) {
       Alert.alert("Error", "Key is required");

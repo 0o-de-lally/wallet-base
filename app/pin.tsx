@@ -13,6 +13,10 @@ import {
 import { saveValue, getValue } from "../util/secure_store";
 import { hashPin, validatePin } from "../util/pin_security";
 
+/**
+ * Screen component for PIN creation and verification.
+ * Allows users to create a new PIN, update an existing PIN, and verify their PIN.
+ */
 export default function EnterPinScreen() {
   // State variables
   const [newPin, setNewPin] = useState("");
@@ -25,7 +29,10 @@ export default function EnterPinScreen() {
     checkExistingPin();
   }, []);
 
-  // Function to check if PIN exists
+  /**
+   * Checks if a PIN already exists in secure storage.
+   * Updates the hasSavedPin state based on the result.
+   */
   const checkExistingPin = async () => {
     try {
       const savedPin = await getValue("user_pin");
@@ -35,7 +42,10 @@ export default function EnterPinScreen() {
     }
   };
 
-  // Function to save a new PIN
+  /**
+   * Handles the saving of a new PIN or updating an existing one.
+   * Validates the PIN format, hashes it, and stores it in secure storage.
+   */
   const handleSavePin = async () => {
     if (!validatePin(newPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
@@ -59,7 +69,10 @@ export default function EnterPinScreen() {
     }
   };
 
-  // Function to verify PIN
+  /**
+   * Verifies if the entered PIN matches the stored PIN.
+   * Retrieves the stored PIN, hashes the test PIN, and compares them.
+   */
   const handleVerifyPin = async () => {
     if (!validatePin(testPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");

@@ -3,7 +3,9 @@ import { persistObservable } from '@legendapp/state/persist';
 import { configureObservablePersistence } from '@legendapp/state/persist';
 import { ObservablePersistAsyncStorage } from '@legendapp/state/persist-plugins/async-storage';
 
-// Define your app configuration type
+/**
+ * Defines the structure of the application configuration.
+ */
 export type AppConfig = {
   theme: {
     backgroundColor: string;
@@ -13,7 +15,9 @@ export type AppConfig = {
   // Add other config sections as needed
 };
 
-// Default configuration
+/**
+ * Default configuration values for the application.
+ */
 const defaultConfig: AppConfig = {
   theme: {
     backgroundColor: '#86f7ff',
@@ -22,24 +26,37 @@ const defaultConfig: AppConfig = {
   },
 };
 
-// Configure persistence globally (call this once at app startup)
-export function initializeSettings() {
+/**
+ * Initializes the persistent settings framework.
+ * Should be called once at application startup.
+ */
+export function initializeSettings(): void {
   configureObservablePersistence({
     // Use AsyncStorage for React Native
     pluginLocal: ObservablePersistAsyncStorage
   });
 }
 
-// Create the observable state
+/**
+ * Observable application configuration state.
+ * Can be subscribed to for reactive UI updates.
+ */
 export const appConfig = observable<AppConfig>(defaultConfig);
 
-// Set up persistence
+/**
+ * Sets up persistence for the application configuration.
+ * This enables config to survive app restarts.
+ */
 persistObservable(appConfig, {
   local: 'app-config', // Storage key
 });
 
-// Utility to update the config
-export function updateAppConfig(newConfig: Partial<AppConfig>) {
+/**
+ * Updates the application configuration with new values.
+ *
+ * @param newConfig - Partial configuration object with updated values
+ */
+export function updateAppConfig(newConfig: Partial<AppConfig>): void {
   appConfig.set(prev => ({
     ...prev,
     ...newConfig,
