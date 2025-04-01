@@ -92,4 +92,12 @@ export const styles = StyleSheet.create({
     backgroundColor: "#d32f2f",
     borderColor: "#b71c1c",
   },
+  disabledInput: {
+    backgroundColor: '#f5f5f5',
+    color: '#999',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+    opacity: 0.7,
+  },
 });

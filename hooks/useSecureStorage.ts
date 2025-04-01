@@ -138,6 +138,14 @@ export function useSecureStorage() {
 
     try {
       setIsLoading(true);
+
+      // First verify this is really the user's PIN by checking if it's stored
+      const savedPinJson = await getValue('user_pin');
+      if (!savedPinJson) {
+        Alert.alert("Error", "Please set up a PIN in the PIN Management screen first");
+        return;
+      }
+
       // Encrypt the value with the PIN before saving
       const encryptedValue = encryptWithPin(value, pin);
       await saveValue(FIXED_KEY, encryptedValue);
@@ -162,16 +170,29 @@ export function useSecureStorage() {
         return;
       }
 
-      // Decrypt the value with the PIN
-      const decryptedValue = decryptWithPin(encryptedResult, pin);
-      setStoredValue(decryptedValue);
+      // Decrypt the value with the PIN and verify integrity
+      const decryptResult = decryptWithPin(encryptedResult, pin);
 
-      if (!decryptedValue) {
-        Alert.alert("Error", "Failed to decrypt value. Incorrect PIN or corrupted data.");
+      if (!decryptResult) {
+        setStoredValue(null);
+        Alert.alert("Error", "Failed to decrypt value. Data may be corrupted.");
+        return;
       }
+
+      if (!decryptResult.verified) {
+        // Wrong PIN was used - do not display any data
+        setStoredValue(null);
+        Alert.alert("Error", "Incorrect PIN. Unable to decrypt data.");
+        return;
+      }
+
+      // Only set the stored value if verification passed
+      setStoredValue(decryptResult.value);
+
     } catch (error) {
       Alert.alert("Error", "Failed to retrieve or decrypt value");
       console.error(error);
+      setStoredValue(null);
     } finally {
       setIsLoading(false);
     }

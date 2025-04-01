@@ -11,7 +11,7 @@ import {
   ScrollView
 } from "react-native";
 import { saveValue, getValue } from "../util/secure_store";
-import { hashPin, validatePin } from "../util/pin_security";
+import { hashPin, validatePin, comparePins, HashedPin } from "../util/pin_security";
 
 /**
  * Screen component for PIN creation and verification.
@@ -55,9 +55,9 @@ export default function EnterPinScreen() {
     try {
       setIsLoading(true);
       // Hash the PIN with salt before saving
-      const hashedPin = hashPin(newPin);
-      // Convert HashedPin to string before saving
-      await saveValue("user_pin", String(hashedPin));
+      const hashedPin = await hashPin(newPin);
+      // Properly serialize the HashedPin object to JSON
+      await saveValue("user_pin", JSON.stringify(hashedPin));
 
       Alert.alert("Success", "PIN saved successfully");
       setNewPin("");
@@ -82,18 +82,20 @@ export default function EnterPinScreen() {
 
     try {
       setIsLoading(true);
-      const savedPin = await getValue("user_pin");
+      const savedPinJson = await getValue("user_pin");
 
-      if (!savedPin) {
+      if (!savedPinJson) {
         Alert.alert("Error", "No PIN is saved yet");
         return;
       }
 
-      // Hash the test PIN and compare with saved PIN
-      const hashedTestPin = hashPin(testPin);
+      // Parse the stored PIN from JSON
+      const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
-      // Convert both to string for comparison
-      if (String(hashedTestPin) === savedPin) {
+      // Use the comparePins function to properly compare PINs
+      const isPinValid = await comparePins(storedHashedPin, testPin);
+
+      if (isPinValid) {
         Alert.alert("Success", "PIN verified successfully");
       } else {
         Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");

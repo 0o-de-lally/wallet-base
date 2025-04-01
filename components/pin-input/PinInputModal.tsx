@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { getValue } from '../../util/secure_store';
-import { hashPin } from '../../util/pin_security';
+import { hashPin, comparePins, HashedPin } from '../../util/pin_security';
 
 interface PinInputModalProps {
   visible: boolean;
@@ -38,32 +38,31 @@ export function PinInputModal({
       setIsVerifying(true);
       setError(null);
 
-      // If purpose is 'save', we don't need to verify against existing PIN
-      if (purpose === 'save') {
-        // For saving, we just pass the PIN as a string
-        onPinVerified(pin.toString());
-        setPin('');
-        return;
-      }
-
       // Get the stored hashed PIN
-      const savedPin = await getValue('user_pin');
+      const savedPinJson = await getValue('user_pin');
 
-      if (!savedPin) {
+      if (!savedPinJson) {
         setError('No PIN has been set up. Please set up a PIN first.');
         return;
       }
 
-      // Hash the entered PIN to compare with stored PIN
-      const hashedInputPin = hashPin(pin);
+      try {
+        // Parse the stored PIN from JSON
+        const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
-      // Convert both values to string for comparison
-      if (String(hashedInputPin) === String(savedPin)) {
-        // PIN verified successfully
-        onPinVerified(pin.toString());
-        setPin('');
-      } else {
-        setError('Incorrect PIN. Please try again.');
+        // Use the comparePins function to properly compare PINs
+        const isPinValid = await comparePins(storedHashedPin, pin);
+
+        if (isPinValid) {
+          // PIN verified successfully
+          onPinVerified(pin.toString());
+          setPin('');
+        } else {
+          setError('Incorrect PIN. Please try again.');
+        }
+      } catch (parseError) {
+        console.error('Error parsing stored PIN:', parseError);
+        setError('PIN verification failed. Please set up your PIN again.');
       }
     } catch (error) {
       setError('Error verifying PIN. Please try again.');

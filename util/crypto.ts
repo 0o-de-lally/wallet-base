@@ -3,6 +3,9 @@
  * Note: In a production app, you would use a more robust crypto library.
  */
 
+// Add a verification token to check if decryption was successful
+const INTEGRITY_CHECK = "VALID_DECRYPTION_TOKEN_123";
+
 /**
  * Encrypts a string value using a PIN as the encryption key.
  * Uses a simple XOR-based encryption for demonstration purposes.
@@ -14,13 +17,16 @@
 export function encryptWithPin(value: string, pin: string): string {
   if (!value) return '';
 
+  // Add integrity check to the value before encryption
+  const valueWithCheck = value + "|" + INTEGRITY_CHECK;
+
   // Create a repeating key from the PIN
-  const key = createRepeatingKey(pin, value.length);
+  const key = createRepeatingKey(pin, valueWithCheck.length);
 
   // XOR each character with the corresponding key character
   let encrypted = '';
-  for (let i = 0; i < value.length; i++) {
-    const charCode = value.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+  for (let i = 0; i < valueWithCheck.length; i++) {
+    const charCode = valueWithCheck.charCodeAt(i) ^ key.charCodeAt(i % key.length);
     encrypted += String.fromCharCode(charCode);
   }
 
@@ -30,13 +36,15 @@ export function encryptWithPin(value: string, pin: string): string {
 
 /**
  * Decrypts a string value that was encrypted with a PIN.
+ * Includes integrity verification to confirm correct PIN was used.
  *
  * @param encryptedValue - The encrypted string in base64 format
  * @param pin - The PIN used for encryption
- * @returns The decrypted string
+ * @returns An object with the decrypted string and verification status,
+ *          or null if decryption fails or verification fails
  */
-export function decryptWithPin(encryptedValue: string, pin: string): string {
-  if (!encryptedValue) return '';
+export function decryptWithPin(encryptedValue: string, pin: string): { value: string, verified: boolean } | null {
+  if (!encryptedValue) return null;
 
   try {
     // Convert from base64
@@ -52,10 +60,21 @@ export function decryptWithPin(encryptedValue: string, pin: string): string {
       decrypted += String.fromCharCode(charCode);
     }
 
-    return decrypted;
+    // Check integrity by looking for the verification token
+    const parts = decrypted.split("|");
+    const lastPart = parts[parts.length - 1];
+
+    if (lastPart === INTEGRITY_CHECK) {
+      // Remove the integrity check from the decrypted value
+      const verifiedValue = parts.slice(0, -1).join("|");
+      return { value: verifiedValue, verified: true };
+    } else {
+      // Integrity check failed - wrong PIN used
+      return { value: "", verified: false };
+    }
   } catch (error) {
     console.error('Decryption error:', error);
-    return '';
+    return null;
   }
 }
 
