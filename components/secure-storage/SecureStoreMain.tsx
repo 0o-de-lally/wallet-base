@@ -6,11 +6,11 @@ import {
   Platform,
   ScrollView
 } from "react-native";
-import { useSecureStorage } from "../hooks/useSecureStorage";
-import { SecureStorageForm } from "../components/secure-storage/SecureStorageForm";
-import { SecureStorageResult } from "../components/secure-storage/SecureStorageResult";
-import { PinInputModal } from "../components/pin-input/PinInputModal";
-import { styles } from "../components/secure-storage/styles";
+import { useSecureStorage } from "../../hooks/useSecureStorage";
+import { SecureStorageForm } from "./SecureStorageForm";
+import { SecureStorageResult } from "./SecureStorageResult";
+import { PinInputModal } from "../pin-input/PinInputModal";
+import { styles } from "./styles";
 
 /**
  * Demo screen component for secure storage operations.

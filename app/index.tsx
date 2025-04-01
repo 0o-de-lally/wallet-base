@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import SecureStorageScreen from './secure_store';
+import SecureStorageScreen from '../components/secure-storage/SecureStoreMain';
 import { appConfig, initializeSettings } from '../util/settings';
 import { observer } from '@legendapp/state/react';
 import { Link } from 'expo-router';
