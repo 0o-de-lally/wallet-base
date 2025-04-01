@@ -110,7 +110,7 @@ export function PinInputModal({
             style={styles.pinInput}
             value={pin}
             onChangeText={setPin}
-            placeholder="Enter 6-digit PIN"
+            placeholder="******"
             keyboardType="number-pad"
             secureTextEntry={true}
             maxLength={6}
