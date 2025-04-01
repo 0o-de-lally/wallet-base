@@ -162,9 +162,6 @@ export const styles = StyleSheet.create({
     marginHorizontal: 4,
     alignItems: "center",
   },
-  cancelButton: {
-    backgroundColor: "#f2f2f2",
-  },
   confirmButton: {
     backgroundColor: "#007AFF",
   },
