@@ -10,7 +10,7 @@ import { useSecureStorage } from "../../hooks/useSecureStorage";
 import { SecureStorageForm } from "./SecureStorageForm";
 import { SecureStorageResult } from "./SecureStorageResult";
 import { PinInputModal } from "../pin-input/PinInputModal";
-import { styles } from "./styles";
+import { styles } from "../../styles/styles";
 
 /**
  * Demo screen component for secure storage operations.

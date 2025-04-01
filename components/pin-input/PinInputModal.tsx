@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
-  StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 import { getValue } from '../../util/secure_store';
-import { hashPin, comparePins, HashedPin } from '../../util/pin_security';
+import { comparePins, HashedPin } from '../../util/pin_security';
+import { styles } from '../../styles/styles';
 
 interface PinInputModalProps {
   visible: boolean;
@@ -141,69 +141,3 @@ export function PinInputModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#666',
-  },
-  pinInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    textAlign: 'center',
-    letterSpacing: 8,
-  },
-  errorText: {
-    color: 'red',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  modalButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 4,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#f2f2f2',
-  },
-  confirmButton: {
-    backgroundColor: '#007AFF',
-  },
-  buttonText: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#007AFF',
-  },
-});

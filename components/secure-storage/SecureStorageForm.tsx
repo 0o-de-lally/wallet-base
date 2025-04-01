@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
-import { styles } from "./styles";
+import { styles } from "../../styles/styles";
 
 interface SecureStorageFormProps {
   value: string;

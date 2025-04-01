@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { View, StatusBar, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import SecureStorageScreen from '../components/secure-storage/SecureStoreMain';
 import { appConfig, initializeSettings } from '../util/settings';
 import { observer } from '@legendapp/state/react';
 import { Link } from 'expo-router';
+import { styles } from '../styles/styles';
 
 // Create a wrapper component that uses hook instead of Consumer
 const SafeAreaWrapper = observer(() => {
@@ -73,28 +74,3 @@ export default function App() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-  },
-  navButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginVertical: 8,
-    alignItems: "center",
-  },
-  navButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  buttonContainer: {
-    marginBottom: 20,
-  },
-});
