@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { styles } from "../styles/styles";
-import { appConfig } from "../util/settings";
+import { appConfig } from "../util/settingsStore";
 import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
 

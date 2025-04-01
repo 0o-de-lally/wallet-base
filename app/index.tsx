@@ -5,7 +5,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
-import { appConfig, initializeSettings } from "../util/settings";
+import { appConfig, initializeSettings } from "../util/settingsStore";
 import { observer } from "@legendapp/state/react";
 import { Link } from "expo-router";
 import { styles } from "../styles/styles";
