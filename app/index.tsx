@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import SecureStorageScreen from './secure_store';
 import { appConfig, initializeSettings } from '../util/settings';
 import { observer } from '@legendapp/state/react';
+import { Link } from 'expo-router';
 
 // Create a wrapper component that uses hook instead of Consumer
 const SafeAreaWrapper = observer(() => {
@@ -25,6 +26,19 @@ const SafeAreaWrapper = observer(() => {
       ]}
     >
       <SecureStorageScreen />
+      <View style={styles.buttonContainer}>
+        <Link href="/secure_store" asChild>
+          <TouchableOpacity style={styles.navButton}>
+            <Text style={styles.navButtonText}>Secure Storage Demo</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href="/enter_pin" asChild>
+          <TouchableOpacity style={styles.navButton}>
+            <Text style={styles.navButtonText}>PIN Management</Text>
+          </TouchableOpacity>
+        </Link>
+      </View>
     </View>
   );
 });
@@ -66,5 +80,21 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  navButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginVertical: 8,
+    alignItems: "center",
+  },
+  navButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  buttonContainer: {
+    marginBottom: 20,
   },
 });
