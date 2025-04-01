@@ -44,7 +44,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    flex: 1,
     marginHorizontal: 4,
     alignItems: "center",
   },
