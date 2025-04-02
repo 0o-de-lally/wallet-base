@@ -52,7 +52,7 @@ const AppContent = observer(() => {
           <View style={styles.buttonContainer}>
             <Link href="/pin" asChild>
               <TouchableOpacity style={styles.navButton}>
-                <Text style={styles.navButtonText}>PIN Management</Text>
+                <Text style={styles.navButtonText} testID="your-element-id">PIN Management</Text>
               </TouchableOpacity>
             </Link>
           </View>

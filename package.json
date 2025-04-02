@@ -8,15 +8,18 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:debug": "bun test --inspect",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
-    "fix": "bun format:fix && bun lint:fix"
-  },
-  "jest": {
-    "preset": "jest-expo"
+    "fix": "bun format:fix && bun lint:fix",
+    "test:device:build:ios": "detox build --configuration ios.sim.debug",
+    "test:device:build:android": "detox build --configuration android.emu.debug",
+    "test:device:ios": "detox test --configuration ios.sim.debug --runner-config e2e/jest.config.js",
+    "test:device:android": "detox test --configuration android.emu.debug --runner-config e2e/jest.config.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
@@ -32,6 +35,8 @@
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "~4.0.9",
+    "jest-localstorage-mock": "^2.4.26",
+    "node-localstorage": "^3.0.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.8",
@@ -54,7 +59,10 @@
     "jest-expo": "~52.0.6",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.29.0"
+    "typescript-eslint": "^8.29.0",
+    "react-test-renderer": "18.3.1",
+    "@testing-library/react-native": "^11.0.0",
+    "detox": "^19.0.0"
   },
   "private": true,
   "expo": {
@@ -62,6 +70,14 @@
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false
       }
+    }
+  },
+  "bun": {
+    "test": {
+      "preset": "jest-expo",
+      "transformIgnorePatterns": [
+        "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
+      ]
     }
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
