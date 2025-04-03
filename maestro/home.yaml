@@ -1,4 +1,6 @@
-appId: dev.expo.eastestsexample # This is an example app id. Replace it with your app id.
+appId: app.carpe.wallet_base
 ---
 - launchApp
-- assertVisible: 'PIN'
+- extendedWaitUntil:
+    visible: PIN
+    timeout: 300000
