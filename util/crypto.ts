@@ -30,7 +30,6 @@ async function generateKeyFromPin(pinData: Uint8Array): Promise<Uint8Array> {
   });
 }
 
-
 /**
  * Encrypts a string value using a PIN.
  * Uses AES-GCM from @noble/ciphers for secure encryption.
