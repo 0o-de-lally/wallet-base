@@ -1,21 +1,39 @@
 /**
  * PIN Security Module
  *
- * This module implements secure PIN handling using industry best practices,
- * with cross-platform support via crypto libraries that leverage native
- * implementations where available rather than less secure JS implementations.
+ * This module implements PIN handling with current Expo/React Native constraints in mind.
+ * It balances security and cross-platform compatibility within the existing toolchain.
+ *
+ * Current approach:
+ * - Uses JavaScript cryptographic libraries (@noble/hashes) for PBKDF2 implementation
+ *   as Expo doesn't provide direct OS-level keychain access for cryptographic operations
+ * - Implements best practices within JS constraints (constant-time comparisons,
+ *   proper key derivation with salt and iterations)
  *
  * Security considerations:
- * - The original PIN is never stored anywhere.
- * - We minimize time spent keeping sensitive data in memory and avoid string
- *   interning by working with byte arrays where possible.
- * - Constant-time comparison functions are used to prevent timing attacks when
- *   verifying PINs.
- * - For highest security, PIN verification should happen server-side in a secure environment.
- * - If implemented client-side, be aware that determined attackers could extract the PIN
- *   by modifying the application code.
- * - PBKDF2 is used for PIN hashing, providing better protection against brute force attacks
- *   than simple hashing algorithms.
+ * - No sensitive data is ever stored in plaintext - all secrets are encrypted
+ * - All operations involving secrets require explicit PIN entry, separate from the OS
+ *   authentication. This is intentionally burdensome but necessary for a crypto wallet
+ *   where security cannot be compromised for convenience
+ * - The original PIN is never stored anywhere
+ * - We minimize PIN retention in memory and attempt to clear sensitive data when possible,
+ *   though JavaScript's garbage collection makes this imperfect
+ * - We use secure random salt generation via expo-crypto (which uses OS-level randomness)
+ * - Constant-time comparison prevents timing attacks, though we recognize this is a
+ *   secondary defense as most attacks would target the application layer directly
+ * - We acknowledge that an attacker with debug access to the device/application can
+ *   bypass most client-side protections regardless of implementation details
+ *
+ * Known limitations:
+ * - Cryptographic operations (PBKDF2, hash comparisons) happen in JavaScript
+ *   rather than at the OS level or in native code
+ * - Memory management in JavaScript is not as controllable as in lower-level languages
+ * - JavaScript strings are immutable and may leave copies in memory until garbage collection
+ *
+ * Future improvements:
+ * - Move cryptographic operations to OS-level APIs when Expo support improves
+ * - Consider native modules (Rust/C++ via JSI) for sensitive cryptographic operations
+ * - Evaluate WebAssembly for improved performance and security isolation
  *
  * @module pin_security
  */
