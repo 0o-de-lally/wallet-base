@@ -5,7 +5,7 @@ import {
   getValue,
   deleteValue,
   clearAllSecureStorage,
-} from "../util/secure_store";
+} from "../util/secure-store";
 import {
   encryptWithPin,
   decryptWithPin,

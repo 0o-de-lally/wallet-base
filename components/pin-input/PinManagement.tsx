@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
-import { saveValue, getValue } from "../../util/secure_store";
+import { saveValue, getValue } from "../../util/secure-store";
 import {
   hashPin,
   validatePin,
   comparePins,
   HashedPin,
-} from "../../util/pin_security";
+} from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 
 /**

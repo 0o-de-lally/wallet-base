@@ -7,8 +7,8 @@ import {
   Text,
   ActivityIndicator,
 } from "react-native";
-import { getValue } from "../../util/secure_store";
-import { comparePins, HashedPin } from "../../util/pin_security";
+import { getValue } from "../../util/secure-store";
+import { comparePins, HashedPin } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 
 interface PinInputModalProps {

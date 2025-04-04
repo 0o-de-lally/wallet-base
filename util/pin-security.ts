@@ -23,7 +23,7 @@ import * as crypto from "expo-crypto";
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import { constantTimeEqual } from './security_utils';
+import { constantTimeEqual } from './security-utils';
 
 // Define a custom type for the hashed PIN
 export type HashedPin = {
