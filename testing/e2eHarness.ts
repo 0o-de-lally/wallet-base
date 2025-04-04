@@ -28,22 +28,18 @@ process.on("SIGINT", () => {
 process.on("exit", killAll);
 
 function spawnEmulator() {
-  const isCI = process.env.CI === 'true';
+  const isCI = process.env.CI === "true";
   const args = ["-avd", "$(emulator -list-avds | head -n 1)"];
 
   if (isCI) {
     args.push("-no-window");
   }
 
-  emulatorProc = spawn(
-    "emulator",
-    args,
-    {
-      shell: true,
-      stdio: "inherit",
-      detached: true,
-    },
-  );
+  emulatorProc = spawn("emulator", args, {
+    shell: true,
+    stdio: "inherit",
+    detached: true,
+  });
 }
 
 async function spawnExpoAndroid() {
