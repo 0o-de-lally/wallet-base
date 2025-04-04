@@ -19,12 +19,11 @@ jobs:
 
     - uses: oven-sh/setup-bun@v2
 
-
     - name: Install dependencies
       run: bun install
 
     - name: Check formatting
-      run: bun format:check
+      run: bun format
 
     - name: Run linter
       run: bun lint

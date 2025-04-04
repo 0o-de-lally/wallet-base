@@ -16,8 +16,10 @@ jobs:
     - name: Setup repository
       uses: actions/checkout@v4
 
-    - name: Install packages
-      run: npm install
+    - uses: oven-sh/setup-bun@v2
+
+    - name: Install dependencies
+      run: bun install
 
     - name: prebuild android
-      run: npx expo prebuild -p android --clean
+      run: bunx expo prebuild -p android --clean
