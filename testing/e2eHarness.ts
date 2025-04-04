@@ -28,9 +28,16 @@ process.on("SIGINT", () => {
 process.on("exit", killAll);
 
 function spawnEmulator() {
+  const isCI = process.env.CI === 'true';
+  const args = ["-avd", "$(emulator -list-avds | head -n 1)"];
+
+  if (isCI) {
+    args.push("-no-window");
+  }
+
   emulatorProc = spawn(
     "emulator",
-    ["-avd", "$(emulator -list-avds | head -n 1)"],
+    args,
     {
       shell: true,
       stdio: "inherit",
