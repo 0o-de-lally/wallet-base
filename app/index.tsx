@@ -1,4 +1,4 @@
-import React  from "react";
+import React from "react";
 import { View, StatusBar, TouchableOpacity, Text } from "react-native";
 import {
   SafeAreaProvider,
@@ -12,7 +12,6 @@ import { styles } from "../styles/styles";
 
 // Main App component that combines the functionality
 export default function App() {
-
   return (
     <SafeAreaProvider>
       <AppContent />
@@ -52,7 +51,9 @@ const AppContent = observer(() => {
           <View style={styles.buttonContainer}>
             <Link href="/pin" asChild>
               <TouchableOpacity style={styles.navButton}>
-                <Text style={styles.navButtonText} testID="your-element-id">PIN Management</Text>
+                <Text style={styles.navButtonText} testID="your-element-id">
+                  PIN Management
+                </Text>
               </TouchableOpacity>
             </Link>
           </View>

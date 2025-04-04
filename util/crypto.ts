@@ -2,7 +2,7 @@
  * Secure encryption/decryption utility using expo-crypto.
  * This implementation uses Uint8Array for all binary data handling.
  */
-import * as Crypto from 'expo-crypto';
+import * as Crypto from "expo-crypto";
 
 // Add a verification token to check if decryption was successful
 const INTEGRITY_CHECK = stringToUint8Array("VALID_DECRYPTION_TOKEN_123");
@@ -25,7 +25,7 @@ async function generateKeyFromPin(pinData: Uint8Array): Promise<Uint8Array> {
   // Use SHA-256 to create a secure hash
   const hashString = await Crypto.digestStringAsync(
     Crypto.CryptoDigestAlgorithm.SHA256,
-    uint8ArrayToString(combinedData)
+    uint8ArrayToString(combinedData),
   );
 
   // Convert hash to Uint8Array
@@ -40,12 +40,19 @@ async function generateKeyFromPin(pinData: Uint8Array): Promise<Uint8Array> {
  * @param pin - The PIN as Uint8Array
  * @returns Promise resolving to the encrypted data as Uint8Array
  */
-export async function encryptWithPin(value: Uint8Array, pin: Uint8Array): Promise<Uint8Array> {
+export async function encryptWithPin(
+  value: Uint8Array,
+  pin: Uint8Array,
+): Promise<Uint8Array> {
   if (!value || value.length === 0) return new Uint8Array(0);
 
   try {
     // Add integrity check to the value before encryption
-    const valueWithCheck = concatUint8Arrays(value, stringToUint8Array("|"), INTEGRITY_CHECK);
+    const valueWithCheck = concatUint8Arrays(
+      value,
+      stringToUint8Array("|"),
+      INTEGRITY_CHECK,
+    );
 
     // Generate a key from the PIN
     const keyBytes = await generateKeyFromPin(pin);
@@ -59,18 +66,24 @@ export async function encryptWithPin(value: Uint8Array, pin: Uint8Array): Promis
     // XOR each byte with the corresponding key byte and IV for added security
     for (let i = 0; i < valueWithCheck.length; i++) {
       // Combine key byte, IV byte, and a position-dependent value for better encryption
-      encryptedData[i] = valueWithCheck[i] ^ keyBytes[i % keyBytes.length] ^ iv[i % iv.length] ^ (i & 0xFF);
+      encryptedData[i] =
+        valueWithCheck[i] ^
+        keyBytes[i % keyBytes.length] ^
+        iv[i % iv.length] ^
+        (i & 0xff);
     }
 
     // Create a hash of the original data for integrity verification
     const dataHashBytes = await generateIntegrityHash(valueWithCheck, keyBytes);
 
     // Combine IV + encrypted data + hash into a single buffer
-    const resultBuffer = new Uint8Array(iv.length + encryptedData.length + dataHashBytes.length + 2);
+    const resultBuffer = new Uint8Array(
+      iv.length + encryptedData.length + dataHashBytes.length + 2,
+    );
 
     // Store sizes for later decryption (IV size is fixed at 16)
-    resultBuffer[0] = encryptedData.length & 0xFF;
-    resultBuffer[1] = (encryptedData.length >> 8) & 0xFF;
+    resultBuffer[0] = encryptedData.length & 0xff;
+    resultBuffer[1] = (encryptedData.length >> 8) & 0xff;
 
     // Copy data into the result buffer
     resultBuffer.set(iv, 2);
@@ -87,12 +100,15 @@ export async function encryptWithPin(value: Uint8Array, pin: Uint8Array): Promis
 /**
  * Generates an integrity hash for the data
  */
-async function generateIntegrityHash(data: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
+async function generateIntegrityHash(
+  data: Uint8Array,
+  key: Uint8Array,
+): Promise<Uint8Array> {
   const combinedData = concatUint8Arrays(data, key);
 
   const hashString = await Crypto.digestStringAsync(
     Crypto.CryptoDigestAlgorithm.SHA256,
-    uint8ArrayToString(combinedData)
+    uint8ArrayToString(combinedData),
   );
 
   return stringToUint8Array(hashString);
@@ -129,7 +145,7 @@ function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
  */
 export async function decryptWithPin(
   encryptedValue: Uint8Array,
-  pin: Uint8Array
+  pin: Uint8Array,
 ): Promise<{ value: Uint8Array; verified: boolean } | null> {
   if (!encryptedValue || encryptedValue.length === 0) return null;
 
@@ -152,23 +168,39 @@ export async function decryptWithPin(
     // Decrypt the data
     const decryptedBytes = new Uint8Array(encryptedData.length);
     for (let i = 0; i < encryptedData.length; i++) {
-      decryptedBytes[i] = encryptedData[i] ^ keyBytes[i % keyBytes.length] ^ iv[i % iv.length] ^ (i & 0xFF);
+      decryptedBytes[i] =
+        encryptedData[i] ^
+        keyBytes[i % keyBytes.length] ^
+        iv[i % iv.length] ^
+        (i & 0xff);
     }
 
     // Check integrity by looking for the verification token
     // Find the separator byte ("|" character which is 0x7C in ASCII)
-    const separatorIndex = findSequence(decryptedBytes, stringToUint8Array("|"));
+    const separatorIndex = findSequence(
+      decryptedBytes,
+      stringToUint8Array("|"),
+    );
 
     if (separatorIndex !== -1) {
       const potentialCheck = decryptedBytes.slice(separatorIndex + 1);
       const dataWithoutCheck = decryptedBytes.slice(0, separatorIndex);
 
       // Check if the potential check matches our integrity check
-      const integrityCheckMatches = compareUint8Arrays(potentialCheck, INTEGRITY_CHECK);
+      const integrityCheckMatches = compareUint8Arrays(
+        potentialCheck,
+        INTEGRITY_CHECK,
+      );
 
       // Verify the hash
-      const computedHashBytes = await generateIntegrityHash(decryptedBytes, keyBytes);
-      const hashesMatch = compareUint8Arrays(computedHashBytes, storedHashBytes);
+      const computedHashBytes = await generateIntegrityHash(
+        decryptedBytes,
+        keyBytes,
+      );
+      const hashesMatch = compareUint8Arrays(
+        computedHashBytes,
+        storedHashBytes,
+      );
 
       if (integrityCheckMatches && hashesMatch) {
         return { value: dataWithoutCheck, verified: true };
@@ -238,5 +270,5 @@ export function uint8ArrayToBase64(array: Uint8Array): string {
 }
 
 export function base64ToUint8Array(base64: string): Uint8Array {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 }

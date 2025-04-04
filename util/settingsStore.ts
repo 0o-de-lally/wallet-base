@@ -1,27 +1,27 @@
 import { observable } from "@legendapp/state";
 import { persistObservable } from "@legendapp/state/persist";
-import { configureObservablePersistence } from '@legendapp/state/persist'
-import { ObservablePersistLocalStorage } from '@legendapp/state/persist-plugins/local-storage'
-import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
+import { configureObservablePersistence } from "@legendapp/state/persist";
+import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
+import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
 
 const isMobile = (): boolean => {
-  return typeof window !== 'undefined' && typeof process === 'object';
+  return typeof window !== "undefined" && typeof process === "object";
 };
 // Global configuration
 if (isMobile()) {
   // Disable persistence for mobile devices
   configureObservablePersistence({
-    pluginLocal: ObservablePersistMMKV
-  })
+    pluginLocal: ObservablePersistMMKV,
+  });
 } else {
   // Enable persistence for web
   configureObservablePersistence({
-    pluginLocal: ObservablePersistLocalStorage
-  })
+    pluginLocal: ObservablePersistLocalStorage,
+  });
 }
 configureObservablePersistence({
-  pluginLocal: ObservablePersistLocalStorage
-})
+  pluginLocal: ObservablePersistLocalStorage,
+});
 /**
  * Defines the structure of the application configuration.
  */
@@ -44,9 +44,6 @@ const defaultConfig: AppConfig = {
     textColor: "#000000",
   },
 };
-
-
-
 
 /**
  * Observable application configuration state.

@@ -1,19 +1,19 @@
-import { spawn, spawnSync } from 'child_process';
+import { spawn, spawnSync, ChildProcess } from "child_process";
 
 async function waitForDeviceBoot() {
   // Wait until device is recognized
-  spawnSync('adb', ['wait-for-device'], { stdio: 'inherit' });
+  spawnSync("adb", ["wait-for-device"], { stdio: "inherit" });
   // Poll for sys.boot_completed
   while (true) {
-    const result = spawnSync('adb', ['shell', 'getprop', 'sys.boot_completed']);
-    if (result.stdout.toString().trim() === '1') break;
-    await new Promise(res => setTimeout(res, 1000));
+    const result = spawnSync("adb", ["shell", "getprop", "sys.boot_completed"]);
+    if (result.stdout.toString().trim() === "1") break;
+    await new Promise((res) => setTimeout(res, 1000));
   }
 }
 
-let emulatorProc: any;
-let expoProc: any;
-let maestroProc: any;
+let emulatorProc: ChildProcess | undefined;
+let expoProc: ChildProcess | undefined;
+let maestroProc: ChildProcess | undefined;
 
 function killAll() {
   if (maestroProc && !maestroProc.killed) maestroProc.kill();
@@ -28,19 +28,25 @@ process.on("SIGINT", () => {
 process.on("exit", killAll);
 
 function spawnEmulator() {
-  emulatorProc = spawn("emulator", ["-avd", "$(emulator -list-avds | head -n 1)"], {
-    shell: true,
-    stdio: "inherit",
-    detached: true,
-  });
+  emulatorProc = spawn(
+    "emulator",
+    ["-avd", "$(emulator -list-avds | head -n 1)"],
+    {
+      shell: true,
+      stdio: "inherit",
+      detached: true,
+    },
+  );
 }
 
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
-    expoProc = spawn("bun", ["android"], { stdio: ["pipe", "pipe", "inherit"] });
+    expoProc = spawn("bun", ["android"], {
+      stdio: ["pipe", "pipe", "inherit"],
+    });
     let isResolved = false;
 
-    expoProc.stdout.on("data", (data: Buffer) => {
+    expoProc.stdout?.on("data", (data: Buffer) => {
       const text = data.toString();
       if (text.includes("Android Bundled") && !isResolved) {
         isResolved = true;
@@ -48,9 +54,9 @@ async function spawnExpoAndroid() {
       }
     });
 
-    expoProc.on("exit", (code: number) => {
+    expoProc.on("exit", (code: number | null) => {
       if (!isResolved) {
-        if (code !== 0) {
+        if (code !== 0 && code !== null) {
           reject(new Error(`Expo failed with code ${code}`));
         } else {
           resolve();
@@ -63,8 +69,8 @@ async function spawnExpoAndroid() {
 function spawnMaestroTest() {
   return new Promise<void>((resolve, reject) => {
     maestroProc = spawn("maestro", ["test", "./maestro"], { stdio: "inherit" });
-    maestroProc.on("exit", (code: number) => {
-      if (code !== 0) {
+    maestroProc.on("exit", (code: number | null) => {
+      if (code !== 0 && code !== null) {
         reject(new Error(`Maestro test failed with code ${code}`));
       } else {
         resolve();
@@ -88,7 +94,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

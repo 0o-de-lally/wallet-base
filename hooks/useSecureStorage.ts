@@ -12,7 +12,7 @@ import {
   stringToUint8Array,
   uint8ArrayToString,
   uint8ArrayToBase64,
-  base64ToUint8Array
+  base64ToUint8Array,
 } from "../util/crypto";
 
 // Fixed key for all secure storage operations
