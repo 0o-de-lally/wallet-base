@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Modal,
   View,
@@ -24,12 +24,13 @@ export function PinInputModal({
   onPinVerified,
   purpose,
 }: PinInputModalProps) {
-  const [pin, setPin] = useState("");
+  const pinRef = useRef("");
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
 
   const verifyPin = async () => {
-    if (!pin.trim()) {
+    const pinValue = pinRef.current.trim();
+    if (!pinValue) {
       setError("PIN is required");
       return;
     }
@@ -51,12 +52,12 @@ export function PinInputModal({
         const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
         // Use the comparePins function to properly compare PINs
-        const isPinValid = await comparePins(storedHashedPin, pin);
+        const isPinValid = await comparePins(storedHashedPin, pinValue);
 
         if (isPinValid) {
           // PIN verified successfully
-          onPinVerified(pin.toString());
-          setPin("");
+          onPinVerified(pinValue);
+          pinRef.current = ""; // clear immediately
         } else {
           setError("Incorrect PIN. Please try again.");
         }
@@ -73,7 +74,7 @@ export function PinInputModal({
   };
 
   const handleCancel = () => {
-    setPin("");
+    pinRef.current = ""; // clear on cancel
     setError(null);
     onClose();
   };
@@ -108,8 +109,7 @@ export function PinInputModal({
 
           <TextInput
             style={styles.pinInput}
-            value={pin}
-            onChangeText={setPin}
+            onChangeText={(text) => (pinRef.current = text)}
             placeholder="******"
             keyboardType="number-pad"
             secureTextEntry={true}

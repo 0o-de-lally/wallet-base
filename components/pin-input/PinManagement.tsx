@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import { saveValue, getValue } from "../../util/secure_store";
 import {
@@ -14,9 +14,9 @@ import { styles } from "../../styles/styles";
  * Allows users to create a new PIN, update an existing PIN, and verify their PIN.
  */
 export default function EnterPinScreen() {
-  // State variables
-  const [newPin, setNewPin] = useState("");
-  const [testPin, setTestPin] = useState("");
+  // Refs for PIN input
+  const newPinRef = useRef("");
+  const testPinRef = useRef("");
   const [hasSavedPin, setHasSavedPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,6 +45,7 @@ export default function EnterPinScreen() {
    * Note: PIN hashing is handled by pin_security.ts, not crypto.ts
    */
   const handleSavePin = async () => {
+    const newPin = newPinRef.current;
     if (!validatePin(newPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
       return;
@@ -58,7 +59,7 @@ export default function EnterPinScreen() {
       await saveValue("user_pin", JSON.stringify(hashedPin));
 
       Alert.alert("Success", "PIN saved successfully");
-      setNewPin("");
+      newPinRef.current = ""; // clear immediately after saving
       setHasSavedPin(true);
     } catch (error) {
       Alert.alert("Error", "Failed to save PIN");
@@ -73,7 +74,8 @@ export default function EnterPinScreen() {
    * Retrieves the stored PIN, hashes the test PIN, and compares them.
    */
   const handleVerifyPin = async () => {
-    if (!validatePin(testPin)) {
+    const testedPin = testPinRef.current;
+    if (!validatePin(testedPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
       return;
     }
@@ -91,7 +93,7 @@ export default function EnterPinScreen() {
       const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
       // Use the comparePins function to properly compare PINs
-      const isPinValid = await comparePins(storedHashedPin, testPin);
+      const isPinValid = await comparePins(storedHashedPin, testedPin);
 
       if (isPinValid) {
         Alert.alert("Success", "PIN verified successfully");
@@ -99,7 +101,7 @@ export default function EnterPinScreen() {
         Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");
       }
 
-      setTestPin("");
+      testPinRef.current = ""; // clear immediately after verifying
     } catch (error) {
       Alert.alert("Error", "Failed to verify PIN");
       console.error(error);
@@ -121,8 +123,7 @@ export default function EnterPinScreen() {
           <Text style={styles.label}>Enter 6-digit PIN:</Text>
           <TextInput
             style={styles.input}
-            value={newPin}
-            onChangeText={setNewPin}
+            onChangeText={(text) => (newPinRef.current = text)}
             placeholder="Enter 6-digit PIN"
             keyboardType="number-pad"
             secureTextEntry={true}
@@ -153,8 +154,7 @@ export default function EnterPinScreen() {
             <Text style={styles.label}>Enter your PIN:</Text>
             <TextInput
               style={styles.input}
-              value={testPin}
-              onChangeText={setTestPin}
+              onChangeText={(text) => (testPinRef.current = text)}
               placeholder="Enter your PIN"
               keyboardType="number-pad"
               secureTextEntry={true}
