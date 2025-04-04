@@ -16,6 +16,8 @@
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
     "@legendapp/state": "^2.1.15",
+    "@noble/ciphers": "^1.2.1",
+    "@noble/hashes": "^1.7.1",
     "@testing-library/react-native": "^13.2.0",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",

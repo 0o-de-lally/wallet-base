@@ -2,8 +2,8 @@
  * PIN Security Module
  *
  * This module implements secure PIN handling using industry best practices,
- * with cross-platform support via expo-crypto, which leverages native crypto libraries
- * where available rather than less secure JS implementations.
+ * with cross-platform support via crypto libraries that leverage native
+ * implementations where available rather than less secure JS implementations.
  *
  * Security considerations:
  * - The original PIN is never stored anywhere.
@@ -14,10 +14,16 @@
  * - For highest security, PIN verification should happen server-side in a secure environment.
  * - If implemented client-side, be aware that determined attackers could extract the PIN
  *   by modifying the application code.
+ * - PBKDF2 is used for PIN hashing, providing better protection against brute force attacks
+ *   than simple hashing algorithms.
  *
  * @module pin_security
  */
 import * as crypto from "expo-crypto";
+import { pbkdf2 } from '@noble/hashes/pbkdf2';
+import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { constantTimeEqual } from './security_utils';
 
 // Define a custom type for the hashed PIN
 export type HashedPin = {
@@ -37,35 +43,33 @@ export function validatePin(pin: string): boolean {
 }
 
 /**
- * Hashes a PIN with SHA-256 using salt and multiple iterations for security.
+ * Hashes a PIN with PBKDF2 using salt and multiple iterations for security.
+ * PBKDF2 is specifically designed for password hashing and is more resistant to
+ * brute force attacks than simple hash algorithms.
+ *
  * @param pin The PIN to hash
- * @param iterations Number of hash iterations for key stretching (default: 1000)
+ * @param iterations Number of PBKDF2 iterations for key stretching (default: 10000)
  * @returns The hashed PIN with salt and iteration info
  */
 export async function hashPin(
   pin: string,
-  iterations = 1000,
+  iterations = 10000,
 ): Promise<HashedPin> {
   try {
-    // Generate a random salt (16 bytes converted to hex = 32 characters)
+    // Generate a random salt (16 bytes)
     const saltBytes = crypto.getRandomBytes(16);
-    const salt = Array.from(saltBytes)
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
+    const salt = bytesToHex(saltBytes);
 
-    // Initial hash with salt
-    let hash = await crypto.digestStringAsync(
-      crypto.CryptoDigestAlgorithm.SHA256,
-      salt + pin,
-    );
+    // Use Noble's PBKDF2 implementation to derive a key from the PIN
+    const encoder = new TextEncoder();
+    const pinBytes = encoder.encode(pin);
+    const derivedKey = pbkdf2(sha256, pinBytes, hexToBytes(salt), {
+      c: iterations,
+      dkLen: 32 // 32 bytes = 256 bits
+    });
 
-    // Key stretching - multiple iterations of hashing
-    for (let i = 1; i < iterations; i++) {
-      hash = await crypto.digestStringAsync(
-        crypto.CryptoDigestAlgorithm.SHA256,
-        hash,
-      );
-    }
+    // Convert to hex string
+    const hash = bytesToHex(derivedKey);
 
     return {
       salt,
@@ -79,29 +83,6 @@ export async function hashPin(
 }
 
 /**
- * Performs constant-time comparison of two strings to prevent timing attacks.
- * This is a simplified implementation but better than direct comparison.
- * @param a First string to compare
- * @param b Second string to compare
- * @returns true if the strings are equal, false otherwise
- */
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    // XOR the character codes - will be 0 for matching characters
-    // Bitwise OR accumulates any non-zero results (non-matching characters)
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
-  // If strings are identical, result will be 0
-  return result === 0;
-}
-
-/**
  * Securely compares two hashed PINs using constant-time comparison.
  * @param storedHashedPin Stored hashed PIN
  * @param inputPin Raw PIN input to verify
@@ -112,21 +93,17 @@ export async function comparePins(
   inputPin: string,
 ): Promise<boolean> {
   try {
-    // Hash the input PIN with the same salt and iterations
-    let hash = await crypto.digestStringAsync(
-      crypto.CryptoDigestAlgorithm.SHA256,
-      storedHashedPin.salt + inputPin,
-    );
+    // Generate hash from input PIN using the same salt and iterations
+    const encoder = new TextEncoder();
+    const pinBytes = encoder.encode(inputPin);
+    const derivedKey = pbkdf2(sha256, pinBytes, hexToBytes(storedHashedPin.salt), {
+      c: storedHashedPin.iterations,
+      dkLen: 32 // 32 bytes = 256 bits
+    });
 
-    // Apply the same number of iterations
-    for (let i = 1; i < storedHashedPin.iterations; i++) {
-      hash = await crypto.digestStringAsync(
-        crypto.CryptoDigestAlgorithm.SHA256,
-        hash,
-      );
-    }
+    const hash = bytesToHex(derivedKey);
 
-    // Use our own constant-time comparison function
+    // Use our constant-time comparison utility
     return constantTimeEqual(hash, storedHashedPin.hash);
   } catch (error) {
     console.error("Error comparing PINs:", error);
