@@ -1,4 +1,4 @@
-name: dependencies
+name: TS Build
 
 on:
   schedule:
@@ -6,6 +6,7 @@ on:
   push:
     branches: ['*']
   pull_request:
+    branches: [ main ]
     types: [opened, synchronize]
 
 jobs:
@@ -14,6 +15,8 @@ jobs:
     steps:
       - name: Setup repository
         uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install packages
         if: always()

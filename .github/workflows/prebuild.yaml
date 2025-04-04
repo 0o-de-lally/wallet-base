@@ -1,11 +1,12 @@
-name: prebuild
+name: Expo Prebuild Android
 
 on:
   schedule:
-    - cron: "30 01 * * *"
+    - cron: "31 10 * * *"
   push:
     branches: ['*']
   pull_request:
+    branches: [ main ]
     types: [opened, synchronize]
 
 jobs:

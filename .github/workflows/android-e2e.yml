@@ -1,8 +1,11 @@
 
-name: emulator setup ci
+name: Android E2E Tests
 on:
   push:
-    branches: ["**"] # glob pattern to allow slash /
+    branches: ["*"] # glob pattern to allow slash /
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize]
 jobs:
   setup-emulator:
     runs-on: ubuntu-latest

@@ -1,10 +1,8 @@
 
-name: emulator setup ci
+name: Android Emulator Caching
 on:
-  push:
-    branches: ["**"] # glob pattern to allow slash /
   schedule:
-    - cron: '0 0 * * *'  # Runs at 00:00 UTC every day
+    - cron: '33 01 * * *'  # Runs at 00:00 UTC every day
 jobs:
   setup-emulator:
     runs-on: ubuntu-latest
