@@ -44,8 +44,9 @@ jobs:
 
       - name: Add Android SDK emulator to PATH
         run: echo "/usr/local/lib/android/sdk/emulator/" >> $GITHUB_PATH
+          # echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
 
-      - name: run tests
+      - name: setup android tools
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
