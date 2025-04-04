@@ -20,10 +20,10 @@
  * @module pin_security
  */
 import * as crypto from "expo-crypto";
-import { pbkdf2 } from '@noble/hashes/pbkdf2';
-import { sha256 } from '@noble/hashes/sha256';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import { constantTimeEqual } from './security-utils';
+import { pbkdf2 } from "@noble/hashes/pbkdf2";
+import { sha256 } from "@noble/hashes/sha256";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { constantTimeEqual } from "./security-utils";
 
 // Define a custom type for the hashed PIN
 export type HashedPin = {
@@ -65,7 +65,7 @@ export async function hashPin(
     const pinBytes = encoder.encode(pin);
     const derivedKey = pbkdf2(sha256, pinBytes, hexToBytes(salt), {
       c: iterations,
-      dkLen: 32 // 32 bytes = 256 bits
+      dkLen: 32, // 32 bytes = 256 bits
     });
 
     // Convert to hex string
@@ -96,10 +96,15 @@ export async function comparePins(
     // Generate hash from input PIN using the same salt and iterations
     const encoder = new TextEncoder();
     const pinBytes = encoder.encode(inputPin);
-    const derivedKey = pbkdf2(sha256, pinBytes, hexToBytes(storedHashedPin.salt), {
-      c: storedHashedPin.iterations,
-      dkLen: 32 // 32 bytes = 256 bits
-    });
+    const derivedKey = pbkdf2(
+      sha256,
+      pinBytes,
+      hexToBytes(storedHashedPin.salt),
+      {
+        c: storedHashedPin.iterations,
+        dkLen: 32, // 32 bytes = 256 bits
+      },
+    );
 
     const hash = bytesToHex(derivedKey);
 
