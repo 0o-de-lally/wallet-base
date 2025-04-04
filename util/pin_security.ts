@@ -2,10 +2,15 @@
  * PIN Security Module
  *
  * This module implements secure PIN handling using industry best practices,
- * with cross-platform support via expo-crypto, a modern and audited cryptography library.
+ * with cross-platform support via expo-crypto, which leverages native crypto libraries
+ * where available rather than less secure JS implementations.
  *
  * Security considerations:
  * - The original PIN is never stored anywhere.
+ * - We minimize time spent keeping sensitive data in memory and avoid string
+ *   interning by working with byte arrays where possible.
+ * - Constant-time comparison functions are used to prevent timing attacks when
+ *   verifying PINs.
  * - For highest security, PIN verification should happen server-side in a secure environment.
  * - If implemented client-side, be aware that determined attackers could extract the PIN
  *   by modifying the application code.
@@ -74,7 +79,30 @@ export async function hashPin(
 }
 
 /**
- * Securely compares two hashed PINs.
+ * Performs constant-time comparison of two strings to prevent timing attacks.
+ * This is a simplified implementation but better than direct comparison.
+ * @param a First string to compare
+ * @param b Second string to compare
+ * @returns true if the strings are equal, false otherwise
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    // XOR the character codes - will be 0 for matching characters
+    // Bitwise OR accumulates any non-zero results (non-matching characters)
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+
+  // If strings are identical, result will be 0
+  return result === 0;
+}
+
+/**
+ * Securely compares two hashed PINs using constant-time comparison.
  * @param storedHashedPin Stored hashed PIN
  * @param inputPin Raw PIN input to verify
  * @returns Promise resolving to true if the PINs match, false otherwise
@@ -98,8 +126,8 @@ export async function comparePins(
       );
     }
 
-    // Compare the resulting hash with the stored hash
-    return hash === storedHashedPin.hash;
+    // Use our own constant-time comparison function
+    return constantTimeEqual(hash, storedHashedPin.hash);
   } catch (error) {
     console.error("Error comparing PINs:", error);
     return false;
