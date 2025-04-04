@@ -6,7 +6,14 @@ import {
   deleteValue,
   clearAllSecureStorage,
 } from "../util/secure_store";
-import { encryptWithPin, decryptWithPin } from "../util/crypto";
+import {
+  encryptWithPin,
+  decryptWithPin,
+  stringToUint8Array,
+  uint8ArrayToString,
+  uint8ArrayToBase64,
+  base64ToUint8Array
+} from "../util/crypto";
 
 // Fixed key for all secure storage operations
 const FIXED_KEY = "private_key";
@@ -62,9 +69,17 @@ export function useSecureStorage() {
         return;
       }
 
+      // Convert string value and PIN to Uint8Arrays
+      const valueBytes = stringToUint8Array(value);
+      const pinBytes = stringToUint8Array(pin);
+
       // Encrypt the value with the PIN before saving
-      const encryptedValue = encryptWithPin(value, pin);
-      await saveValue(FIXED_KEY, encryptedValue);
+      const encryptedBytes = await encryptWithPin(valueBytes, pinBytes);
+
+      // Convert to base64 for storage
+      const encryptedBase64 = uint8ArrayToBase64(encryptedBytes);
+
+      await saveValue(FIXED_KEY, encryptedBase64);
       Alert.alert("Success", "Value saved securely and encrypted");
       setValue("");
     } catch (error) {
@@ -78,16 +93,22 @@ export function useSecureStorage() {
   const retrieveWithPin = async (pin: string) => {
     try {
       setIsLoading(true);
-      const encryptedResult = await getValue(FIXED_KEY);
+      const encryptedBase64 = await getValue(FIXED_KEY);
 
-      if (encryptedResult === null) {
+      if (encryptedBase64 === null) {
         setStoredValue(null);
         Alert.alert("Info", "No value found");
         return;
       }
 
+      // Convert from base64 to Uint8Array
+      const encryptedBytes = base64ToUint8Array(encryptedBase64);
+
+      // Convert PIN to Uint8Array
+      const pinBytes = stringToUint8Array(pin);
+
       // Decrypt the value with the PIN and verify integrity
-      const decryptResult = decryptWithPin(encryptedResult, pin);
+      const decryptResult = await decryptWithPin(encryptedBytes, pinBytes);
 
       if (!decryptResult) {
         setStoredValue(null);
@@ -102,8 +123,11 @@ export function useSecureStorage() {
         return;
       }
 
+      // Convert the decrypted bytes back to a string
+      const decryptedString = uint8ArrayToString(decryptResult.value);
+
       // Only set the stored value if verification passed
-      setStoredValue(decryptResult.value);
+      setStoredValue(decryptedString);
     } catch (error) {
       Alert.alert("Error", "Failed to retrieve or decrypt value");
       console.error(error);

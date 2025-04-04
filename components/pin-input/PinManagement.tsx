@@ -41,6 +41,8 @@ export default function EnterPinScreen() {
   /**
    * Handles the saving of a new PIN or updating an existing one.
    * Validates the PIN format, hashes it, and stores it in secure storage.
+   *
+   * Note: PIN hashing is handled by pin_security.ts, not crypto.ts
    */
   const handleSavePin = async () => {
     if (!validatePin(newPin)) {
