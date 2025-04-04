@@ -1,5 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
+import {
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
 import {
   hashPin,
@@ -19,6 +26,7 @@ export default function EnterPinScreen() {
   const testPinRef = useRef("");
   const [hasSavedPin, setHasSavedPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Check if PIN exists on component mount
   useEffect(() => {
@@ -45,26 +53,29 @@ export default function EnterPinScreen() {
    * Note: PIN hashing is handled by pin_security.ts, not crypto.ts
    */
   const handleSavePin = async () => {
+    setIsLoading(true);
+
     const newPin = newPinRef.current;
     if (!validatePin(newPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
+      setIsLoading(false);
       return;
     }
 
     try {
-      setIsLoading(true);
       // Hash the PIN with salt before saving
       const hashedPin = await hashPin(newPin);
+
       // Properly serialize the HashedPin object to JSON
       await saveValue("user_pin", JSON.stringify(hashedPin));
 
       Alert.alert("Success", "PIN saved successfully");
       newPinRef.current = ""; // clear immediately after saving
       setHasSavedPin(true);
+      setIsLoading(false);
     } catch (error) {
       Alert.alert("Error", "Failed to save PIN");
       console.error(error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -74,6 +85,7 @@ export default function EnterPinScreen() {
    * Retrieves the stored PIN, hashes the test PIN, and compares them.
    */
   const handleVerifyPin = async () => {
+    setIsVerifying(true);
     const testedPin = testPinRef.current;
     if (!validatePin(testedPin)) {
       Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
@@ -81,7 +93,6 @@ export default function EnterPinScreen() {
     }
 
     try {
-      setIsLoading(true);
       const savedPinJson = await getValue("user_pin");
 
       if (!savedPinJson) {
@@ -92,8 +103,10 @@ export default function EnterPinScreen() {
       // Parse the stored PIN from JSON
       const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
+      setIsVerifying(true);
       // Use the comparePins function to properly compare PINs
       const isPinValid = await comparePins(storedHashedPin, testedPin);
+      setIsVerifying(false);
 
       if (isPinValid) {
         Alert.alert("Success", "PIN verified successfully");
@@ -106,12 +119,12 @@ export default function EnterPinScreen() {
       Alert.alert("Error", "Failed to verify PIN");
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsVerifying(false);
     }
   };
 
   return (
-    <View style={styles.content}>
+    <View style={styles.container}>
       <Text style={styles.title}>PIN Management</Text>
 
       {/* PIN Creation Section */}
@@ -124,6 +137,7 @@ export default function EnterPinScreen() {
           <TextInput
             style={styles.input}
             onChangeText={(text) => (newPinRef.current = text)}
+            placeholderTextColor={styles.inputPlaceholder.color}
             placeholder="Enter 6-digit PIN"
             keyboardType="number-pad"
             secureTextEntry={true}
@@ -136,13 +150,13 @@ export default function EnterPinScreen() {
           onPress={handleSavePin}
           disabled={isLoading}
         >
-          <Text style={styles.buttonText}>
-            {isLoading
-              ? "Processing..."
-              : hasSavedPin
-                ? "Update PIN"
-                : "Save PIN"}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {hasSavedPin ? "Update PIN" : "Save PIN"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -156,6 +170,7 @@ export default function EnterPinScreen() {
               style={styles.input}
               onChangeText={(text) => (testPinRef.current = text)}
               placeholder="Enter your PIN"
+              placeholderTextColor={styles.inputPlaceholder.color}
               keyboardType="number-pad"
               secureTextEntry={true}
               maxLength={6}
@@ -163,13 +178,15 @@ export default function EnterPinScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.button, isLoading && styles.disabledButton]}
+            style={[styles.button, isVerifying && styles.disabledButton]}
             onPress={handleVerifyPin}
-            disabled={isLoading}
+            disabled={isVerifying}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? "Verifying..." : "Verify PIN"}
-            </Text>
+            {isVerifying ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text style={styles.buttonText}>Verify PIN</Text>
+            )}
           </TouchableOpacity>
         </View>
       )}

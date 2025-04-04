@@ -49,6 +49,7 @@ export function SecureStorageForm({
           value={value}
           onChangeText={onValueChange}
           placeholder="Enter sensitive value to store"
+          placeholderTextColor={styles.inputPlaceholder.color}
           multiline={true}
           numberOfLines={3}
           editable={!disabled}
@@ -93,7 +94,9 @@ export function SecureStorageForm({
             onPress={handleClearAll}
             disabled={isLoading || disabled}
           >
-            <Text style={styles.buttonText}>Clear All Secure Storage</Text>
+            <Text style={styles.dangerButtonText}>
+              Clear All Secure Storage
+            </Text>
           </TouchableOpacity>
         </View>
       )}

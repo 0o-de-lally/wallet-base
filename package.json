@@ -6,7 +6,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
-    "e2e": "ts-node ./testing/e2e-harness.ts",
+    "e2e": "bun ./testing/e2e-harness.ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --check \"**/*.{ts,tsx}\"",

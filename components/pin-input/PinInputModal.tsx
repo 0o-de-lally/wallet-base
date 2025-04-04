@@ -111,6 +111,7 @@ export function PinInputModal({
             style={styles.pinInput}
             onChangeText={(text) => (pinRef.current = text)}
             placeholder="******"
+            placeholderTextColor={styles.inputPlaceholder.color}
             keyboardType="number-pad"
             secureTextEntry={true}
             maxLength={6}
