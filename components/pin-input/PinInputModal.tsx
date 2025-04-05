@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   TouchableOpacity,
@@ -47,10 +47,11 @@ export function PinInputOverlay({
     }
   };
 
-  const handlePinUpdate = (pin: string) => {
+  // Use callback to prevent unnecessary re-renders
+  const handlePinUpdate = useCallback((pin: string) => {
     setCurrentPin(pin);
     if (error) setError(null);
-  };
+  }, [error]);
 
   const handleVerifyPin = async () => {
     if (!currentPin) {
@@ -67,6 +68,7 @@ export function PinInputOverlay({
 
       if (!savedPinJson) {
         setError("No PIN has been set up. Please set up a PIN first.");
+        setIsVerifying(false);
         return;
       }
 

@@ -42,12 +42,13 @@ The custom PIN pad implementation (`PinPad.tsx`) provides enhanced security meas
 
 ### Technical Implementation
 
-The PIN entry system is implemented as four separate components:
+The PIN entry system is implemented as five separate components:
 
 1. **PinPad**: The basic keypad UI with scrambled digits and masking behavior.
 2. **CustomPinInput**: A wrapper that manages PIN state and integrates the PinPad with labels and error messages.
 3. **PinInputOverlay**: An overlay component (not modal) that implements PIN verification against stored credentials without blocking system alerts.
 4. **PinManagement**: A screen that handles PIN creation, verification, and updates with a confirmation flow.
+5. **AlertModal**: A generic alert modal component used to display confirmation or error messages.
 
 The PIN verification overlay is specifically designed as a non-modal overlay to avoid blocking system alerts or other modals, allowing important messages to still appear on top when needed.
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { PinPad } from "./PinPad";
 import { styles } from "../../styles/styles";
@@ -20,26 +20,34 @@ export function CustomPinInput({
 }: CustomPinInputProps) {
   const [pin, setPin] = useState<string>("");
 
-  // Update parent component with PIN as it changes
-  useEffect(() => {
-    onPinComplete(pin);
-  }, [pin, onPinComplete]);
-
   const handleNumberPress = useCallback(
     (number: string) => {
       setPin((current) => {
-        if (current.length < pinLength) {
-          return current + number;
+        const newPin = current.length < pinLength ? current + number : current;
+
+        // Only call onPinComplete when the PIN changes, not on every render
+        if (newPin !== current) {
+          onPinComplete(newPin);
         }
-        return current;
+
+        return newPin;
       });
     },
-    [pinLength],
+    [pinLength, onPinComplete],
   );
 
   const handleDeletePress = useCallback(() => {
-    setPin((current) => current.slice(0, -1));
-  }, []);
+    setPin((current) => {
+      const newPin = current.slice(0, -1);
+
+      // Only call onPinComplete when the PIN changes, not on every render
+      if (newPin !== current) {
+        onPinComplete(newPin);
+      }
+
+      return newPin;
+    });
+  }, [onPinComplete]);
 
   return (
     <View style={customStyles.container}>

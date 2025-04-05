@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Text,
   View,
@@ -6,6 +6,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import * as SecureStore from "expo-secure-store"; // Ensure correct import
 import { saveValue, getValue } from "../../util/secure-store";
 import {
   hashPin,
@@ -15,6 +16,7 @@ import {
 } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { CustomPinInput } from "./CustomPinInput";
+import { AlertModal } from "../AlertModal";
 
 /**
  * Screen component for PIN creation and verification.
@@ -29,6 +31,8 @@ export default function EnterPinScreen() {
   const [currentPin, setCurrentPin] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pinToConfirm, setPinToConfirm] = useState<string>("");
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   // Check if PIN exists on component mount
   useEffect(() => {
@@ -76,9 +80,8 @@ export default function EnterPinScreen() {
     // Check if confirmation matches
     if (currentPin !== pinToConfirm) {
       setError("PINs don't match. Please try again.");
-      setPinToConfirm("");
-      setShowConfirmation(false);
-      setCurrentPin("");
+      setAlertMessage("PINs do not match. Please confirm.");
+      setAlertModalVisible(true);
       return;
     }
 
@@ -90,7 +93,20 @@ export default function EnterPinScreen() {
       const hashedPin = await hashPin(currentPin);
 
       // Properly serialize the HashedPin object to JSON
-      await saveValue("user_pin", JSON.stringify(hashedPin));
+      const hashedPinString = JSON.stringify(hashedPin); // Convert to string
+
+      try {
+        console.log("Saving to SecureStore:", { key: "user_pin", value: hashedPinString }); // Log before saving
+        await SecureStore.setItemAsync("user_pin", hashedPinString); // Use SecureStore directly
+        console.log("PIN saved successfully to SecureStore");
+      } catch (secureStoreError: any) {
+        console.error("Error saving to SecureStore:", secureStoreError);
+        setError(`Failed to save PIN to SecureStore: ${secureStoreError.message}`); // Include error message
+        setAlertMessage(`Failed to save PIN to SecureStore: ${secureStoreError.message}`);
+        setAlertModalVisible(true);
+        setIsLoading(false);
+        return;
+      }
 
       Alert.alert("Success", "PIN saved successfully");
       setHasSavedPin(true);
@@ -98,9 +114,11 @@ export default function EnterPinScreen() {
       setShowConfirmation(false);
       setPinToConfirm("");
       setCurrentPin("");
-    } catch (error) {
-      setError("Failed to save PIN");
-      console.error(error);
+    } catch (error: any) {
+      console.error("Error hashing PIN:", error);
+      setError(`Failed to hash PIN: ${error.message}`); // Include error message
+      setAlertMessage(`Failed to hash PIN: ${error.message}`);
+      setAlertModalVisible(true);
     } finally {
       setIsLoading(false);
     }
@@ -169,9 +187,18 @@ export default function EnterPinScreen() {
     setMode("update");
   };
 
-  const handlePinUpdate = (pin: string) => {
+  // Use callback to prevent unnecessary re-renders
+  const handlePinUpdate = useCallback((pin: string) => {
     setCurrentPin(pin);
     if (error) setError(null);
+  }, [error]);
+
+  const handleAlertClose = () => {
+    setAlertModalVisible(false);
+    setAlertMessage(null);
+    setPinToConfirm("");
+    setShowConfirmation(false);
+    setCurrentPin("");
   };
 
   return (
@@ -240,7 +267,7 @@ export default function EnterPinScreen() {
         )}
 
         {/* Action toggles for authenticated users */}
-        {hasSavedPin && !isLoading && !isVerifying && (
+        {hasSavedPin && !isLoading && !isVerifying && !showConfirmation && (
           <View style={{ marginTop: 24 }}>
             {mode === "verify" ? (
               <TouchableOpacity
@@ -274,6 +301,12 @@ export default function EnterPinScreen() {
           </TouchableOpacity>
         )}
       </View>
+      <AlertModal
+        visible={alertModalVisible}
+        onClose={handleAlertClose}
+        title="PIN Mismatch"
+        message={alertMessage || "PINs do not match."}
+      />
     </View>
   );
 }
