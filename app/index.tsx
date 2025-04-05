@@ -1,18 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, StatusBar, TouchableOpacity, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
 import { observer } from "@legendapp/state/react";
-import { useRouter } from "expo-router"; // Use useRouter hook instead of direct import
+import { useRouter } from "expo-router";
 import { styles } from "../styles/styles";
-import { useEffect } from "react";
 import { initializeDefaultProfile } from "../util/app-config-store";
+import { ModalProvider } from "../context/ModalContext";
 
 // Main App component that combines the functionality
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AppContent />
+      <ModalProvider>
+        <AppContent />
+      </ModalProvider>
     </SafeAreaProvider>
   );
 }

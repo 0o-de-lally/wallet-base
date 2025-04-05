@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Alert } from "react-native";
 import {
   saveValue,
   getValue,
@@ -14,11 +13,13 @@ import {
   uint8ArrayToBase64,
   base64ToUint8Array,
 } from "../util/crypto";
+import { useModal } from "../context/ModalContext";
 
 // Fixed key for all secure storage operations
 const FIXED_KEY = "private_key";
 
 export function useSecureStorage() {
+  const { showAlert } = useModal();
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,10 +27,6 @@ export function useSecureStorage() {
   const [currentAction, setCurrentAction] = useState<
     "save" | "retrieve" | "delete" | null
   >(null);
-  const [errorModalVisible, setErrorModalVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successModalVisible, setSuccessModalVisible] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
   const oldPinRef = useRef<string>("");
 
   const requestPinForAction = (action: "save" | "retrieve" | "delete") => {
@@ -55,19 +52,9 @@ export function useSecureStorage() {
     setCurrentAction(null);
   };
 
-  const showError = (message: string) => {
-    setErrorMessage(message);
-    setErrorModalVisible(true);
-  };
-
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message);
-    setSuccessModalVisible(true);
-  };
-
   const saveWithPin = async (pin: string) => {
     if (!value.trim()) {
-      showError("Please enter a value to store");
+      showAlert("Error", "Please enter a value to store");
       return;
     }
 
@@ -77,7 +64,7 @@ export function useSecureStorage() {
       // First verify this is really the user's PIN by checking if it's stored
       const savedPinJson = await getValue("user_pin");
       if (!savedPinJson) {
-        showError("Please set up a PIN in the PIN Management screen first");
+        showAlert("Error", "Please set up a PIN in the PIN Management screen first");
         return;
       }
 
@@ -92,10 +79,10 @@ export function useSecureStorage() {
       const encryptedBase64 = uint8ArrayToBase64(encryptedBytes);
 
       await saveValue(FIXED_KEY, encryptedBase64);
-      showSuccess("Value saved securely and encrypted");
+      showAlert("Success", "Value saved securely and encrypted");
       setValue("");
     } catch (error) {
-      showError("Failed to save encrypted value");
+      showAlert("Error", "Failed to save encrypted value");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -109,7 +96,7 @@ export function useSecureStorage() {
 
       if (encryptedBase64 === null) {
         setStoredValue(null);
-        showError("No value found");
+        showAlert("Error", "No value found");
         return;
       }
 
@@ -124,14 +111,14 @@ export function useSecureStorage() {
 
       if (!decryptResult) {
         setStoredValue(null);
-        showError("Failed to decrypt value. Data may be corrupted.");
+        showAlert("Error", "Failed to decrypt value. Data may be corrupted.");
         return;
       }
 
       if (!decryptResult.verified) {
         // Wrong PIN was used - do not display any data
         setStoredValue(null);
-        showError("Incorrect PIN. Unable to decrypt data.");
+        showAlert("Error", "Incorrect PIN. Unable to decrypt data.");
         return;
       }
 
@@ -141,7 +128,7 @@ export function useSecureStorage() {
       // Only set the stored value if verification passed
       setStoredValue(decryptedString);
     } catch (error) {
-      showError("Failed to retrieve or decrypt value");
+      showAlert("Error", "Failed to retrieve or decrypt value");
       console.error(error);
       setStoredValue(null);
     } finally {
@@ -154,9 +141,9 @@ export function useSecureStorage() {
       setIsLoading(true);
       await deleteValue(FIXED_KEY);
       setStoredValue(null);
-      showSuccess("Value deleted");
+      showAlert("Success", "Value deleted");
     } catch (error) {
-      showError("Failed to delete value");
+      showAlert("Error", "Failed to delete value");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -169,9 +156,9 @@ export function useSecureStorage() {
       await clearAllSecureStorage();
       setStoredValue(null);
       setValue("");
-      showSuccess("All secure storage data has been cleared");
+      showAlert("Success", "All secure storage data has been cleared");
     } catch (error) {
-      showError("Failed to clear secure storage");
+      showAlert("Error", "Failed to clear secure storage");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -180,7 +167,7 @@ export function useSecureStorage() {
 
   const handleSave = () => {
     if (!value.trim()) {
-      showError("Please enter a value to store");
+      showAlert("Error", "Please enter a value to store");
       return;
     }
     requestPinForAction("save");
@@ -202,14 +189,14 @@ export function useSecureStorage() {
       const encryptedBase64 = await getValue(FIXED_KEY);
 
       if (!encryptedBase64) {
-        Alert.alert("Info", "No value found to re-encrypt");
+        showAlert("Info", "No value found to re-encrypt");
         return;
       }
 
       // 2. Decrypt with the old PIN (which is stored in oldPinRef)
       const oldPin = oldPinRef.current;
       if (!oldPin) {
-        Alert.alert("Error", "Old PIN is missing. Re-encryption aborted.");
+        showAlert("Error", "Old PIN is missing. Re-encryption aborted.");
         return;
       }
 
@@ -224,7 +211,7 @@ export function useSecureStorage() {
         decryptResult = await decryptWithPin(encryptedBytes, oldPinBytes);
       } catch (decryptError: unknown) {
         console.error("Decryption error:", decryptError);
-        Alert.alert(
+        showAlert(
           "Error",
           `Decryption failed with error: ${
             (decryptError as Error).message
@@ -234,7 +221,7 @@ export function useSecureStorage() {
       }
 
       if (!decryptResult || !decryptResult.verified) {
-        Alert.alert(
+        showAlert(
           "Error",
           "Failed to decrypt with old PIN or integrity check failed. Re-encryption aborted.",
         );
@@ -251,9 +238,9 @@ export function useSecureStorage() {
 
       // 4. Save the re-encrypted value
       await saveValue(FIXED_KEY, newEncryptedBase64);
-      Alert.alert("Success", "Secrets re-encrypted with new PIN");
+      showAlert("Success", "Secrets re-encrypted with new PIN");
     } catch (error) {
-      Alert.alert("Error", "Failed to re-encrypt secrets");
+      showAlert("Error", "Failed to re-encrypt secrets");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -273,13 +260,6 @@ export function useSecureStorage() {
     setPinModalVisible,
     handlePinVerified,
     currentAction,
-    // For modals
-    errorModalVisible,
-    setErrorModalVisible,
-    errorMessage,
-    successModalVisible,
-    setSuccessModalVisible,
-    successMessage,
     oldPinRef,
     reEncryptSecrets,
   };

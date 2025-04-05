@@ -4,7 +4,6 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
@@ -16,6 +15,7 @@ import {
 } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
+import { useModal } from "../../context/ModalContext";
 
 /**
  * Screen component for PIN creation and verification.
@@ -28,6 +28,7 @@ export default function EnterPinScreen() {
   const testPinRef = useRef("");
 
   const { reEncryptSecrets, oldPinRef } = useSecureStorage();
+  const { showAlert } = useModal();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -68,13 +69,13 @@ export default function EnterPinScreen() {
     const confirmPin = confirmPinRef.current;
 
     if (!validatePin(newPin) || !validatePin(confirmPin)) {
-      Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
+      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsLoading(false);
       return;
     }
 
     if (newPin !== confirmPin) {
-      Alert.alert("PIN Mismatch", "PINs do not match. Please try again.");
+      showAlert("PIN Mismatch", "PINs do not match. Please try again.");
       setIsLoading(false);
       return;
     }
@@ -86,20 +87,20 @@ export default function EnterPinScreen() {
       // Properly serialize the HashedPin object to JSON
       await saveValue("user_pin", JSON.stringify(hashedPin));
 
-      Alert.alert("Success", "PIN saved successfully");
-      newPinRef.current = ""; // clear immediately after saving
-      confirmPinRef.current = "";
+      showAlert("Success", "PIN saved successfully", () => {
+        // Re-encrypt secrets if rotating PIN
+        if (stage === "confirmPin") {
+          reEncryptSecrets(newPin);
+        }
 
-      // Re-encrypt secrets if rotating PIN
-      if (stage === "confirmPin") {
-        await reEncryptSecrets(newPin);
-      }
-
-      setStage("verify"); // go to verify stage
-      setIsLoading(false);
+        newPinRef.current = ""; // clear immediately after saving
+        confirmPinRef.current = "";
+        setStage("verify"); // go to verify stage
+      });
     } catch (error) {
-      Alert.alert("Error", "Failed to save PIN");
+      showAlert("Error", "Failed to save PIN");
       console.error(error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -112,7 +113,7 @@ export default function EnterPinScreen() {
     setIsVerifying(true);
     const oldPin = oldPinRef.current;
     if (!validatePin(oldPin)) {
-      Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
+      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsVerifying(false);
       return;
     }
@@ -121,7 +122,7 @@ export default function EnterPinScreen() {
       const savedPinJson = await getValue("user_pin");
 
       if (!savedPinJson) {
-        Alert.alert("Error", "No PIN is saved yet");
+        showAlert("Error", "No PIN is saved yet");
         setIsVerifying(false);
         return;
       }
@@ -133,14 +134,15 @@ export default function EnterPinScreen() {
       const isPinValid = await comparePins(storedHashedPin, oldPin);
 
       if (isPinValid) {
-        Alert.alert("Success", "Old PIN verified successfully");
-        oldPinRef.current = oldPin; // Store the old PIN in the ref
-        setStage("newPin"); // Proceed to new PIN creation
+        showAlert("Success", "Old PIN verified successfully", () => {
+          oldPinRef.current = oldPin; // Store the old PIN in the ref
+          setStage("newPin"); // Proceed to new PIN creation
+        });
       } else {
-        Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");
+        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to verify PIN");
+      showAlert("Error", "Failed to verify PIN");
       console.error(error);
     } finally {
       setIsVerifying(false);
@@ -155,7 +157,7 @@ export default function EnterPinScreen() {
     setIsVerifying(true);
     const testedPin = testPinRef.current;
     if (!validatePin(testedPin)) {
-      Alert.alert("Invalid PIN", "PIN must be exactly 6 digits");
+      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsVerifying(false);
       return;
     }
@@ -164,7 +166,7 @@ export default function EnterPinScreen() {
       const savedPinJson = await getValue("user_pin");
 
       if (!savedPinJson) {
-        Alert.alert("Error", "No PIN is saved yet");
+        showAlert("Error", "No PIN is saved yet");
         setIsVerifying(false);
         return;
       }
@@ -176,14 +178,14 @@ export default function EnterPinScreen() {
       const isPinValid = await comparePins(storedHashedPin, testedPin);
 
       if (isPinValid) {
-        Alert.alert("Success", "PIN verified successfully");
+        showAlert("Success", "PIN verified successfully");
       } else {
-        Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");
+        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
       }
 
       testPinRef.current = ""; // clear immediately after verifying
     } catch (error) {
-      Alert.alert("Error", "Failed to verify PIN");
+      showAlert("Error", "Failed to verify PIN");
       console.error(error);
     } finally {
       setIsVerifying(false);
