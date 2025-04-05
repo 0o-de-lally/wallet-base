@@ -9,7 +9,7 @@ const isMobile = (): boolean => {
 };
 // Global configuration
 if (isMobile()) {
-  // Disable persistence for mobile devices
+  // Persistence for mobile devices
   configureObservablePersistence({
     pluginLocal: ObservablePersistMMKV,
   });
@@ -228,4 +228,16 @@ export function deleteProfile(profileName: string): boolean {
   }
 
   return true;
+}
+
+/**
+ * Initializes a default profile if no profiles exist.
+ */
+export function initializeDefaultProfile() {
+  if (Object.keys(appConfig.profiles.get()).length === 0) {
+    createProfile("mainnet", {
+      network_name: "Mainnet",
+      network_type: NetworkTypeEnum.MAINNET,
+    });
+  }
 }

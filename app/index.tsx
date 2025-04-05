@@ -5,6 +5,8 @@ import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router"; // Use useRouter hook instead of direct import
 import { styles } from "../styles/styles";
+import { useEffect } from 'react';
+import { initializeDefaultProfile } from '../util/app-config-store';
 
 // Main App component that combines the functionality
 export default function App() {
@@ -19,6 +21,10 @@ export default function App() {
 const AppContent = observer(() => {
   // Use the useRouter hook to get the router instance
   const router = useRouter();
+
+  useEffect(() => {
+    initializeDefaultProfile();
+  }, []);
 
   return (
     <>
