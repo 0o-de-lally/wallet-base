@@ -234,9 +234,9 @@ export const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
     backgroundColor: colors.cardBg,
-    borderRadius: 10,
+    borderRadius: 2,
     padding: 18,
-    borderWidth: 2,
+    // borderWidth: 2,
     borderColor: colors.outlineBold,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -308,5 +308,24 @@ export const styles = StyleSheet.create({
   accountListContainer: {
     paddingLeft: 10, // Adjusted padding
     paddingBottom: 10,
+  },
+  radioButton: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  radioButtonInner: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
+  radioButtonSelected: {
+    borderColor: colors.primary,
   },
 });

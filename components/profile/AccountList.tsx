@@ -70,10 +70,7 @@ const AccountList = ({
 
   if (accounts.length === 0) {
     return (
-      <View style={styles.resultContainer}>
-        <Text style={styles.resultValue}>
-          No accounts in this profile. Add one to get started.
-        </Text>
+      <View style={styles.content}>
         <TouchableOpacity
           style={[styles.button]}
           onPress={toggleAddAccountForm}
@@ -85,7 +82,7 @@ const AccountList = ({
         {showAddAccountForm && (
           <AddAccountForm
             profileName={profileName}
-            onComplete={() => setShowAddAccountForm(false)}
+            onComplete={() => handleSuccess()}
             ref={addAccountFormRef}
           />
         )}

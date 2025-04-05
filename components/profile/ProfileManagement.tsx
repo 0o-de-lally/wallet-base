@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { appConfig } from "../../util/app-config-store";
-import ProfileList from "./ProfileList";
+import { appConfig, setActiveProfile } from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -62,44 +61,41 @@ const ProfileManagement = observer(() => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Profile Management</Text>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            showCreateForm && { backgroundColor: "#6BA5D9" },
-          ]}
-          onPress={toggleCreateForm}
-        >
-          <Text style={styles.buttonText}>
-            {showCreateForm ? "Cancel" : "Create Profile"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {showCreateForm && (
         <CreateProfileForm onComplete={() => setShowCreateForm(false)} />
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Your Profiles</Text>
+        <Text style={styles.sectionTitle}>Wallet Profiles</Text>
         {Object.entries(profiles).map(([profileName, profile]) => (
           <View key={profileName}>
             <TouchableOpacity
               style={styles.profileItem} // Use the same style for all items
               onPress={() => handleSelectProfile(profileName)}
             >
-              <Text style={styles.profileName}>
-                {profileName}{" "}
-                {activeProfileName === profileName && "✓"}
-                {activeProfileName === profileName ? " (Active)" : ""}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <TouchableOpacity
+                  style={[
+                    styles.radioButton,
+                    activeProfileName === profileName
+                      ? styles.radioButtonSelected
+                      : null,
+                  ]}
+                  onPress={() => setActiveProfile(profileName)}
+                >
+                  {activeProfileName === profileName && (
+                    <View style={styles.radioButtonInner} />
+                  )}
+                </TouchableOpacity>
+                <Text style={styles.profileName}>
+                  {profileName}
+                  {activeProfileName === profileName ? " (Active)" : ""}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {expandedProfile === profileName && (
-              <View style={styles.accountListContainer}>
-                <Text style={styles.sectionTitle}>
-                  {profileName}&apos;s Accounts
-                </Text>
+              <View style={styles.section}>
                 <AccountList
                   profileName={profileName}
                   accounts={profile.accounts}
@@ -122,6 +118,20 @@ const ProfileManagement = observer(() => {
           </Text>
         </View>
       )}
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            showCreateForm && { backgroundColor: "#6BA5D9" },
+          ]}
+          onPress={toggleCreateForm}
+        >
+          <Text style={styles.buttonText}>
+            {showCreateForm ? "Cancel" : "Create Profile"}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {Object.keys(profiles).length > 0 && (
         <View style={styles.dangerZone}>
