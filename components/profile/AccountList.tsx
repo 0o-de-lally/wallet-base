@@ -92,10 +92,7 @@ const AccountList = ({
 
   return (
     <View>
-      <TouchableOpacity
-        style={[styles.button]}
-        onPress={toggleAddAccountForm}
-      >
+      <TouchableOpacity style={[styles.button]} onPress={toggleAddAccountForm}>
         <Text style={styles.buttonText}>
           {showAddAccountForm ? "Cancel" : "Add Account"}
         </Text>

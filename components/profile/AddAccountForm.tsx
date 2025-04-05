@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { View, Text, TextInput, TouchableOpacity, Switch } from "react-native";
 import { styles } from "../../styles/styles";
 import { addAccountToProfile } from "../../util/app-config-store";
