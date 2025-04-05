@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   Modal,
   FlatList,
 } from "react-native";
@@ -15,6 +14,7 @@ import {
   NetworkTypeEnum,
 } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 interface CreateProfileFormProps {
   onComplete: () => void;
@@ -34,6 +34,9 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [customNetwork, setCustomNetwork] = useState(false);
   const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
+
+  // Modal states
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   // Set the network name when network type changes
   useEffect(() => {
@@ -73,15 +76,19 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
     const success = createProfile(profileName, network);
 
     if (success) {
-      Alert.alert("Success", `Profile "${profileName}" created successfully.`);
-      setProfileName("");
-      setNetworkName("");
-      setNetworkType(NetworkTypeEnum.MAINNET);
-      setError(null);
-      onComplete();
+      setSuccessModalVisible(true);
     } else {
       setError(`Profile "${profileName}" already exists.`);
     }
+  };
+
+  const handleSuccess = () => {
+    setSuccessModalVisible(false);
+    setProfileName("");
+    setNetworkName("");
+    setNetworkType(NetworkTypeEnum.MAINNET);
+    setError(null);
+    onComplete();
   };
 
   // Custom dropdown selector component for network type
@@ -170,6 +177,16 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
       <TouchableOpacity style={styles.button} onPress={handleCreateProfile}>
         <Text style={styles.buttonText}>Create Profile</Text>
       </TouchableOpacity>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        visible={successModalVisible}
+        title="Success"
+        message={`Profile "${profileName}" created successfully.`}
+        confirmText="OK"
+        onConfirm={handleSuccess}
+        onCancel={handleSuccess}
+      />
     </View>
   );
 };

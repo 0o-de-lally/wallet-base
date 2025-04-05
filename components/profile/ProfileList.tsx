@@ -1,8 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { setActiveProfile, appConfig } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 interface ProfileListProps {
   profiles: Record<string, Profile>;
@@ -19,58 +20,60 @@ const ProfileList = ({
 }: ProfileListProps) => {
   const profileNames = Object.keys(profiles);
 
+  // State for confirmation modals
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
+
   const handleMakeActive = (profileName: string) => {
     setActiveProfile(profileName);
   };
 
   const handleDeleteProfile = (profileName: string) => {
-    Alert.alert(
-      "Delete Profile",
-      `Are you sure you want to delete the profile "${profileName}"? This cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          onPress: () => {
-            // The issue is with how we're trying to delete the profile
-            // We need to use the observable state properly
+    setProfileToDelete(profileName);
+    setDeleteModalVisible(true);
+  };
 
-            // First get the current profiles
-            const currentProfiles = appConfig.profiles.get();
+  const confirmDeleteProfile = () => {
+    if (!profileToDelete) return;
 
-            // Create a new object without the profile to delete
-            const updatedProfiles = Object.keys(currentProfiles)
-              .filter((name) => name !== profileName)
-              .reduce(
-                (obj, name) => {
-                  obj[name] = currentProfiles[name];
-                  return obj;
-                },
-                {} as Record<string, Profile>,
-              );
+    // The issue is with how we're trying to delete the profile
+    // We need to use the observable state properly
 
-            // Update the profiles
-            appConfig.profiles.set(updatedProfiles);
+    // First get the current profiles
+    const currentProfiles = appConfig.profiles.get();
 
-            // If the deleted profile was active, reset active profile
-            if (activeProfileName === profileName) {
-              const remainingProfiles = Object.keys(updatedProfiles);
-              if (remainingProfiles.length > 0) {
-                appConfig.activeProfile.set(remainingProfiles[0]);
-              } else {
-                appConfig.activeProfile.set(null);
-              }
-            }
-
-            // If the deleted profile was selected, reset selection
-            if (selectedProfileName === profileName) {
-              onSelectProfile(activeProfileName || "");
-            }
-          },
-          style: "destructive",
+    // Create a new object without the profile to delete
+    const updatedProfiles = Object.keys(currentProfiles)
+      .filter((name) => name !== profileToDelete)
+      .reduce(
+        (obj, name) => {
+          obj[name] = currentProfiles[name];
+          return obj;
         },
-      ],
-    );
+        {} as Record<string, Profile>,
+      );
+
+    // Update the profiles
+    appConfig.profiles.set(updatedProfiles);
+
+    // If the deleted profile was active, reset active profile
+    if (activeProfileName === profileToDelete) {
+      const remainingProfiles = Object.keys(updatedProfiles);
+      if (remainingProfiles.length > 0) {
+        appConfig.activeProfile.set(remainingProfiles[0]);
+      } else {
+        appConfig.activeProfile.set(null);
+      }
+    }
+
+    // If the deleted profile was selected, reset selection
+    if (selectedProfileName === profileToDelete) {
+      onSelectProfile(activeProfileName || "");
+    }
+
+    // Close modal
+    setDeleteModalVisible(false);
+    setProfileToDelete(null);
   };
 
   if (profileNames.length === 0) {
@@ -131,7 +134,7 @@ const ProfileList = ({
                 onPress={() => onSelectProfile(profileName)}
               >
                 <Text style={[styles.buttonText, { fontSize: 14 }]}>
-                  {isSelected ? "Selected" : "Select"}
+                  {isSelected ? "Editing" : "Edit Profile"}
                 </Text>
               </TouchableOpacity>
 
@@ -169,6 +172,17 @@ const ProfileList = ({
           </View>
         );
       })}
+
+      {/* Delete Profile Confirmation Modal */}
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title="Delete Profile"
+        message={`Are you sure you want to delete the profile "${profileToDelete}"? This cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={confirmDeleteProfile}
+        onCancel={() => setDeleteModalVisible(false)}
+        isDestructive={true}
+      />
     </View>
   );
 };

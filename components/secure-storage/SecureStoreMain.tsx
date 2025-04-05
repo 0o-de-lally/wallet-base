@@ -11,6 +11,7 @@ import { SecureStorageForm } from "./SecureStorageForm";
 import { SecureStorageResult } from "./SecureStorageResult";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { styles } from "../../styles/styles";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 /**
  * Demo screen component for secure storage operations.
@@ -26,11 +27,18 @@ export default function SecureStorageScreen() {
     handleSave,
     handleRetrieve,
     handleDelete,
-    handleClearAll, // Get the handleClearAll method
+    handleClearAll,
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
     currentAction,
+    // Modal states
+    errorModalVisible,
+    setErrorModalVisible,
+    errorMessage,
+    successModalVisible,
+    setSuccessModalVisible,
+    successMessage,
   } = useSecureStorage();
 
   return (
@@ -53,7 +61,7 @@ export default function SecureStorageScreen() {
             onSave={handleSave}
             onRetrieve={handleRetrieve}
             onDelete={handleDelete}
-            onClearAll={handleClearAll} // Pass the method here
+            onClearAll={handleClearAll}
             isLoading={isLoading}
           />
 
@@ -65,6 +73,26 @@ export default function SecureStorageScreen() {
             onClose={() => setPinModalVisible(false)}
             onPinVerified={handlePinVerified}
             purpose={currentAction || "retrieve"}
+          />
+
+          {/* Error Modal */}
+          <ConfirmationModal
+            visible={errorModalVisible}
+            title="Error"
+            message={errorMessage}
+            confirmText="OK"
+            onConfirm={() => setErrorModalVisible(false)}
+            onCancel={() => setErrorModalVisible(false)}
+          />
+
+          {/* Success Modal */}
+          <ConfirmationModal
+            visible={successModalVisible}
+            title="Success"
+            message={successMessage}
+            confirmText="OK"
+            onConfirm={() => setSuccessModalVisible(false)}
+            onCancel={() => setSuccessModalVisible(false)}
           />
         </View>
       </ScrollView>

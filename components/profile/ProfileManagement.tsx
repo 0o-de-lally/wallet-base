@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { appConfig } from "../../util/app-config-store";
@@ -7,6 +7,7 @@ import ProfileList from "./ProfileList";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import AddAccountForm from "./AddAccountForm";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 const ProfileManagement = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
@@ -14,6 +15,7 @@ const ProfileManagement = observer(() => {
   );
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showAddAccountForm, setShowAddAccountForm] = useState(false);
+  const [deleteAllModalVisible, setDeleteAllModalVisible] = useState(false);
 
   // Get all profiles from the store
   const profiles = appConfig.profiles.get();
@@ -33,22 +35,14 @@ const ProfileManagement = observer(() => {
   };
 
   const handleDeleteAllProfiles = () => {
-    Alert.alert(
-      "Delete All Profiles",
-      "This action will delete all profiles and cannot be undone. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete All",
-          onPress: () => {
-            appConfig.profiles.set({});
-            appConfig.activeProfile.set(null);
-            setSelectedProfileName(null);
-          },
-          style: "destructive",
-        },
-      ],
-    );
+    setDeleteAllModalVisible(true);
+  };
+
+  const confirmDeleteAllProfiles = () => {
+    appConfig.profiles.set({});
+    appConfig.activeProfile.set(null);
+    setSelectedProfileName(null);
+    setDeleteAllModalVisible(false);
   };
 
   const toggleCreateForm = () => {
@@ -59,6 +53,15 @@ const ProfileManagement = observer(() => {
   const toggleAddAccountForm = () => {
     setShowAddAccountForm(!showAddAccountForm);
     setShowCreateForm(false);
+  };
+
+  // Add this new function to handle account updates
+  const handleAccountsUpdated = () => {
+    // Force a UI refresh by updating the selected profile
+    if (selectedProfileName) {
+      // This will trigger a re-render with the updated accounts
+      setSelectedProfileName(selectedProfileName);
+    }
   };
 
   return (
@@ -122,6 +125,7 @@ const ProfileManagement = observer(() => {
           <AccountList
             profileName={selectedProfile.name}
             accounts={selectedProfile.accounts}
+            onAccountsUpdated={handleAccountsUpdated}
           />
         </View>
       )}
@@ -149,6 +153,17 @@ const ProfileManagement = observer(() => {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Delete All Profiles Confirmation Modal */}
+      <ConfirmationModal
+        visible={deleteAllModalVisible}
+        title="Delete All Profiles"
+        message="This action will delete all profiles and cannot be undone. Continue?"
+        confirmText="Delete All"
+        onConfirm={confirmDeleteAllProfiles}
+        onCancel={() => setDeleteAllModalVisible(false)}
+        isDestructive={true}
+      />
     </ScrollView>
   );
 });

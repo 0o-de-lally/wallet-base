@@ -1,37 +1,62 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 interface AccountListProps {
   profileName: string;
   accounts: AccountState[];
+  onAccountsUpdated?: (updatedAccounts: AccountState[]) => void;
 }
 
-const AccountList = ({ profileName, accounts }: AccountListProps) => {
-  const handleDeleteAccount = (accountAddress: string) => {
-    Alert.alert(
-      "Delete Account",
-      `Are you sure you want to remove this account from "${profileName}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          onPress: () => {
-            // Filter out the account to delete
-            const updatedAccounts = accounts.filter(
-              (acc) => acc.account_address !== accountAddress,
-            );
+const AccountList = ({
+  profileName,
+  accounts,
+  onAccountsUpdated,
+}: AccountListProps) => {
+  // State for the confirmation modal
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-            // Update the profile's accounts
-            appConfig.profiles[profileName].accounts.set(updatedAccounts);
-          },
-          style: "destructive",
-        },
-      ],
-    );
+  const handleDeleteAccount = (accountAddress: string) => {
+    setAccountToDelete(accountAddress);
+    setIsDeleteModalVisible(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (!accountToDelete) return;
+
+    try {
+      // Filter out the account to delete
+      const updatedAccounts = accounts.filter(
+        (acc) => acc.account_address !== accountToDelete,
+      );
+
+      // Update the profile's accounts
+      appConfig.profiles[profileName].accounts.set(updatedAccounts);
+
+      // Notify parent component about the update to refresh UI
+      if (onAccountsUpdated) {
+        onAccountsUpdated(updatedAccounts);
+      }
+
+      // Close delete modal
+      setIsDeleteModalVisible(false);
+
+      // Show success modal
+      setSuccessModalVisible(true);
+    } catch (error) {
+      console.error("Failed to remove account:", error);
+      setIsDeleteModalVisible(false);
+      setErrorMessage("Failed to remove account. Please try again.");
+      setErrorModalVisible(true);
+    }
   };
 
   if (accounts.length === 0) {
@@ -122,6 +147,37 @@ const AccountList = ({ profileName, accounts }: AccountListProps) => {
           </View>
         </View>
       ))}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={isDeleteModalVisible}
+        title="Delete Account"
+        message={`Are you sure you want to remove this account from "${profileName}"?`}
+        confirmText="Delete"
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        isDestructive={true}
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        visible={successModalVisible}
+        title="Success"
+        message="Account has been removed from this profile."
+        confirmText="OK"
+        onConfirm={() => setSuccessModalVisible(false)}
+        onCancel={() => setSuccessModalVisible(false)}
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        visible={errorModalVisible}
+        title="Error"
+        message={errorMessage}
+        confirmText="OK"
+        onConfirm={() => setErrorModalVisible(false)}
+        onCancel={() => setErrorModalVisible(false)}
+      />
     </View>
   );
 };

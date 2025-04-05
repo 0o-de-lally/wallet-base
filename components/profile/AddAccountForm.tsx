@@ -1,15 +1,9 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Switch,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Switch } from "react-native";
 import { styles } from "../../styles/styles";
 import { addAccountToProfile } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 interface AddAccountFormProps {
   profileName: string;
@@ -23,6 +17,9 @@ const AddAccountForm = ({ profileName, onComplete }: AddAccountFormProps) => {
   const [balanceUnlocked, setBalanceUnlocked] = useState("");
   const [isKeyStored, setIsKeyStored] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State for modals
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const handleAddAccount = () => {
     // Validate inputs
@@ -46,20 +43,24 @@ const AddAccountForm = ({ profileName, onComplete }: AddAccountFormProps) => {
     const success = addAccountToProfile(profileName, account);
 
     if (success) {
-      Alert.alert("Success", `Account added to "${profileName}" successfully.`);
-      // Reset form
-      setAccountAddress("");
-      setNickname("");
-      setBalanceLocked("");
-      setBalanceUnlocked("");
-      setIsKeyStored(false);
-      setError(null);
-      onComplete();
+      setSuccessModalVisible(true);
     } else {
       setError(
         "Account already exists in this profile or profile doesn't exist.",
       );
     }
+  };
+
+  const handleSuccess = () => {
+    setSuccessModalVisible(false);
+    // Reset form
+    setAccountAddress("");
+    setNickname("");
+    setBalanceLocked("");
+    setBalanceUnlocked("");
+    setIsKeyStored(false);
+    setError(null);
+    onComplete();
   };
 
   return (
@@ -134,6 +135,16 @@ const AddAccountForm = ({ profileName, onComplete }: AddAccountFormProps) => {
       <TouchableOpacity style={styles.button} onPress={handleAddAccount}>
         <Text style={styles.buttonText}>Add Account</Text>
       </TouchableOpacity>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        visible={successModalVisible}
+        title="Success"
+        message={`Account added to "${profileName}" successfully.`}
+        confirmText="OK"
+        onConfirm={handleSuccess}
+        onCancel={handleSuccess}
+      />
     </View>
   );
 };

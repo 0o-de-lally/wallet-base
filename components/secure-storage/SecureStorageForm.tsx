@@ -1,6 +1,7 @@
-import React from "react";
-import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { Text, View, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 interface SecureStorageFormProps {
   value: string;
@@ -23,21 +24,18 @@ export function SecureStorageForm({
   isLoading,
   disabled = false,
 }: SecureStorageFormProps) {
+  const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
+
   const handleClearAll = () => {
     if (!onClearAll) return;
+    setClearAllModalVisible(true);
+  };
 
-    Alert.alert(
-      "Clear All Secure Storage",
-      "This will delete ALL secure data and cannot be undone. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear All",
-          onPress: onClearAll,
-          style: "destructive",
-        },
-      ],
-    );
+  const confirmClearAll = () => {
+    if (onClearAll) {
+      onClearAll();
+    }
+    setClearAllModalVisible(false);
   };
 
   return (
@@ -100,6 +98,17 @@ export function SecureStorageForm({
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Clear All Confirmation Modal */}
+      <ConfirmationModal
+        visible={clearAllModalVisible}
+        title="Clear All Secure Storage"
+        message="This will delete ALL secure data and cannot be undone. Continue?"
+        confirmText="Clear All"
+        onConfirm={confirmClearAll}
+        onCancel={() => setClearAllModalVisible(false)}
+        isDestructive={true}
+      />
     </>
   );
 }
