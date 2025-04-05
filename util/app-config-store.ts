@@ -24,10 +24,21 @@ configureObservablePersistence({
 });
 
 /**
+ * Network types available for selection
+ */
+export enum NetworkTypeEnum {
+  MAINNET = "Mainnet",
+  TESTING = "Testing",
+  TESTNET = "Testnet",
+  CUSTOM = "Custom",
+}
+
+/**
  * Network type represents a blockchain network configuration
  */
 export type NetworkType = {
   network_name: string;
+  network_type: NetworkTypeEnum;
   // Additional network properties can be added here
 };
 
@@ -175,5 +186,46 @@ export function setActiveProfile(profileName: string): boolean {
 
   appConfig.activeProfile.set(profileName);
   appConfig.profiles[profileName].last_used.set(Date.now());
+  return true;
+}
+
+/**
+ * Deletes a profile by name
+ *
+ * @param profileName Name of the profile to delete
+ * @returns boolean indicating success or failure
+ */
+export function deleteProfile(profileName: string): boolean {
+  const profile = appConfig.profiles[profileName].get();
+
+  if (!profile) {
+    return false; // Profile doesn't exist
+  }
+
+  // Create a new profiles object without the deleted profile
+  const currentProfiles = appConfig.profiles.get();
+  const updatedProfiles = Object.keys(currentProfiles)
+    .filter((name) => name !== profileName)
+    .reduce(
+      (obj, name) => {
+        obj[name] = currentProfiles[name];
+        return obj;
+      },
+      {} as Record<string, Profile>,
+    );
+
+  // Update the profiles
+  appConfig.profiles.set(updatedProfiles);
+
+  // If the deleted profile was active, reset active profile
+  if (appConfig.activeProfile.get() === profileName) {
+    const remainingProfiles = Object.keys(updatedProfiles);
+    if (remainingProfiles.length > 0) {
+      appConfig.activeProfile.set(remainingProfiles[0]);
+    } else {
+      appConfig.activeProfile.set(null);
+    }
+  }
+
   return true;
 }

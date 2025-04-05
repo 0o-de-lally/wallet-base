@@ -32,9 +32,24 @@ const ProfileList = ({
         {
           text: "Delete",
           onPress: () => {
-            // Remove the profile from the store
-            const updatedProfiles = { ...appConfig.profiles.get() };
-            delete updatedProfiles[profileName];
+            // The issue is with how we're trying to delete the profile
+            // We need to use the observable state properly
+
+            // First get the current profiles
+            const currentProfiles = appConfig.profiles.get();
+
+            // Create a new object without the profile to delete
+            const updatedProfiles = Object.keys(currentProfiles)
+              .filter((name) => name !== profileName)
+              .reduce(
+                (obj, name) => {
+                  obj[name] = currentProfiles[name];
+                  return obj;
+                },
+                {} as Record<string, Profile>,
+              );
+
+            // Update the profiles
             appConfig.profiles.set(updatedProfiles);
 
             // If the deleted profile was active, reset active profile
@@ -97,7 +112,8 @@ const ProfileList = ({
               </Text>
             </View>
             <Text style={[styles.resultValue, { fontSize: 12 }]}>
-              Network: {profile.network.network_name}
+              Network: {profile.network.network_name} (
+              {profile.network.network_type})
             </Text>
 
             <View

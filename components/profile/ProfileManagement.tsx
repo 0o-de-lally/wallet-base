@@ -126,6 +126,18 @@ const ProfileManagement = observer(() => {
         </View>
       )}
 
+      {!selectedProfile && Object.keys(profiles).length === 0 && (
+        <View style={styles.resultContainer}>
+          <Text style={styles.resultValue}>
+            No profiles exist yet. Create your first profile to get started.
+          </Text>
+          <Text style={[styles.resultValue]}>
+            Your first profile will default to &quot;mainnet&quot; with the
+            Mainnet network type.
+          </Text>
+        </View>
+      )}
+
       {Object.keys(profiles).length > 0 && (
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
