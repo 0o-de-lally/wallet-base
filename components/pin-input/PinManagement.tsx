@@ -15,6 +15,7 @@ import {
   HashedPin,
 } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
+import { useSecureStorage } from "../../hooks/use-secure-storage";
 
 /**
  * Screen component for PIN creation and verification.
@@ -25,7 +26,8 @@ export default function EnterPinScreen() {
   const newPinRef = useRef("");
   const confirmPinRef = useRef("");
   const testPinRef = useRef("");
-  const oldPinRef = useRef("");
+
+  const { reEncryptSecrets, oldPinRef } = useSecureStorage();
 
   const [hasSavedPin, setHasSavedPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +91,12 @@ export default function EnterPinScreen() {
       Alert.alert("Success", "PIN saved successfully");
       newPinRef.current = ""; // clear immediately after saving
       confirmPinRef.current = "";
+
+      // Re-encrypt secrets if rotating PIN
+      if (stage === "confirmPin") {
+        await reEncryptSecrets(newPin);
+      }
+
       setHasSavedPin(true);
       setStage("verify"); // go to verify stage
       setIsLoading(false);
@@ -129,6 +137,7 @@ export default function EnterPinScreen() {
 
       if (isPinValid) {
         Alert.alert("Success", "Old PIN verified successfully");
+        oldPinRef.current = oldPin; // Store the old PIN in the ref
         setStage("newPin"); // Proceed to new PIN creation
       } else {
         Alert.alert("Incorrect PIN", "The PIN you entered is incorrect");
