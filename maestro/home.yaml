@@ -1,0 +1,6 @@
+appId: app.carpe.wallet_base
+---
+- launchApp
+- extendedWaitUntil:
+    visible: PIN-Protected Storage
+    timeout: 300000

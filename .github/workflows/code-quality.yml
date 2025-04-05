@@ -1,25 +1,29 @@
-name: Expo Prebuild Android
+name: Code Quality
 
 on:
   schedule:
-    - cron: "31 10 * * *"
+    - cron: '33 0 * * *'  # Runs at 00:00 UTC every day
   push:
-    branches: ['*']
+    branches: '*'
+
   pull_request:
     branches: [ main ]
     types: [opened, synchronize]
 
 jobs:
-  prebuild-android:
+  quality:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Setup repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - uses: oven-sh/setup-bun@v2
 
     - name: Install dependencies
       run: bun install
 
-    - name: prebuild android
-      run: bunx expo prebuild -p android --clean
+    - name: Check formatting
+      run: bun format
+
+    - name: Run linter
+      run: bun lint

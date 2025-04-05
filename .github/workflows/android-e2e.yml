@@ -1,0 +1,60 @@
+
+name: Android E2E Tests
+on:
+  push:
+    branches: ["*"] # glob pattern to allow slash /
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize]
+
+env:
+  CI: true # emulator to use -no-window
+
+jobs:
+  android-e2e:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        api-level: [29] # [21, 23, 29]
+    steps:
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
+        timeout-minutes: 15
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/checkout@v4
+
+# Actual test
+      - uses: oven-sh/setup-bun@v2
+
+      - name: bun install
+        run: bun install
+
+      - name: install maestro
+        uses: dniHze/maestro-test-action@v1
+
+      - name: Add Android SDK emulator to PATH
+        run: echo "/usr/local/lib/android/sdk/emulator/" >> $GITHUB_PATH
+          # echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+
+      - name: setup android tools
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "setup complete"
+      - name: run tests
+        run: |
+          echo "Running tests"
+          bun e2e
