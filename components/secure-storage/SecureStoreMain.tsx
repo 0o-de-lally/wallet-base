@@ -9,7 +9,7 @@ import {
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { SecureStorageForm } from "./SecureStorageForm";
 import { SecureStorageResult } from "./SecureStorageResult";
-import { PinInputModal } from "../pin-input/PinInputModal";
+import { PinInputOverlay } from "../pin-input/PinInputModal"; // Still using same file but different component
 import { styles } from "../../styles/styles";
 
 /**
@@ -26,9 +26,9 @@ export default function SecureStorageScreen() {
     handleSave,
     handleRetrieve,
     handleDelete,
-    handleClearAll, // Get the handleClearAll method
-    pinModalVisible,
-    setPinModalVisible,
+    handleClearAll,
+    pinOverlayVisible, // renamed from pinModalVisible
+    setPinOverlayVisible, // renamed from setPinModalVisible
     handlePinVerified,
     currentAction,
   } = useSecureStorage();
@@ -53,16 +53,16 @@ export default function SecureStorageScreen() {
             onSave={handleSave}
             onRetrieve={handleRetrieve}
             onDelete={handleDelete}
-            onClearAll={handleClearAll} // Pass the method here
+            onClearAll={handleClearAll}
             isLoading={isLoading}
           />
 
           <SecureStorageResult storedValue={storedValue} />
 
-          {/* PIN Input Modal */}
-          <PinInputModal
-            visible={pinModalVisible}
-            onClose={() => setPinModalVisible(false)}
+          {/* PIN Input Overlay */}
+          <PinInputOverlay
+            visible={pinOverlayVisible}
+            onClose={() => setPinOverlayVisible(false)}
             onPinVerified={handlePinVerified}
             purpose={currentAction || "retrieve"}
           />

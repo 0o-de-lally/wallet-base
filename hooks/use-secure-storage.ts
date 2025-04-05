@@ -22,18 +22,18 @@ export function useSecureStorage() {
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [pinOverlayVisible, setPinOverlayVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<
     "save" | "retrieve" | "delete" | null
   >(null);
 
   const requestPinForAction = (action: "save" | "retrieve" | "delete") => {
     setCurrentAction(action);
-    setPinModalVisible(true);
+    setPinOverlayVisible(true);
   };
 
   const handlePinVerified = async (pin: string) => {
-    setPinModalVisible(false);
+    setPinOverlayVisible(false);
 
     switch (currentAction) {
       case "save":
@@ -191,8 +191,8 @@ export function useSecureStorage() {
     handleRetrieve,
     handleDelete,
     handleClearAll,
-    pinModalVisible,
-    setPinModalVisible,
+    pinOverlayVisible, // renamed from pinModalVisible
+    setPinOverlayVisible, // renamed from setPinModalVisible
     handlePinVerified,
     currentAction,
   };
