@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Alert } from "react-native";
 import {
   saveValue,
   getValue,
@@ -29,6 +30,7 @@ export function useSecureStorage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const oldPinRef = useRef<string>("");
 
   const requestPinForAction = (action: "save" | "retrieve" | "delete") => {
     setCurrentAction(action);
@@ -192,6 +194,70 @@ export function useSecureStorage() {
     requestPinForAction("delete");
   };
 
+  const reEncryptSecrets = async (newPin: string) => {
+    try {
+      setIsLoading(true);
+
+      // 1. Retrieve the old encrypted value
+      const encryptedBase64 = await getValue(FIXED_KEY);
+
+      if (!encryptedBase64) {
+        Alert.alert("Info", "No value found to re-encrypt");
+        return;
+      }
+
+      // 2. Decrypt with the old PIN (which is stored in oldPinRef)
+      const oldPin = oldPinRef.current;
+      if (!oldPin) {
+        Alert.alert("Error", "Old PIN is missing. Re-encryption aborted.");
+        return;
+      }
+
+      const encryptedBytes = base64ToUint8Array(encryptedBase64);
+      const oldPinBytes = stringToUint8Array(oldPin);
+
+      // Debugging: Log the encrypted data and PIN being used for decryption
+      console.log("Encrypted data (base64):", encryptedBase64);
+
+      let decryptResult;
+      try {
+        decryptResult = await decryptWithPin(encryptedBytes, oldPinBytes);
+      } catch (decryptError) {
+        console.error("Decryption error:", decryptError);
+        Alert.alert(
+          "Error",
+          `Decryption failed with error: ${decryptError.message}. Re-encryption aborted.`,
+        );
+        return;
+      }
+
+      if (!decryptResult || !decryptResult.verified) {
+        Alert.alert(
+          "Error",
+          "Failed to decrypt with old PIN or integrity check failed. Re-encryption aborted.",
+        );
+        return;
+      }
+
+      const decryptedValue = uint8ArrayToString(decryptResult.value);
+
+      // 3. Encrypt with the new PIN
+      const newPinBytes = stringToUint8Array(newPin);
+      const valueBytes = stringToUint8Array(decryptedValue);
+      const newEncryptedBytes = await encryptWithPin(valueBytes, newPinBytes);
+      const newEncryptedBase64 = uint8ArrayToBase64(newEncryptedBytes);
+
+      // 4. Save the re-encrypted value
+      await saveValue(FIXED_KEY, newEncryptedBase64);
+      Alert.alert("Success", "Secrets re-encrypted with new PIN");
+    } catch (error) {
+      Alert.alert("Error", "Failed to re-encrypt secrets");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     value,
     setValue,
@@ -212,5 +278,7 @@ export function useSecureStorage() {
     successModalVisible,
     setSuccessModalVisible,
     successMessage,
+    oldPinRef,
+    reEncryptSecrets,
   };
 }
