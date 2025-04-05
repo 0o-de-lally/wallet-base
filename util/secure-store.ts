@@ -26,7 +26,8 @@ export async function saveValue(key: string, value: string): Promise<void> {
  */
 export async function getValue(key: string): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(key);
+    const result = await SecureStore.getItemAsync(key);
+    return result;
   } catch (error) {
     console.error("Error retrieving from secure store:", error);
     throw error;
