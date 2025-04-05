@@ -222,11 +222,13 @@ export function useSecureStorage() {
       let decryptResult;
       try {
         decryptResult = await decryptWithPin(encryptedBytes, oldPinBytes);
-      } catch (decryptError) {
+      } catch (decryptError: unknown) {
         console.error("Decryption error:", decryptError);
         Alert.alert(
           "Error",
-          `Decryption failed with error: ${decryptError.message}. Re-encryption aborted.`,
+          `Decryption failed with error: ${
+            (decryptError as Error).message
+          }. Re-encryption aborted.`,
         );
         return;
       }

@@ -29,7 +29,6 @@ export default function EnterPinScreen() {
 
   const { reEncryptSecrets, oldPinRef } = useSecureStorage();
 
-  const [hasSavedPin, setHasSavedPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -50,7 +49,6 @@ export default function EnterPinScreen() {
   const checkExistingPin = async () => {
     try {
       const savedPin = await getValue("user_pin");
-      setHasSavedPin(savedPin !== null);
       setStage(savedPin !== null ? "verify" : "newPin"); // Set initial stage based on whether a PIN exists
     } catch (error) {
       console.error("Error checking existing PIN:", error);
@@ -97,7 +95,6 @@ export default function EnterPinScreen() {
         await reEncryptSecrets(newPin);
       }
 
-      setHasSavedPin(true);
       setStage("verify"); // go to verify stage
       setIsLoading(false);
     } catch (error) {
