@@ -163,4 +163,6 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
   },
 );
 
+AddAccountForm.displayName = "AddAccountForm";
+
 export default AddAccountForm;

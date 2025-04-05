@@ -26,7 +26,6 @@ const AccountList = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [showAddAccountForm, setShowAddAccountForm] = useState(false);
   const addAccountFormRef = useRef<AddAccountFormRef>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const handleDeleteAccount = (accountAddress: string) => {
     setAccountToDelete(accountAddress);
@@ -63,7 +62,6 @@ const AccountList = ({
 
   const handleSuccess = () => {
     setSuccessModalVisible(false);
-    setError(null);
     setShowAddAccountForm(false);
     addAccountFormRef.current?.resetForm();
   };
