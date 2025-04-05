@@ -6,7 +6,6 @@ import { appConfig } from "../../util/app-config-store";
 import ProfileList from "./ProfileList";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
-import AddAccountForm from "./AddAccountForm";
 import ConfirmationModal from "../modal/ConfirmationModal";
 
 const ProfileManagement = observer(() => {
@@ -14,8 +13,8 @@ const ProfileManagement = observer(() => {
     null,
   );
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showAddAccountForm, setShowAddAccountForm] = useState(false);
   const [deleteAllModalVisible, setDeleteAllModalVisible] = useState(false);
+  const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
 
   // Get all profiles from the store
   const profiles = appConfig.profiles.get();
@@ -29,9 +28,11 @@ const ProfileManagement = observer(() => {
       : null;
 
   const handleSelectProfile = (profileName: string) => {
-    setSelectedProfileName(profileName);
+    // Toggle the expanded state of the selected profile
+    setExpandedProfile((prevProfile) =>
+      prevProfile === profileName ? null : profileName,
+    );
     setShowCreateForm(false);
-    setShowAddAccountForm(false);
   };
 
   const handleDeleteAllProfiles = () => {
@@ -47,15 +48,8 @@ const ProfileManagement = observer(() => {
 
   const toggleCreateForm = () => {
     setShowCreateForm(!showCreateForm);
-    setShowAddAccountForm(false);
   };
 
-  const toggleAddAccountForm = () => {
-    setShowAddAccountForm(!showAddAccountForm);
-    setShowCreateForm(false);
-  };
-
-  // Add this new function to handle account updates
   const handleAccountsUpdated = () => {
     // Force a UI refresh by updating the selected profile
     if (selectedProfileName) {
@@ -80,55 +74,42 @@ const ProfileManagement = observer(() => {
             {showCreateForm ? "Cancel" : "Create Profile"}
           </Text>
         </TouchableOpacity>
-
-        {selectedProfile && (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              showAddAccountForm && { backgroundColor: "#6BA5D9" },
-            ]}
-            onPress={toggleAddAccountForm}
-          >
-            <Text style={styles.buttonText}>
-              {showAddAccountForm ? "Cancel" : "Add Account"}
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {showCreateForm && (
         <CreateProfileForm onComplete={() => setShowCreateForm(false)} />
       )}
 
-      {showAddAccountForm && selectedProfileName && (
-        <AddAccountForm
-          profileName={selectedProfileName}
-          onComplete={() => setShowAddAccountForm(false)}
-        />
-      )}
-
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Your Profiles</Text>
-        <ProfileList
-          profiles={profiles}
-          activeProfileName={activeProfileName}
-          selectedProfileName={selectedProfileName}
-          onSelectProfile={handleSelectProfile}
-        />
-      </View>
+        {Object.entries(profiles).map(([profileName, profile]) => (
+          <View key={profileName}>
+            <TouchableOpacity
+              style={styles.profileItem} // Use the same style for all items
+              onPress={() => handleSelectProfile(profileName)}
+            >
+              <Text style={styles.profileName}>
+                {profileName}{" "}
+                {activeProfileName === profileName && "✓"}
+                {activeProfileName === profileName ? " (Active)" : ""}
+              </Text>
+            </TouchableOpacity>
 
-      {selectedProfile && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {selectedProfile.name}&apos;s Accounts
-          </Text>
-          <AccountList
-            profileName={selectedProfile.name}
-            accounts={selectedProfile.accounts}
-            onAccountsUpdated={handleAccountsUpdated}
-          />
-        </View>
-      )}
+            {expandedProfile === profileName && (
+              <View style={styles.accountListContainer}>
+                <Text style={styles.sectionTitle}>
+                  {profileName}&apos;s Accounts
+                </Text>
+                <AccountList
+                  profileName={profileName}
+                  accounts={profile.accounts}
+                  onAccountsUpdated={handleAccountsUpdated}
+                />
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
 
       {!selectedProfile && Object.keys(profiles).length === 0 && (
         <View style={styles.resultContainer}>

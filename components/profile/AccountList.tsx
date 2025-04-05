@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import ConfirmationModal from "../modal/ConfirmationModal";
+import AddAccountForm from "./AddAccountForm";
+import type { AddAccountFormRef } from "./AddAccountForm";
 
 interface AccountListProps {
   profileName: string;
@@ -17,12 +19,14 @@ const AccountList = ({
   accounts,
   onAccountsUpdated,
 }: AccountListProps) => {
-  // State for the confirmation modal
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showAddAccountForm, setShowAddAccountForm] = useState(false);
+  const addAccountFormRef = useRef<AddAccountFormRef>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDeleteAccount = (accountAddress: string) => {
     setAccountToDelete(accountAddress);
@@ -33,23 +37,17 @@ const AccountList = ({
     if (!accountToDelete) return;
 
     try {
-      // Filter out the account to delete
       const updatedAccounts = accounts.filter(
         (acc) => acc.account_address !== accountToDelete,
       );
 
-      // Update the profile's accounts
       appConfig.profiles[profileName].accounts.set(updatedAccounts);
 
-      // Notify parent component about the update to refresh UI
       if (onAccountsUpdated) {
         onAccountsUpdated(updatedAccounts);
       }
 
-      // Close delete modal
       setIsDeleteModalVisible(false);
-
-      // Show success modal
       setSuccessModalVisible(true);
     } catch (error) {
       console.error("Failed to remove account:", error);
@@ -59,18 +57,59 @@ const AccountList = ({
     }
   };
 
+  const toggleAddAccountForm = () => {
+    setShowAddAccountForm(!showAddAccountForm);
+  };
+
+  const handleSuccess = () => {
+    setSuccessModalVisible(false);
+    setError(null);
+    setShowAddAccountForm(false);
+    addAccountFormRef.current?.resetForm();
+  };
+
   if (accounts.length === 0) {
     return (
       <View style={styles.resultContainer}>
         <Text style={styles.resultValue}>
           No accounts in this profile. Add one to get started.
         </Text>
+        <TouchableOpacity
+          style={[styles.button]}
+          onPress={toggleAddAccountForm}
+        >
+          <Text style={styles.buttonText}>
+            {showAddAccountForm ? "Cancel" : "Add Account"}
+          </Text>
+        </TouchableOpacity>
+        {showAddAccountForm && (
+          <AddAccountForm
+            profileName={profileName}
+            onComplete={() => setShowAddAccountForm(false)}
+            ref={addAccountFormRef}
+          />
+        )}
       </View>
     );
   }
 
   return (
     <View>
+      <TouchableOpacity
+        style={[styles.button]}
+        onPress={toggleAddAccountForm}
+      >
+        <Text style={styles.buttonText}>
+          {showAddAccountForm ? "Cancel" : "Add Account"}
+        </Text>
+      </TouchableOpacity>
+      {showAddAccountForm && (
+        <AddAccountForm
+          profileName={profileName}
+          onComplete={() => setShowAddAccountForm(false)}
+          ref={addAccountFormRef}
+        />
+      )}
       {accounts.map((account) => (
         <View
           key={account.account_address}
@@ -125,7 +164,7 @@ const AccountList = ({
                     : "#b3b8c3",
                 },
               ]}
-              disabled={true} // This would link to a more detailed view
+              disabled={true}
             >
               <Text style={[styles.buttonText, { fontSize: 14 }]}>
                 {account.is_key_stored ? "Full Access" : "View Only"}
@@ -148,7 +187,6 @@ const AccountList = ({
         </View>
       ))}
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         visible={isDeleteModalVisible}
         title="Delete Account"
@@ -159,7 +197,6 @@ const AccountList = ({
         isDestructive={true}
       />
 
-      {/* Success Modal */}
       <ConfirmationModal
         visible={successModalVisible}
         title="Success"
@@ -169,7 +206,6 @@ const AccountList = ({
         onCancel={() => setSuccessModalVisible(false)}
       />
 
-      {/* Error Modal */}
       <ConfirmationModal
         visible={errorModalVisible}
         title="Error"

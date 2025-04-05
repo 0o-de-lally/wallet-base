@@ -292,4 +292,21 @@ export const styles = StyleSheet.create({
   statusBar: {
     backgroundColor: colors.statusBarBg,
   },
+
+  // Profile styles
+  profileItem: {
+    padding: 10,
+    marginTop: 5, // Add margin to separate items
+    borderRadius: 1,
+    borderWidth: 1,
+    borderColor: colors.outlineBold,
+  },
+  profileName: {
+    fontSize: 16,
+    color: colors.textPrimary,
+  },
+  accountListContainer: {
+    paddingLeft: 10, // Adjusted padding
+    paddingBottom: 10,
+  },
 });
