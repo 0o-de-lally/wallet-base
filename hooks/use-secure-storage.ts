@@ -64,7 +64,10 @@ export function useSecureStorage() {
       // First verify this is really the user's PIN by checking if it's stored
       const savedPinJson = await getValue("user_pin");
       if (!savedPinJson) {
-        showAlert("Error", "Please set up a PIN in the PIN Management screen first");
+        showAlert(
+          "Error",
+          "Please set up a PIN in the PIN Management screen first",
+        );
         return;
       }
 

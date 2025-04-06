@@ -8,7 +8,7 @@ type ModalContextType = {
     message: string,
     onConfirm: () => void,
     confirmText?: string,
-    isDestructive?: boolean
+    isDestructive?: boolean,
   ) => void;
 };
 
@@ -32,7 +32,6 @@ export const ModalProvider = ({ children }: ModalProviderProps) => {
   const [modalMessage, setModalMessage] = useState("");
   const [modalConfirmText, setModalConfirmText] = useState("OK");
   const [modalCallback, setModalCallback] = useState<(() => void) | null>(null);
-  const [isConfirmation, setIsConfirmation] = useState(false);
   const [isDestructive, setIsDestructive] = useState(false);
 
   const showAlert = (title: string, message: string, callback?: () => void) => {
@@ -40,7 +39,6 @@ export const ModalProvider = ({ children }: ModalProviderProps) => {
     setModalMessage(message);
     setModalConfirmText("OK");
     setModalCallback(() => callback || null);
-    setIsConfirmation(false);
     setIsDestructive(false);
     setModalVisible(true);
   };
@@ -50,13 +48,12 @@ export const ModalProvider = ({ children }: ModalProviderProps) => {
     message: string,
     onConfirm: () => void,
     confirmText = "Confirm",
-    isDestructive = false
+    isDestructive = false,
   ) => {
     setModalTitle(title);
     setModalMessage(message);
     setModalConfirmText(confirmText);
     setModalCallback(() => onConfirm);
-    setIsConfirmation(true);
     setIsDestructive(isDestructive);
     setModalVisible(true);
   };
