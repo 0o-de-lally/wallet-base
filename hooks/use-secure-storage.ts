@@ -4,11 +4,13 @@ import {
   getValue,
   deleteValue,
   clearAllSecureStorage,
+} from "../util/secure-store";
+import {
   scheduleReveal,
   checkRevealStatus,
   cancelReveal,
   clearAllScheduledReveals,
-} from "../util/secure-store";
+} from "../util/reveal-controller";
 import {
   encryptWithPin,
   decryptWithPin,
