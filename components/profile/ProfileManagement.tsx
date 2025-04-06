@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { appConfig, setActiveProfile } from "../../util/app-config-store";
@@ -29,11 +29,24 @@ const ProfileManagement = observer(() => {
       : null;
 
   const handleSelectProfile = useCallback((profileName: string) => {
+    // Set the selected profile name first
+    setSelectedProfileName(profileName);
+
     // Toggle the expanded state of the selected profile
     setExpandedProfile((prevProfile) =>
       prevProfile === profileName ? null : profileName,
     );
     setShowCreateForm(false);
+  }, []);
+
+  const handleSetActiveProfile = useCallback((profileName: string, event?: any) => {
+    // Prevent event propagation to avoid triggering profile selection
+    if (event) {
+      event.stopPropagation();
+    }
+
+    // Set the active profile
+    appConfig.activeProfile.set(profileName);
   }, []);
 
   const handleDeleteAllProfiles = useCallback(() => {
@@ -62,43 +75,62 @@ const ProfileManagement = observer(() => {
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
       <View key={profileName}>
-        <View
-          style={styles.profileItem}
+        <TouchableOpacity
+          style={[
+            styles.profileItem,
+            activeProfileName === profileName && { borderColor: "#94c2f3", borderWidth: 2 },
+            selectedProfileName === profileName && { backgroundColor: "#2c3040" }
+          ]}
+          onPress={() => handleSelectProfile(profileName)}
+          activeOpacity={0.7}
           accessible={true}
           accessibilityRole="button"
           accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(active)" : ""}`}
           accessibilityState={{ expanded: expandedProfile === profileName }}
-          onAccessibilityTap={() => handleSelectProfile(profileName)}
         >
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View
-              style={[
-                styles.radioButton,
-                activeProfileName === profileName
-                  ? styles.radioButtonSelected
-                  : null,
-              ]}
-              accessible={true}
-              accessibilityRole="radio"
-              accessibilityState={{
-                checked: activeProfileName === profileName,
-              }}
-              accessibilityLabel={`Make ${profileName} active`}
-              onAccessibilityTap={() => setActiveProfile(profileName)}
-            >
-              {activeProfileName === profileName && (
-                <View style={styles.radioButtonInner} />
-              )}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity
+                onPress={(e) => handleSetActiveProfile(profileName, e)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={{ marginRight: 12 }}
+                disabled={activeProfileName === profileName}
+              >
+                <View style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: activeProfileName === profileName ? "#94c2f3" : "#fff",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}>
+                  {activeProfileName === profileName && (
+                    <View style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: "#94c2f3"
+                    }} />
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              <Text style={styles.profileName}>
+                {profileName}
+              </Text>
             </View>
-            <Text
-              style={styles.profileName}
-              onPress={() => handleSelectProfile(profileName)}
-            >
-              {profileName}
-              {activeProfileName === profileName ? " (Active)" : ""}
+
+            <Text style={{ color: "#fff", fontSize: 12 }}>
+              {profile.accounts.length} account(s)
+              {expandedProfile === profileName ? " ▲" : " ▼"}
             </Text>
           </View>
-        </View>
+
+          <Text style={{ color: "#ddd", fontSize: 12, marginLeft: 42, marginBottom: 10 }}>
+            Network: {profile.network.network_name} ({profile.network.network_type})
+          </Text>
+        </TouchableOpacity>
 
         {expandedProfile === profileName && (
           <SectionContainer>
@@ -114,8 +146,10 @@ const ProfileManagement = observer(() => {
   }, [
     profiles,
     activeProfileName,
+    selectedProfileName,
     expandedProfile,
     handleSelectProfile,
+    handleSetActiveProfile,
     handleAccountsUpdated,
   ]);
 

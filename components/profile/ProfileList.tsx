@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { setActiveProfile, appConfig } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
@@ -26,8 +26,18 @@ const ProfileList = memo(
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
 
+    // Simpler expanded state tracking
+    const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
+
+    const toggleExpand = useCallback((profileName: string) => {
+      setExpandedProfile((currentExpanded) =>
+        currentExpanded === profileName ? null : profileName
+      );
+    }, []);
+
     const handleMakeActive = useCallback((profileName: string) => {
-      setActiveProfile(profileName);
+      // Direct approach to set active profile
+      appConfig.activeProfile.set(profileName);
     }, []);
 
     const handleDeleteProfile = useCallback((profileName: string) => {
@@ -49,7 +59,7 @@ const ProfileList = memo(
             obj[name] = currentProfiles[name];
             return obj;
           },
-          {} as Record<string, Profile>,
+          {} as Record<string, Profile>
         );
 
       // Update the profiles
@@ -101,56 +111,145 @@ const ProfileList = memo(
         const profile = profiles[profileName];
         const isActive = profileName === activeProfileName;
         const isSelected = profileName === selectedProfileName;
+        const isExpanded = expandedProfile === profileName;
 
         return (
           <View
             key={profileName}
             style={[
               styles.resultContainer,
-              { marginBottom: 10 },
+              { marginBottom: 15 },
               isActive && { borderColor: "#94c2f3", borderWidth: 2 },
               isSelected && { backgroundColor: "#2c3040" },
             ]}
-            accessible={true}
-            accessibilityLabel={`Profile ${profileName}${isActive ? ", active" : ""}${isSelected ? ", selected" : ""}`}
           >
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text style={styles.resultLabel}>
-                {isActive ? "✓ " : ""}
-                {profile.name}
-              </Text>
-              <Text style={[styles.resultValue, { fontSize: 12 }]}>
-                {profile.accounts.length} account(s)
-              </Text>
-            </View>
-            <Text style={[styles.resultValue, { fontSize: 12 }]}>
-              Network: {profile.network.network_name} (
-              {profile.network.network_type})
-            </Text>
+            {/* Simple header with radio button */}
+            <View style={{ padding: 10 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 8,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  {/* Simple radio button with good tap target */}
+                  <TouchableOpacity
+                    onPress={() => handleMakeActive(profileName)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={{ marginRight: 12 }}
+                    disabled={isActive}
+                  >
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        borderWidth: 2,
+                        borderColor: isActive ? "#94c2f3" : "#fff",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {isActive && (
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 6,
+                            backgroundColor: "#94c2f3",
+                          }}
+                        />
+                      )}
+                    </View>
+                  </TouchableOpacity>
 
+                  <Text style={[styles.resultLabel, { fontSize: 16 }]}>
+                    {profile.name}
+                  </Text>
+                </View>
+
+                <Text style={styles.resultValue}>
+                  {profile.accounts.length} account(s)
+                </Text>
+              </View>
+
+              <Text style={[styles.resultValue, { fontSize: 12 }]}>
+                Network: {profile.network.network_name} (
+                {profile.network.network_type})
+              </Text>
+
+              {/* Simple toggle button */}
+              <TouchableOpacity
+                onPress={() => toggleExpand(profileName)}
+                style={{
+                  alignSelf: "center",
+                  marginTop: 8,
+                  padding: 5,
+                  backgroundColor: "#3a3f55",
+                  borderRadius: 4,
+                }}
+              >
+                <Text style={{ color: "#fff" }}>
+                  {isExpanded ? "Hide Details ▲" : "Show Details ▼"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Simple expanded content */}
+            {isExpanded && (
+              <View
+                style={{
+                  padding: 10,
+                  backgroundColor: "#262935",
+                  borderTopWidth: 1,
+                  borderTopColor: "#3a3f55",
+                }}
+              >
+                {profile.accounts.length > 0 ? (
+                  <>
+                    <Text
+                      style={[styles.resultLabel, { marginBottom: 8 }]}
+                    >
+                      Accounts:
+                    </Text>
+                    {profile.accounts.map((account, index) => (
+                      <Text key={index} style={styles.resultValue}>
+                        • {account.nickname || `Account ${index + 1}`}
+                      </Text>
+                    ))}
+                  </>
+                ) : (
+                  <Text style={styles.resultValue}>
+                    No accounts in this profile.
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {/* Action buttons in a simple row */}
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                marginTop: 10,
+                padding: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#3a3f55",
               }}
             >
               <ActionButton
-                text={isSelected ? "Editing" : "Edit Profile"}
+                text={isSelected ? "Editing" : "Edit"}
                 onPress={() => onSelectProfile(profileName)}
                 size="small"
-                accessibilityLabel={`${isSelected ? "Currently editing" : "Edit"} profile ${profileName}`}
               />
 
               {!isActive && (
                 <ActionButton
-                  text="Make Active"
+                  text="Set Active"
                   onPress={() => handleMakeActive(profileName)}
                   style={{ backgroundColor: "#a5d6b7" }}
                   size="small"
-                  accessibilityLabel={`Make ${profileName} the active profile`}
                 />
               )}
 
@@ -159,7 +258,6 @@ const ProfileList = memo(
                 onPress={() => handleDeleteProfile(profileName)}
                 isDestructive={true}
                 size="small"
-                accessibilityLabel={`Delete profile ${profileName}`}
               />
             </View>
           </View>
@@ -169,10 +267,12 @@ const ProfileList = memo(
         profiles,
         activeProfileName,
         selectedProfileName,
+        expandedProfile,
         onSelectProfile,
         handleMakeActive,
         handleDeleteProfile,
-      ],
+        toggleExpand,
+      ]
     );
 
     return (
@@ -192,7 +292,7 @@ const ProfileList = memo(
         />
       </View>
     );
-  },
+  }
 );
 
 ProfileList.displayName = "ProfileList";
