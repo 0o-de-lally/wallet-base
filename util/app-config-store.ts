@@ -3,11 +3,20 @@ import { persistObservable } from "@legendapp/state/persist";
 import { configureObservablePersistence } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
 import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
+import {
+  AppConfig,
+  NetworkType,
+  NetworkTypeEnum,
+  AccountState,
+  Profile,
+  defaultConfig
+} from "./app-config-types";
 
 const isMobile = (): boolean => {
   return typeof window !== "undefined" && typeof process === "object";
 };
-// Global configuration
+
+// Global configuration - only configure persistence once
 if (isMobile()) {
   // Persistence for mobile devices
   configureObservablePersistence({
@@ -19,82 +28,6 @@ if (isMobile()) {
     pluginLocal: ObservablePersistLocalStorage,
   });
 }
-configureObservablePersistence({
-  pluginLocal: ObservablePersistLocalStorage,
-});
-
-/**
- * Network types available for selection
- */
-export enum NetworkTypeEnum {
-  MAINNET = "Mainnet",
-  TESTING = "Testing",
-  TESTNET = "Testnet",
-  CUSTOM = "Custom",
-}
-
-/**
- * Network type represents a blockchain network configuration
- */
-export type NetworkType = {
-  network_name: string;
-  network_type: NetworkTypeEnum;
-  // Additional network properties can be added here
-};
-
-/**
- * Account state represents a single blockchain account within a profile
- */
-export type AccountState = {
-  account_address: string;
-  nickname: string; // User-friendly name for the account
-  is_key_stored: boolean;
-  balance_locked: number;
-  balance_unlocked: number;
-  last_update: number; // timestamp
-};
-
-/**
- * Profile represents a user profile containing network and accounts configuration
- */
-export type Profile = {
-  name: string; // unique name (required)
-  network: NetworkType; // required
-  accounts: AccountState[]; // list of accounts
-  created_at: number; // timestamp
-  last_used: number; // timestamp
-};
-
-/**
- * Application settings for global configuration
- */
-export type AppSettings = {
-  theme: "dark" | "light"; // UI theme
-  // Add other app-wide settings here
-};
-
-/**
- * Defines the structure of the application configuration.
- */
-export type AppConfig = {
-  app_settings: AppSettings;
-  profiles: {
-    [profileName: string]: Profile;
-  };
-  activeProfile: string | null; // Name of the currently active profile
-  // Add other config sections as needed
-};
-
-/**
- * Default configuration values for the application.
- */
-const defaultConfig: AppConfig = {
-  app_settings: {
-    theme: "dark",
-  },
-  profiles: {},
-  activeProfile: null,
-};
 
 /**
  * Observable application configuration state.
@@ -232,12 +165,30 @@ export function deleteProfile(profileName: string): boolean {
 
 /**
  * Initializes a default profile if no profiles exist.
+ * This should only run if there are no profiles in the persisted state.
  */
-export function initializeDefaultProfile() {
-  if (Object.keys(appConfig.profiles.get()).length === 0) {
+export function maybeInitializeDefaultProfile() {
+  // Get current profiles and ensure we only initialize if truly empty
+  const currentProfiles = appConfig.profiles.get();
+
+  // Only create default profile if there are no profiles AND no active profile
+  if (Object.keys(currentProfiles).length === 0 && !appConfig.activeProfile.get()) {
+    console.log("No profiles found, initializing default profile");
     createProfile("mainnet", {
       network_name: "Mainnet",
       network_type: NetworkTypeEnum.MAINNET,
     });
+  } else {
+    console.log("Profiles already exist, skipping initialization");
   }
 }
+
+// Export types from the types file for backward compatibility
+export {
+  NetworkTypeEnum,
+  type NetworkType,
+  type AccountState,
+  type Profile,
+  type AppSettings,
+  type AppConfig
+} from "./app-config-types";

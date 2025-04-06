@@ -5,8 +5,8 @@ import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { styles } from "../styles/styles";
-import { initializeDefaultProfile } from "../util/app-config-store";
 import { ModalProvider } from "../context/ModalContext";
+import { initializeApp } from "@/util/initialize-app";
 
 // Main App component that combines the functionality
 export default function App() {
@@ -21,12 +21,13 @@ export default function App() {
 
 // Content component with observer for reactive updates
 const AppContent = observer(() => {
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
   // Use the useRouter hook to get the router instance
   const router = useRouter();
 
-  useEffect(() => {
-    initializeDefaultProfile();
-  }, []);
 
   const navigateToPIN = useCallback(() => {
     router.navigate("/pin");
