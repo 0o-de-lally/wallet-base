@@ -1,8 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { appConfig, setActiveProfile } from "../../util/app-config-store";
+import { appConfig } from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -39,15 +45,18 @@ const ProfileManagement = observer(() => {
     setShowCreateForm(false);
   }, []);
 
-  const handleSetActiveProfile = useCallback((profileName: string, event?: any) => {
-    // Prevent event propagation to avoid triggering profile selection
-    if (event) {
-      event.stopPropagation();
-    }
+  const handleSetActiveProfile = useCallback(
+    (profileName: string, event?: GestureResponderEvent) => {
+      // Prevent event propagation to avoid triggering profile selection
+      if (event) {
+        event.stopPropagation();
+      }
 
-    // Set the active profile
-    appConfig.activeProfile.set(profileName);
-  }, []);
+      // Set the active profile
+      appConfig.activeProfile.set(profileName);
+    },
+    [],
+  );
 
   const handleDeleteAllProfiles = useCallback(() => {
     setDeleteAllModalVisible(true);
@@ -78,8 +87,13 @@ const ProfileManagement = observer(() => {
         <TouchableOpacity
           style={[
             styles.profileItem,
-            activeProfileName === profileName && { borderColor: "#94c2f3", borderWidth: 2 },
-            selectedProfileName === profileName && { backgroundColor: "#2c3040" }
+            activeProfileName === profileName && {
+              borderColor: "#94c2f3",
+              borderWidth: 2,
+            },
+            selectedProfileName === profileName && {
+              backgroundColor: "#2c3040",
+            },
           ]}
           onPress={() => handleSelectProfile(profileName)}
           activeOpacity={0.7}
@@ -88,7 +102,14 @@ const ProfileManagement = observer(() => {
           accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(active)" : ""}`}
           accessibilityState={{ expanded: expandedProfile === profileName }}
         >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 10,
+            }}
+          >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <TouchableOpacity
                 onPress={(e) => handleSetActiveProfile(profileName, e)}
@@ -96,29 +117,32 @@ const ProfileManagement = observer(() => {
                 style={{ marginRight: 12 }}
                 disabled={activeProfileName === profileName}
               >
-                <View style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: activeProfileName === profileName ? "#94c2f3" : "#fff",
-                  justifyContent: "center",
-                  alignItems: "center"
-                }}>
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor:
+                      activeProfileName === profileName ? "#94c2f3" : "#fff",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   {activeProfileName === profileName && (
-                    <View style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: "#94c2f3"
-                    }} />
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: "#94c2f3",
+                      }}
+                    />
                   )}
                 </View>
               </TouchableOpacity>
 
-              <Text style={styles.profileName}>
-                {profileName}
-              </Text>
+              <Text style={styles.profileName}>{profileName}</Text>
             </View>
 
             <Text style={{ color: "#fff", fontSize: 12 }}>
@@ -127,8 +151,16 @@ const ProfileManagement = observer(() => {
             </Text>
           </View>
 
-          <Text style={{ color: "#ddd", fontSize: 12, marginLeft: 42, marginBottom: 10 }}>
-            Network: {profile.network.network_name} ({profile.network.network_type})
+          <Text
+            style={{
+              color: "#ddd",
+              fontSize: 12,
+              marginLeft: 42,
+              marginBottom: 10,
+            }}
+          >
+            Network: {profile.network.network_name} (
+            {profile.network.network_type})
           </Text>
         </TouchableOpacity>
 
