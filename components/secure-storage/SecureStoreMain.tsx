@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { SecureStorageForm } from "./SecureStorageForm";
-import { SecureStorageResult } from "./SecureStorageResult";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { styles } from "../../styles/styles";
 
@@ -34,6 +33,7 @@ export default function SecureStorageScreen() {
     handlePinVerified,
     currentAction,
     revealStatus,
+    clearRevealedValue,  // Get the clearRevealedValue function
   } = useSecureStorage();
 
   // Get purpose for pin modal
@@ -60,6 +60,7 @@ export default function SecureStorageScreen() {
             Enter private information to be encrypted and stored securely with
             PIN protection. All data is stored under a single private key.
             To reveal data, you must first schedule a reveal and wait 30 seconds.
+            Revealed values will automatically hide after 30 seconds.
           </Text>
 
           <SecureStorageForm
@@ -74,9 +75,9 @@ export default function SecureStorageScreen() {
             onClearAll={handleClearAll}
             isLoading={isLoading}
             revealStatus={revealStatus}
+            storedValue={storedValue}
+            onClearRevealedValue={clearRevealedValue}  // Pass the clear function
           />
-
-          <SecureStorageResult storedValue={storedValue} />
 
           {/* PIN Input Modal */}
           <PinInputModal

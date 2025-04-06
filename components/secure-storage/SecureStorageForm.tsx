@@ -4,6 +4,9 @@ import { styles } from "../../styles/styles";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { checkRevealStatus } from "../../util/secure-store";
 
+// Configuration for auto-hiding revealed values (should match the value in useSecureStorage)
+const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
+
 interface SecureStorageFormProps {
   value: string;
   onValueChange: (text: string) => void;
@@ -23,6 +26,8 @@ interface SecureStorageFormProps {
     waitTimeRemaining: number;
     expiresIn: number;
   } | null;
+  storedValue: string | null;
+  onClearRevealedValue?: () => void; // Add option to manually clear revealed value
 }
 
 export function SecureStorageForm({
@@ -38,11 +43,15 @@ export function SecureStorageForm({
   isLoading,
   disabled = false,
   revealStatus,
+  storedValue,
+  onClearRevealedValue,
 }: SecureStorageFormProps) {
   const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
   const [waitTimeDisplay, setWaitTimeDisplay] = useState("");
   const [expiryTimeDisplay, setExpiryTimeDisplay] = useState("");
+  const [hideCountdown, setHideCountdown] = useState<number>(AUTO_HIDE_DELAY_MS / 1000);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Update timer display
   useEffect(() => {
@@ -88,6 +97,41 @@ export function SecureStorageForm({
     }
   };
 
+  // Setup timer for countdown to auto-hide
+  useEffect(() => {
+    // Clear any existing timer
+    if (hideTimerRef.current) {
+      clearInterval(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+
+    // If a value is revealed, start the countdown
+    if (storedValue !== null) {
+      setHideCountdown(AUTO_HIDE_DELAY_MS / 1000);
+
+      hideTimerRef.current = setInterval(() => {
+        setHideCountdown((prev) => {
+          if (prev <= 1) {
+            // Clean up when reaching zero
+            if (hideTimerRef.current) {
+              clearInterval(hideTimerRef.current);
+              hideTimerRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    // Cleanup
+    return () => {
+      if (hideTimerRef.current) {
+        clearInterval(hideTimerRef.current);
+      }
+    };
+  }, [storedValue]);
+
   const handleClearAll = () => {
     if (!onClearAll) return;
     setClearAllModalVisible(true);
@@ -101,6 +145,20 @@ export function SecureStorageForm({
   };
 
   const renderRetrieveButton = () => {
+    // If a value has been successfully revealed, show this special state
+    if (storedValue !== null) {
+      // When a value is revealed, show a schedule button for retrieving another value
+      return (
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#6ba5d9' }]}
+          onPress={onScheduleReveal}
+          disabled={isLoading || disabled}
+        >
+          <Text style={styles.buttonText}>Schedule New Reveal</Text>
+        </TouchableOpacity>
+      );
+    }
+
     if (!revealStatus || !revealStatus.isScheduled) {
       // No reveal scheduled - show normal retrieve button
       return (
@@ -220,6 +278,24 @@ export function SecureStorageForm({
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Display the revealed value with auto-hide countdown */}
+      {storedValue !== null && (
+        <View style={[styles.resultContainer, { marginTop: 20, borderWidth: 2, borderColor: '#94c2f3' }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.resultLabel}>Successfully Revealed Value:</Text>
+            <TouchableOpacity onPress={onClearRevealedValue}>
+              <Text style={{ color: styles.dangerButtonText.color }}>
+                Hide
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.resultValue}>{storedValue}</Text>
+          <Text style={{ color: '#666', marginTop: 10, textAlign: 'center' }}>
+            Auto-hiding in {hideCountdown} seconds
+          </Text>
+        </View>
+      )}
 
       {revealStatus && revealStatus.isScheduled && (
         <View style={styles.resultContainer}>

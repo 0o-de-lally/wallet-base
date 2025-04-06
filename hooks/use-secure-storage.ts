@@ -23,6 +23,9 @@ import { useModal } from "../context/ModalContext";
 // Fixed key for all secure storage operations
 const FIXED_KEY = "private_key";
 
+// Configuration for auto-hiding revealed values
+const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
+
 export function useSecureStorage() {
   const { showAlert } = useModal();
   const [value, setValue] = useState("");
@@ -34,6 +37,9 @@ export function useSecureStorage() {
   >(null);
   const oldPinRef = useRef<string>("");
 
+  // Add timer ref for auto-hiding the value
+  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // State for reveal scheduling
   const [revealStatus, setRevealStatus] = useState<{
     isScheduled: boolean;
@@ -42,6 +48,15 @@ export function useSecureStorage() {
     waitTimeRemaining: number;
     expiresIn: number;
   } | null>(null);
+
+  // Clear the auto-hide timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+    };
+  }, []);
 
   // Check reveal status periodically
   useEffect(() => {
@@ -69,6 +84,29 @@ export function useSecureStorage() {
     // Cleanup
     return () => clearInterval(intervalId);
   }, []);
+
+  // Monitor storedValue and set up auto-hide timer when it changes
+  useEffect(() => {
+    // If a value has been revealed, set up timer to clear it
+    if (storedValue !== null) {
+      // Clear any existing timer first
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+
+      // Set new timer to clear the value after delay
+      autoHideTimerRef.current = setTimeout(() => {
+        setStoredValue(null);
+        showAlert("Security Notice", "Revealed value has been automatically hidden");
+      }, AUTO_HIDE_DELAY_MS);
+    }
+
+    return () => {
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+    };
+  }, [storedValue]);
 
   const requestPinForAction = (action: "save" | "schedule_reveal" | "execute_reveal" | "delete") => {
     setCurrentAction(action);
@@ -220,8 +258,13 @@ export function useSecureStorage() {
       // Convert the decrypted bytes back to a string
       const decryptedString = uint8ArrayToString(decryptResult.value);
 
-      // Only set the stored value if verification passed
+      // Set the revealed value - the useEffect will handle setting up auto-hide
       setStoredValue(decryptedString);
+
+      // After successful reveal, cancel the scheduling (it's been used)
+      cancelReveal(FIXED_KEY);
+
+      // Show a success message
       showAlert("Success", "Value revealed successfully");
     } catch (error) {
       showAlert("Error", "Failed to retrieve or decrypt value");
@@ -364,6 +407,18 @@ export function useSecureStorage() {
     }
   };
 
+  // Add function to clear the revealed value
+  const clearRevealedValue = () => {
+    // Clear the value
+    setStoredValue(null);
+
+    // Also clear the auto-hide timer
+    if (autoHideTimerRef.current) {
+      clearTimeout(autoHideTimerRef.current);
+      autoHideTimerRef.current = null;
+    }
+  };
+
   return {
     value,
     setValue,
@@ -382,5 +437,6 @@ export function useSecureStorage() {
     oldPinRef,
     reEncryptSecrets,
     revealStatus,
+    clearRevealedValue,
   };
 }
