@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import {
   Text,
   View,
@@ -29,7 +29,7 @@ export default function RevealScreen() {
 }
 
 // Separate component that uses hooks after providers are in place
-function RevealScreenContent() {
+const RevealScreenContent = memo(() => {
   const {
     storedValue,
     isLoading,
@@ -45,7 +45,7 @@ function RevealScreenContent() {
   } = useSecureStorage();
 
   // Get purpose for pin modal
-  const getPinPurpose = () => {
+  const getPinPurpose = useCallback(() => {
     switch (currentAction) {
       case "schedule_reveal":
         return "schedule_reveal";
@@ -54,7 +54,7 @@ function RevealScreenContent() {
       default:
         return "retrieve";
     }
-  };
+  }, [currentAction]);
 
   return (
     <KeyboardAvoidingView
@@ -65,7 +65,6 @@ function RevealScreenContent() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.title}>Reveal Secure Data</Text>
-
           <Text style={styles.description}>
             This screen allows you to securely reveal your saved data. You must
             first schedule a reveal and wait 30 seconds before you can access
@@ -94,4 +93,6 @@ function RevealScreenContent() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+});
+
+RevealScreenContent.displayName = "RevealScreenContent";

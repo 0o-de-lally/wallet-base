@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-} from "react-native";
+import React, { useState, useEffect, memo } from "react";
+import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
 import { styles } from "../../styles/styles";
 import {
   createProfile,
@@ -15,12 +8,15 @@ import {
 } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
+import { FormInput } from "../common/FormInput";
+import { SectionContainer } from "../common/SectionContainer";
+import { ActionButton } from "../common/ActionButton";
 
 interface CreateProfileFormProps {
   onComplete: () => void;
 }
 
-const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
+const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
   // Check if this is the first profile being created
   const isFirstProfile = Object.keys(appConfig.profiles.get()).length === 0;
 
@@ -103,33 +99,33 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
         setNetworkType(item);
         setShowNetworkDropdown(false);
       }}
+      accessible={true}
+      accessibilityRole="menuitem"
+      accessibilityLabel={`Select ${item} network type`}
     >
       <Text style={styles.resultValue}>{item}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Create New Profile</Text>
-
+    <SectionContainer title="Create New Profile">
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Profile Name:</Text>
-        <TextInput
-          style={styles.input}
-          value={profileName}
-          onChangeText={setProfileName}
-          placeholder="Enter profile name"
-          placeholderTextColor={styles.inputPlaceholder.color}
-        />
-      </View>
+      <FormInput
+        label="Profile Name:"
+        value={profileName}
+        onChangeText={setProfileName}
+        placeholder="Enter profile name"
+      />
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Network Type:</Text>
         <TouchableOpacity
           style={[styles.input, { paddingVertical: 12, paddingHorizontal: 10 }]}
           onPress={() => setShowNetworkDropdown(true)}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Select network type"
         >
           <Text style={{ color: styles.resultValue.color }}>{networkType}</Text>
         </TouchableOpacity>
@@ -140,6 +136,9 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
           transparent={true}
           animationType="fade"
           onRequestClose={() => setShowNetworkDropdown(false)}
+          accessible={true}
+          accessibilityViewIsModal={true}
+          accessibilityLabel="Select network type"
         >
           <View style={styles.modalOverlay}>
             <View style={[styles.modalContent, { width: "80%" }]}>
@@ -149,34 +148,35 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
                 renderItem={renderNetworkTypeItem}
                 keyExtractor={(item) => item}
                 style={{ maxHeight: 300 }}
+                accessible={true}
+                accessibilityRole="menu"
               />
-              <TouchableOpacity
-                style={[styles.button, { marginTop: 15 }]}
+              <ActionButton
+                text="Close"
                 onPress={() => setShowNetworkDropdown(false)}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
+                style={{ marginTop: 15 }}
+                accessibilityLabel="Close network selection"
+              />
             </View>
           </View>
         </Modal>
       </View>
 
       {customNetwork && (
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Custom Network Name:</Text>
-          <TextInput
-            style={styles.input}
-            value={networkName}
-            onChangeText={setNetworkName}
-            placeholder="Enter custom network name"
-            placeholderTextColor={styles.inputPlaceholder.color}
-          />
-        </View>
+        <FormInput
+          label="Custom Network Name:"
+          value={networkName}
+          onChangeText={setNetworkName}
+          placeholder="Enter custom network name"
+        />
       )}
 
-      <TouchableOpacity style={styles.button} onPress={handleCreateProfile}>
-        <Text style={styles.buttonText}>Create Profile</Text>
-      </TouchableOpacity>
+      <ActionButton
+        text="Create Profile"
+        onPress={handleCreateProfile}
+        accessibilityLabel="Create profile"
+        accessibilityHint="Creates a new wallet profile with the specified settings"
+      />
 
       {/* Success Modal */}
       <ConfirmationModal
@@ -187,8 +187,10 @@ const CreateProfileForm = ({ onComplete }: CreateProfileFormProps) => {
         onConfirm={handleSuccess}
         onCancel={handleSuccess}
       />
-    </View>
+    </SectionContainer>
   );
-};
+});
+
+CreateProfileForm.displayName = "CreateProfileForm";
 
 export default CreateProfileForm;

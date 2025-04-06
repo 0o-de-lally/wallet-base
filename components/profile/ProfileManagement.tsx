@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { appConfig, setActiveProfile } from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
+import { SectionContainer } from "../common/SectionContainer";
+import { ActionButton } from "../common/ActionButton";
 
 const ProfileManagement = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
@@ -26,122 +28,156 @@ const ProfileManagement = observer(() => {
       ? profiles[activeProfileName]
       : null;
 
-  const handleSelectProfile = (profileName: string) => {
+  const handleSelectProfile = useCallback((profileName: string) => {
     // Toggle the expanded state of the selected profile
     setExpandedProfile((prevProfile) =>
       prevProfile === profileName ? null : profileName,
     );
     setShowCreateForm(false);
-  };
+  }, []);
 
-  const handleDeleteAllProfiles = () => {
+  const handleDeleteAllProfiles = useCallback(() => {
     setDeleteAllModalVisible(true);
-  };
+  }, []);
 
-  const confirmDeleteAllProfiles = () => {
+  const confirmDeleteAllProfiles = useCallback(() => {
     appConfig.profiles.set({});
     appConfig.activeProfile.set(null);
     setSelectedProfileName(null);
     setDeleteAllModalVisible(false);
-  };
+  }, []);
 
-  const toggleCreateForm = () => {
-    setShowCreateForm(!showCreateForm);
-  };
+  const toggleCreateForm = useCallback(() => {
+    setShowCreateForm((prev) => !prev);
+  }, []);
 
-  const handleAccountsUpdated = () => {
+  const handleAccountsUpdated = useCallback(() => {
     // Force a UI refresh by updating the selected profile
     if (selectedProfileName) {
       // This will trigger a re-render with the updated accounts
       setSelectedProfileName(selectedProfileName);
     }
-  };
+  }, [selectedProfileName]);
+
+  const renderProfileSections = useCallback(() => {
+    return Object.entries(profiles).map(([profileName, profile]) => (
+      <View key={profileName}>
+        <View
+          style={styles.profileItem}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(active)" : ""}`}
+          accessibilityState={{ expanded: expandedProfile === profileName }}
+          onAccessibilityTap={() => handleSelectProfile(profileName)}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={[
+                styles.radioButton,
+                activeProfileName === profileName
+                  ? styles.radioButtonSelected
+                  : null,
+              ]}
+              accessible={true}
+              accessibilityRole="radio"
+              accessibilityState={{
+                checked: activeProfileName === profileName,
+              }}
+              accessibilityLabel={`Make ${profileName} active`}
+              onAccessibilityTap={() => setActiveProfile(profileName)}
+            >
+              {activeProfileName === profileName && (
+                <View style={styles.radioButtonInner} />
+              )}
+            </View>
+            <Text
+              style={styles.profileName}
+              onPress={() => handleSelectProfile(profileName)}
+            >
+              {profileName}
+              {activeProfileName === profileName ? " (Active)" : ""}
+            </Text>
+          </View>
+        </View>
+
+        {expandedProfile === profileName && (
+          <SectionContainer>
+            <AccountList
+              profileName={profileName}
+              accounts={profile.accounts}
+              onAccountsUpdated={handleAccountsUpdated}
+            />
+          </SectionContainer>
+        )}
+      </View>
+    ));
+  }, [
+    profiles,
+    activeProfileName,
+    expandedProfile,
+    handleSelectProfile,
+    handleAccountsUpdated,
+  ]);
+
+  const renderEmptyState = useCallback(() => {
+    if (selectedProfile || Object.keys(profiles).length > 0) return null;
+
+    return (
+      <View
+        style={styles.resultContainer}
+        accessible={true}
+        accessibilityLabel="No profiles exist yet"
+      >
+        <Text style={styles.resultValue}>
+          No profiles exist yet. Create your first profile to get started.
+        </Text>
+        <Text style={[styles.resultValue]}>
+          Your first profile will default to &quot;mainnet&quot; with the
+          Mainnet network type.
+        </Text>
+      </View>
+    );
+  }, [selectedProfile, profiles]);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      accessible={true}
+      accessibilityLabel="Profile management screen"
+    >
       <Text style={styles.title}>Profile Management</Text>
 
       {showCreateForm && (
         <CreateProfileForm onComplete={() => setShowCreateForm(false)} />
       )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Wallet Profiles</Text>
-        {Object.entries(profiles).map(([profileName, profile]) => (
-          <View key={profileName}>
-            <TouchableOpacity
-              style={styles.profileItem} // Use the same style for all items
-              onPress={() => handleSelectProfile(profileName)}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TouchableOpacity
-                  style={[
-                    styles.radioButton,
-                    activeProfileName === profileName
-                      ? styles.radioButtonSelected
-                      : null,
-                  ]}
-                  onPress={() => setActiveProfile(profileName)}
-                >
-                  {activeProfileName === profileName && (
-                    <View style={styles.radioButtonInner} />
-                  )}
-                </TouchableOpacity>
-                <Text style={styles.profileName}>
-                  {profileName}
-                  {activeProfileName === profileName ? " (Active)" : ""}
-                </Text>
-              </View>
-            </TouchableOpacity>
+      <SectionContainer title="Wallet Profiles">
+        {renderProfileSections()}
+      </SectionContainer>
 
-            {expandedProfile === profileName && (
-              <View style={styles.section}>
-                <AccountList
-                  profileName={profileName}
-                  accounts={profile.accounts}
-                  onAccountsUpdated={handleAccountsUpdated}
-                />
-              </View>
-            )}
-          </View>
-        ))}
-      </View>
-
-      {!selectedProfile && Object.keys(profiles).length === 0 && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultValue}>
-            No profiles exist yet. Create your first profile to get started.
-          </Text>
-          <Text style={[styles.resultValue]}>
-            Your first profile will default to &quot;mainnet&quot; with the
-            Mainnet network type.
-          </Text>
-        </View>
-      )}
+      {renderEmptyState()}
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            showCreateForm && { backgroundColor: "#6BA5D9" },
-          ]}
+        <ActionButton
+          text={showCreateForm ? "Cancel" : "Create Profile"}
           onPress={toggleCreateForm}
-        >
-          <Text style={styles.buttonText}>
-            {showCreateForm ? "Cancel" : "Create Profile"}
-          </Text>
-        </TouchableOpacity>
+          style={showCreateForm ? { backgroundColor: "#6BA5D9" } : {}}
+          accessibilityLabel={
+            showCreateForm ? "Cancel creating profile" : "Create a new profile"
+          }
+        />
       </View>
 
       {Object.keys(profiles).length > 0 && (
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
-          <TouchableOpacity
-            style={[styles.button, styles.dangerButton]}
+          <ActionButton
+            text="Delete All Profiles"
             onPress={handleDeleteAllProfiles}
-          >
-            <Text style={styles.dangerButtonText}>Delete All Profiles</Text>
-          </TouchableOpacity>
+            isDestructive={true}
+            accessibilityLabel="Delete all profiles"
+            accessibilityHint="This will remove all profiles and cannot be undone"
+          />
         </View>
       )}
 

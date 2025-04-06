@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { StatusBar, View, Alert } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
@@ -7,10 +7,10 @@ import { ModalProvider } from "../context/ModalContext";
 import { DangerZone } from "../components/secure-storage/DangerZone";
 import { clearAllSecureStorage } from "@/util/secure-store";
 
-export default observer(function PinScreen() {
+const PinScreen = observer(() => {
   return (
     <ModalProvider>
-      <View style={[styles.root]}>
+      <View style={styles.root}>
         <StatusBar backgroundColor={styles.root.backgroundColor} />
         <PinScreenContent />
       </View>
@@ -18,10 +18,10 @@ export default observer(function PinScreen() {
   );
 });
 
-function PinScreenContent() {
+const PinScreenContent = memo(() => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClearAll = async () => {
+  const handleClearAll = useCallback(async () => {
     try {
       setIsLoading(true);
       await clearAllSecureStorage();
@@ -32,7 +32,7 @@ function PinScreenContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return (
     <>
@@ -40,4 +40,8 @@ function PinScreenContent() {
       <DangerZone onClearAll={handleClearAll} isLoading={isLoading} />
     </>
   );
-}
+});
+
+PinScreenContent.displayName = "PinScreenContent";
+
+export default PinScreen;

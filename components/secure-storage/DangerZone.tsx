@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Text, View, TouchableOpacity } from "react-native";
+import React, { memo, useState } from "react";
+import { Text, View } from "react-native";
 import { styles } from "../../styles/styles";
 import ConfirmationModal from "../modal/ConfirmationModal";
+import { ActionButton } from "../common/ActionButton";
 
 interface DangerZoneProps {
   onClearAll?: () => void;
@@ -9,56 +10,52 @@ interface DangerZoneProps {
   disabled?: boolean;
 }
 
-export function DangerZone({
-  onClearAll,
-  isLoading,
-  disabled = false,
-}: DangerZoneProps) {
-  const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
+export const DangerZone = memo(
+  ({ onClearAll, isLoading, disabled = false }: DangerZoneProps) => {
+    const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
 
-  const handleClearAll = () => {
-    if (!onClearAll) return;
-    setClearAllModalVisible(true);
-  };
+    const handleClearAll = () => {
+      if (!onClearAll) return;
+      setClearAllModalVisible(true);
+    };
 
-  const confirmClearAll = () => {
-    if (onClearAll) {
-      onClearAll();
+    const confirmClearAll = () => {
+      if (onClearAll) {
+        onClearAll();
+      }
+      setClearAllModalVisible(false);
+    };
+
+    if (!onClearAll) {
+      return null;
     }
-    setClearAllModalVisible(false);
-  };
 
-  if (!onClearAll) {
-    return null;
-  }
+    return (
+      <>
+        <View style={styles.dangerZone}>
+          <Text style={styles.dangerTitle}>Danger Zone</Text>
+          <ActionButton
+            text="Clear All Secure Storage"
+            onPress={handleClearAll}
+            disabled={isLoading || disabled}
+            isDestructive={true}
+            accessibilityLabel="Clear all secure storage"
+            accessibilityHint="This will permanently delete all secure data"
+          />
+        </View>
 
-  return (
-    <>
-      <View style={styles.dangerZone}>
-        <Text style={styles.dangerTitle}>Danger Zone</Text>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.dangerButton,
-            disabled && styles.disabledButton,
-          ]}
-          onPress={handleClearAll}
-          disabled={isLoading || disabled}
-        >
-          <Text style={styles.dangerButtonText}>Clear All Secure Storage</Text>
-        </TouchableOpacity>
-      </View>
+        <ConfirmationModal
+          visible={clearAllModalVisible}
+          title="Clear All Secure Storage"
+          message="This will delete ALL secure data and cannot be undone. Continue?"
+          confirmText="Clear All"
+          onConfirm={confirmClearAll}
+          onCancel={() => setClearAllModalVisible(false)}
+          isDestructive={true}
+        />
+      </>
+    );
+  },
+);
 
-      {/* Clear All Confirmation Modal */}
-      <ConfirmationModal
-        visible={clearAllModalVisible}
-        title="Clear All Secure Storage"
-        message="This will delete ALL secure data and cannot be undone. Continue?"
-        confirmText="Clear All"
-        onConfirm={confirmClearAll}
-        onCancel={() => setClearAllModalVisible(false)}
-        isDestructive={true}
-      />
-    </>
-  );
-}
+DangerZone.displayName = "DangerZone";
