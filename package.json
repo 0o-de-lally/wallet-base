@@ -14,7 +14,7 @@
     "fix": "bun format:fix && bun lint:fix"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.4",
+    "@eslint/js": "^9.23.0",
     "@legendapp/state": "^2.1.15",
     "@noble/ciphers": "^1.2.1",
     "@noble/hashes": "^1.7.1",
@@ -22,27 +22,18 @@
     "expo-crypto": "^14.0.2",
     "expo-router": "~4.0.20",
     "expo-secure-store": "~14.0.1",
-    "expo-splash-screen": "~0.29.22",
-    "expo-status-bar": "~2.0.1",
-    "expo-system-ui": "~4.0.9",
+    "expo-splash-screen": "^0.29.22",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
     "react-native": "0.76.9",
-    "react-native-gesture-handler": "~2.20.2",
     "react-native-mmkv": "^3.2.0",
     "react-native-reanimated": "~3.16.7",
     "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "~4.4.0",
-    "react-native-web": "~0.19.13"
+    "react-native-screens": "~4.4.0"
   },
   "devDependencies": {
-    "@testing-library/react-native": "^13.2.0",
     "@types/react": "~18.3.20",
-    "@typescript-eslint/eslint-plugin": "^8.29.0",
-    "@typescript-eslint/parser": "^8.29.0",
     "eslint": "^9.23.0",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2",
