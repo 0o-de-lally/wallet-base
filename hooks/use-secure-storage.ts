@@ -6,7 +6,6 @@ import {
   clearAllSecureStorage,
   scheduleReveal,
   checkRevealStatus,
-  getScheduledReveal,
   cancelReveal,
   clearAllScheduledReveals,
 } from "../util/secure-store";
@@ -122,7 +121,7 @@ export function useSecureStorage() {
         await saveWithPin(pin);
         break;
       case "schedule_reveal":
-        await scheduleRevealWithPin(pin);
+        await scheduleRevealWithPin();
         break;
       case "execute_reveal":
         await executeRevealWithPin(pin);
@@ -179,7 +178,7 @@ export function useSecureStorage() {
     }
   };
 
-  const scheduleRevealWithPin = async (pin: string) => {
+  const scheduleRevealWithPin = async () => {
     try {
       setIsLoading(true);
 
