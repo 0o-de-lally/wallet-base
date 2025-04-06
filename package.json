@@ -4,52 +4,57 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "test": "jest --watchAll",
-    "lint": "expo lint"
-  },
-  "jest": {
-    "preset": "jest-expo"
+    "android": "expo run:android",
+    "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
+    "e2e": "bun ./testing/e2e-harness.ts",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --check \"**/*.{ts,tsx}\"",
+    "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
+    "fix": "bun format:fix && bun lint:fix"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.2",
-    "@react-navigation/bottom-tabs": "^7.2.0",
-    "@react-navigation/native": "^7.0.14",
-    "expo": "~52.0.38",
-    "expo-blur": "~14.0.3",
-    "expo-constants": "~17.0.8",
-    "expo-font": "~13.0.4",
-    "expo-haptics": "~14.0.1",
-    "expo-linking": "~7.0.5",
-    "expo-router": "~4.0.19",
+    "@expo/vector-icons": "^14.0.4",
+    "@legendapp/state": "^2.1.15",
+    "@noble/ciphers": "^1.2.1",
+    "@noble/hashes": "^1.7.1",
+    "expo": "~52.0.42",
+    "expo-crypto": "^14.0.2",
+    "expo-router": "~4.0.20",
+    "expo-secure-store": "~14.0.1",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
-    "expo-symbols": "~0.2.2",
-    "expo-system-ui": "~4.0.8",
-    "expo-web-browser": "~14.0.2",
+    "expo-system-ui": "~4.0.9",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-native": "0.76.7",
+    "react-native": "0.76.9",
     "react-native-gesture-handler": "~2.20.2",
-    "react-native-reanimated": "~3.16.1",
+    "react-native-mmkv": "^3.2.0",
+    "react-native-reanimated": "~3.16.7",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
-    "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@types/jest": "^29.5.12",
-    "@types/react": "~18.3.12",
-    "@types/react-test-renderer": "^18.3.0",
-    "jest": "^29.2.1",
-    "jest-expo": "~52.0.6",
-    "react-test-renderer": "18.3.1",
-    "typescript": "^5.3.3"
+    "@testing-library/react-native": "^13.2.0",
+    "@types/react": "~18.3.20",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "eslint": "^9.23.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.29.0"
   },
   "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false
+      }
+    }
+  },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
