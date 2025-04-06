@@ -13,7 +13,6 @@ import { styles } from "../styles/styles";
 import { useSecureStorage } from "../hooks/use-secure-storage";
 import { RevealStatusUI } from "../components/reveal/RevealStatusUI";
 import { PinInputModal } from "../components/pin-input/PinInputModal";
-import { DangerZone } from "../components/secure-storage/DangerZone";
 
 /**
  * Screen component dedicated to revealing secure storage.
@@ -43,7 +42,6 @@ function RevealScreenContent() {
     handlePinVerified,
     currentAction,
     revealStatus,
-    handleClearAll,
   } = useSecureStorage();
 
   // Get purpose for pin modal
@@ -83,12 +81,6 @@ function RevealScreenContent() {
             onExecuteReveal={handleExecuteReveal}
             onCancelReveal={handleCancelReveal}
             onClearRevealedValue={clearRevealedValue}
-          />
-
-          {/* Add the DangerZone component */}
-          <DangerZone
-            onClearAll={handleClearAll}
-            isLoading={isLoading}
           />
 
           {/* PIN Input Modal */}

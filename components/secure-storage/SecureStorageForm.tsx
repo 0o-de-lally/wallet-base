@@ -1,8 +1,6 @@
 import React from "react";
 import { Text, View, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
-import { useRouter } from "expo-router";
-import { DangerZone } from "./DangerZone";
 
 interface SecureStorageFormProps {
   value: string;
@@ -19,12 +17,9 @@ export function SecureStorageForm({
   onValueChange,
   onSave,
   onDelete,
-  onClearAll,
   isLoading,
   disabled = false,
 }: SecureStorageFormProps) {
-  const router = useRouter();
-
   return (
     <>
       <View style={styles.inputContainer}>

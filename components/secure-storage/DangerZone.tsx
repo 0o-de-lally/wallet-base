@@ -45,9 +45,7 @@ export function DangerZone({
           onPress={handleClearAll}
           disabled={isLoading || disabled}
         >
-          <Text style={styles.dangerButtonText}>
-            Clear All Secure Storage
-          </Text>
+          <Text style={styles.dangerButtonText}>Clear All Secure Storage</Text>
         </TouchableOpacity>
       </View>
 
