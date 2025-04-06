@@ -1,39 +1,18 @@
 import { configureObservablePersistence, persistObservable } from "@legendapp/state/persist";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
-import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import { observable } from "@legendapp/state";
-
-const isMobile = (): boolean => {
-  return typeof window !== "undefined" && typeof process === "object";
-};
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
  * This function should be called once when the application starts.
  */
 export async function initializeApp() {
-  /**
-   * Observable application configuration state.
-   * Can be subscribed to for reactive UI updates.
-   */
-  // Global configuration
-  if (isMobile()) {
-    // Persistence for mobile devices
-    configureObservablePersistence({
-      pluginLocal: ObservablePersistMMKV,
-    });
-  } else {
-    // Enable persistence for web
-    configureObservablePersistence({
-      pluginLocal: ObservablePersistLocalStorage,
-    });
-  }
+  // Set up MMKV persistence for all platforms
+  configureObservablePersistence({
+    pluginLocal: ObservablePersistMMKV,
+  });
 
-  /**
-   * Sets up persistence for the application configuration.
-   * This enables config to survive app restarts.
-   */
+  // Set up persistence for the application configuration
   persistObservable(appConfig, {
     local: "app-config", // Storage key
   });
