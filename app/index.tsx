@@ -48,6 +48,14 @@ const AppContent = observer(() => {
           >
             <Text style={styles.navButtonText}>Profile Management</Text>
           </TouchableOpacity>
+
+          {/* New button for Reveal Screen */}
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => router.navigate("/reveal")}
+          >
+            <Text style={styles.navButtonText}>Reveal Secure Data</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.container}>
           <SecureStorageScreen />

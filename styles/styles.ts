@@ -157,6 +157,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: colors.disabledText,
+    color: colors.secondary,
     opacity: 0.8, // Increased from 0.7 for better visibility
   },
 

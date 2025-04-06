@@ -15,7 +15,12 @@ interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
   onPinVerified: (pin: string) => void;
-  purpose: "save" | "retrieve" | "delete";
+  purpose:
+    | "save"
+    | "retrieve"
+    | "delete"
+    | "schedule_reveal"
+    | "execute_reveal";
 }
 
 export function PinInputModal({
@@ -86,10 +91,38 @@ export function PinInputModal({
         return "save";
       case "retrieve":
         return "retrieve";
+      case "schedule_reveal":
+        return "schedule a reveal for";
+      case "execute_reveal":
+        return "reveal";
       case "delete":
         return "delete";
       default:
         return "access";
+    }
+  };
+
+  // Get title based on purpose
+  const getTitle = () => {
+    switch (purpose) {
+      case "schedule_reveal":
+        return "Schedule Reveal";
+      case "execute_reveal":
+        return "Reveal Secured Data";
+      default:
+        return "Enter PIN";
+    }
+  };
+
+  // Get subtitle based on purpose
+  const getSubtitle = () => {
+    switch (purpose) {
+      case "schedule_reveal":
+        return "Enter your PIN to schedule a reveal of the secured data. You'll need to wait 30 seconds before you can reveal it.";
+      case "execute_reveal":
+        return "Enter your PIN again to reveal the secured data. This data will be visible on screen.";
+      default:
+        return `Please enter your PIN to ${getActionText()} this secure data.`;
     }
   };
 
@@ -102,10 +135,8 @@ export function PinInputModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Enter PIN</Text>
-          <Text style={styles.modalSubtitle}>
-            Please enter your PIN to {getActionText()} this secure data.
-          </Text>
+          <Text style={styles.modalTitle}>{getTitle()}</Text>
+          <Text style={styles.modalSubtitle}>{getSubtitle()}</Text>
 
           <TextInput
             style={styles.pinInput}

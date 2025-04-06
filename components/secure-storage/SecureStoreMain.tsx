@@ -8,23 +8,20 @@ import {
 } from "react-native";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { SecureStorageForm } from "./SecureStorageForm";
-import { SecureStorageResult } from "./SecureStorageResult";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { styles } from "../../styles/styles";
 
 /**
  * Demo screen component for secure storage operations.
- * Allows saving, retrieving, and deleting encrypted values from secure storage.
- * Values are encrypted using the user's PIN and stored under a fixed key.
+ * Focuses only on storing and deleting encrypted values.
+ * Revealing is handled separately in the RevealScreen.
  */
 export default function SecureStorageScreen() {
   const {
     value,
     setValue,
-    storedValue,
     isLoading,
     handleSave,
-    handleRetrieve,
     handleDelete,
     handleClearAll,
     pinModalVisible,
@@ -32,6 +29,18 @@ export default function SecureStorageScreen() {
     handlePinVerified,
     currentAction,
   } = useSecureStorage();
+
+  // Get purpose for pin modal
+  const getPinPurpose = () => {
+    switch (currentAction) {
+      case "save":
+        return "save";
+      case "delete":
+        return "delete";
+      default:
+        return "save";
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -44,27 +53,26 @@ export default function SecureStorageScreen() {
 
           <Text style={styles.description}>
             Enter private information to be encrypted and stored securely with
-            PIN protection. All data is stored under a single private key.
+            PIN protection. All data is stored under a single private key. Use
+            the Reveal Screen to access your stored data with additional
+            security steps.
           </Text>
 
           <SecureStorageForm
             value={value}
             onValueChange={setValue}
             onSave={handleSave}
-            onRetrieve={handleRetrieve}
             onDelete={handleDelete}
             onClearAll={handleClearAll}
             isLoading={isLoading}
           />
-
-          <SecureStorageResult storedValue={storedValue} />
 
           {/* PIN Input Modal */}
           <PinInputModal
             visible={pinModalVisible}
             onClose={() => setPinModalVisible(false)}
             onPinVerified={handlePinVerified}
-            purpose={currentAction || "retrieve"}
+            purpose={getPinPurpose()}
           />
         </View>
       </ScrollView>
