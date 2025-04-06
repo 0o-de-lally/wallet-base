@@ -120,7 +120,8 @@ export function RevealStatusUI({
   }, [storedValue]);
 
   const renderActionButton = () => {
-    // If a value has been successfully revealed, show this special state
+    // Only show schedule button if there's no active reveal process
+    // OR after a value has been successfully revealed
     if (storedValue !== null) {
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
@@ -135,8 +136,8 @@ export function RevealStatusUI({
       );
     }
 
+    // If no reveal is scheduled yet, show the initial schedule button
     if (!revealStatus || !revealStatus.isScheduled) {
-      // No reveal scheduled - show normal retrieve button
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
@@ -150,58 +151,8 @@ export function RevealStatusUI({
       );
     }
 
-    if (
-      revealStatus.isScheduled &&
-      !revealStatus.isAvailable &&
-      !revealStatus.isExpired
-    ) {
-      // Waiting period active
-      return (
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <TouchableOpacity
-            style={[styles.button, styles.disabledButton, { marginBottom: 10 }]}
-            disabled={true}
-          >
-            <Text style={styles.buttonText}>Waiting... {waitTimeDisplay}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={onCancelReveal}
-            disabled={isLoading}
-          >
-            <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    if (revealStatus.isAvailable && !revealStatus.isExpired) {
-      // Reveal is available
-      return (
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: "#a5d6b7", marginBottom: 5 },
-            ]}
-            onPress={onExecuteReveal}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>Reveal Now</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={onCancelReveal}
-            disabled={isLoading}
-          >
-            <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
+    // In "expired" state, show schedule again button
     if (revealStatus.isExpired) {
-      // Reveal expired
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
@@ -217,18 +168,9 @@ export function RevealStatusUI({
       );
     }
 
-    // Fallback
-    return (
-      <View style={{ alignItems: "center", marginBottom: 20 }}>
-        <TouchableOpacity
-          style={[styles.button, disabled && styles.disabledButton]}
-          onPress={onScheduleReveal}
-          disabled={isLoading || disabled}
-        >
-          <Text style={styles.buttonText}>Schedule Reveal</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    // During waiting or available periods, don't show any action button
+    // (the buttons will be in the status section)
+    return null;
   };
 
   const renderRevealedValue = () => {
@@ -262,19 +204,58 @@ export function RevealStatusUI({
 
   const renderRevealStatus = () => {
     if (!revealStatus || !revealStatus.isScheduled) return null;
+
     return (
       <View style={styles.resultContainer}>
         <Text style={styles.resultLabel}>Reveal Status:</Text>
+
+        {/* Waiting period active */}
         {!revealStatus.isAvailable && !revealStatus.isExpired && (
-          <Text style={styles.resultValue}>
-            Scheduled - Waiting period: {waitTimeDisplay}
-          </Text>
+          <>
+            <Text style={styles.resultValue}>
+              Scheduled - Waiting period: {waitTimeDisplay}
+            </Text>
+            <View style={{ alignItems: "center", marginTop: 15 }}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={onCancelReveal}
+                disabled={isLoading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
+
+        {/* Ready to reveal */}
         {revealStatus.isAvailable && !revealStatus.isExpired && (
-          <Text style={styles.resultValue}>
-            Ready to reveal! Available for: {expiryTimeDisplay}
-          </Text>
+          <>
+            <Text style={styles.resultValue}>
+              Ready to reveal! Available for: {expiryTimeDisplay}
+            </Text>
+            <View style={{ alignItems: "center", marginTop: 15 }}>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { backgroundColor: "#a5d6b7", marginBottom: 10 },
+                ]}
+                onPress={onExecuteReveal}
+                disabled={isLoading}
+              >
+                <Text style={styles.buttonText}>Reveal Now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={onCancelReveal}
+                disabled={isLoading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
+
+        {/* Expired state */}
         {revealStatus.isExpired && (
           <Text
             style={[

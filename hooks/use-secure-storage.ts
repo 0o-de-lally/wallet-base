@@ -194,10 +194,6 @@ export function useSecureStorage() {
 
       // Schedule the reveal
       scheduleReveal(FIXED_KEY);
-      showAlert(
-        "Success",
-        "Reveal scheduled. You must wait 30 seconds before revealing the value.",
-      );
 
       // Update status
       const status = checkRevealStatus(FIXED_KEY);
