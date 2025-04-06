@@ -24,14 +24,28 @@ export default function SecureStorageScreen() {
     storedValue,
     isLoading,
     handleSave,
-    handleRetrieve,
+    handleScheduleReveal,
+    handleExecuteReveal,
+    handleCancelReveal,
     handleDelete,
     handleClearAll,
     pinModalVisible,
     setPinModalVisible,
     handlePinVerified,
     currentAction,
+    revealStatus,
   } = useSecureStorage();
+
+  // Get purpose for pin modal
+  const getPinPurpose = () => {
+    switch (currentAction) {
+      case "save": return "save";
+      case "schedule_reveal": return "schedule_reveal";
+      case "execute_reveal": return "execute_reveal";
+      case "delete": return "delete";
+      default: return "retrieve";
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -45,16 +59,21 @@ export default function SecureStorageScreen() {
           <Text style={styles.description}>
             Enter private information to be encrypted and stored securely with
             PIN protection. All data is stored under a single private key.
+            To reveal data, you must first schedule a reveal and wait 30 seconds.
           </Text>
 
           <SecureStorageForm
             value={value}
             onValueChange={setValue}
             onSave={handleSave}
-            onRetrieve={handleRetrieve}
+            onRetrieve={handleScheduleReveal}
+            onScheduleReveal={handleScheduleReveal}
+            onExecuteReveal={handleExecuteReveal}
+            onCancelReveal={handleCancelReveal}
             onDelete={handleDelete}
             onClearAll={handleClearAll}
             isLoading={isLoading}
+            revealStatus={revealStatus}
           />
 
           <SecureStorageResult storedValue={storedValue} />
@@ -64,7 +83,7 @@ export default function SecureStorageScreen() {
             visible={pinModalVisible}
             onClose={() => setPinModalVisible(false)}
             onPinVerified={handlePinVerified}
-            purpose={currentAction || "retrieve"}
+            purpose={getPinPurpose()}
           />
         </View>
       </ScrollView>

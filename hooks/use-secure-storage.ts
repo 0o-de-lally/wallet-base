@@ -1,9 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   saveValue,
   getValue,
   deleteValue,
   clearAllSecureStorage,
+  scheduleReveal,
+  checkRevealStatus,
+  getScheduledReveal,
+  cancelReveal,
+  clearAllScheduledReveals
 } from "../util/secure-store";
 import {
   encryptWithPin,
@@ -25,11 +30,47 @@ export function useSecureStorage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<
-    "save" | "retrieve" | "delete" | null
+    "save" | "schedule_reveal" | "execute_reveal" | "delete" | null
   >(null);
   const oldPinRef = useRef<string>("");
 
-  const requestPinForAction = (action: "save" | "retrieve" | "delete") => {
+  // State for reveal scheduling
+  const [revealStatus, setRevealStatus] = useState<{
+    isScheduled: boolean;
+    isAvailable: boolean;
+    isExpired: boolean;
+    waitTimeRemaining: number;
+    expiresIn: number;
+  } | null>(null);
+
+  // Check reveal status periodically
+  useEffect(() => {
+    const checkStatus = () => {
+      const status = checkRevealStatus(FIXED_KEY);
+      if (status) {
+        setRevealStatus({
+          isScheduled: status.scheduled,
+          isAvailable: status.available,
+          isExpired: status.expired,
+          waitTimeRemaining: status.waitTimeRemaining,
+          expiresIn: status.expiresIn
+        });
+      } else {
+        setRevealStatus(null);
+      }
+    };
+
+    // Initial check
+    checkStatus();
+
+    // Setup interval
+    const intervalId = setInterval(checkStatus, 1000);
+
+    // Cleanup
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const requestPinForAction = (action: "save" | "schedule_reveal" | "execute_reveal" | "delete") => {
     setCurrentAction(action);
     setPinModalVisible(true);
   };
@@ -41,8 +82,11 @@ export function useSecureStorage() {
       case "save":
         await saveWithPin(pin);
         break;
-      case "retrieve":
-        await retrieveWithPin(pin);
+      case "schedule_reveal":
+        await scheduleRevealWithPin(pin);
+        break;
+      case "execute_reveal":
+        await executeRevealWithPin(pin);
         break;
       case "delete":
         await deleteSecurely();
@@ -84,6 +128,10 @@ export function useSecureStorage() {
       await saveValue(FIXED_KEY, encryptedBase64);
       showAlert("Success", "Value saved securely and encrypted");
       setValue("");
+
+      // Cancel any active reveals when saving a new value
+      cancelReveal(FIXED_KEY);
+      setRevealStatus(null);
     } catch (error) {
       showAlert("Error", "Failed to save encrypted value");
       console.error(error);
@@ -92,9 +140,53 @@ export function useSecureStorage() {
     }
   };
 
-  const retrieveWithPin = async (pin: string) => {
+  const scheduleRevealWithPin = async (pin: string) => {
     try {
       setIsLoading(true);
+
+      // Verify PIN is correct before scheduling
+      const savedPinJson = await getValue("user_pin");
+      if (!savedPinJson) {
+        showAlert("Error", "Please set up a PIN in the PIN Management screen first");
+        return;
+      }
+
+      // Schedule the reveal
+      scheduleReveal(FIXED_KEY);
+      showAlert("Success", "Reveal scheduled. You must wait 30 seconds before revealing the value.");
+
+      // Update status
+      const status = checkRevealStatus(FIXED_KEY);
+      if (status) {
+        setRevealStatus({
+          isScheduled: status.scheduled,
+          isAvailable: status.available,
+          isExpired: status.expired,
+          waitTimeRemaining: status.waitTimeRemaining,
+          expiresIn: status.expiresIn
+        });
+      }
+    } catch (error) {
+      showAlert("Error", "Failed to schedule reveal");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const executeRevealWithPin = async (pin: string) => {
+    try {
+      setIsLoading(true);
+
+      // Check if reveal is available
+      const status = checkRevealStatus(FIXED_KEY);
+      if (!status || !status.available || status.expired) {
+        showAlert("Error", status && status.expired
+          ? "Reveal window has expired. Please schedule again."
+          : "No reveal scheduled or still in waiting period.");
+        return;
+      }
+
       const encryptedBase64 = await getValue(FIXED_KEY);
 
       if (encryptedBase64 === null) {
@@ -130,6 +222,7 @@ export function useSecureStorage() {
 
       // Only set the stored value if verification passed
       setStoredValue(decryptedString);
+      showAlert("Success", "Value revealed successfully");
     } catch (error) {
       showAlert("Error", "Failed to retrieve or decrypt value");
       console.error(error);
@@ -144,6 +237,11 @@ export function useSecureStorage() {
       setIsLoading(true);
       await deleteValue(FIXED_KEY);
       setStoredValue(null);
+
+      // Also cancel any scheduled reveals
+      cancelReveal(FIXED_KEY);
+      setRevealStatus(null);
+
       showAlert("Success", "Value deleted");
     } catch (error) {
       showAlert("Error", "Failed to delete value");
@@ -157,8 +255,10 @@ export function useSecureStorage() {
     try {
       setIsLoading(true);
       await clearAllSecureStorage();
+      clearAllScheduledReveals();
       setStoredValue(null);
       setValue("");
+      setRevealStatus(null);
       showAlert("Success", "All secure storage data has been cleared");
     } catch (error) {
       showAlert("Error", "Failed to clear secure storage");
@@ -176,8 +276,22 @@ export function useSecureStorage() {
     requestPinForAction("save");
   };
 
-  const handleRetrieve = () => {
-    requestPinForAction("retrieve");
+  const handleScheduleReveal = () => {
+    requestPinForAction("schedule_reveal");
+  };
+
+  const handleExecuteReveal = () => {
+    requestPinForAction("execute_reveal");
+  };
+
+  const handleCancelReveal = () => {
+    try {
+      cancelReveal(FIXED_KEY);
+      setRevealStatus(null);
+      showAlert("Info", "Reveal request canceled");
+    } catch (error) {
+      console.error("Error canceling reveal:", error);
+    }
   };
 
   const handleDelete = () => {
@@ -256,7 +370,9 @@ export function useSecureStorage() {
     storedValue,
     isLoading,
     handleSave,
-    handleRetrieve,
+    handleScheduleReveal,
+    handleExecuteReveal,
+    handleCancelReveal,
     handleDelete,
     handleClearAll,
     pinModalVisible,
@@ -265,5 +381,6 @@ export function useSecureStorage() {
     currentAction,
     oldPinRef,
     reEncryptSecrets,
+    revealStatus,
   };
 }
