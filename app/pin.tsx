@@ -5,6 +5,7 @@ import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
 import { ModalProvider } from "../context/ModalContext";
 import { DangerZone } from "../components/secure-storage/DangerZone";
+import { clearAllSecureStorage } from "@/util/secure-store";
 
 export default observer(function PinScreen() {
   return (
@@ -40,12 +41,3 @@ function PinScreenContent() {
     </>
   );
 }
-
-const clearAllSecureStorage = async () => {
-  // Implement the same logic as used in reveal.tsx for clearing all storage
-  // This should delete PIN, stored values, and any other secure data
-  // Example:
-  // await deletePin();
-  // await deleteValue("storedValue");
-  // ... other deletion logic
-};
