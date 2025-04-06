@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { styles } from "../../styles/styles";
-import { useRouter } from "expo-router";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
@@ -40,7 +39,6 @@ export function RevealStatusUI({
   );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
 
   // Update timer display for reveal scheduling
   useEffect(() => {
@@ -121,17 +119,17 @@ export function RevealStatusUI({
     };
   }, [storedValue]);
 
-  const navigateToStorage = () => {
-    router.push("/");
-  };
-
   const renderActionButton = () => {
     // If a value has been successfully revealed, show this special state
     if (storedValue !== null) {
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <TouchableOpacity style={styles.button} onPress={navigateToStorage}>
-            <Text style={styles.buttonText}>Return to Storage Screen</Text>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "#6ba5d9" }]}
+            onPress={onScheduleReveal}
+            disabled={isLoading || disabled}
+          >
+            <Text style={styles.buttonText}>Schedule New Reveal</Text>
           </TouchableOpacity>
         </View>
       );
@@ -142,18 +140,11 @@ export function RevealStatusUI({
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
-            style={[
-              styles.button,
-              disabled && styles.disabledButton,
-              { marginBottom: 10 },
-            ]}
+            style={[styles.button, disabled && styles.disabledButton]}
             onPress={onScheduleReveal}
             disabled={isLoading || disabled}
           >
             <Text style={styles.buttonText}>Schedule Reveal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={navigateToStorage}>
-            <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
       );
@@ -168,17 +159,17 @@ export function RevealStatusUI({
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
-            style={[styles.button, styles.cancelButton, { marginBottom: 10 }]}
+            style={[styles.button, styles.disabledButton, { marginBottom: 10 }]}
+            disabled={true}
+          >
+            <Text style={styles.buttonText}>Waiting... {waitTimeDisplay}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.cancelButton]}
             onPress={onCancelReveal}
             disabled={isLoading}
           >
             <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#94c2f3" }]}
-            onPress={navigateToStorage}
-          >
-            <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
       );
@@ -198,19 +189,12 @@ export function RevealStatusUI({
           >
             <Text style={styles.buttonText}>Reveal Now</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.button, styles.cancelButton, { marginBottom: 10 }]}
+            style={[styles.button, styles.cancelButton]}
             onPress={onCancelReveal}
             disabled={isLoading}
           >
             <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#94c2f3" }]}
-            onPress={navigateToStorage}
-          >
-            <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
       );
@@ -221,19 +205,13 @@ export function RevealStatusUI({
       return (
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
-            style={[styles.button, styles.dangerButton, { marginBottom: 10 }]}
+            style={[styles.button, styles.dangerButton]}
             onPress={onScheduleReveal}
             disabled={isLoading}
           >
             <Text style={styles.dangerButtonText}>
               Reveal Expired - Schedule Again
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#94c2f3" }]}
-            onPress={navigateToStorage}
-          >
-            <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
       );
@@ -243,21 +221,11 @@ export function RevealStatusUI({
     return (
       <View style={{ alignItems: "center", marginBottom: 20 }}>
         <TouchableOpacity
-          style={[
-            styles.button,
-            disabled && styles.disabledButton,
-            { marginBottom: 10 },
-          ]}
+          style={[styles.button, disabled && styles.disabledButton]}
           onPress={onScheduleReveal}
           disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Schedule Reveal</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#94c2f3" }]}
-          onPress={navigateToStorage}
-        >
-          <Text style={styles.buttonText}>Return to Storage Screen</Text>
         </TouchableOpacity>
       </View>
     );
@@ -265,7 +233,6 @@ export function RevealStatusUI({
 
   const renderRevealedValue = () => {
     if (storedValue === null) return null;
-
     return (
       <View
         style={[
@@ -295,7 +262,6 @@ export function RevealStatusUI({
 
   const renderRevealStatus = () => {
     if (!revealStatus || !revealStatus.isScheduled) return null;
-
     return (
       <View style={styles.resultContainer}>
         <Text style={styles.resultLabel}>Reveal Status:</Text>

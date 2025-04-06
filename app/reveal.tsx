@@ -95,5 +95,6 @@ function RevealScreenContent() {
 
 // Import hooks after defining the component to avoid circular dependencies
 import { useSecureStorage } from "../hooks/use-secure-storage";
+// Update the import path to point to the correct component
 import { RevealStatusUI } from "../components/reveal/RevealStatusUI";
 import { PinInputModal } from "../components/pin-input/PinInputModal";
