@@ -38,10 +38,6 @@ export function SecureStorageForm({
     setClearAllModalVisible(false);
   };
 
-  const navigateToReveal = () => {
-    router.push("/reveal");
-  };
-
   return (
     <>
       <View style={styles.inputContainer}>
@@ -65,13 +61,6 @@ export function SecureStorageForm({
           disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Save</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#6ba5d9" }]}
-          onPress={navigateToReveal}
-        >
-          <Text style={styles.buttonText}>Go to Reveal Screen</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

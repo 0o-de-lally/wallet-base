@@ -123,17 +123,8 @@ export function RevealStatusUI({
     // Only show schedule button if there's no active reveal process
     // OR after a value has been successfully revealed
     if (storedValue !== null) {
-      return (
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#6ba5d9" }]}
-            onPress={onScheduleReveal}
-            disabled={isLoading || disabled}
-          >
-            <Text style={styles.buttonText}>Schedule New Reveal</Text>
-          </TouchableOpacity>
-        </View>
-      );
+      // Return null instead of showing the "Schedule New Reveal" button
+      return null;
     }
 
     // If no reveal is scheduled yet, show the initial schedule button
