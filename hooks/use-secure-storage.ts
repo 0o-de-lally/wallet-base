@@ -97,7 +97,6 @@ export function useSecureStorage() {
       // Set new timer to clear the value after delay
       autoHideTimerRef.current = setTimeout(() => {
         setStoredValue(null);
-        showAlert("Security Notice", "Revealed value has been automatically hidden");
       }, AUTO_HIDE_DELAY_MS);
     }
 
@@ -263,9 +262,6 @@ export function useSecureStorage() {
 
       // After successful reveal, cancel the scheduling (it's been used)
       cancelReveal(FIXED_KEY);
-
-      // Show a success message
-      showAlert("Success", "Value revealed successfully");
     } catch (error) {
       showAlert("Error", "Failed to retrieve or decrypt value");
       console.error(error);
