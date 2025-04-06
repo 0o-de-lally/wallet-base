@@ -10,6 +10,10 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ModalProvider } from "../context/ModalContext";
 import { styles } from "../styles/styles";
+import { useSecureStorage } from "../hooks/use-secure-storage";
+import { RevealStatusUI } from "../components/reveal/RevealStatusUI";
+import { PinInputModal } from "../components/pin-input/PinInputModal";
+import { DangerZone } from "../components/secure-storage/DangerZone";
 
 /**
  * Screen component dedicated to revealing secure storage.
@@ -39,6 +43,7 @@ function RevealScreenContent() {
     handlePinVerified,
     currentAction,
     revealStatus,
+    handleClearAll,
   } = useSecureStorage();
 
   // Get purpose for pin modal
@@ -80,6 +85,12 @@ function RevealScreenContent() {
             onClearRevealedValue={clearRevealedValue}
           />
 
+          {/* Add the DangerZone component */}
+          <DangerZone
+            onClearAll={handleClearAll}
+            isLoading={isLoading}
+          />
+
           {/* PIN Input Modal */}
           <PinInputModal
             visible={pinModalVisible}
@@ -92,9 +103,3 @@ function RevealScreenContent() {
     </KeyboardAvoidingView>
   );
 }
-
-// Import hooks after defining the component to avoid circular dependencies
-import { useSecureStorage } from "../hooks/use-secure-storage";
-// Update the import path to point to the correct component
-import { RevealStatusUI } from "../components/reveal/RevealStatusUI";
-import { PinInputModal } from "../components/pin-input/PinInputModal";

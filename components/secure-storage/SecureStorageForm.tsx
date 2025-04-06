@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Text, View, TextInput, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
-import ConfirmationModal from "../modal/ConfirmationModal";
 import { useRouter } from "expo-router";
+import { DangerZone } from "./DangerZone";
 
 interface SecureStorageFormProps {
   value: string;
@@ -23,20 +23,7 @@ export function SecureStorageForm({
   isLoading,
   disabled = false,
 }: SecureStorageFormProps) {
-  const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
   const router = useRouter();
-
-  const handleClearAll = () => {
-    if (!onClearAll) return;
-    setClearAllModalVisible(true);
-  };
-
-  const confirmClearAll = () => {
-    if (onClearAll) {
-      onClearAll();
-    }
-    setClearAllModalVisible(false);
-  };
 
   return (
     <>
@@ -71,36 +58,6 @@ export function SecureStorageForm({
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
       </View>
-
-      {onClearAll && (
-        <View style={styles.dangerZone}>
-          <Text style={styles.dangerTitle}>Danger Zone</Text>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              styles.dangerButton,
-              disabled && styles.disabledButton,
-            ]}
-            onPress={handleClearAll}
-            disabled={isLoading || disabled}
-          >
-            <Text style={styles.dangerButtonText}>
-              Clear All Secure Storage
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Clear All Confirmation Modal */}
-      <ConfirmationModal
-        visible={clearAllModalVisible}
-        title="Clear All Secure Storage"
-        message="This will delete ALL secure data and cannot be undone. Continue?"
-        confirmText="Clear All"
-        onConfirm={confirmClearAll}
-        onCancel={() => setClearAllModalVisible(false)}
-        isDestructive={true}
-      />
     </>
   );
 }
