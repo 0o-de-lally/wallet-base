@@ -28,7 +28,6 @@ const AppContent = observer(() => {
   // Use the useRouter hook to get the router instance
   const router = useRouter();
 
-
   const navigateToPIN = useCallback(() => {
     router.navigate("/pin");
   }, [router]);

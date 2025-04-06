@@ -1,25 +1,13 @@
-import { configureObservablePersistence, persistObservable } from "@legendapp/state/persist";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
-import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
  * This function should be called once when the application starts.
  */
 export async function initializeApp() {
-  // Set up MMKV persistence for all platforms
-  configureObservablePersistence({
-    pluginLocal: ObservablePersistMMKV,
-  });
-
-  // Set up persistence for the application configuration
-  persistObservable(appConfig, {
-    local: "app-config", // Storage key
-  });
-
   try {
     // Wait for persistence to load (allow some time for hydration)
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Check if we have any profiles after persistence has loaded
     const profiles = appConfig.profiles.get();
@@ -30,12 +18,12 @@ export async function initializeApp() {
     // Only initialize a default profile if we truly have no profiles
     if (profileCount === 0) {
       // Log the state before initialization
-      console.log('Before initialization:', JSON.stringify(appConfig.get()));
+      console.log("Before initialization:", JSON.stringify(appConfig.get()));
 
       maybeInitializeDefaultProfile();
 
       // Log the state after initialization
-      console.log('After initialization:', JSON.stringify(appConfig.get()));
+      console.log("After initialization:", JSON.stringify(appConfig.get()));
     }
 
     return true;

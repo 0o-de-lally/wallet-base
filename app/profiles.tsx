@@ -19,7 +19,12 @@ const ProfilesScreen = observer(() => {
 
   if (!isInitialized) {
     return (
-      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View
+        style={[
+          styles.root,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
         <ActivityIndicator size="large" color="#94c2f3" />
       </View>
     );

@@ -1,33 +1,30 @@
 import { observable } from "@legendapp/state";
 import { persistObservable } from "@legendapp/state/persist";
+
 import { configureObservablePersistence } from "@legendapp/state/persist";
-import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
+import { ObservablePersistAsyncStorage } from "@legendapp/state/persist-plugins/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   AppConfig,
   NetworkType,
   NetworkTypeEnum,
   AccountState,
   Profile,
-  defaultConfig
+  defaultConfig,
 } from "./app-config-types";
 
-const isMobile = (): boolean => {
-  return typeof window !== "undefined" && typeof process === "object";
-};
-
-// Global configuration - only configure persistence once
-if (isMobile()) {
-  // Persistence for mobile devices
-  configureObservablePersistence({
-    pluginLocal: ObservablePersistMMKV,
-  });
-} else {
-  // Enable persistence for web
-  configureObservablePersistence({
-    pluginLocal: ObservablePersistLocalStorage,
-  });
-}
+// Global configuration
+configureObservablePersistence({
+  // Use AsyncStorage in React Native
+  pluginLocal: ObservablePersistAsyncStorage,
+  localOptions: {
+    asyncStorage: {
+      // The AsyncStorage plugin needs to be given the implementation of AsyncStorage
+      AsyncStorage,
+    },
+  },
+});
 
 /**
  * Observable application configuration state.
@@ -39,8 +36,9 @@ export const appConfig = observable<AppConfig>(defaultConfig);
  * Sets up persistence for the application configuration.
  * This enables config to survive app restarts.
  */
+// Configure persistence with the correct interface for Legend State 2.x
 persistObservable(appConfig, {
-  local: "app-config", // Storage key
+  local: "app-config",
 });
 
 /**
@@ -172,7 +170,10 @@ export function maybeInitializeDefaultProfile() {
   const currentProfiles = appConfig.profiles.get();
 
   // Only create default profile if there are no profiles AND no active profile
-  if (Object.keys(currentProfiles).length === 0 && !appConfig.activeProfile.get()) {
+  if (
+    Object.keys(currentProfiles).length === 0 &&
+    !appConfig.activeProfile.get()
+  ) {
     console.log("No profiles found, initializing default profile");
     createProfile("mainnet", {
       network_name: "Mainnet",
@@ -190,5 +191,5 @@ export {
   type AccountState,
   type Profile,
   type AppSettings,
-  type AppConfig
+  type AppConfig,
 } from "./app-config-types";
