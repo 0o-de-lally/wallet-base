@@ -16,6 +16,7 @@ import {
 import { styles } from "../../styles/styles";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { useModal } from "../../context/ModalContext";
+import ConfirmationModal from "../modal/ConfirmationModal";
 
 /**
  * Screen component for PIN creation and verification.
@@ -32,6 +33,9 @@ export default function EnterPinScreen() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Modal visibility state
+  const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
 
   // States to manage the different steps
   const [stage, setStage] = useState<
@@ -106,6 +110,12 @@ export default function EnterPinScreen() {
   };
 
   const handleRotatePin = () => {
+    // Show confirmation modal instead of immediately starting the rotation process
+    setRotatePinModalVisible(true);
+  };
+
+  const confirmRotatePin = () => {
+    setRotatePinModalVisible(false);
     setStage("rotateOldPin");
   };
 
@@ -317,6 +327,16 @@ export default function EnterPinScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>PIN Management</Text>
       {renderStageContent()}
+
+      {/* Confirmation Modal for PIN Rotation */}
+      <ConfirmationModal
+        visible={rotatePinModalVisible}
+        title="Rotate PIN"
+        message="You are about to change your PIN. This will require re-encrypting all your secure data. Continue?"
+        confirmText="Continue"
+        onConfirm={confirmRotatePin}
+        onCancel={() => setRotatePinModalVisible(false)}
+      />
     </View>
   );
 }
