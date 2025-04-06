@@ -122,7 +122,8 @@ export function scheduleReveal(key: string): RevealSchedule {
     key,
     scheduledAt: now,
     availableAt: now + REVEAL_CONFIG.waitingPeriodMs,
-    expiresAt: now + REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs
+    expiresAt:
+      now + REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs,
   };
 
   scheduledReveals[key] = schedule;
@@ -156,7 +157,7 @@ export function checkRevealStatus(key: string): {
     available,
     expired,
     waitTimeRemaining: Math.max(0, schedule.availableAt - now),
-    expiresIn: Math.max(0, schedule.expiresAt - now)
+    expiresIn: Math.max(0, schedule.expiresAt - now),
   };
 }
 
@@ -166,7 +167,9 @@ export function checkRevealStatus(key: string): {
  * @param key - The key of the value to reveal
  * @returns A Promise that resolves to the value if available within the reveal window, or null otherwise
  */
-export async function getScheduledReveal(key: string): Promise<{value: string | null, status: string}> {
+export async function getScheduledReveal(
+  key: string,
+): Promise<{ value: string | null; status: string }> {
   const status = checkRevealStatus(key);
 
   if (!status) {

@@ -33,9 +33,12 @@ export default function SecureStorageScreen() {
   // Get purpose for pin modal
   const getPinPurpose = () => {
     switch (currentAction) {
-      case "save": return "save";
-      case "delete": return "delete";
-      default: return "save";
+      case "save":
+        return "save";
+      case "delete":
+        return "delete";
+      default:
+        return "save";
     }
   };
 
@@ -50,8 +53,9 @@ export default function SecureStorageScreen() {
 
           <Text style={styles.description}>
             Enter private information to be encrypted and stored securely with
-            PIN protection. All data is stored under a single private key.
-            Use the Reveal Screen to access your stored data with additional security steps.
+            PIN protection. All data is stored under a single private key. Use
+            the Reveal Screen to access your stored data with additional
+            security steps.
           </Text>
 
           <SecureStorageForm

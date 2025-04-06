@@ -68,7 +68,7 @@ export function SecureStorageForm({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: '#6ba5d9' }]}
+          style={[styles.button, { backgroundColor: "#6ba5d9" }]}
           onPress={navigateToReveal}
         >
           <Text style={styles.buttonText}>Go to Reveal Screen</Text>

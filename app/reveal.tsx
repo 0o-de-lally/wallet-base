@@ -44,9 +44,12 @@ function RevealScreenContent() {
   // Get purpose for pin modal
   const getPinPurpose = () => {
     switch (currentAction) {
-      case "schedule_reveal": return "schedule_reveal";
-      case "execute_reveal": return "execute_reveal";
-      default: return "retrieve";
+      case "schedule_reveal":
+        return "schedule_reveal";
+      case "execute_reveal":
+        return "execute_reveal";
+      default:
+        return "retrieve";
     }
   };
 
@@ -61,9 +64,10 @@ function RevealScreenContent() {
           <Text style={styles.title}>Reveal Secure Data</Text>
 
           <Text style={styles.description}>
-            This screen allows you to securely reveal your saved data.
-            You must first schedule a reveal and wait 30 seconds before you can access the data.
-            Once revealed, the data will automatically hide after 30 seconds.
+            This screen allows you to securely reveal your saved data. You must
+            first schedule a reveal and wait 30 seconds before you can access
+            the data. Once revealed, the data will automatically hide after 30
+            seconds.
           </Text>
 
           <RevealStatusUI

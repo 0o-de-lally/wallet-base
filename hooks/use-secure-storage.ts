@@ -8,7 +8,7 @@ import {
   checkRevealStatus,
   getScheduledReveal,
   cancelReveal,
-  clearAllScheduledReveals
+  clearAllScheduledReveals,
 } from "../util/secure-store";
 import {
   encryptWithPin,
@@ -68,7 +68,7 @@ export function useSecureStorage() {
           isAvailable: status.available,
           isExpired: status.expired,
           waitTimeRemaining: status.waitTimeRemaining,
-          expiresIn: status.expiresIn
+          expiresIn: status.expiresIn,
         });
       } else {
         setRevealStatus(null);
@@ -107,7 +107,9 @@ export function useSecureStorage() {
     };
   }, [storedValue]);
 
-  const requestPinForAction = (action: "save" | "schedule_reveal" | "execute_reveal" | "delete") => {
+  const requestPinForAction = (
+    action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
+  ) => {
     setCurrentAction(action);
     setPinModalVisible(true);
   };
@@ -184,13 +186,19 @@ export function useSecureStorage() {
       // Verify PIN is correct before scheduling
       const savedPinJson = await getValue("user_pin");
       if (!savedPinJson) {
-        showAlert("Error", "Please set up a PIN in the PIN Management screen first");
+        showAlert(
+          "Error",
+          "Please set up a PIN in the PIN Management screen first",
+        );
         return;
       }
 
       // Schedule the reveal
       scheduleReveal(FIXED_KEY);
-      showAlert("Success", "Reveal scheduled. You must wait 30 seconds before revealing the value.");
+      showAlert(
+        "Success",
+        "Reveal scheduled. You must wait 30 seconds before revealing the value.",
+      );
 
       // Update status
       const status = checkRevealStatus(FIXED_KEY);
@@ -200,7 +208,7 @@ export function useSecureStorage() {
           isAvailable: status.available,
           isExpired: status.expired,
           waitTimeRemaining: status.waitTimeRemaining,
-          expiresIn: status.expiresIn
+          expiresIn: status.expiresIn,
         });
       }
     } catch (error) {
@@ -218,9 +226,12 @@ export function useSecureStorage() {
       // Check if reveal is available
       const status = checkRevealStatus(FIXED_KEY);
       if (!status || !status.available || status.expired) {
-        showAlert("Error", status && status.expired
-          ? "Reveal window has expired. Please schedule again."
-          : "No reveal scheduled or still in waiting period.");
+        showAlert(
+          "Error",
+          status && status.expired
+            ? "Reveal window has expired. Please schedule again."
+            : "No reveal scheduled or still in waiting period.",
+        );
         return;
       }
 

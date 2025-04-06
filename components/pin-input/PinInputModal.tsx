@@ -15,7 +15,12 @@ interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
   onPinVerified: (pin: string) => void;
-  purpose: "save" | "retrieve" | "delete" | "schedule_reveal" | "execute_reveal";
+  purpose:
+    | "save"
+    | "retrieve"
+    | "delete"
+    | "schedule_reveal"
+    | "execute_reveal";
 }
 
 export function PinInputModal({
@@ -131,9 +136,7 @@ export function PinInputModal({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>{getTitle()}</Text>
-          <Text style={styles.modalSubtitle}>
-            {getSubtitle()}
-          </Text>
+          <Text style={styles.modalSubtitle}>{getSubtitle()}</Text>
 
           <TextInput
             style={styles.pinInput}

@@ -35,7 +35,9 @@ export function RevealStatusUI({
 }: RevealStatusUIProps) {
   const [waitTimeDisplay, setWaitTimeDisplay] = useState("");
   const [expiryTimeDisplay, setExpiryTimeDisplay] = useState("");
-  const [hideCountdown, setHideCountdown] = useState<number>(AUTO_HIDE_DELAY_MS / 1000);
+  const [hideCountdown, setHideCountdown] = useState<number>(
+    AUTO_HIDE_DELAY_MS / 1000,
+  );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
@@ -78,7 +80,7 @@ export function RevealStatusUI({
     if (revealStatus.expiresIn > 0) {
       const minutes = Math.floor(revealStatus.expiresIn / 60000);
       const seconds = Math.ceil((revealStatus.expiresIn % 60000) / 1000);
-      setExpiryTimeDisplay(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      setExpiryTimeDisplay(`${minutes}:${seconds.toString().padStart(2, "0")}`);
     } else {
       setExpiryTimeDisplay("Expired");
     }
@@ -127,12 +129,8 @@ export function RevealStatusUI({
     // If a value has been successfully revealed, show this special state
     if (storedValue !== null) {
       return (
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={navigateToStorage}
-          >
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <TouchableOpacity style={styles.button} onPress={navigateToStorage}>
             <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
@@ -142,28 +140,33 @@ export function RevealStatusUI({
     if (!revealStatus || !revealStatus.isScheduled) {
       // No reveal scheduled - show normal retrieve button
       return (
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
-            style={[styles.button, disabled && styles.disabledButton, { marginBottom: 10 }]}
+            style={[
+              styles.button,
+              disabled && styles.disabledButton,
+              { marginBottom: 10 },
+            ]}
             onPress={onScheduleReveal}
             disabled={isLoading || disabled}
           >
             <Text style={styles.buttonText}>Schedule Reveal</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-
-            onPress={navigateToStorage}
-          >
+          <TouchableOpacity onPress={navigateToStorage}>
             <Text style={styles.buttonText}>Return to Storage Screen</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
-    if (revealStatus.isScheduled && !revealStatus.isAvailable && !revealStatus.isExpired) {
+    if (
+      revealStatus.isScheduled &&
+      !revealStatus.isAvailable &&
+      !revealStatus.isExpired
+    ) {
       // Waiting period active
       return (
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
             style={[styles.button, styles.cancelButton, { marginBottom: 10 }]}
             onPress={onCancelReveal}
@@ -172,7 +175,7 @@ export function RevealStatusUI({
             <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#94c2f3' }]}
+            style={[styles.button, { backgroundColor: "#94c2f3" }]}
             onPress={navigateToStorage}
           >
             <Text style={styles.buttonText}>Return to Storage Screen</Text>
@@ -184,9 +187,12 @@ export function RevealStatusUI({
     if (revealStatus.isAvailable && !revealStatus.isExpired) {
       // Reveal is available
       return (
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#a5d6b7', marginBottom: 5 }]}
+            style={[
+              styles.button,
+              { backgroundColor: "#a5d6b7", marginBottom: 5 },
+            ]}
             onPress={onExecuteReveal}
             disabled={isLoading}
           >
@@ -201,7 +207,7 @@ export function RevealStatusUI({
             <Text style={styles.cancelButtonText}>Cancel Reveal</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#94c2f3' }]}
+            style={[styles.button, { backgroundColor: "#94c2f3" }]}
             onPress={navigateToStorage}
           >
             <Text style={styles.buttonText}>Return to Storage Screen</Text>
@@ -213,16 +219,18 @@ export function RevealStatusUI({
     if (revealStatus.isExpired) {
       // Reveal expired
       return (
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
           <TouchableOpacity
             style={[styles.button, styles.dangerButton, { marginBottom: 10 }]}
             onPress={onScheduleReveal}
             disabled={isLoading}
           >
-            <Text style={styles.dangerButtonText}>Reveal Expired - Schedule Again</Text>
+            <Text style={styles.dangerButtonText}>
+              Reveal Expired - Schedule Again
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#94c2f3' }]}
+            style={[styles.button, { backgroundColor: "#94c2f3" }]}
             onPress={navigateToStorage}
           >
             <Text style={styles.buttonText}>Return to Storage Screen</Text>
@@ -233,16 +241,20 @@ export function RevealStatusUI({
 
     // Fallback
     return (
-      <View style={{ alignItems: 'center', marginBottom: 20 }}>
+      <View style={{ alignItems: "center", marginBottom: 20 }}>
         <TouchableOpacity
-          style={[styles.button, disabled && styles.disabledButton, { marginBottom: 10 }]}
+          style={[
+            styles.button,
+            disabled && styles.disabledButton,
+            { marginBottom: 10 },
+          ]}
           onPress={onScheduleReveal}
           disabled={isLoading || disabled}
         >
           <Text style={styles.buttonText}>Schedule Reveal</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: '#94c2f3' }]}
+          style={[styles.button, { backgroundColor: "#94c2f3" }]}
           onPress={navigateToStorage}
         >
           <Text style={styles.buttonText}>Return to Storage Screen</Text>
@@ -255,17 +267,26 @@ export function RevealStatusUI({
     if (storedValue === null) return null;
 
     return (
-      <View style={[styles.resultContainer, { marginTop: 20, borderWidth: 2, borderColor: '#94c2f3' }]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View
+        style={[
+          styles.resultContainer,
+          { marginTop: 20, borderWidth: 2, borderColor: "#94c2f3" },
+        ]}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Text style={styles.resultLabel}>Successfully Revealed Value:</Text>
           <TouchableOpacity onPress={onClearRevealedValue}>
-            <Text style={{ color: styles.dangerButtonText.color }}>
-              Hide
-            </Text>
+            <Text style={{ color: styles.dangerButtonText.color }}>Hide</Text>
           </TouchableOpacity>
         </View>
         <Text style={styles.resultValue}>{storedValue}</Text>
-        <Text style={{ color: '#666', marginTop: 10, textAlign: 'center' }}>
+        <Text style={{ color: "#666", marginTop: 10, textAlign: "center" }}>
           Auto-hiding in {hideCountdown} seconds
         </Text>
       </View>
@@ -279,7 +300,9 @@ export function RevealStatusUI({
       <View style={styles.resultContainer}>
         <Text style={styles.resultLabel}>Reveal Status:</Text>
         {!revealStatus.isAvailable && !revealStatus.isExpired && (
-          <Text style={styles.resultValue}>Scheduled - Waiting period: {waitTimeDisplay}</Text>
+          <Text style={styles.resultValue}>
+            Scheduled - Waiting period: {waitTimeDisplay}
+          </Text>
         )}
         {revealStatus.isAvailable && !revealStatus.isExpired && (
           <Text style={styles.resultValue}>
@@ -287,7 +310,12 @@ export function RevealStatusUI({
           </Text>
         )}
         {revealStatus.isExpired && (
-          <Text style={[styles.resultValue, { color: styles.dangerButtonText.color }]}>
+          <Text
+            style={[
+              styles.resultValue,
+              { color: styles.dangerButtonText.color },
+            ]}
+          >
             Reveal expired. Please schedule again.
           </Text>
         )}
@@ -296,13 +324,13 @@ export function RevealStatusUI({
   };
 
   return (
-    <View style={{ flex: 1, alignItems: 'stretch' }}>
+    <View style={{ flex: 1, alignItems: "stretch" }}>
       {renderActionButton()}
       {renderRevealedValue()}
       {renderRevealStatus()}
 
       {isLoading && (
-        <View style={{ alignItems: 'center', marginVertical: 20 }}>
+        <View style={{ alignItems: "center", marginVertical: 20 }}>
           <ActivityIndicator size="large" color="#94c2f3" />
           <Text style={{ color: styles.label.color, marginTop: 10 }}>
             Processing request...
