@@ -1,6 +1,8 @@
-import React from "react";
-import { Text, View, TextInput, TouchableOpacity } from "react-native";
+import React, { memo } from "react";
+import { View } from "react-native";
 import { styles } from "../../styles/styles";
+import { FormInput } from "../common/FormInput";
+import { ActionButton } from "../common/ActionButton";
 
 interface SecureStorageFormProps {
   value: string;
@@ -12,47 +14,49 @@ interface SecureStorageFormProps {
   disabled?: boolean;
 }
 
-export function SecureStorageForm({
-  value,
-  onValueChange,
-  onSave,
-  onDelete,
-  isLoading,
-  disabled = false,
-}: SecureStorageFormProps) {
-  return (
-    <>
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Private Value:</Text>
-        <TextInput
-          style={[styles.input, disabled && styles.disabledInput]}
+export const SecureStorageForm = memo(
+  ({
+    value,
+    onValueChange,
+    onSave,
+    onDelete,
+    isLoading,
+    disabled = false,
+  }: SecureStorageFormProps) => {
+    return (
+      <>
+        <FormInput
+          label="Private Value:"
           value={value}
           onChangeText={onValueChange}
           placeholder="Enter sensitive value to store"
-          placeholderTextColor={styles.inputPlaceholder.color}
           multiline={true}
           numberOfLines={3}
-          editable={!disabled}
+          disabled={disabled}
         />
-      </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, disabled && styles.disabledButton]}
-          onPress={onSave}
-          disabled={isLoading || disabled}
-        >
-          <Text style={styles.buttonText}>Save</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <ActionButton
+            text="Save"
+            onPress={onSave}
+            isLoading={isLoading && value.trim().length > 0}
+            disabled={disabled || value.trim().length === 0}
+            accessibilityLabel="Save private value"
+            accessibilityHint="Encrypts and saves your private data"
+          />
 
-        <TouchableOpacity
-          style={[styles.button, disabled && styles.disabledButton]}
-          onPress={onDelete}
-          disabled={isLoading || disabled}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </>
-  );
-}
+          <ActionButton
+            text="Delete"
+            onPress={onDelete}
+            isLoading={isLoading && !value.trim()}
+            disabled={disabled}
+            accessibilityLabel="Delete private value"
+            accessibilityHint="Deletes your stored private data"
+          />
+        </View>
+      </>
+    );
+  },
+);
+
+SecureStorageForm.displayName = "SecureStorageForm";

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { View, StatusBar, TouchableOpacity, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
@@ -28,34 +28,42 @@ const AppContent = observer(() => {
     initializeDefaultProfile();
   }, []);
 
+  const navigateToPIN = useCallback(() => {
+    router.navigate("/pin");
+  }, [router]);
+
+  const navigateToProfiles = useCallback(() => {
+    router.navigate("/profiles");
+  }, [router]);
+
+  const navigateToReveal = useCallback(() => {
+    router.navigate("/reveal");
+  }, [router]);
+
+  const renderNavigationButton = useCallback(
+    (text: string, onPress: () => void) => (
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={onPress}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={text}
+      >
+        <Text style={styles.navButtonText}>{text}</Text>
+      </TouchableOpacity>
+    ),
+    [],
+  );
+
   return (
     <>
       <StatusBar backgroundColor={styles.root.backgroundColor} />
 
-      <View style={[styles.root]}>
+      <View style={styles.root}>
         <View style={styles.container}>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => router.navigate("/pin")}
-          >
-            <Text style={styles.navButtonText}>PIN Management</Text>
-          </TouchableOpacity>
-
-          {/* Use the router from useRouter hook */}
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => router.navigate("/profiles")}
-          >
-            <Text style={styles.navButtonText}>Profile Management</Text>
-          </TouchableOpacity>
-
-          {/* New button for Reveal Screen */}
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => router.navigate("/reveal")}
-          >
-            <Text style={styles.navButtonText}>Reveal Secure Data</Text>
-          </TouchableOpacity>
+          {renderNavigationButton("PIN Management", navigateToPIN)}
+          {renderNavigationButton("Profile Management", navigateToProfiles)}
+          {renderNavigationButton("Reveal Secure Data", navigateToReveal)}
         </View>
         <View style={styles.container}>
           <SecureStorageScreen />

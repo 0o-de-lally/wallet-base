@@ -1,11 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import React, { useState, useEffect, useCallback, memo, useRef } from "react";
+import { View, Text, TextInput } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
 import {
   hashPin,
@@ -17,18 +11,33 @@ import { styles } from "../../styles/styles";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
+import { SectionContainer } from "../common/SectionContainer";
+import { ActionButton } from "../common/ActionButton";
+import { PinInputField } from "./PinInputField";
 
 /**
  * Screen component for PIN creation and verification.
  * Allows users to create a new PIN, update an existing PIN, and verify their PIN.
  */
-export default function EnterPinScreen() {
-  // Refs for PIN input
-  const newPinRef = useRef("");
-  const confirmPinRef = useRef("");
-  const testPinRef = useRef("");
+const EnterPinScreen = memo(() => {
+  // State for PIN inputs
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [testPin, setTestPin] = useState("");
+  const [oldPinInput, setOldPinInput] = useState("");
 
-  const { reEncryptSecrets, oldPinRef } = useSecureStorage();
+  // Refs for TextInputs to maintain focus
+  const newPinRef = useRef<TextInput>(null);
+  const confirmPinRef = useRef<TextInput>(null);
+  const testPinRef = useRef<TextInput>(null);
+
+  // Use a separate string ref for storing the old PIN
+  const oldPinValueRef = useRef<string>("");
+
+  // TextInput ref for focus management
+  const oldPinInputRef = useRef<TextInput>(null);
+
+  const { reEncryptSecrets } = useSecureStorage();
   const { showAlert } = useModal();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -49,28 +58,22 @@ export default function EnterPinScreen() {
 
   /**
    * Checks if a PIN already exists in secure storage.
-   * Updates the hasSavedPin state based on the result.
+   * Updates stage based on the result.
    */
-  const checkExistingPin = async () => {
+  const checkExistingPin = useCallback(async () => {
     try {
       const savedPin = await getValue("user_pin");
-      setStage(savedPin !== null ? "verify" : "newPin"); // Set initial stage based on whether a PIN exists
+      setStage(savedPin !== null ? "verify" : "newPin");
     } catch (error) {
       console.error("Error checking existing PIN:", error);
     }
-  };
+  }, []);
 
   /**
-   * Handles the saving of a new PIN or updating an existing one.
-   * Validates the PIN format, hashes it, and stores it in secure storage.
-   *
-   * Note: PIN hashing is handled by pin_security.ts, not crypto.ts
+   * Handles saving of a new PIN or updating an existing one.
    */
-  const handleSavePin = async () => {
+  const handleSavePin = useCallback(async () => {
     setIsLoading(true);
-
-    const newPin = newPinRef.current;
-    const confirmPin = confirmPinRef.current;
 
     if (!validatePin(newPin) || !validatePin(confirmPin)) {
       showAlert("Invalid PIN", "PIN must be exactly 6 digits");
@@ -97,8 +100,8 @@ export default function EnterPinScreen() {
           reEncryptSecrets(newPin);
         }
 
-        newPinRef.current = ""; // clear immediately after saving
-        confirmPinRef.current = "";
+        setNewPin(""); // clear immediately after saving
+        setConfirmPin("");
         setStage("verify"); // go to verify stage
       });
     } catch (error) {
@@ -107,22 +110,21 @@ export default function EnterPinScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showAlert, stage, reEncryptSecrets, newPin, confirmPin]);
 
-  const handleRotatePin = () => {
-    // Show confirmation modal instead of immediately starting the rotation process
+  const handleRotatePin = useCallback(() => {
     setRotatePinModalVisible(true);
-  };
+  }, []);
 
-  const confirmRotatePin = () => {
+  const confirmRotatePin = useCallback(() => {
     setRotatePinModalVisible(false);
     setStage("rotateOldPin");
-  };
+  }, []);
 
-  const handleVerifyOldPin = async () => {
+  const handleVerifyOldPin = useCallback(async () => {
     setIsVerifying(true);
-    const oldPin = oldPinRef.current;
-    if (!validatePin(oldPin)) {
+
+    if (!validatePin(oldPinInput)) {
       showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsVerifying(false);
       return;
@@ -141,11 +143,13 @@ export default function EnterPinScreen() {
       const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
       // Use the comparePins function to properly compare PINs
-      const isPinValid = await comparePins(storedHashedPin, oldPin);
+      const isPinValid = await comparePins(storedHashedPin, oldPinInput);
 
       if (isPinValid) {
         showAlert("Success", "Old PIN verified successfully", () => {
-          oldPinRef.current = oldPin; // Store the old PIN in the ref
+          // Store the old PIN in the mutable ref
+          oldPinValueRef.current = oldPinInput;
+          setOldPinInput(""); // Clear the old PIN input
           setStage("newPin"); // Proceed to new PIN creation
         });
       } else {
@@ -157,16 +161,12 @@ export default function EnterPinScreen() {
     } finally {
       setIsVerifying(false);
     }
-  };
+  }, [showAlert, oldPinInput]);
 
-  /**
-   * Verifies if the entered PIN matches the stored PIN.
-   * Retrieves the stored PIN, hashes the test PIN, and compares them.
-   */
-  const handleVerifyPin = async () => {
+  const handleVerifyPin = useCallback(async () => {
     setIsVerifying(true);
-    const testedPin = testPinRef.current;
-    if (!validatePin(testedPin)) {
+
+    if (!validatePin(testPin)) {
       showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsVerifying(false);
       return;
@@ -185,7 +185,7 @@ export default function EnterPinScreen() {
       const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
       // Use the comparePins function to properly compare PINs
-      const isPinValid = await comparePins(storedHashedPin, testedPin);
+      const isPinValid = await comparePins(storedHashedPin, testPin);
 
       if (isPinValid) {
         showAlert("Success", "PIN verified successfully");
@@ -193,135 +193,144 @@ export default function EnterPinScreen() {
         showAlert("Incorrect PIN", "The PIN you entered is incorrect");
       }
 
-      testPinRef.current = ""; // clear immediately after verifying
+      setTestPin(""); // clear immediately after verifying
     } catch (error) {
       showAlert("Error", "Failed to verify PIN");
       console.error(error);
     } finally {
       setIsVerifying(false);
     }
-  };
+  }, [showAlert, testPin]);
 
-  const renderStageContent = () => {
+  // Memoize state update functions to prevent unnecessary re-renders
+  const handleNewPinChange = useCallback((text: string) => {
+    setNewPin(text);
+  }, []);
+
+  const handleConfirmPinChange = useCallback((text: string) => {
+    setConfirmPin(text);
+  }, []);
+
+  const handleTestPinChange = useCallback((text: string) => {
+    setTestPin(text);
+  }, []);
+
+  const handleOldPinChange = useCallback((text: string) => {
+    setOldPinInput(text);
+  }, []);
+
+  const renderStageContent = useCallback(() => {
     switch (stage) {
       case "newPin":
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Create New PIN</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Enter 6-digit PIN:</Text>
-              <TextInput
-                style={styles.input}
-                onChangeText={(text) => (newPinRef.current = text)}
-                placeholderTextColor={styles.inputPlaceholder.color}
-                placeholder="Enter 6-digit PIN"
-                keyboardType="number-pad"
-                secureTextEntry={true}
-                maxLength={6}
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.button}
+          <SectionContainer title="Create New PIN">
+            <PinInputField
+              label="Enter 6-digit PIN:"
+              value={newPin}
+              onChangeText={handleNewPinChange}
+              placeholder="Enter 6-digit PIN"
+              onSubmit={() => setStage("confirmPin")}
+              autoFocus={true}
+              ref={newPinRef}
+            />
+            <ActionButton
+              text="Next"
               onPress={() => setStage("confirmPin")}
-            >
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
-          </View>
+              accessibilityHint="Proceed to confirm your PIN"
+            />
+          </SectionContainer>
         );
       case "confirmPin":
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Confirm New PIN</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Confirm 6-digit PIN:</Text>
-              <TextInput
-                style={styles.input}
-                onChangeText={(text) => (confirmPinRef.current = text)}
-                placeholderTextColor={styles.inputPlaceholder.color}
-                placeholder="Confirm 6-digit PIN"
-                keyboardType="number-pad"
-                secureTextEntry={true}
-                maxLength={6}
-              />
-            </View>
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.disabledButton]}
+          <SectionContainer title="Confirm New PIN">
+            <PinInputField
+              label="Confirm 6-digit PIN:"
+              value={confirmPin}
+              onChangeText={handleConfirmPinChange}
+              placeholder="Confirm 6-digit PIN"
+              onSubmit={handleSavePin}
+              autoFocus={true}
+              ref={confirmPinRef}
+            />
+            <ActionButton
+              text="Save PIN"
               onPress={handleSavePin}
+              isLoading={isLoading}
               disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>Save PIN</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+              accessibilityHint="Saves your PIN securely"
+            />
+          </SectionContainer>
         );
       case "verify":
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Verify PIN</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Enter your PIN:</Text>
-              <TextInput
-                style={styles.input}
-                onChangeText={(text) => (testPinRef.current = text)}
-                placeholder="Enter your PIN"
-                placeholderTextColor={styles.inputPlaceholder.color}
-                keyboardType="number-pad"
-                secureTextEntry={true}
-                maxLength={6}
+          <SectionContainer title="Verify PIN">
+            <PinInputField
+              label="Enter your PIN:"
+              value={testPin}
+              onChangeText={handleTestPinChange}
+              placeholder="Enter your PIN"
+              onSubmit={handleVerifyPin}
+              clearOnSubmit={true}
+              ref={testPinRef}
+            />
+            <View style={styles.buttonContainer}>
+              <ActionButton
+                text="Verify PIN"
+                onPress={handleVerifyPin}
+                isLoading={isVerifying}
+                disabled={isVerifying}
+                accessibilityHint="Verify your PIN is correct"
+              />
+              <ActionButton
+                text="Rotate PIN"
+                onPress={handleRotatePin}
+                disabled={isVerifying}
+                accessibilityHint="Change your PIN"
               />
             </View>
-            <TouchableOpacity
-              style={[styles.button, isVerifying && styles.disabledButton]}
-              onPress={handleVerifyPin}
-              disabled={isVerifying}
-            >
-              {isVerifying ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>Verify PIN</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={handleRotatePin}>
-              <Text style={styles.buttonText}>Rotate PIN</Text>
-            </TouchableOpacity>
-          </View>
+          </SectionContainer>
         );
       case "rotateOldPin":
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Verify Old PIN</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Enter your old PIN:</Text>
-              <TextInput
-                style={styles.input}
-                onChangeText={(text) => (oldPinRef.current = text)}
-                placeholder="Enter your old PIN"
-                placeholderTextColor={styles.inputPlaceholder.color}
-                keyboardType="number-pad"
-                secureTextEntry={true}
-                maxLength={6}
-              />
-            </View>
-            <TouchableOpacity
-              style={[styles.button, isVerifying && styles.disabledButton]}
+          <SectionContainer title="Verify Old PIN">
+            <PinInputField
+              label="Enter your old PIN:"
+              value={oldPinInput}
+              onChangeText={handleOldPinChange}
+              placeholder="Enter your old PIN"
+              onSubmit={handleVerifyOldPin}
+              clearOnSubmit={true}
+              ref={oldPinInputRef}
+            />
+            <ActionButton
+              text="Verify Old PIN"
               onPress={handleVerifyOldPin}
+              isLoading={isVerifying}
               disabled={isVerifying}
-            >
-              {isVerifying ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>Verify Old PIN</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+              accessibilityHint="Verify your existing PIN before changing it"
+            />
+          </SectionContainer>
         );
       default:
         return null;
     }
-  };
+  }, [
+    stage,
+    isLoading,
+    isVerifying,
+    newPin,
+    confirmPin,
+    testPin,
+    oldPinInput,
+    handleNewPinChange,
+    handleConfirmPinChange,
+    handleTestPinChange,
+    handleOldPinChange,
+    handleSavePin,
+    handleVerifyPin,
+    handleRotatePin,
+    handleVerifyOldPin,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -339,4 +348,8 @@ export default function EnterPinScreen() {
       />
     </View>
   );
-}
+});
+
+EnterPinScreen.displayName = "EnterPinScreen";
+
+export default EnterPinScreen;

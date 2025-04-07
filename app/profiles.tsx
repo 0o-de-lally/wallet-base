@@ -4,11 +4,13 @@ import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import ProfileManagement from "../components/profile/ProfileManagement";
 
-export default observer(function ProfilesScreen() {
+const ProfilesScreen = observer(() => {
   return (
-    <View style={[styles.root]}>
+    <View style={styles.root}>
       <StatusBar backgroundColor={styles.root.backgroundColor} />
       <ProfileManagement />
     </View>
   );
 });
+
+export default ProfilesScreen;
