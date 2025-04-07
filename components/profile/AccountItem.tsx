@@ -10,7 +10,6 @@ export interface AccountItemProps {
   account: AccountState;
   onDelete: (accountAddress: string) => void;
   profileName: string;
-  isExpanded?: boolean;
   onToggleExpand?: (accountId: string) => void;
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
@@ -21,10 +20,9 @@ export const AccountItem = memo(
     account,
     onDelete,
     profileName,
-    isExpanded,
     onToggleExpand,
     isActive,
-    onSetActive
+    onSetActive,
   }: AccountItemProps) => {
     const navigateToSettings = () => {
       router.navigate({
@@ -39,11 +37,13 @@ export const AccountItem = memo(
         style={[
           styles.resultContainer,
           { marginBottom: 10 },
-          isActive && { borderColor: "#94c2f3", borderWidth: 2 }
+          isActive && { borderColor: "#94c2f3", borderWidth: 2 },
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? ' (active)' : ''}`}
-        onPress={onToggleExpand ? () => onToggleExpand(account.id) : navigateToSettings}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}`}
+        onPress={
+          onToggleExpand ? () => onToggleExpand(account.id) : navigateToSettings
+        }
       >
         <Text style={styles.resultLabel}>{account.nickname}</Text>
         <View
@@ -123,13 +123,15 @@ export const AccountItem = memo(
           )}
 
           {isActive && (
-            <View style={{
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              backgroundColor: "#4a90e2",
-              borderRadius: 4,
-              marginRight: 8
-            }}>
+            <View
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: "#4a90e2",
+                borderRadius: 4,
+                marginRight: 8,
+              }}
+            >
               <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
                 Active
               </Text>

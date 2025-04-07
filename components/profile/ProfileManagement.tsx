@@ -6,17 +6,19 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
-import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { appConfig, getProfileForAccount, setActiveAccount } from "../../util/app-config-store";
+import {
+  appConfig,
+  getProfileForAccount,
+  setActiveAccount,
+} from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
-import { router } from "expo-router";
 
-const ProfileManagement = observer(() => {
+const ProfileManagement: React.FC = () => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
     null,
   );
@@ -88,10 +90,6 @@ const ProfileManagement = observer(() => {
       setSelectedProfileName(selectedProfileName);
     }
   }, [selectedProfileName]);
-
-  const navigateToCreateAccount = useCallback(() => {
-    router.push("/create-account");
-  }, []);
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
@@ -259,6 +257,8 @@ const ProfileManagement = observer(() => {
       />
     </ScrollView>
   );
-});
+};
+
+ProfileManagement.displayName = "ProfileManagement";
 
 export default ProfileManagement;

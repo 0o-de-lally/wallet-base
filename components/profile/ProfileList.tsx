@@ -5,7 +5,6 @@ import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { ActionButton } from "../common/ActionButton";
-import { router } from "expo-router";
 
 interface ProfileListProps {
   profiles: Record<string, Profile>;

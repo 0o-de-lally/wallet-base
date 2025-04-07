@@ -34,7 +34,7 @@ export async function initializeApp() {
 
       for (const profileName in profiles) {
         const profile = profiles[profileName];
-        if (profile.accounts.some(acc => acc.id === activeAccountId)) {
+        if (profile.accounts.some((acc) => acc.id === activeAccountId)) {
           accountExists = true;
           break;
         }
