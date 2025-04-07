@@ -206,7 +206,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   disabledButton: {
-    backgroundColor: "transparent",
+    backgroundColor: colors.secondary,
     borderWidth: 2,
     borderColor: colors.disabledText,
     color: colors.secondary,

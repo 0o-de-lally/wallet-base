@@ -1,13 +1,12 @@
-import React, { useState, useRef, useCallback, memo } from "react";
-import { View } from "react-native";
+import React, { useState, useCallback, memo } from "react";
+import { View, Text } from "react-native";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
-import AddAccountForm from "./AddAccountForm";
-import type { AddAccountFormRef } from "./AddAccountForm";
 import { ActionButton } from "../common/ActionButton";
 import { AccountItem } from "./AccountItem";
-import { AccountEmptyState } from "./AccountEmptyState";
 import { AccountListModals } from "./AccountListModals";
+import { styles } from "../../styles/styles";
+import { router } from "expo-router";
 
 interface AccountListProps {
   profileName: string;
@@ -23,11 +22,7 @@ const AccountList = memo(
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const [showAddAccountForm, setShowAddAccountForm] = useState(false);
-    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
-      null,
-    );
-    const addAccountFormRef = useRef<AddAccountFormRef>(null);
+    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
 
     // Account deletion handling
     const handleDeleteAccount = useCallback((accountAddress: string) => {
@@ -59,15 +54,9 @@ const AccountList = memo(
       }
     }, [accountToDelete, accounts, profileName, onAccountsUpdated]);
 
-    // Form handling
-    const toggleAddAccountForm = useCallback(() => {
-      setShowAddAccountForm((prev) => !prev);
-    }, []);
-
-    const handleSuccess = useCallback(() => {
-      setSuccessModalVisible(false);
-      setShowAddAccountForm(false);
-      addAccountFormRef.current?.resetForm();
+    // Navigation to create account screen
+    const navigateToCreateAccount = useCallback(() => {
+      router.push("/create-account");
     }, []);
 
     // Secret management expansion
@@ -75,38 +64,9 @@ const AccountList = memo(
       setExpandedAccountId((prev) => (prev === accountId ? null : accountId));
     }, []);
 
-    // Empty state handling
-    if (accounts.length === 0) {
-      return (
-        <AccountEmptyState
-          profileName={profileName}
-          showAddForm={showAddAccountForm}
-          onToggleAddForm={toggleAddAccountForm}
-          onAccountAdded={handleSuccess}
-          formRef={addAccountFormRef}
-        />
-      );
-    }
-
     // Render with accounts
     return (
       <View>
-        <ActionButton
-          text={showAddAccountForm ? "Cancel" : "Add Account"}
-          onPress={toggleAddAccountForm}
-          accessibilityLabel={
-            showAddAccountForm ? "Cancel adding account" : "Add a new account"
-          }
-        />
-
-        {showAddAccountForm && (
-          <AddAccountForm
-            profileName={profileName}
-            onComplete={() => setShowAddAccountForm(false)}
-            ref={addAccountFormRef}
-          />
-        )}
-
         {accounts.map((account) => (
           <AccountItem
             key={account.id || account.account_address}

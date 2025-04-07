@@ -14,6 +14,7 @@ import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
+import { router } from "expo-router";
 
 const ProfileManagement = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
@@ -80,6 +81,10 @@ const ProfileManagement = observer(() => {
       setSelectedProfileName(selectedProfileName);
     }
   }, [selectedProfileName]);
+
+  const navigateToCreateAccount = useCallback(() => {
+    router.push("/create-account");
+  }, []);
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
@@ -213,6 +218,18 @@ const ProfileManagement = observer(() => {
     >
       <Text style={styles.title}>Profile Management</Text>
 
+      {/* Move the Create Profile button to the top and center it */}
+      <View style={styles.container}>
+        <ActionButton
+          text={showCreateForm ? "Cancel" : "Create Profile"}
+          onPress={toggleCreateForm}
+          style={[styles.button, showCreateForm ? styles.disabledButton : {}]}
+          accessibilityLabel={
+            showCreateForm ? "Cancel creating profile" : "Create a new profile"
+          }
+        />
+      </View>
+
       {showCreateForm && (
         <CreateProfileForm onComplete={() => setShowCreateForm(false)} />
       )}
@@ -222,17 +239,6 @@ const ProfileManagement = observer(() => {
       </SectionContainer>
 
       {renderEmptyState()}
-
-      <View style={styles.buttonContainer}>
-        <ActionButton
-          text={showCreateForm ? "Cancel" : "Create Profile"}
-          onPress={toggleCreateForm}
-          style={showCreateForm ? { backgroundColor: "#6BA5D9" } : {}}
-          accessibilityLabel={
-            showCreateForm ? "Cancel creating profile" : "Create a new profile"
-          }
-        />
-      </View>
 
       {Object.keys(profiles).length > 0 && (
         <View style={styles.dangerZone}>
