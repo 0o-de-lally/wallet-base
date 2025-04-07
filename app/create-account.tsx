@@ -1,9 +1,10 @@
-import React, { useRef, useCallback, useState, useEffect } from "react";
+import React from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { ModalProvider } from "../context/ModalContext";
-import {AddAccountForm} from "../components/profile/AddAccountForm";
+import { AddAccountForm } from "../components/profile/AddAccountForm";
+import { router } from "expo-router";
 
 /**
  * Create Account Screen
@@ -31,7 +32,10 @@ export default function CreateAccountScreen() {
 
 // Separate component that handles form logic
 const CreateAccountContent = () => {
-  // Get all available profiles
+  const handleComplete = () => {
+    // Navigate back after successful account creation
+    router.back();
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -42,7 +46,7 @@ const CreateAccountContent = () => {
           account address and optionally assign a nickname to it.
         </Text>
 
-        <AddAccountForm/>
+        <AddAccountForm onComplete={handleComplete} />
       </View>
     </ScrollView>
   );

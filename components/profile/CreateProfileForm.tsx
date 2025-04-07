@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from "react";
-import { View, Text } from "react-native";
+import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import {
   createProfile,

@@ -38,10 +38,7 @@ const PinScreenContent = memo(() => {
   return (
     <>
       <EnterPinScreen />
-      <DangerZone
-        onClearAll={handleClearAll}
-        isLoading={isLoading}
-      />
+      <DangerZone onClearAll={handleClearAll} isLoading={isLoading} />
     </>
   );
 });
