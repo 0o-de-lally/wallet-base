@@ -152,22 +152,6 @@ export const RevealStatusUI = memo(
     }, [storedValue, handleClearRevealedValue]);
 
     const renderActionButton = useCallback(() => {
-      // When a value is revealed, show a back to manage button
-      if (storedValue !== null) {
-        return (
-          <View style={{ alignItems: "center", marginBottom: 20 }}>
-            {onSwitchToManage && (
-              <ActionButton
-                text="Back to Secret Management"
-                onPress={onSwitchToManage}
-                size="small"
-                style={{ backgroundColor: "#6c757d" }}
-                accessibilityLabel="Return to secret management interface"
-              />
-            )}
-          </View>
-        );
-      }
 
       // If no reveal is scheduled yet, show the initial schedule button
       if (!revealStatus || !revealStatus.isScheduled) {
@@ -181,15 +165,6 @@ export const RevealStatusUI = memo(
               accessibilityHint="Starts the reveal process with a waiting period"
               style={{ backgroundColor: "#5e35b1", marginBottom: 10 }}
             />
-            {onSwitchToManage && (
-              <ActionButton
-                text="Back to Secret Management"
-                onPress={onSwitchToManage}
-                size="small"
-                style={{ backgroundColor: "#6c757d" }}
-                accessibilityLabel="Return to secret management interface"
-              />
-            )}
           </View>
         );
       }
@@ -207,31 +182,9 @@ export const RevealStatusUI = memo(
               accessibilityHint="Previous reveal window expired, schedule a new one"
               style={{ marginBottom: 10 }}
             />
-            {onSwitchToManage && (
-              <ActionButton
-                text="Back to Secret Management"
-                onPress={onSwitchToManage}
-                size="small"
-                style={{ backgroundColor: "#6c757d" }}
-                accessibilityLabel="Return to secret management interface"
-              />
-            )}
           </View>
         );
       }
-
-      // During waiting or available periods, still show the back button
-      return onSwitchToManage ? (
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <ActionButton
-            text="Back to Secret Management"
-            onPress={onSwitchToManage}
-            size="small"
-            style={{ backgroundColor: "#6c757d" }}
-            accessibilityLabel="Return to secret management interface"
-          />
-        </View>
-      ) : null;
     }, [
       revealStatus,
       storedValue,

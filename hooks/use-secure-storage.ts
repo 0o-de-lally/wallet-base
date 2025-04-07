@@ -19,9 +19,6 @@ import {
   secureDecryptWithPin,
 } from "../util/pin-security";
 
-// Fixed key for all secure storage operations
-const FIXED_KEY = "private_key";
-
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
 
@@ -34,6 +31,7 @@ export function useSecureStorage() {
   const [currentAction, setCurrentAction] = useState<
     "save" | "schedule_reveal" | "execute_reveal" | "delete" | null
   >(null);
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
   // Add timer ref for auto-hiding the value
   const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -47,8 +45,10 @@ export function useSecureStorage() {
     expiresIn: number;
   } | null>(null);
 
-  // Need to track which account we're working with
-  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
+  // Function to get storage key from account ID
+  const getStorageKey = useCallback((accountId: string) => {
+    return `account_${accountId}`;
+  }, []);
 
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
@@ -59,10 +59,14 @@ export function useSecureStorage() {
     };
   }, []);
 
-  // Check reveal status periodically
+  // Check reveal status periodically for the current account
   useEffect(() => {
+    if (!currentAccountId) return;
+
+    const key = getStorageKey(currentAccountId);
+
     const checkStatus = () => {
-      const status = checkRevealStatus(FIXED_KEY);
+      const status = checkRevealStatus(key);
       if (status) {
         setRevealStatus({
           isScheduled: status.scheduled,
@@ -84,7 +88,7 @@ export function useSecureStorage() {
 
     // Cleanup
     return () => clearInterval(intervalId);
-  }, []);
+  }, [currentAccountId, getStorageKey]);
 
   // Monitor storedValue and set up auto-hide timer when it changes
   useEffect(() => {
@@ -110,15 +114,24 @@ export function useSecureStorage() {
 
   const requestPinForAction = (
     action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
+    accountId: string
   ) => {
-    console.log(`Setting action: ${action} and showing PIN modal`);
+    console.log(
+      `Setting action: ${action} for account ${accountId} and showing PIN modal`
+    );
     setCurrentAction(action);
+    setCurrentAccountId(accountId);
     setPinModalVisible(true);
   };
 
   const saveSecurelyWithPin = async (pin: string) => {
     if (!value.trim()) {
       showAlert("Error", "Please enter a value to store");
+      return;
+    }
+
+    if (!currentAccountId) {
+      showAlert("Error", "No account selected");
       return;
     }
 
@@ -139,7 +152,7 @@ export function useSecureStorage() {
         throw new Error("Encryption failed");
       }
 
-      const key = `account_${currentAccountId || FIXED_KEY}`;
+      const key = getStorageKey(currentAccountId);
       await saveValue(key, encryptedBase64);
 
       showAlert("Success", "Value saved securely and encrypted");
@@ -159,11 +172,12 @@ export function useSecureStorage() {
   const scheduleRevealWithPin = async () => {
     try {
       setIsLoading(true);
+
       if (!currentAccountId) {
         throw new Error("No account selected");
       }
 
-      const key = `account_${currentAccountId}`;
+      const key = getStorageKey(currentAccountId);
 
       // Schedule a reveal for the current key
       const result = scheduleReveal(key);
@@ -174,7 +188,7 @@ export function useSecureStorage() {
       if (result) {
         showAlert(
           "Success",
-          `Reveal scheduled. You can reveal the data after the waiting period.`,
+          `Reveal scheduled. You can reveal the data after the waiting period.`
         );
       } else {
         showAlert("Error", "Failed to schedule reveal");
@@ -190,11 +204,12 @@ export function useSecureStorage() {
   const executeRevealWithPin = async (pin: string) => {
     try {
       setIsLoading(true);
+
       if (!currentAccountId) {
         throw new Error("No account selected");
       }
 
-      const key = `account_${currentAccountId}`;
+      const key = getStorageKey(currentAccountId);
 
       // Check if reveal is available
       const status = checkRevealStatus(key);
@@ -203,7 +218,7 @@ export function useSecureStorage() {
           "Error",
           status && status.expired
             ? "Reveal window has expired. Please schedule again."
-            : "No reveal scheduled or still in waiting period.",
+            : "No reveal scheduled or still in waiting period."
         );
         return;
       }
@@ -250,11 +265,17 @@ export function useSecureStorage() {
   const deleteSecurely = async () => {
     try {
       setIsLoading(true);
-      await deleteValue(FIXED_KEY);
+
+      if (!currentAccountId) {
+        throw new Error("No account selected");
+      }
+
+      const key = getStorageKey(currentAccountId);
+      await deleteValue(key);
       setStoredValue(null);
 
       // Also cancel any scheduled reveals
-      cancelReveal(FIXED_KEY);
+      cancelReveal(key);
       setRevealStatus(null);
 
       showAlert("Success", "Value deleted");
@@ -292,43 +313,54 @@ export function useSecureStorage() {
         showAlert("Error", "Failed to process your request");
       }
     },
-    [currentAction, showAlert],
+    [currentAction, showAlert, value]
   );
 
   const handleScheduleReveal = useCallback((accountId: string) => {
-    setCurrentAccountId(accountId);
-    setCurrentAction("schedule_reveal");
-    setPinModalVisible(true);
+    requestPinForAction("schedule_reveal", accountId);
   }, []);
 
   const handleExecuteReveal = useCallback((accountId: string) => {
-    setCurrentAccountId(accountId);
-    setCurrentAction("execute_reveal");
-    setPinModalVisible(true);
+    requestPinForAction("execute_reveal", accountId);
   }, []);
 
-  const handleCancelReveal = useCallback((accountId: string) => {
-    try {
-      setIsLoading(true);
-      const key = `account_${accountId}`;
-      cancelReveal(key);
-      setRevealStatus(null);
-    } catch (error) {
-      showAlert("Error", "Failed to cancel reveal");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [showAlert]);
+  const handleCancelReveal = useCallback(
+    (accountId: string) => {
+      try {
+        setIsLoading(true);
+        const key = getStorageKey(accountId);
+        cancelReveal(key);
+        setRevealStatus(null);
+      } catch (error) {
+        showAlert("Error", "Failed to cancel reveal");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [showAlert, getStorageKey]
+  );
 
-  const handleDelete = useCallback(() => {
-    requestPinForAction("delete");
+  const handleDelete = useCallback((accountId: string) => {
+    requestPinForAction("delete", accountId);
   }, []);
 
-  const handleClearAll = async () => {
+  const handleSave = useCallback(
+    (accountId: string) => {
+      if (!value.trim()) {
+        showAlert("Error", "Please enter a value to store");
+        return;
+      }
+      requestPinForAction("save", accountId);
+    },
+    [value, showAlert]
+  );
+
+  const handleClearAll = async (accountId: string) => {
     try {
       setIsLoading(true);
-      await clearAllSecureStorage();
+      const key = getStorageKey(accountId);
+      await deleteValue(key);
       clearAllScheduledReveals();
       setStoredValue(null);
       setValue("");
@@ -340,14 +372,6 @@ export function useSecureStorage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSave = () => {
-    if (!value.trim()) {
-      showAlert("Error", "Please enter a value to store");
-      return;
-    }
-    requestPinForAction("save");
   };
 
   const clearRevealedValue = () => {
@@ -378,6 +402,5 @@ export function useSecureStorage() {
     currentAction,
     revealStatus,
     clearRevealedValue,
-    currentAccountId,
   };
 }

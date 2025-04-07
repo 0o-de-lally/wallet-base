@@ -9,6 +9,7 @@ import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
+import { SecretReveal } from "../secure-storage/SecretReveal";
 
 // Define UI view modes
 enum SecretViewMode {
@@ -24,11 +25,11 @@ interface AccountSettingsProps {
 
 export const AccountSettings = memo(
   observer(({ accountId, profileName }: AccountSettingsProps) => {
-    const [account, setAccount] = useState<AccountState | null>(null);
     const [viewMode, setViewMode] = useState<SecretViewMode>(
       SecretViewMode.MANAGE,
     );
     const [isLoading, setIsLoading] = useState(true);
+    const [account, setAccount] = useState<AccountState | null>(null);
 
     useEffect(() => {
       // Fetch account data using accountId (UUID)
@@ -66,6 +67,7 @@ export const AccountSettings = memo(
       fetchAccount();
     }, [accountId, profileName]);
 
+    // Pass accountId to the useSecureStorage hook to scope it to this account
     const {
       value,
       setValue,
@@ -79,11 +81,11 @@ export const AccountSettings = memo(
       handleClearAll,
       pinModalVisible,
       setPinModalVisible,
-      handlePinAction, // Use the handlePinAction from the hook directly
+      handlePinAction,
       currentAction,
       revealStatus,
       clearRevealedValue,
-    } = useSecureStorage();
+    } = useSecureStorage(); // Pass accountId here
 
     const switchToRevealMode = useCallback(() => {
       setViewMode(SecretViewMode.REVEAL);
@@ -152,7 +154,7 @@ export const AccountSettings = memo(
               {viewMode === SecretViewMode.MANAGE && (
                 <ActionButton
                   text="Clear All Saved Data"
-                  onPress={handleClearAll}
+                  onPress={() => handleClearAll(accountId)}
                   isDestructive={true}
                   size="small"
                   style={{ marginBottom: 15 }}
@@ -166,8 +168,8 @@ export const AccountSettings = memo(
               <SecureStorageForm
                 value={value}
                 onValueChange={setValue}
-                onSave={handleSave}
-                onDelete={handleDelete}
+                onSave={() => handleSave(accountId)}
+                onDelete={() => handleDelete(accountId)} // Remove the accountId parameter since it's already scoped
                 isLoading={isSecureLoading}
                 accountId={account.id}
                 accountName={account.nickname}
@@ -198,6 +200,13 @@ export const AccountSettings = memo(
           onClose={() => setPinModalVisible(false)}
           onPinAction={handlePinAction}
           purpose={getPinPurpose()}
+        />
+
+        {/* Added SecretReveal as the bottom-most component */}
+        <SecretReveal
+          accountId={accountId}
+          accountName={account?.nickname}
+          onSwitchToManage={switchToManageMode}
         />
       </ScrollView>
     );

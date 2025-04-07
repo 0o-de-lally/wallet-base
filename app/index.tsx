@@ -35,9 +35,6 @@ const AppContent = observer(() => {
     router.navigate("/profiles");
   }, [router]);
 
-  const navigateToReveal = useCallback(() => {
-    router.navigate("/reveal");
-  }, [router]);
 
   const navigateToCreateAccount = useCallback(() => {
     router.navigate("/create-account");
@@ -66,7 +63,6 @@ const AppContent = observer(() => {
         <View style={styles.container}>
           {renderNavigationButton("PIN Management", navigateToPIN)}
           {renderNavigationButton("Profile Management", navigateToProfiles)}
-          {renderNavigationButton("Reveal Secure Data", navigateToReveal)}
           {renderNavigationButton("Create Account", navigateToCreateAccount)}
         </View>
       </View>
