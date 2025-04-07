@@ -34,25 +34,30 @@ export const PinInputModal = memo(
     // Ensure onPinAction is always a function even if undefined is passed
     const safeOnPinAction = useCallback(
       async (pin: string) => {
-        if (typeof onPinAction === 'function') {
+        if (typeof onPinAction === "function") {
           try {
             console.log(`Executing onPinAction for purpose: ${purpose}`);
             await onPinAction(pin);
             console.log(`Completed onPinAction for purpose: ${purpose}`);
           } catch (error) {
-            console.error(`Error in onPinAction for purpose "${purpose}":`, error);
+            console.error(
+              `Error in onPinAction for purpose "${purpose}":`,
+              error,
+            );
             throw error; // Re-throw to be caught by the caller
           }
         } else {
-          console.error(`ERROR: Missing onPinAction handler for purpose "${purpose}"`);
+          console.error(
+            `ERROR: Missing onPinAction handler for purpose "${purpose}"`,
+          );
           // Log additional context to help debug
-          console.log('PinInputModal props received:', {
+          console.log("PinInputModal props received:", {
             purpose,
             hasOnPinAction: !!onPinAction,
             typeOfOnPinAction: typeof onPinAction,
             hasActionTitle: !!actionTitle,
             hasActionSubtitle: !!actionSubtitle,
-            isVisible: visible
+            isVisible: visible,
           });
 
           setError(`Internal error: Action handler not found for "${purpose}"`);
@@ -63,7 +68,7 @@ export const PinInputModal = memo(
           }, 2000);
         }
       },
-      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible]
+      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible],
     );
 
     // Use a transient pin state - we'll clear it immediately after use

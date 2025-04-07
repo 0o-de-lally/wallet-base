@@ -35,7 +35,6 @@ const AppContent = observer(() => {
     router.navigate("/profiles");
   }, [router]);
 
-
   const navigateToCreateAccount = useCallback(() => {
     router.navigate("/create-account");
   }, [router]);

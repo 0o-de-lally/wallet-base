@@ -185,8 +185,11 @@ export async function verifyStoredPin(pin: string): Promise<boolean> {
       // Verify PIN
       return await comparePins(storedHashedPin, securePin);
     } catch (error) {
-      // Change to warn to avoid red console errors
-      console.warn("PIN verification failed:", error instanceof Error ? error.message : "Unknown error");
+      console.error(
+        "PIN verification error:",
+        error instanceof Error ? error.message : String(error),
+      );
+      console.warn("Error verifying PIN, returning false for safety");
       return false;
     }
   });
@@ -254,7 +257,7 @@ export async function secureDecryptWithPin(
       };
     } catch (error) {
       // Log a more helpful error message without exposing sensitive data
-      console.warn("Decryption failed - possibly due to incorrect PIN");
+      console.warn("Decryption failed - possibly due to incorrect PIN", error);
       // Return null instead of re-throwing to allow for graceful error handling
       return null;
     }

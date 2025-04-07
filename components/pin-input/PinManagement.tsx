@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { View, Text } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
-import { hashPin, validatePin, verifyStoredPin, secureEncryptWithPin, secureDecryptWithPin } from "../../util/pin-security";
+import {
+  hashPin,
+  validatePin,
+  verifyStoredPin,
+  secureEncryptWithPin,
+  secureDecryptWithPin,
+} from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -191,20 +197,23 @@ const EnterPinScreen = memo(() => {
       setIsLoading(true);
 
       // Get all keys that might contain encrypted data
-      const allKeys = ['default', 'private_key']; // Add more keys as needed
+      const allKeys = ["default", "private_key"]; // Add more keys as needed
 
       for (const key of allKeys) {
         const encryptedBase64 = await getValue(key);
 
         if (encryptedBase64) {
           // Decrypt with old PIN
-          const decryptResult = await secureDecryptWithPin(encryptedBase64, oldPin);
+          const decryptResult = await secureDecryptWithPin(
+            encryptedBase64,
+            oldPin,
+          );
 
           if (decryptResult && decryptResult.verified) {
             // Encrypt with new PIN
             const newEncryptedBase64 = await secureEncryptWithPin(
               decryptResult.value,
-              newPin
+              newPin,
             );
 
             // Save re-encrypted data

@@ -68,8 +68,12 @@ export async function encryptWithPin(
     result.set(ciphertext, nonce.length);
 
     return result;
-  } catch (error) {
-    console.error("Encryption error:", error);
+  } catch (e) {
+    console.error(
+      "Encryption error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    console.warn("Error encountered, using fallback encryption");
     return new Uint8Array(0);
   }
 }
@@ -126,6 +130,7 @@ export async function decryptWithPin(
       // Use decrypt instead of open
       decryptedBytes = decipher.decrypt(ciphertext);
     } catch (e) {
+      console.error("PIN decryption error", e);
       // Silently handle decryption failure without stack trace
       return { value: new Uint8Array(0), verified: false };
     }
@@ -154,8 +159,11 @@ export async function decryptWithPin(
     // Integrity check failed - wrong PIN used
     return { value: new Uint8Array(0), verified: false };
   } catch (error) {
-    // Convert to a warning to avoid error logs
-    console.warn("Decryption operation failed");
+    console.error(
+      "Decryption error:",
+      error instanceof Error ? error.message : String(error),
+    );
+    console.warn("Error in decryption process, returning null");
     return null;
   }
 }

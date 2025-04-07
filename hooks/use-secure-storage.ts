@@ -115,10 +115,10 @@ export function useSecureStorage() {
 
   const requestPinForAction = (
     action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
-    accountId: string
+    accountId: string,
   ) => {
     console.log(
-      `Setting action: ${action} for account ${accountId} and showing PIN modal`
+      `Setting action: ${action} for account ${accountId} and showing PIN modal`,
     );
     setCurrentAction(action);
     setCurrentAccountId(accountId);
@@ -205,7 +205,7 @@ export function useSecureStorage() {
       if (result) {
         showAlert(
           "Success",
-          `Reveal scheduled. You can reveal the data after the waiting period.`
+          `Reveal scheduled. You can reveal the data after the waiting period.`,
         );
       } else {
         showAlert("Error", "Failed to schedule reveal");
@@ -235,7 +235,7 @@ export function useSecureStorage() {
           "Error",
           status && status.expired
             ? "Reveal window has expired. Please schedule again."
-            : "No reveal scheduled or still in waiting period."
+            : "No reveal scheduled or still in waiting period.",
         );
         return;
       }
@@ -253,7 +253,10 @@ export function useSecureStorage() {
 
       if (!decryptResult) {
         setStoredValue(null);
-        showAlert("Error", "Failed to decrypt. Incorrect PIN or corrupted data.");
+        showAlert(
+          "Error",
+          "Failed to decrypt. Incorrect PIN or corrupted data.",
+        );
         setPinModalVisible(false); // Close PIN modal on failure
         return;
       }
@@ -274,7 +277,10 @@ export function useSecureStorage() {
       setPinModalVisible(false);
     } catch (error) {
       // Safely handle any uncaught errors
-      console.warn("Reveal process failed:", error instanceof Error ? error.message : "Unknown error");
+      console.warn(
+        "Reveal process failed:",
+        error instanceof Error ? error.message : "Unknown error",
+      );
       showAlert("Error", "Failed to retrieve or decrypt value");
       setStoredValue(null);
       setPinModalVisible(false); // Close PIN modal on failure
@@ -334,7 +340,7 @@ export function useSecureStorage() {
         showAlert("Error", "Failed to process your request");
       }
     },
-    [currentAction, showAlert, value]
+    [currentAction, showAlert, value],
   );
 
   const handleScheduleReveal = useCallback((accountId: string) => {
@@ -359,7 +365,7 @@ export function useSecureStorage() {
         setIsLoading(false);
       }
     },
-    [showAlert, getStorageKey]
+    [showAlert, getStorageKey],
   );
 
   const handleDelete = useCallback((accountId: string) => {
@@ -374,15 +380,20 @@ export function useSecureStorage() {
       }
       requestPinForAction("save", accountId);
     },
-    [value, showAlert]
+    [value, showAlert],
   );
 
   const handleClearAll = async (accountId: string) => {
     try {
       setIsLoading(true);
+      // Use the account ID to clear specific account data
       const key = getStorageKey(accountId);
       await deleteValue(key);
+      // Also clear all secure storage and scheduled reveals
+      await clearAllSecureStorage();
       clearAllScheduledReveals();
+
+      // Clear UI state
       setStoredValue(null);
       setValue("");
       setRevealStatus(null);
