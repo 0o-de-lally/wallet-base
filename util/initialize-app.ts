@@ -13,8 +13,6 @@ export async function initializeApp() {
     const profiles = appConfig.profiles.get();
     const profileCount = Object.keys(profiles).length;
 
-    console.log(`Initializing app with ${profileCount} existing profiles`);
-
     // Only initialize a default profile if we truly have no profiles
     if (profileCount === 0) {
       // Log the state before initialization
