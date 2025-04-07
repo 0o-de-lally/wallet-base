@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useState, useCallback } from "react";
 import { View, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
@@ -7,7 +7,15 @@ import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { ModalProvider } from "../../context/ModalContext";
 import { PinInputModal } from "../pin-input/PinInputModal";
+import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
+
+// Define UI view modes
+enum SecretViewMode {
+  COLLAPSED,
+  MANAGE,
+  REVEAL,
+}
 
 export interface AccountItemProps {
   account: AccountState;
@@ -19,6 +27,10 @@ export interface AccountItemProps {
 
 export const AccountItem = memo(
   ({ account, onToggleExpand, onDelete, isExpanded }: AccountItemProps) => {
+    const [viewMode, setViewMode] = useState<SecretViewMode>(
+      isExpanded ? SecretViewMode.MANAGE : SecretViewMode.COLLAPSED
+    );
+
     const {
       value,
       setValue,
@@ -29,7 +41,31 @@ export const AccountItem = memo(
       setPinModalVisible,
       handlePinVerified,
       currentAction,
+      revealStatus,
+      storedValue,
+      handleScheduleReveal,
+      handleExecuteReveal,
+      handleCancelReveal,
+      clearRevealedValue,
     } = useSecureStorage();
+
+    const toggleSecretView = useCallback(() => {
+      if (viewMode === SecretViewMode.COLLAPSED) {
+        setViewMode(SecretViewMode.MANAGE);
+        onToggleExpand(account.id);
+      } else {
+        setViewMode(SecretViewMode.COLLAPSED);
+        onToggleExpand("");
+      }
+    }, [viewMode, account.id, onToggleExpand]);
+
+    const switchToRevealMode = useCallback(() => {
+      setViewMode(SecretViewMode.REVEAL);
+    }, []);
+
+    const switchToManageMode = useCallback(() => {
+      setViewMode(SecretViewMode.MANAGE);
+    }, []);
 
     const getPinPurpose = () => {
       switch (currentAction) {
@@ -37,6 +73,10 @@ export const AccountItem = memo(
           return "save";
         case "delete":
           return "delete";
+        case "schedule_reveal":
+          return "schedule_reveal";
+        case "execute_reveal":
+          return "execute_reveal";
         default:
           return "save";
       }
@@ -115,14 +155,33 @@ export const AccountItem = memo(
           }}
         >
           <ActionButton
-            text={isExpanded ? "Hide Secret" : "Manage Secret Key"}
-            onPress={() => onToggleExpand(account.id)}
+            text={
+              viewMode === SecretViewMode.COLLAPSED
+                ? "Manage Secret Key"
+                : "Hide Secret"
+            }
+            onPress={toggleSecretView}
             size="small"
             style={{
-              backgroundColor: isExpanded ? "#6c757d" : "#4a90e2",
+              backgroundColor:
+                viewMode !== SecretViewMode.COLLAPSED ? "#6c757d" : "#4a90e2",
             }}
-            accessibilityLabel={`${isExpanded ? "Hide" : "Show"} secret management for ${account.nickname}`}
+            accessibilityLabel={`${
+              viewMode !== SecretViewMode.COLLAPSED ? "Hide" : "Show"
+            } secret management for ${account.nickname}`}
           />
+
+          {viewMode === SecretViewMode.MANAGE && account.is_key_stored && (
+            <ActionButton
+              text="Reveal Secret"
+              onPress={switchToRevealMode}
+              size="small"
+              style={{
+                backgroundColor: "#5e35b1",
+              }}
+              accessibilityLabel={`Reveal secret for ${account.nickname}`}
+            />
+          )}
 
           <ActionButton
             text="Remove"
@@ -133,7 +192,7 @@ export const AccountItem = memo(
           />
         </View>
 
-        {isExpanded && (
+        {viewMode === SecretViewMode.MANAGE && isExpanded && (
           <View style={styles.expandedContent}>
             <SecureStorageForm
               value={value}
@@ -147,6 +206,23 @@ export const AccountItem = memo(
           </View>
         )}
 
+        {viewMode === SecretViewMode.REVEAL && isExpanded && (
+          <View style={styles.expandedContent}>
+            <RevealStatusUI
+              accountId={account.id}
+              accountName={account.nickname}
+              revealStatus={revealStatus}
+              storedValue={storedValue}
+              isLoading={isSecureLoading}
+              onScheduleReveal={handleScheduleReveal}
+              onExecuteReveal={handleExecuteReveal}
+              onCancelReveal={handleCancelReveal}
+              onClearRevealedValue={clearRevealedValue}
+              onSwitchToManage={switchToManageMode}
+            />
+          </View>
+        )}
+
         <PinInputModal
           visible={pinModalVisible}
           onClose={() => setPinModalVisible(false)}
@@ -155,7 +231,7 @@ export const AccountItem = memo(
         />
       </View>
     );
-  },
+  }
 );
 
 AccountItem.displayName = "AccountItem";
@@ -166,7 +242,7 @@ export const AccountItemWithContext = memo(
     <ModalProvider key={account.id || account.account_address}>
       <AccountItem account={account} {...props} />
     </ModalProvider>
-  ),
+  )
 );
 
 AccountItemWithContext.displayName = "AccountItemWithContext";
