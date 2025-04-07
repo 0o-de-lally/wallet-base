@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { View, Text } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
-import {
-  hashPin,
-  validatePin,
-  verifyStoredPin,
-  HashedPin,
-} from "../../util/pin-security";
+import { hashPin, validatePin, verifyStoredPin } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { useModal } from "../../context/ModalContext";

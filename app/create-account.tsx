@@ -51,8 +51,8 @@ const CreateAccountContent = () => {
       <View style={styles.content}>
         <Text style={styles.title}>Create New Account</Text>
         <Text style={styles.description}>
-          Add a new account to your wallet. You'll need to provide an account
-          address and optionally assign a nickname to it.
+          Add a new account to your wallet. You&apos;ll need to provide an
+          account address and optionally assign a nickname to it.
         </Text>
 
         <AddAccountForm

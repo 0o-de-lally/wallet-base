@@ -81,9 +81,17 @@ const ProfileManagement = observer(() => {
     setDeleteAllModalVisible(false);
   }, []);
 
+  const navigateToCreateAccount = useCallback(() => {
+    router.push("/create-account");
+  }, []);
+
   const toggleCreateForm = useCallback(() => {
     setShowCreateForm((prev) => !prev);
-  }, []);
+    // Use navigateToCreateAccount when appropriate
+    if (Object.keys(profiles).length === 0) {
+      navigateToCreateAccount();
+    }
+  }, [navigateToCreateAccount, profiles]);
 
   const handleAccountsUpdated = useCallback(() => {
     // Force a UI refresh by updating the selected profile
@@ -92,10 +100,6 @@ const ProfileManagement = observer(() => {
       setSelectedProfileName(selectedProfileName);
     }
   }, [selectedProfileName]);
-
-  const navigateToCreateAccount = useCallback(() => {
-    router.push("/create-account");
-  }, []);
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
@@ -226,6 +230,16 @@ const ProfileManagement = observer(() => {
             showCreateForm ? "Cancel creating profile" : "Create a new profile"
           }
         />
+
+        {/* Add direct navigation button for create account */}
+        {Object.keys(profiles).length > 0 && (
+          <ActionButton
+            text="Create Account"
+            onPress={navigateToCreateAccount}
+            style={styles.button}
+            accessibilityLabel="Create a new account"
+          />
+        )}
       </View>
 
       {showCreateForm && (

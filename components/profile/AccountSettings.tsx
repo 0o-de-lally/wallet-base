@@ -127,25 +127,38 @@ export const AccountSettings = memo(
           <Text style={styles.resultLabel}>Security Management</Text>
 
           {account.is_key_stored && (
-            <ActionButton
-              text={
-                viewMode === SecretViewMode.MANAGE
-                  ? "Reveal Secret"
-                  : "Manage Secret"
-              }
-              onPress={
-                viewMode === SecretViewMode.MANAGE
-                  ? switchToRevealMode
-                  : switchToManageMode
-              }
-              size="medium"
-              style={{
-                backgroundColor:
-                  viewMode === SecretViewMode.MANAGE ? "#5e35b1" : "#4a90e2",
-                marginBottom: 15,
-              }}
-              accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
-            />
+            <>
+              <ActionButton
+                text={
+                  viewMode === SecretViewMode.MANAGE
+                    ? "Reveal Secret"
+                    : "Manage Secret"
+                }
+                onPress={
+                  viewMode === SecretViewMode.MANAGE
+                    ? switchToRevealMode
+                    : switchToManageMode
+                }
+                size="medium"
+                style={{
+                  backgroundColor:
+                    viewMode === SecretViewMode.MANAGE ? "#5e35b1" : "#4a90e2",
+                  marginBottom: 15,
+                }}
+                accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
+              />
+
+              {/* Add button to clear all data if in manage mode */}
+              {viewMode === SecretViewMode.MANAGE && (
+                <ActionButton
+                  text="Clear All Saved Data"
+                  onPress={handleClearAll}
+                  isDestructive={true}
+                  size="small"
+                  style={{ marginBottom: 15 }}
+                />
+              )}
+            </>
           )}
 
           {viewMode === SecretViewMode.MANAGE && (

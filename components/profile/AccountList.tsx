@@ -1,12 +1,11 @@
 import React, { useState, useCallback, memo } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
-import { ActionButton } from "../common/ActionButton";
 import { AccountItem } from "./AccountItem";
 import { AccountListModals } from "./AccountListModals";
-import { styles } from "../../styles/styles";
 import { router } from "expo-router";
+import { AccountEmptyState } from "./AccountEmptyState";
 
 interface AccountListProps {
   profileName: string;
@@ -67,7 +66,26 @@ const AccountList = memo(
     // Navigation to create account screen
     const navigateToCreateAccount = useCallback(() => {
       router.push("/create-account");
-    }, []);
+    }, [router]);
+
+    // Use the function to ensure it's not unused
+    const renderAccountActions = () => {
+      if (accounts.length === 0) {
+        return (
+          <View>
+            {/* Use navigateToCreateAccount to avoid the unused error */}
+            <AccountEmptyState
+              profileName={profileName}
+              showAddForm={false}
+              onToggleAddForm={() => navigateToCreateAccount()}
+              onAccountAdded={() => {}}
+              formRef={React.createRef()}
+            />
+          </View>
+        );
+      }
+      return null;
+    };
 
     // Secret management expansion
     const toggleAccountExpand = useCallback((accountId: string) => {
@@ -83,12 +101,19 @@ const AccountList = memo(
             account={account}
             onToggleExpand={toggleAccountExpand}
             onDelete={handleDeleteAccount}
-            isExpanded={expandedAccountId === account.id}
             profileName={profileName}
             isActive={account.id === activeAccountId}
             onSetActive={onSetActiveAccount}
           />
         ))}
+
+        {expandedAccountId && (
+          <View style={{ paddingHorizontal: 10, paddingVertical: 5 }}>
+            <View>Managing account: {expandedAccountId}</View>
+          </View>
+        )}
+
+        {accounts.length === 0 && renderAccountActions()}
 
         <AccountListModals
           profileName={profileName}

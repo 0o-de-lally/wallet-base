@@ -10,7 +10,6 @@ export interface AccountItemProps {
   account: AccountState;
   onDelete: (accountAddress: string) => void;
   profileName: string;
-  isExpanded?: boolean;
   onToggleExpand?: (accountId: string) => void;
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
@@ -21,7 +20,6 @@ export const AccountItem = memo(
     account,
     onDelete,
     profileName,
-    isExpanded,
     onToggleExpand,
     isActive,
     onSetActive,
