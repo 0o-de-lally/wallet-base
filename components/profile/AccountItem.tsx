@@ -1,93 +1,33 @@
-import React, { memo, useState, useCallback } from "react";
-import { View, Text } from "react-native";
+import React, { memo } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import { ActionButton } from "../common/ActionButton";
-import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
-import { useSecureStorage } from "../../hooks/use-secure-storage";
-import { ModalProvider } from "../../context/ModalContext";
-import { PinInputModal } from "../pin-input/PinInputModal";
-import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
-
-// Define UI view modes
-enum SecretViewMode {
-  COLLAPSED,
-  MANAGE,
-  REVEAL,
-}
+import { router } from "expo-router";
 
 export interface AccountItemProps {
   account: AccountState;
-  onToggleExpand: (accountId: string) => void;
   onDelete: (accountAddress: string) => void;
-  isExpanded: boolean;
   profileName: string;
 }
 
 export const AccountItem = memo(
-  ({ account, onToggleExpand, onDelete, isExpanded }: AccountItemProps) => {
-    const [viewMode, setViewMode] = useState<SecretViewMode>(
-      isExpanded ? SecretViewMode.MANAGE : SecretViewMode.COLLAPSED,
-    );
-
-    const {
-      value,
-      setValue,
-      isLoading: isSecureLoading,
-      handleSave,
-      handleDelete,
-      pinModalVisible,
-      setPinModalVisible,
-      handlePinVerified,
-      currentAction,
-      revealStatus,
-      storedValue,
-      handleScheduleReveal,
-      handleExecuteReveal,
-      handleCancelReveal,
-      clearRevealedValue,
-    } = useSecureStorage();
-
-    const toggleSecretView = useCallback(() => {
-      if (viewMode === SecretViewMode.COLLAPSED) {
-        setViewMode(SecretViewMode.MANAGE);
-        onToggleExpand(account.id);
-      } else {
-        setViewMode(SecretViewMode.COLLAPSED);
-        onToggleExpand("");
-      }
-    }, [viewMode, account.id, onToggleExpand]);
-
-    const switchToRevealMode = useCallback(() => {
-      setViewMode(SecretViewMode.REVEAL);
-    }, []);
-
-    const switchToManageMode = useCallback(() => {
-      setViewMode(SecretViewMode.MANAGE);
-    }, []);
-
-    const getPinPurpose = () => {
-      switch (currentAction) {
-        case "save":
-          return "save";
-        case "delete":
-          return "delete";
-        case "schedule_reveal":
-          return "schedule_reveal";
-        case "execute_reveal":
-          return "execute_reveal";
-        default:
-          return "save";
-      }
+  ({ account, onDelete, profileName }: AccountItemProps) => {
+    const navigateToSettings = () => {
+      router.navigate({
+        pathname: "./account-settings",
+        params: { accountId: account.id, profileName },
+      });
     };
 
     return (
-      <View
+      <TouchableOpacity
         key={account.account_address}
         style={[styles.resultContainer, { marginBottom: 10 }]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}`}
+        onPress={navigateToSettings}
       >
         <Text style={styles.resultLabel}>{account.nickname}</Text>
         <View
@@ -155,33 +95,14 @@ export const AccountItem = memo(
           }}
         >
           <ActionButton
-            text={
-              viewMode === SecretViewMode.COLLAPSED
-                ? "Manage Secret Key"
-                : "Hide Secret"
-            }
-            onPress={toggleSecretView}
+            text="Manage Account"
+            onPress={navigateToSettings}
             size="small"
             style={{
-              backgroundColor:
-                viewMode !== SecretViewMode.COLLAPSED ? "#6c757d" : "#4a90e2",
+              backgroundColor: "#4a90e2",
             }}
-            accessibilityLabel={`${
-              viewMode !== SecretViewMode.COLLAPSED ? "Hide" : "Show"
-            } secret management for ${account.nickname}`}
+            accessibilityLabel={`Manage account ${account.nickname}`}
           />
-
-          {viewMode === SecretViewMode.MANAGE && account.is_key_stored && (
-            <ActionButton
-              text="Reveal Secret"
-              onPress={switchToRevealMode}
-              size="small"
-              style={{
-                backgroundColor: "#5e35b1",
-              }}
-              accessibilityLabel={`Reveal secret for ${account.nickname}`}
-            />
-          )}
 
           <ActionButton
             text="Remove"
@@ -191,58 +112,9 @@ export const AccountItem = memo(
             accessibilityLabel={`Remove account ${account.nickname}`}
           />
         </View>
-
-        {viewMode === SecretViewMode.MANAGE && isExpanded && (
-          <View style={styles.expandedContent}>
-            <SecureStorageForm
-              value={value}
-              onValueChange={setValue}
-              onSave={handleSave}
-              onDelete={handleDelete}
-              isLoading={isSecureLoading}
-              accountId={account.id}
-              accountName={account.nickname}
-            />
-          </View>
-        )}
-
-        {viewMode === SecretViewMode.REVEAL && isExpanded && (
-          <View style={styles.expandedContent}>
-            <RevealStatusUI
-              accountId={account.id}
-              accountName={account.nickname}
-              revealStatus={revealStatus}
-              storedValue={storedValue}
-              isLoading={isSecureLoading}
-              onScheduleReveal={handleScheduleReveal}
-              onExecuteReveal={handleExecuteReveal}
-              onCancelReveal={handleCancelReveal}
-              onClearRevealedValue={clearRevealedValue}
-              onSwitchToManage={switchToManageMode}
-            />
-          </View>
-        )}
-
-        <PinInputModal
-          visible={pinModalVisible}
-          onClose={() => setPinModalVisible(false)}
-          onPinVerified={handlePinVerified}
-          purpose={getPinPurpose()}
-        />
-      </View>
+      </TouchableOpacity>
     );
   },
 );
 
 AccountItem.displayName = "AccountItem";
-
-// Wrapper component that provides ModalProvider context
-export const AccountItemWithContext = memo(
-  ({ account, ...props }: AccountItemProps) => (
-    <ModalProvider key={account.id || account.account_address}>
-      <AccountItem account={account} {...props} />
-    </ModalProvider>
-  ),
-);
-
-AccountItemWithContext.displayName = "AccountItemWithContext";
