@@ -40,6 +40,10 @@ const AppContent = observer(() => {
     router.navigate("/reveal");
   }, [router]);
 
+  const navigateToCreateAccount = useCallback(() => {
+    router.navigate("/create-account");
+  }, [router]);
+
   const renderNavigationButton = useCallback(
     (text: string, onPress: () => void) => (
       <TouchableOpacity
@@ -64,6 +68,7 @@ const AppContent = observer(() => {
           {renderNavigationButton("PIN Management", navigateToPIN)}
           {renderNavigationButton("Profile Management", navigateToProfiles)}
           {renderNavigationButton("Reveal Secure Data", navigateToReveal)}
+          {renderNavigationButton("Create Account", navigateToCreateAccount)}
         </View>
         <View style={styles.container}>
           <SecureStorageScreen />
