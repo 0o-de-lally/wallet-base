@@ -12,10 +12,18 @@ interface AccountListProps {
   profileName: string;
   accounts: AccountState[];
   onAccountsUpdated?: (updatedAccounts: AccountState[]) => void;
+  activeAccountId: string | null;
+  onSetActiveAccount: (accountId: string) => void;
 }
 
 const AccountList = memo(
-  ({ profileName, accounts, onAccountsUpdated }: AccountListProps) => {
+  ({
+    profileName,
+    accounts,
+    onAccountsUpdated,
+    activeAccountId,
+    onSetActiveAccount
+  }: AccountListProps) => {
     // State management
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
@@ -75,6 +83,8 @@ const AccountList = memo(
             onDelete={handleDeleteAccount}
             isExpanded={expandedAccountId === account.id}
             profileName={profileName}
+            isActive={account.id === activeAccountId}
+            onSetActive={onSetActiveAccount}
           />
         ))}
 

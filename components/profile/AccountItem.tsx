@@ -12,10 +12,20 @@ export interface AccountItemProps {
   profileName: string;
   isExpanded?: boolean;
   onToggleExpand?: (accountId: string) => void;
+  isActive?: boolean;
+  onSetActive?: (accountId: string) => void;
 }
 
 export const AccountItem = memo(
-  ({ account, onDelete, profileName, isExpanded, onToggleExpand }: AccountItemProps) => {
+  ({
+    account,
+    onDelete,
+    profileName,
+    isExpanded,
+    onToggleExpand,
+    isActive,
+    onSetActive
+  }: AccountItemProps) => {
     const navigateToSettings = () => {
       router.navigate({
         pathname: "./account-settings",
@@ -26,9 +36,13 @@ export const AccountItem = memo(
     return (
       <TouchableOpacity
         key={account.account_address}
-        style={[styles.resultContainer, { marginBottom: 10 }]}
+        style={[
+          styles.resultContainer,
+          { marginBottom: 10 },
+          isActive && { borderColor: "#94c2f3", borderWidth: 2 }
+        ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? ' (active)' : ''}`}
         onPress={onToggleExpand ? () => onToggleExpand(account.id) : navigateToSettings}
       >
         <Text style={styles.resultLabel}>{account.nickname}</Text>
@@ -96,6 +110,32 @@ export const AccountItem = memo(
             marginTop: 10,
           }}
         >
+          {onSetActive && !isActive && (
+            <ActionButton
+              text="Set Active"
+              onPress={() => onSetActive(account.id)}
+              size="small"
+              style={{
+                backgroundColor: "#a5d6b7",
+              }}
+              accessibilityLabel={`Set ${account.nickname} as active account`}
+            />
+          )}
+
+          {isActive && (
+            <View style={{
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              backgroundColor: "#4a90e2",
+              borderRadius: 4,
+              marginRight: 8
+            }}>
+              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
+                Active
+              </Text>
+            </View>
+          )}
+
           <ActionButton
             text="Manage Account"
             onPress={navigateToSettings}

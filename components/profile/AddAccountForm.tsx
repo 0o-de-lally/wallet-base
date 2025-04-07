@@ -9,6 +9,7 @@ import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { getRandomBytesAsync } from "expo-crypto";
 import { uint8ArrayToBase64 } from "../../util/crypto";
+import { appConfig, setActiveAccount } from "../../util/app-config-store";
 
 interface AddAccountFormProps {
   profileName: string;
@@ -68,6 +69,11 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
         const success = addAccountToProfile(profileName, account);
 
         if (success) {
+          // Set as active account if there is no active account yet
+          if (appConfig.activeAccountId.get() === null) {
+            setActiveAccount(account.id);
+          }
+
           setSuccessModalVisible(true);
         } else {
           setError(

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { appConfig } from "../../util/app-config-store";
+import { appConfig, getProfileForAccount, setActiveAccount } from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -26,7 +26,14 @@ const ProfileManagement = observer(() => {
 
   // Get all profiles from the store
   const profiles = appConfig.profiles.get();
-  const activeProfileName = appConfig.activeProfile.get();
+  const activeAccountId = appConfig.activeAccountId.get();
+
+  // Find which profile contains the active account
+  const activeProfileName = useMemo(() => {
+    if (!activeAccountId) return null;
+
+    return getProfileForAccount(activeAccountId);
+  }, [activeAccountId, profiles]);
 
   // Get the currently selected profile, or the active profile if none selected
   const selectedProfile = selectedProfileName
@@ -46,15 +53,15 @@ const ProfileManagement = observer(() => {
     setShowCreateForm(false);
   }, []);
 
-  const handleSetActiveProfile = useCallback(
-    (profileName: string, event?: GestureResponderEvent) => {
+  const handleSetActiveAccount = useCallback(
+    (accountId: string, event?: GestureResponderEvent) => {
       // Prevent event propagation to avoid triggering profile selection
       if (event) {
         event.stopPropagation();
       }
 
-      // Set the active profile
-      appConfig.activeProfile.set(profileName);
+      // Set the active account
+      setActiveAccount(accountId);
     },
     [],
   );
@@ -65,7 +72,7 @@ const ProfileManagement = observer(() => {
 
   const confirmDeleteAllProfiles = useCallback(() => {
     appConfig.profiles.set({});
-    appConfig.activeProfile.set(null);
+    appConfig.activeAccountId.set(null);
     setSelectedProfileName(null);
     setDeleteAllModalVisible(false);
   }, []);
@@ -104,7 +111,7 @@ const ProfileManagement = observer(() => {
           activeOpacity={0.7}
           accessible={true}
           accessibilityRole="button"
-          accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(active)" : ""}`}
+          accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(contains active account)" : ""}`}
           accessibilityState={{ expanded: expandedProfile === profileName }}
         >
           <View
@@ -116,38 +123,22 @@ const ProfileManagement = observer(() => {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <TouchableOpacity
-                onPress={(e) => handleSetActiveProfile(profileName, e)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                style={{ marginRight: 12 }}
-                disabled={activeProfileName === profileName}
-              >
+              <Text style={styles.profileName}>{profileName}</Text>
+              {activeProfileName === profileName && (
                 <View
                   style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 10,
-                    borderWidth: 2,
-                    borderColor:
-                      activeProfileName === profileName ? "#94c2f3" : "#fff",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    marginLeft: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    backgroundColor: "rgba(148, 194, 243, 0.3)",
+                    borderRadius: 4,
                   }}
                 >
-                  {activeProfileName === profileName && (
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: "#94c2f3",
-                      }}
-                    />
-                  )}
+                  <Text style={{ color: "#94c2f3", fontSize: 10 }}>
+                    Contains Active Account
+                  </Text>
                 </View>
-              </TouchableOpacity>
-
-              <Text style={styles.profileName}>{profileName}</Text>
+              )}
             </View>
 
             <Text style={{ color: "#fff", fontSize: 12 }}>
@@ -160,7 +151,7 @@ const ProfileManagement = observer(() => {
             style={{
               color: "#ddd",
               fontSize: 12,
-              marginLeft: 42,
+              marginLeft: 10,
               marginBottom: 10,
             }}
           >
@@ -175,6 +166,8 @@ const ProfileManagement = observer(() => {
               profileName={profileName}
               accounts={profile.accounts}
               onAccountsUpdated={handleAccountsUpdated}
+              activeAccountId={activeAccountId}
+              onSetActiveAccount={handleSetActiveAccount}
             />
           </SectionContainer>
         )}
@@ -183,10 +176,11 @@ const ProfileManagement = observer(() => {
   }, [
     profiles,
     activeProfileName,
+    activeAccountId,
     selectedProfileName,
     expandedProfile,
     handleSelectProfile,
-    handleSetActiveProfile,
+    handleSetActiveAccount,
     handleAccountsUpdated,
   ]);
 

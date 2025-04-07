@@ -26,6 +26,26 @@ export async function initializeApp() {
       console.log("After initialization:", JSON.stringify(appConfig.get()));
     }
 
+    // Verify active account validity
+    const activeAccountId = appConfig.activeAccountId.get();
+    if (activeAccountId !== null) {
+      // Check if this account actually exists in any profile
+      let accountExists = false;
+
+      for (const profileName in profiles) {
+        const profile = profiles[profileName];
+        if (profile.accounts.some(acc => acc.id === activeAccountId)) {
+          accountExists = true;
+          break;
+        }
+      }
+
+      if (!accountExists) {
+        console.log("Active account doesn't exist, resetting");
+        appConfig.activeAccountId.set(null);
+      }
+    }
+
     return true;
   } catch (error) {
     console.error("Failed to initialize app:", error);

@@ -57,7 +57,7 @@ export type AppConfig = {
   profiles: {
     [profileName: string]: Profile;
   };
-  activeProfile: string | null; // Name of the currently active profile
+  activeAccountId: string | null; // ID of the currently active account (replacing activeProfile)
   // Add other config sections as needed
 };
 
@@ -69,5 +69,5 @@ export const defaultConfig: AppConfig = {
     theme: "dark",
   },
   profiles: {},
-  activeProfile: null,
+  activeAccountId: null,
 };
