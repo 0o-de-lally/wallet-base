@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { styles } from "../../styles/styles";
 import { FormInput } from "../common/FormInput";
 import { ActionButton } from "../common/ActionButton";
@@ -12,9 +12,7 @@ interface SecureStorageFormProps {
   onClearAll?: () => void;
   isLoading: boolean;
   disabled?: boolean;
-  profileId: string;
-  accountId: string; // This will be the randomly generated ID from AccountState
-  profileName?: string;
+  accountId: string;
   accountName?: string;
 }
 
@@ -26,25 +24,11 @@ export const SecureStorageForm = memo(
     onDelete,
     isLoading,
     disabled = false,
-    profileId,
     accountId,
-    profileName,
     accountName,
   }: SecureStorageFormProps) => {
     return (
       <>
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultLabel}>
-            Profile: {profileName || profileId}
-          </Text>
-          <Text style={styles.resultValue}>
-            Account: {accountName || accountId}
-          </Text>
-          <Text style={styles.resultValue} numberOfLines={1} ellipsizeMode="middle">
-            ID: {accountId}
-          </Text>
-        </View>
-
         <FormInput
           label="Private Value:"
           value={value}
@@ -57,6 +41,7 @@ export const SecureStorageForm = memo(
 
         <View style={styles.buttonContainer}>
           <ActionButton
+          style={styles.button}
             text="Save"
             onPress={onSave}
             isLoading={isLoading && value.trim().length > 0}
@@ -67,6 +52,7 @@ export const SecureStorageForm = memo(
 
           <ActionButton
             text="Delete"
+            style={styles.button}
             onPress={onDelete}
             isLoading={isLoading && !value.trim()}
             disabled={disabled}

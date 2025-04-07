@@ -50,7 +50,7 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
       try {
         // Generate a random ID for the account using crypto secure random
         const randomBytes = await getRandomBytesAsync(16); // 16 bytes = 128 bits
-        const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ''); // Create URL-safe ID
+        const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
         // Create account state
         const account: AccountState = {
@@ -71,7 +71,7 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
           setSuccessModalVisible(true);
         } else {
           setError(
-            "Account already exists in this profile or profile doesn't exist."
+            "Account already exists in this profile or profile doesn't exist.",
           );
         }
       } catch (error) {

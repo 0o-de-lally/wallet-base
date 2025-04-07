@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, memo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native"; // Removed TouchableOpacity
 import { styles } from "../../styles/styles";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
@@ -19,6 +19,10 @@ interface AccountListProps {
   onAccountsUpdated?: (updatedAccounts: AccountState[]) => void;
 }
 
+interface AccountItemProps {
+  account: AccountState;
+}
+
 const AccountList = memo(
   ({ profileName, accounts, onAccountsUpdated }: AccountListProps) => {
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -27,7 +31,9 @@ const AccountList = memo(
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [showAddAccountForm, setShowAddAccountForm] = useState(false);
-    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
+    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
+      null,
+    );
     const addAccountFormRef = useRef<AddAccountFormRef>(null);
 
     const handleDeleteAccount = useCallback((accountAddress: string) => {
@@ -73,7 +79,7 @@ const AccountList = memo(
       setExpandedAccountId((prev) => (prev === accountId ? null : accountId));
     }, []);
 
-    const AccountItem = memo(({ account }: { account: AccountState }) => {
+    const AccountItem = memo(({ account }: AccountItemProps) => {
       const isExpanded = expandedAccountId === account.id;
 
       const {
@@ -107,6 +113,32 @@ const AccountList = memo(
           accessibilityLabel={`Account ${account.nickname}`}
         >
           <Text style={styles.resultLabel}>{account.nickname}</Text>
+          <View
+            style={{
+              paddingVertical: 6,
+              paddingHorizontal: 10,
+              backgroundColor: account.is_key_stored ? "#a5d6b7" : "#b3b8c3",
+              borderRadius: 12,
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 80,
+            }}
+            accessibilityRole="text"
+            accessibilityLabel={account.is_key_stored ? "Hot" : "View"}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 11,
+                textAlign: "center",
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              {account.is_key_stored ? "Full Access" : "View Only"}
+            </Text>
+          </View>
           <Text
             style={styles.resultValue}
             numberOfLines={1}
@@ -145,36 +177,12 @@ const AccountList = memo(
               marginTop: 10,
             }}
           >
-            <View
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                backgroundColor: account.is_key_stored ? "#a5d6b7" : "#b3b8c3",
-                borderRadius: 4,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              accessibilityLabel={
-                account.is_key_stored
-                  ? "Full access account"
-                  : "View only account"
-              }
-            >
-              <Text style={{
-                color: '#fff',
-                fontWeight: '500',
-                fontSize: 12
-              }}>
-                {account.is_key_stored ? "Full Access" : "View Only"}
-              </Text>
-            </View>
-
             <ActionButton
               text={isExpanded ? "Hide Secret" : "Manage Secret Key"}
               onPress={() => toggleAccountExpand(account.id)}
               size="small"
               style={{
-                backgroundColor: isExpanded ? "#6c757d" : "#4a90e2"
+                backgroundColor: isExpanded ? "#6c757d" : "#4a90e2",
               }}
               accessibilityLabel={`${isExpanded ? "Hide" : "Show"} secret management for ${account.nickname}`}
             />
@@ -196,9 +204,7 @@ const AccountList = memo(
                 onSave={handleSave}
                 onDelete={handleDelete}
                 isLoading={isSecureLoading}
-                profileId={profileName}
                 accountId={account.id}
-                profileName={profileName}
                 accountName={account.nickname}
               />
             </View>
@@ -214,13 +220,21 @@ const AccountList = memo(
       );
     });
 
+    // Added displayName to fix the missing display name error
+    AccountItem.displayName = "AccountItem";
+
     const renderAccountItem = useCallback(
       (account: AccountState) => (
-        <ModalProvider key={account.id}>
+        <ModalProvider key={account.id || account.account_address}>
           <AccountItem account={account} />
         </ModalProvider>
       ),
-      [handleDeleteAccount, expandedAccountId, toggleAccountExpand, profileName],
+      [
+        handleDeleteAccount,
+        expandedAccountId,
+        toggleAccountExpand,
+        profileName,
+      ],
     );
 
     const renderEmptyState = useCallback(() => {
