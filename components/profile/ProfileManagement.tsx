@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
-import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import {
   appConfig,
@@ -20,7 +19,7 @@ import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { router } from "expo-router";
 
-const ProfileManagement = observer(() => {
+const ProfileManagement: React.FC = () => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
     null,
   );
@@ -277,6 +276,8 @@ const ProfileManagement = observer(() => {
       />
     </ScrollView>
   );
-});
+};
+
+ProfileManagement.displayName = "ProfileManagement";
 
 export default ProfileManagement;
