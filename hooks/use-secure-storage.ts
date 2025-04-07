@@ -10,6 +10,7 @@ import {
   checkRevealStatus,
   cancelReveal,
   clearAllScheduledReveals,
+  REVEAL_CONFIG,
 } from "../util/reveal-controller";
 import { useModal } from "../context/ModalContext";
 // Import from pin-security.ts instead of PinProcessor
@@ -169,7 +170,7 @@ export function useSecureStorage() {
     }
   };
 
-  const scheduleRevealWithPin = async () => {
+  const scheduleRevealWithPin = async (pin: string) => {
     try {
       setIsLoading(true);
 
@@ -177,12 +178,28 @@ export function useSecureStorage() {
         throw new Error("No account selected");
       }
 
+      // First verify this is really the user's PIN
+      const isValid = await verifyStoredPin(pin);
+      if (!isValid) {
+        showAlert("Error", "Invalid PIN");
+        setPinModalVisible(false); // Close the PIN modal on failure
+        return; // Important: Return early to prevent scheduling with invalid PIN
+      }
+
       const key = getStorageKey(currentAccountId);
 
       // Schedule a reveal for the current key
       const result = scheduleReveal(key);
 
-      // Use appropriate properties based on the actual implementation
+      // Update the reveal status
+      setRevealStatus({
+        isScheduled: true,
+        isAvailable: false,
+        isExpired: false,
+        waitTimeRemaining: REVEAL_CONFIG.waitingPeriodMs,
+        expiresIn: REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs,
+      });
+
       setPinModalVisible(false);
 
       if (result) {
@@ -236,7 +253,8 @@ export function useSecureStorage() {
 
       if (!decryptResult) {
         setStoredValue(null);
-        showAlert("Error", "Failed to decrypt value. Data may be corrupted.");
+        showAlert("Error", "Failed to decrypt. Incorrect PIN or corrupted data.");
+        setPinModalVisible(false); // Close PIN modal on failure
         return;
       }
 
@@ -244,6 +262,7 @@ export function useSecureStorage() {
         // Wrong PIN was used - do not display any data
         setStoredValue(null);
         showAlert("Error", "Incorrect PIN. Unable to decrypt data.");
+        setPinModalVisible(false); // Close PIN modal on failure
         return;
       }
 
@@ -254,9 +273,11 @@ export function useSecureStorage() {
       cancelReveal(key);
       setPinModalVisible(false);
     } catch (error) {
+      // Safely handle any uncaught errors
+      console.warn("Reveal process failed:", error instanceof Error ? error.message : "Unknown error");
       showAlert("Error", "Failed to retrieve or decrypt value");
-      console.error(error);
       setStoredValue(null);
+      setPinModalVisible(false); // Close PIN modal on failure
     } finally {
       setIsLoading(false);
     }
@@ -302,7 +323,7 @@ export function useSecureStorage() {
         } else if (currentAction === "delete") {
           await deleteSecurely();
         } else if (currentAction === "schedule_reveal") {
-          await scheduleRevealWithPin();
+          await scheduleRevealWithPin(pin);
         } else if (currentAction === "execute_reveal") {
           await executeRevealWithPin(pin);
         } else {

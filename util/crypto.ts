@@ -126,8 +126,7 @@ export async function decryptWithPin(
       // Use decrypt instead of open
       decryptedBytes = decipher.decrypt(ciphertext);
     } catch (e) {
-      console.error("Decryption failed:", e);
-      // Authentication failed - likely wrong PIN
+      // Silently handle decryption failure without stack trace
       return { value: new Uint8Array(0), verified: false };
     }
 
@@ -155,7 +154,8 @@ export async function decryptWithPin(
     // Integrity check failed - wrong PIN used
     return { value: new Uint8Array(0), verified: false };
   } catch (error) {
-    console.error("Decryption error:", error);
+    // Convert to a warning to avoid error logs
+    console.warn("Decryption operation failed");
     return null;
   }
 }
