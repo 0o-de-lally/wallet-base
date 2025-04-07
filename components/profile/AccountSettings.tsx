@@ -8,6 +8,7 @@ import { PinInputModal } from "../pin-input/PinInputModal";
 import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
+import { observer } from "@legendapp/state/react";
 
 // Define UI view modes
 enum SecretViewMode {
@@ -22,7 +23,7 @@ interface AccountSettingsProps {
 }
 
 export const AccountSettings = memo(
-  ({ accountId, profileName }: AccountSettingsProps) => {
+  observer(({ accountId, profileName }: AccountSettingsProps) => {
     const [account, setAccount] = useState<AccountState | null>(null);
     const [viewMode, setViewMode] = useState<SecretViewMode>(
       SecretViewMode.MANAGE,
@@ -68,18 +69,19 @@ export const AccountSettings = memo(
     const {
       value,
       setValue,
+      storedValue,
       isLoading: isSecureLoading,
       handleSave,
-      handleDelete,
-      pinModalVisible,
-      setPinModalVisible,
-      handlePinVerified,
-      currentAction,
-      revealStatus,
-      storedValue,
       handleScheduleReveal,
       handleExecuteReveal,
       handleCancelReveal,
+      handleDelete,
+      handleClearAll,
+      pinModalVisible,
+      setPinModalVisible,
+      handlePinAction,
+      currentAction,
+      revealStatus,
       clearRevealedValue,
     } = useSecureStorage();
 
@@ -181,12 +183,12 @@ export const AccountSettings = memo(
         <PinInputModal
           visible={pinModalVisible}
           onClose={() => setPinModalVisible(false)}
-          onPinVerified={handlePinVerified}
+          onPinAction={handlePinAction}
           purpose={getPinPurpose()}
         />
       </ScrollView>
     );
-  },
+  }),
 );
 
 AccountSettings.displayName = "AccountSettings";

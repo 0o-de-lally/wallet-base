@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, memo, useRef } from "react";
-import { View, Text, TextInput } from "react-native";
+import React, { useState, useEffect, useCallback, memo } from "react";
+import { View, Text } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
 import {
   hashPin,
   validatePin,
-  comparePins,
+  verifyStoredPin,
   HashedPin,
 } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
@@ -13,43 +13,29 @@ import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
-import { PinInputField } from "./PinInputField";
+import { PinInputModal } from "./PinInputModal";
 
 /**
  * Screen component for PIN creation and verification.
  * Allows users to create a new PIN, update an existing PIN, and verify their PIN.
  */
 const EnterPinScreen = memo(() => {
-  // State for PIN inputs
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-  const [testPin, setTestPin] = useState("");
-  const [oldPinInput, setOldPinInput] = useState("");
+  // State for PIN operations
+  const [isLoading, setIsLoading] = useState(false);
+  const [pinExists, setPinExists] = useState(false);
 
-  // Refs for TextInputs to maintain focus
-  const newPinRef = useRef<TextInput>(null);
-  const confirmPinRef = useRef<TextInput>(null);
-  const testPinRef = useRef<TextInput>(null);
+  // Modal visibility states
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
+  const [newPinModalVisible, setNewPinModalVisible] = useState(false);
+  const [confirmPinModalVisible, setConfirmPinModalVisible] = useState(false);
 
-  // Use a separate string ref for storing the old PIN
-  const oldPinValueRef = useRef<string>("");
-
-  // TextInput ref for focus management
-  const oldPinInputRef = useRef<TextInput>(null);
+  // Current operation and temporary PIN storage for rotation flow
+  const [currentOperation, setCurrentOperation] = useState<'verify' | 'rotate' | 'create' | 'confirm' | null>(null);
+  const [tempNewPin, setTempNewPin] = useState<string | null>(null);
 
   const { reEncryptSecrets } = useSecureStorage();
   const { showAlert } = useModal();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  // Modal visibility state
-  const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
-
-  // States to manage the different steps
-  const [stage, setStage] = useState<
-    "verify" | "newPin" | "confirmPin" | "rotateOldPin" | null
-  >(null);
 
   // Check if PIN exists on component mount
   useEffect(() => {
@@ -58,284 +44,227 @@ const EnterPinScreen = memo(() => {
 
   /**
    * Checks if a PIN already exists in secure storage.
-   * Updates stage based on the result.
    */
   const checkExistingPin = useCallback(async () => {
     try {
       const savedPin = await getValue("user_pin");
-      setStage(savedPin !== null ? "verify" : "newPin");
+      setPinExists(savedPin !== null);
     } catch (error) {
       console.error("Error checking existing PIN:", error);
     }
   }, []);
 
   /**
-   * Handles saving of a new PIN or updating an existing one.
+   * Handles PIN verification when the user wants to test their PIN
    */
-  const handleSavePin = useCallback(async () => {
+  const handleVerifyPin = useCallback(async (pin: string): Promise<void> => {
     setIsLoading(true);
 
-    if (!validatePin(newPin) || !validatePin(confirmPin)) {
+    try {
+      const isValid = await verifyStoredPin(pin);
+
+      if (isValid) {
+        showAlert("Success", "PIN verified successfully");
+      } else {
+        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+      }
+    } catch (error) {
+      showAlert("Error", "Failed to verify PIN");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+      setPinModalVisible(false);
+    }
+  }, [showAlert]);
+
+  /**
+   * Initiates the PIN rotation process by first verifying the old PIN
+   */
+  const handleOldPinVerified = useCallback(async (oldPin: string): Promise<void> => {
+    setIsLoading(true);
+
+    try {
+      const isValid = await verifyStoredPin(oldPin);
+
+      if (isValid) {
+        // Store the old PIN for re-encryption later
+        setTempNewPin(oldPin);
+
+        // Close the verification modal and show the new PIN modal
+        setPinModalVisible(false);
+        setNewPinModalVisible(true);
+      } else {
+        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+      }
+    } catch (error) {
+      showAlert("Error", "Failed to verify PIN");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showAlert]);
+
+  /**
+   * Handles new PIN creation during the first step of PIN setup or rotation
+   */
+  const handleNewPin = useCallback(async (pin: string): Promise<void> => {
+    if (!validatePin(pin)) {
+      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
+      return;
+    }
+
+    // Store the new PIN temporarily
+    setTempNewPin(pin);
+
+    // Close the new PIN modal and show the confirmation modal
+    setNewPinModalVisible(false);
+    setConfirmPinModalVisible(true);
+  }, [showAlert]);
+
+  /**
+   * Handles PIN confirmation during the second step of PIN setup or rotation
+   */
+  const handleConfirmPin = useCallback(async (confirmPin: string): Promise<void> => {
+    setIsLoading(true);
+
+    if (!validatePin(confirmPin)) {
       showAlert("Invalid PIN", "PIN must be exactly 6 digits");
       setIsLoading(false);
       return;
     }
 
-    if (newPin !== confirmPin) {
+    if (confirmPin !== tempNewPin) {
       showAlert("PIN Mismatch", "PINs do not match. Please try again.");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Hash the PIN with salt before saving
-      const hashedPin = await hashPin(newPin);
+      // Hash and save the new PIN
+      const hashedPin = await hashPin(confirmPin);
 
-      // Properly serialize the HashedPin object to JSON
+      // Save the hashed PIN
       await saveValue("user_pin", JSON.stringify(hashedPin));
 
-      showAlert("Success", "PIN saved successfully", () => {
-        // Re-encrypt secrets if rotating PIN
-        if (stage === "confirmPin") {
-          reEncryptSecrets(newPin);
-        }
+      // If this was a rotation, re-encrypt all secure data
+      if (currentOperation === 'rotate' && tempNewPin) {
+        await reEncryptSecrets(confirmPin);
+        showAlert("Success", "PIN updated and data re-encrypted successfully");
+      } else {
+        showAlert("Success", "PIN saved successfully");
+      }
 
-        setNewPin(""); // clear immediately after saving
-        setConfirmPin("");
-        setStage("verify"); // go to verify stage
-      });
+      // Update pin exists state
+      setPinExists(true);
+
+      // Reset the operation and temp PIN
+      setCurrentOperation(null);
+      setTempNewPin(null);
+
+      // Close all modals
+      setConfirmPinModalVisible(false);
     } catch (error) {
       showAlert("Error", "Failed to save PIN");
       console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }, [showAlert, stage, reEncryptSecrets, newPin, confirmPin]);
+  }, [currentOperation, tempNewPin, reEncryptSecrets, showAlert]);
 
-  const handleRotatePin = useCallback(() => {
+  /**
+   * Initiates the PIN verification process
+   */
+  const startVerifyPin = useCallback(() => {
+    setCurrentOperation('verify');
+    setPinModalVisible(true);
+  }, []);
+
+  /**
+   * Initiates the PIN rotation process
+   */
+  const startRotatePin = useCallback(() => {
     setRotatePinModalVisible(true);
   }, []);
 
+  /**
+   * Confirms PIN rotation after warning dialog
+   */
   const confirmRotatePin = useCallback(() => {
     setRotatePinModalVisible(false);
-    setStage("rotateOldPin");
+    setCurrentOperation('rotate');
+    setPinModalVisible(true);
   }, []);
 
-  const handleVerifyOldPin = useCallback(async () => {
-    setIsVerifying(true);
-
-    if (!validatePin(oldPinInput)) {
-      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-      setIsVerifying(false);
-      return;
-    }
-
-    try {
-      const savedPinJson = await getValue("user_pin");
-
-      if (!savedPinJson) {
-        showAlert("Error", "No PIN is saved yet");
-        setIsVerifying(false);
-        return;
-      }
-
-      // Parse the stored PIN from JSON
-      const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
-
-      // Use the comparePins function to properly compare PINs
-      const isPinValid = await comparePins(storedHashedPin, oldPinInput);
-
-      if (isPinValid) {
-        showAlert("Success", "Old PIN verified successfully", () => {
-          // Store the old PIN in the mutable ref
-          oldPinValueRef.current = oldPinInput;
-          setOldPinInput(""); // Clear the old PIN input
-          setStage("newPin"); // Proceed to new PIN creation
-        });
-      } else {
-        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
-      }
-    } catch (error) {
-      showAlert("Error", "Failed to verify PIN");
-      console.error(error);
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [showAlert, oldPinInput]);
-
-  const handleVerifyPin = useCallback(async () => {
-    setIsVerifying(true);
-
-    if (!validatePin(testPin)) {
-      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-      setIsVerifying(false);
-      return;
-    }
-
-    try {
-      const savedPinJson = await getValue("user_pin");
-
-      if (!savedPinJson) {
-        showAlert("Error", "No PIN is saved yet");
-        setIsVerifying(false);
-        return;
-      }
-
-      // Parse the stored PIN from JSON
-      const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
-
-      // Use the comparePins function to properly compare PINs
-      const isPinValid = await comparePins(storedHashedPin, testPin);
-
-      if (isPinValid) {
-        showAlert("Success", "PIN verified successfully");
-      } else {
-        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
-      }
-
-      setTestPin(""); // clear immediately after verifying
-    } catch (error) {
-      showAlert("Error", "Failed to verify PIN");
-      console.error(error);
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [showAlert, testPin]);
-
-  // Memoize state update functions to prevent unnecessary re-renders
-  const handleNewPinChange = useCallback((text: string) => {
-    setNewPin(text);
+  /**
+   * Initiates the PIN creation process
+   */
+  const startCreatePin = useCallback(() => {
+    setCurrentOperation('create');
+    setNewPinModalVisible(true);
   }, []);
-
-  const handleConfirmPinChange = useCallback((text: string) => {
-    setConfirmPin(text);
-  }, []);
-
-  const handleTestPinChange = useCallback((text: string) => {
-    setTestPin(text);
-  }, []);
-
-  const handleOldPinChange = useCallback((text: string) => {
-    setOldPinInput(text);
-  }, []);
-
-  const renderStageContent = useCallback(() => {
-    switch (stage) {
-      case "newPin":
-        return (
-          <SectionContainer title="Create New PIN">
-            <PinInputField
-              label="Enter 6-digit PIN:"
-              value={newPin}
-              onChangeText={handleNewPinChange}
-              placeholder="Enter 6-digit PIN"
-              onSubmit={() => setStage("confirmPin")}
-              autoFocus={true}
-              ref={newPinRef}
-            />
-            <ActionButton
-              text="Next"
-              onPress={() => setStage("confirmPin")}
-              accessibilityHint="Proceed to confirm your PIN"
-            />
-          </SectionContainer>
-        );
-      case "confirmPin":
-        return (
-          <SectionContainer title="Confirm New PIN">
-            <PinInputField
-              label="Confirm 6-digit PIN:"
-              value={confirmPin}
-              onChangeText={handleConfirmPinChange}
-              placeholder="Confirm 6-digit PIN"
-              onSubmit={handleSavePin}
-              autoFocus={true}
-              ref={confirmPinRef}
-            />
-            <ActionButton
-              text="Save PIN"
-              onPress={handleSavePin}
-              isLoading={isLoading}
-              disabled={isLoading}
-              accessibilityHint="Saves your PIN securely"
-            />
-          </SectionContainer>
-        );
-      case "verify":
-        return (
-          <SectionContainer title="Verify PIN">
-            <PinInputField
-              label="Enter your PIN:"
-              value={testPin}
-              onChangeText={handleTestPinChange}
-              placeholder="Enter your PIN"
-              onSubmit={handleVerifyPin}
-              clearOnSubmit={true}
-              ref={testPinRef}
-            />
-            <View style={styles.buttonContainer}>
-              <ActionButton
-                text="Verify PIN"
-                onPress={handleVerifyPin}
-                isLoading={isVerifying}
-                disabled={isVerifying}
-                accessibilityHint="Verify your PIN is correct"
-              />
-              <ActionButton
-                text="Rotate PIN"
-                onPress={handleRotatePin}
-                disabled={isVerifying}
-                accessibilityHint="Change your PIN"
-              />
-            </View>
-          </SectionContainer>
-        );
-      case "rotateOldPin":
-        return (
-          <SectionContainer title="Verify Old PIN">
-            <PinInputField
-              label="Enter your old PIN:"
-              value={oldPinInput}
-              onChangeText={handleOldPinChange}
-              placeholder="Enter your old PIN"
-              onSubmit={handleVerifyOldPin}
-              clearOnSubmit={true}
-              ref={oldPinInputRef}
-            />
-            <ActionButton
-              text="Verify Old PIN"
-              onPress={handleVerifyOldPin}
-              isLoading={isVerifying}
-              disabled={isVerifying}
-              accessibilityHint="Verify your existing PIN before changing it"
-            />
-          </SectionContainer>
-        );
-      default:
-        return null;
-    }
-  }, [
-    stage,
-    isLoading,
-    isVerifying,
-    newPin,
-    confirmPin,
-    testPin,
-    oldPinInput,
-    handleNewPinChange,
-    handleConfirmPinChange,
-    handleTestPinChange,
-    handleOldPinChange,
-    handleSavePin,
-    handleVerifyPin,
-    handleRotatePin,
-    handleVerifyOldPin,
-  ]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>PIN Management</Text>
-      {renderStageContent()}
+
+      {!pinExists ? (
+        <SectionContainer title="Create PIN">
+          <ActionButton
+            text="Create New PIN"
+            onPress={startCreatePin}
+            accessibilityHint="Create a new PIN for secure access"
+          />
+        </SectionContainer>
+      ) : (
+        <SectionContainer title="PIN Operations">
+          <View style={styles.buttonContainer}>
+            <ActionButton
+              text="Verify PIN"
+              onPress={startVerifyPin}
+              disabled={isLoading}
+              accessibilityHint="Verify your PIN is correct"
+            />
+            <ActionButton
+              text="Rotate PIN"
+              onPress={startRotatePin}
+              disabled={isLoading}
+              accessibilityHint="Change your PIN"
+            />
+          </View>
+        </SectionContainer>
+      )}
+
+      {/* PIN Input Modals */}
+      <PinInputModal
+        visible={pinModalVisible}
+        onClose={() => setPinModalVisible(false)}
+        onPinAction={currentOperation === 'rotate' ? handleOldPinVerified : handleVerifyPin}
+        purpose={currentOperation === 'rotate' ? "retrieve" : "retrieve"}
+        actionTitle={currentOperation === 'rotate' ? "Verify Current PIN" : "Verify PIN"}
+        actionSubtitle={currentOperation === 'rotate' ?
+          "Enter your current PIN to begin the PIN change process" :
+          "Enter your PIN to verify it's correct"}
+      />
+
+      <PinInputModal
+        visible={newPinModalVisible}
+        onClose={() => setNewPinModalVisible(false)}
+        onPinAction={handleNewPin}
+        purpose="save"
+        actionTitle="Create New PIN"
+        actionSubtitle={currentOperation === 'rotate' ?
+          "Enter your new PIN to replace the current one" :
+          "Create a new PIN for secure access to your data"}
+      />
+
+      <PinInputModal
+        visible={confirmPinModalVisible}
+        onClose={() => setConfirmPinModalVisible(false)}
+        onPinAction={handleConfirmPin}
+        purpose="save"
+        actionTitle="Confirm PIN"
+        actionSubtitle="Enter your PIN again to confirm"
+      />
 
       {/* Confirmation Modal for PIN Rotation */}
       <ConfirmationModal

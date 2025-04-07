@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback } from "react";
 import { View, StatusBar, TouchableOpacity, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import SecureStorageScreen from "../components/secure-storage/SecureStoreMain";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { styles } from "../styles/styles";
@@ -69,9 +68,6 @@ const AppContent = observer(() => {
           {renderNavigationButton("Profile Management", navigateToProfiles)}
           {renderNavigationButton("Reveal Secure Data", navigateToReveal)}
           {renderNavigationButton("Create Account", navigateToCreateAccount)}
-        </View>
-        <View style={styles.container}>
-          <SecureStorageScreen />
         </View>
       </View>
     </>
