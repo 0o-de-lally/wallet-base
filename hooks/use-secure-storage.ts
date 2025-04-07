@@ -50,9 +50,6 @@ export function useSecureStorage() {
   // Need to track which account we're working with
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
-  // Reference to store temporary PIN for re-encryption
-  const oldPinRef = useRef<string | null>(null);
-
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
     return () => {
@@ -114,54 +111,9 @@ export function useSecureStorage() {
   const requestPinForAction = (
     action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
   ) => {
+    console.log(`Setting action: ${action} and showing PIN modal`);
     setCurrentAction(action);
     setPinModalVisible(true);
-  };
-
-  const handlePinAction = useCallback(
-    async (pin: string) => {
-      if (currentAction === "save") {
-        await saveSecurelyWithPin(pin);
-      } else if (currentAction === "delete") {
-        await deleteSecurely();
-      } else if (currentAction === "schedule_reveal") {
-        await scheduleRevealWithPin();
-      } else if (currentAction === "execute_reveal") {
-        await executeRevealWithPin(pin);
-      }
-    },
-    [currentAction],
-  );
-
-  const scheduleRevealWithPin = async () => {
-    try {
-      setIsLoading(true);
-      if (!currentAccountId) {
-        throw new Error("No account selected");
-      }
-
-      const key = `account_${currentAccountId}`;
-
-      // Schedule a reveal for the current key
-      const result = scheduleReveal(key);
-
-      // Use appropriate properties based on the actual implementation
-      setPinModalVisible(false);
-
-      if (result) {
-        showAlert(
-          "Success",
-          `Reveal scheduled. You can reveal the data after the waiting period.`,
-        );
-      } else {
-        showAlert("Error", "Failed to schedule reveal");
-      }
-    } catch (error) {
-      showAlert("Error", "Failed to schedule reveal");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const saveSecurelyWithPin = async (pin: string) => {
@@ -198,6 +150,37 @@ export function useSecureStorage() {
       setRevealStatus(null);
     } catch (error) {
       showAlert("Error", "Failed to save encrypted value");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const scheduleRevealWithPin = async () => {
+    try {
+      setIsLoading(true);
+      if (!currentAccountId) {
+        throw new Error("No account selected");
+      }
+
+      const key = `account_${currentAccountId}`;
+
+      // Schedule a reveal for the current key
+      const result = scheduleReveal(key);
+
+      // Use appropriate properties based on the actual implementation
+      setPinModalVisible(false);
+
+      if (result) {
+        showAlert(
+          "Success",
+          `Reveal scheduled. You can reveal the data after the waiting period.`,
+        );
+      } else {
+        showAlert("Error", "Failed to schedule reveal");
+      }
+    } catch (error) {
+      showAlert("Error", "Failed to schedule reveal");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -264,6 +247,54 @@ export function useSecureStorage() {
     }
   };
 
+  const deleteSecurely = async () => {
+    try {
+      setIsLoading(true);
+      await deleteValue(FIXED_KEY);
+      setStoredValue(null);
+
+      // Also cancel any scheduled reveals
+      cancelReveal(FIXED_KEY);
+      setRevealStatus(null);
+
+      showAlert("Success", "Value deleted");
+    } catch (error) {
+      showAlert("Error", "Failed to delete value");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePinAction = useCallback(
+    async (pin: string) => {
+      console.log(`Processing pin action: ${currentAction}`);
+      if (!pin || !pin.trim()) {
+        showAlert("Error", "PIN is required");
+        return;
+      }
+
+      try {
+        // Handle different PIN action types
+        if (currentAction === "save") {
+          await saveSecurelyWithPin(pin);
+        } else if (currentAction === "delete") {
+          await deleteSecurely();
+        } else if (currentAction === "schedule_reveal") {
+          await scheduleRevealWithPin();
+        } else if (currentAction === "execute_reveal") {
+          await executeRevealWithPin(pin);
+        } else {
+          console.error(`Unknown pin action: ${currentAction}`);
+        }
+      } catch (error) {
+        console.error(`Error in handlePinAction:`, error);
+        showAlert("Error", "Failed to process your request");
+      }
+    },
+    [currentAction, showAlert],
+  );
+
   const handleScheduleReveal = useCallback((accountId: string) => {
     setCurrentAccountId(accountId);
     setCurrentAction("schedule_reveal");
@@ -288,26 +319,7 @@ export function useSecureStorage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  const deleteSecurely = async () => {
-    try {
-      setIsLoading(true);
-      await deleteValue(FIXED_KEY);
-      setStoredValue(null);
-
-      // Also cancel any scheduled reveals
-      cancelReveal(FIXED_KEY);
-      setRevealStatus(null);
-
-      showAlert("Success", "Value deleted");
-    } catch (error) {
-      showAlert("Error", "Failed to delete value");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [showAlert]);
 
   const handleDelete = useCallback(() => {
     requestPinForAction("delete");
@@ -338,66 +350,6 @@ export function useSecureStorage() {
     requestPinForAction("save");
   };
 
-  const reEncryptSecrets = async (newPin: string) => {
-    try {
-      setIsLoading(true);
-
-      // Get the current key
-      const key = currentAccountId ? `account_${currentAccountId}` : FIXED_KEY;
-
-      // Retrieve the old encrypted value
-      const encryptedBase64 = await getValue(key);
-
-      if (!encryptedBase64) {
-        showAlert("Info", "No value found to re-encrypt");
-        return;
-      }
-
-      // Get old PIN from ref
-      const oldPin = oldPinRef.current;
-      if (!oldPin) {
-        showAlert("Error", "Old PIN is missing. Re-encryption aborted.");
-        return;
-      }
-
-      // Decrypt with old PIN
-      const decryptResult = await secureDecryptWithPin(encryptedBase64, oldPin);
-
-      if (!decryptResult || !decryptResult.verified) {
-        showAlert(
-          "Error",
-          "Failed to decrypt with old PIN. Re-encryption aborted.",
-        );
-        return;
-      }
-
-      // Now encrypt with new PIN
-      const newEncryptedBase64 = await secureEncryptWithPin(
-        decryptResult.value,
-        newPin,
-      );
-
-      // Save the re-encrypted value
-      await saveValue(key, newEncryptedBase64);
-      showAlert("Success", "Secrets re-encrypted with new PIN");
-
-      // Clear old PIN ref for security
-      oldPinRef.current = null;
-    } catch (error) {
-      showAlert("Error", "Failed to re-encrypt secrets");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Function to handle PIN verification independent of specific actions
-  const handlePinVerified = useCallback((pin: string) => {
-    // Store the verified PIN for possible re-encryption
-    oldPinRef.current = pin;
-  }, []);
-
-  // Add function to clear the revealed value
   const clearRevealedValue = () => {
     // Clear the value
     setStoredValue(null);
@@ -423,10 +375,7 @@ export function useSecureStorage() {
     pinModalVisible,
     setPinModalVisible,
     handlePinAction,
-    handlePinVerified,
     currentAction,
-    oldPinRef,
-    reEncryptSecrets,
     revealStatus,
     clearRevealedValue,
     currentAccountId,

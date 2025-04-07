@@ -79,7 +79,7 @@ export const AccountSettings = memo(
       handleClearAll,
       pinModalVisible,
       setPinModalVisible,
-      handlePinAction,
+      handlePinAction, // Use the handlePinAction from the hook directly
       currentAction,
       revealStatus,
       clearRevealedValue,

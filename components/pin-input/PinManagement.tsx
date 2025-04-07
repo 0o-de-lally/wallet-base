@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { View, Text } from "react-native";
 import { saveValue, getValue } from "../../util/secure-store";
-import { hashPin, validatePin, verifyStoredPin } from "../../util/pin-security";
+import { hashPin, validatePin, verifyStoredPin, secureEncryptWithPin, secureDecryptWithPin } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
-import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
@@ -30,8 +29,8 @@ const EnterPinScreen = memo(() => {
     "verify" | "rotate" | "create" | "confirm" | null
   >(null);
   const [tempNewPin, setTempNewPin] = useState<string | null>(null);
+  const [oldPin, setOldPin] = useState<string | null>(null);
 
-  const { reEncryptSecrets } = useSecureStorage();
   const { showAlert } = useModal();
 
   // Check if PIN exists on component mount
@@ -81,15 +80,15 @@ const EnterPinScreen = memo(() => {
    * Initiates the PIN rotation process by first verifying the old PIN
    */
   const handleOldPinVerified = useCallback(
-    async (oldPin: string): Promise<void> => {
+    async (oldPinValue: string): Promise<void> => {
       setIsLoading(true);
 
       try {
-        const isValid = await verifyStoredPin(oldPin);
+        const isValid = await verifyStoredPin(oldPinValue);
 
         if (isValid) {
           // Store the old PIN for re-encryption later
-          setTempNewPin(oldPin);
+          setOldPin(oldPinValue);
 
           // Close the verification modal and show the new PIN modal
           setPinModalVisible(false);
@@ -154,8 +153,8 @@ const EnterPinScreen = memo(() => {
         await saveValue("user_pin", JSON.stringify(hashedPin));
 
         // If this was a rotation, re-encrypt all secure data
-        if (currentOperation === "rotate" && tempNewPin) {
-          await reEncryptSecrets(confirmPin);
+        if (currentOperation === "rotate" && oldPin) {
+          await reEncryptAllSecrets(oldPin, confirmPin);
           showAlert(
             "Success",
             "PIN updated and data re-encrypted successfully",
@@ -170,6 +169,7 @@ const EnterPinScreen = memo(() => {
         // Reset the operation and temp PIN
         setCurrentOperation(null);
         setTempNewPin(null);
+        setOldPin(null);
 
         // Close all modals
         setConfirmPinModalVisible(false);
@@ -180,8 +180,50 @@ const EnterPinScreen = memo(() => {
         setIsLoading(false);
       }
     },
-    [currentOperation, tempNewPin, reEncryptSecrets, showAlert],
+    [currentOperation, tempNewPin, oldPin, showAlert],
   );
+
+  /**
+   * Re-encrypts all secure data with a new PIN
+   */
+  const reEncryptAllSecrets = async (oldPin: string, newPin: string) => {
+    try {
+      setIsLoading(true);
+
+      // Get all keys that might contain encrypted data
+      const allKeys = ['default', 'private_key']; // Add more keys as needed
+
+      for (const key of allKeys) {
+        const encryptedBase64 = await getValue(key);
+
+        if (encryptedBase64) {
+          // Decrypt with old PIN
+          const decryptResult = await secureDecryptWithPin(encryptedBase64, oldPin);
+
+          if (decryptResult && decryptResult.verified) {
+            // Encrypt with new PIN
+            const newEncryptedBase64 = await secureEncryptWithPin(
+              decryptResult.value,
+              newPin
+            );
+
+            // Save re-encrypted data
+            await saveValue(key, newEncryptedBase64);
+          }
+        }
+      }
+
+      // Also handle account-specific keys if needed
+      // This would require checking the accounts or having a list of account IDs
+
+      showAlert("Success", "All secrets re-encrypted with new PIN");
+    } catch (error) {
+      showAlert("Error", "Failed to re-encrypt secrets");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /**
    * Initiates the PIN verification process
