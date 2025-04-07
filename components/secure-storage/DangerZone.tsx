@@ -20,10 +20,10 @@ export const DangerZone = memo(
     };
 
     const confirmClearAll = () => {
+      setClearAllModalVisible(false);
       if (onClearAll) {
         onClearAll();
       }
-      setClearAllModalVisible(false);
     };
 
     if (!onClearAll) {

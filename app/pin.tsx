@@ -1,9 +1,9 @@
 import React, { useState, useCallback, memo } from "react";
-import { StatusBar, View, Alert } from "react-native";
+import { StatusBar, View } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
-import { ModalProvider } from "../context/ModalContext";
+import { ModalProvider, useModal } from "../context/ModalContext";
 import { DangerZone } from "../components/secure-storage/DangerZone";
 import { clearAllSecureStorage } from "@/util/secure-store";
 
@@ -20,24 +20,28 @@ const PinScreen = observer(() => {
 
 const PinScreenContent = memo(() => {
   const [isLoading, setIsLoading] = useState(false);
+  const { showAlert } = useModal();
 
   const handleClearAll = useCallback(async () => {
     try {
       setIsLoading(true);
       await clearAllSecureStorage();
-      Alert.alert("Success", "All secure data has been deleted.");
+      showAlert("Success", "All secure data has been deleted.");
     } catch (error) {
       console.error("Error clearing all data:", error);
-      Alert.alert("Error", "Failed to clear secure data. Please try again.");
+      showAlert("Error", "Failed to clear secure data. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showAlert]);
 
   return (
     <>
       <EnterPinScreen />
-      <DangerZone onClearAll={handleClearAll} isLoading={isLoading} />
+      <DangerZone
+        onClearAll={handleClearAll}
+        isLoading={isLoading}
+      />
     </>
   );
 });

@@ -81,3 +81,20 @@ export async function clearAllSecureStorage(): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Gets all available keys in secure storage.
+ *
+ * @returns Promise resolving to an array of keys
+ * @throws Will throw an error if the operation fails
+ */
+export async function getAllKeys(): Promise<string[]> {
+  try {
+    // We need to maintain a list of all keys ourselves since SecureStore doesn't provide this functionality
+    const keysListJson = await SecureStore.getItemAsync('all_storage_keys');
+    return keysListJson ? JSON.parse(keysListJson) : [];
+  } catch (error) {
+    console.error("Error getting all keys:", error);
+    return [];
+  }
+}
