@@ -1,7 +1,7 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
-import { addAccountToProfile } from "../../util/app-config-store";
+import { addAccountToProfile, getProfileForAccount } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
@@ -10,9 +10,10 @@ import { ActionButton } from "../common/ActionButton";
 import { getRandomBytesAsync } from "expo-crypto";
 import { uint8ArrayToBase64 } from "../../util/crypto";
 import { appConfig, setActiveAccount } from "../../util/app-config-store";
+import Dropdown from "../common/Dropdown";
 
 interface AddAccountFormProps {
-  profileName: string;
+  profileName?: string;
   onComplete: () => void;
 }
 
@@ -21,13 +22,37 @@ export interface AddAccountFormRef {
 }
 
 const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
-  ({ profileName, onComplete }, ref) => {
+  ({ profileName: initialProfileName, onComplete }, ref) => {
+    // Get all available profiles
+    const profileNames = Object.keys(appConfig.profiles.get());
+    const activeAccountId = appConfig.activeAccountId.get();
+
+    // Get profile associated with active account, if any
+    const activeProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
+
+    // Initialize with: explicit initialProfileName, OR active profile, OR first profile, OR empty string
+    const [selectedProfile, setSelectedProfile] = useState(
+      initialProfileName ||
+      (activeProfileName && profileNames.includes(activeProfileName) ? activeProfileName : profileNames[0] || "")
+    );
     const [accountAddress, setAccountAddress] = useState("");
     const [nickname, setNickname] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const hasMultipleProfiles = profileNames.length > 1;
 
     // State for modals
     const [successModalVisible, setSuccessModalVisible] = useState(false);
+
+    // Update selected profile if initial profile changes or profiles change
+    useEffect(() => {
+      if (initialProfileName) {
+        setSelectedProfile(initialProfileName);
+      } else if (activeProfileName && profileNames.includes(activeProfileName)) {
+        setSelectedProfile(activeProfileName);
+      } else if (profileNames.length > 0 && !profileNames.includes(selectedProfile)) {
+        setSelectedProfile(profileNames[0]);
+      }
+    }, [initialProfileName, profileNames, selectedProfile, activeProfileName]);
 
     useImperativeHandle(
       ref,
@@ -48,6 +73,12 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
         return;
       }
 
+      // Make sure a profile is selected
+      if (!selectedProfile) {
+        setError("Please select a profile");
+        return;
+      }
+
       try {
         // Generate a random ID for the account using crypto secure random
         const randomBytes = await getRandomBytesAsync(16); // 16 bytes = 128 bits
@@ -65,8 +96,8 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
           last_update: Date.now(),
         };
 
-        // Add account to profile
-        const success = addAccountToProfile(profileName, account);
+        // Add account to selected profile
+        const success = addAccountToProfile(selectedProfile, account);
 
         if (success) {
           // Set as active account if there is no active account yet
@@ -77,7 +108,7 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
           setSuccessModalVisible(true);
         } else {
           setError(
-            "Account already exists in this profile or profile doesn't exist.",
+            "Account already exists in this profile or profile doesn't exist."
           );
         }
       } catch (error) {
@@ -92,8 +123,18 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
     };
 
     return (
-      <SectionContainer title={`Add Account to ${profileName}`}>
+      <SectionContainer title={initialProfileName ? `Add Account to ${initialProfileName}` : "Add Account"}>
         {error && <Text style={styles.errorText}>{error}</Text>}
+
+        {hasMultipleProfiles && (
+          <Dropdown
+            label="Profile"
+            value={selectedProfile}
+            options={profileNames}
+            onSelect={setSelectedProfile}
+            placeholder="Select a profile"
+          />
+        )}
 
         <FormInput
           label="Account Address:"
@@ -113,14 +154,14 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
           text="Add Account"
           onPress={handleAddAccount}
           accessibilityLabel="Add account"
-          accessibilityHint={`Adds a new account to the ${profileName} profile`}
+          accessibilityHint={`Adds a new account to the ${selectedProfile} profile`}
         />
 
         {/* Success Modal */}
         <ConfirmationModal
           visible={successModalVisible}
           title="Success"
-          message={`Account added to "${profileName}" successfully.`}
+          message={`Account added to "${selectedProfile}" successfully.`}
           confirmText="OK"
           onConfirm={handleSuccess}
           onCancel={handleSuccess}

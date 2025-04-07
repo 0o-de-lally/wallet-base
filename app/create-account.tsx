@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState, useEffect } from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
@@ -34,12 +34,19 @@ export default function CreateAccountScreen() {
 
 // Separate component that handles form logic
 const CreateAccountContent = () => {
-  // Use default profile or first available profile
-  const profileNames = Object.keys(appConfig.profiles);
-  const defaultProfileName =
-    profileNames.length > 0 ? profileNames[0] : "default";
+  // Get all available profiles
+  const profileNames = Object.keys(appConfig.profiles.get());
+  const [selectedProfile, setSelectedProfile] = useState(profileNames[0] || "default");
+  const hasMultipleProfiles = profileNames.length > 1;
 
   const formRef = useRef<AddAccountFormRef>(null);
+
+  // Update selected profile if profiles change
+  useEffect(() => {
+    if (profileNames.length > 0 && !profileNames.includes(selectedProfile)) {
+      setSelectedProfile(profileNames[0]);
+    }
+  }, [profileNames, selectedProfile]);
 
   const handleComplete = useCallback(() => {
     // Navigate back after successful account creation
@@ -56,7 +63,7 @@ const CreateAccountContent = () => {
         </Text>
 
         <AddAccountForm
-          profileName={defaultProfileName}
+          profileName={selectedProfile}
           onComplete={handleComplete}
           ref={formRef}
         />
