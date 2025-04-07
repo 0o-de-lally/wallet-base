@@ -5,7 +5,7 @@ import type { AccountState } from "../../util/app-config-store";
 import AddAccountForm from "./AddAccountForm";
 import type { AddAccountFormRef } from "./AddAccountForm";
 import { ActionButton } from "../common/ActionButton";
-import { AccountItemWithContext } from "./AccountItem";
+import { AccountItem } from "./AccountItem";
 import { AccountEmptyState } from "./AccountEmptyState";
 import { AccountListModals } from "./AccountListModals";
 
@@ -108,7 +108,7 @@ const AccountList = memo(
         )}
 
         {accounts.map((account) => (
-          <AccountItemWithContext
+          <AccountItem
             key={account.id || account.account_address}
             account={account}
             onToggleExpand={toggleAccountExpand}

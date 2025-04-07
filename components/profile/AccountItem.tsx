@@ -10,10 +10,12 @@ export interface AccountItemProps {
   account: AccountState;
   onDelete: (accountAddress: string) => void;
   profileName: string;
+  isExpanded?: boolean;
+  onToggleExpand?: (accountId: string) => void;
 }
 
 export const AccountItem = memo(
-  ({ account, onDelete, profileName }: AccountItemProps) => {
+  ({ account, onDelete, profileName, isExpanded, onToggleExpand }: AccountItemProps) => {
     const navigateToSettings = () => {
       router.navigate({
         pathname: "./account-settings",
@@ -27,7 +29,7 @@ export const AccountItem = memo(
         style={[styles.resultContainer, { marginBottom: 10 }]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}`}
-        onPress={navigateToSettings}
+        onPress={onToggleExpand ? () => onToggleExpand(account.id) : navigateToSettings}
       >
         <Text style={styles.resultLabel}>{account.nickname}</Text>
         <View
