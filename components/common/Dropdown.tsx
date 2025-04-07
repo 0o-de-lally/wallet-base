@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "./ActionButton";
@@ -21,8 +21,21 @@ function Dropdown<T>({
   renderLabel = (item: T) => String(item),
 }: DropdownProps<T>) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<T | null>(value || null);
 
-  const displayValue = value ? renderLabel(value) : placeholder;
+  // Update internal state when external value changes
+  useEffect(() => {
+    setSelectedValue(value || null);
+  }, [value]);
+
+  const displayValue = selectedValue ? renderLabel(selectedValue) : placeholder;
+
+  const handleSelect = (item: T) => {
+    setSelectedValue(item);
+    onSelect(item);
+    setShowDropdown(false);
+    console.log("Dropdown selected:", renderLabel(item));
+  };
 
   const renderItem = ({ item }: { item: T }) => (
     <TouchableOpacity
@@ -31,10 +44,7 @@ function Dropdown<T>({
         { marginVertical: 4, padding: 12 },
         value === item && { backgroundColor: "#2c3040" },
       ]}
-      onPress={() => {
-        onSelect(item);
-        setShowDropdown(false);
-      }}
+      onPress={() => handleSelect(item)}
       accessible={true}
       accessibilityRole="menuitem"
       accessibilityLabel={`Select ${renderLabel(item)}`}
@@ -51,7 +61,7 @@ function Dropdown<T>({
         onPress={() => setShowDropdown(true)}
         accessible={true}
         accessibilityRole="button"
-        accessibilityLabel={`Select ${label.toLowerCase()}`}
+        accessibilityLabel={`Select ${label.toLowerCase()}, current value: ${displayValue}`}
       >
         <Text style={{ color: styles.resultValue.color }}>{displayValue}</Text>
       </TouchableOpacity>

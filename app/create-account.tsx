@@ -3,10 +3,7 @@ import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { ModalProvider } from "../context/ModalContext";
-import AddAccountForm from "../components/profile/AddAccountForm";
-import type { AddAccountFormRef } from "../components/profile/AddAccountForm";
-import { router } from "expo-router";
-import { appConfig } from "../util/app-config-store";
+import {AddAccountForm} from "../components/profile/AddAccountForm";
 
 /**
  * Create Account Screen
@@ -35,23 +32,6 @@ export default function CreateAccountScreen() {
 // Separate component that handles form logic
 const CreateAccountContent = () => {
   // Get all available profiles
-  const profileNames = Object.keys(appConfig.profiles.get());
-  const [selectedProfile, setSelectedProfile] = useState(profileNames[0] || "default");
-  const hasMultipleProfiles = profileNames.length > 1;
-
-  const formRef = useRef<AddAccountFormRef>(null);
-
-  // Update selected profile if profiles change
-  useEffect(() => {
-    if (profileNames.length > 0 && !profileNames.includes(selectedProfile)) {
-      setSelectedProfile(profileNames[0]);
-    }
-  }, [profileNames, selectedProfile]);
-
-  const handleComplete = useCallback(() => {
-    // Navigate back after successful account creation
-    router.back();
-  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -62,11 +42,7 @@ const CreateAccountContent = () => {
           account address and optionally assign a nickname to it.
         </Text>
 
-        <AddAccountForm
-          profileName={selectedProfile}
-          onComplete={handleComplete}
-          ref={formRef}
-        />
+        <AddAccountForm/>
       </View>
     </ScrollView>
   );
