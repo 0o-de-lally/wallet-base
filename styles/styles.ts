@@ -198,7 +198,7 @@ export const styles = StyleSheet.create({
   dangerButton: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: colors.danger,
+    borderColor: colors.danger
   },
   dangerButtonText: {
     color: colors.danger,

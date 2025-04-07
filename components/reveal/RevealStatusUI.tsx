@@ -162,7 +162,7 @@ export const RevealStatusUI = memo(
               disabled={isLoading || disabled}
               accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
               accessibilityHint="Starts the reveal process with a waiting period"
-              style={{ backgroundColor: "#5e35b1", marginBottom: 10 }}
+              style={[styles.button]}
             />
           </View>
         );
