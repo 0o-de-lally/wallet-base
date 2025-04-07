@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, memo } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
@@ -8,6 +8,10 @@ import ConfirmationModal from "../modal/ConfirmationModal";
 import AddAccountForm from "./AddAccountForm";
 import type { AddAccountFormRef } from "./AddAccountForm";
 import { ActionButton } from "../common/ActionButton";
+import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
+import { useSecureStorage } from "../../hooks/use-secure-storage";
+import { ModalProvider } from "../../context/ModalContext";
+import { PinInputModal } from "../pin-input/PinInputModal";
 
 interface AccountListProps {
   profileName: string;
@@ -23,6 +27,7 @@ const AccountList = memo(
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [showAddAccountForm, setShowAddAccountForm] = useState(false);
+    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
     const addAccountFormRef = useRef<AddAccountFormRef>(null);
 
     const handleDeleteAccount = useCallback((accountAddress: string) => {
@@ -64,8 +69,37 @@ const AccountList = memo(
       addAccountFormRef.current?.resetForm();
     }, []);
 
-    const renderAccountItem = useCallback(
-      (account: AccountState) => (
+    const toggleAccountExpand = useCallback((accountId: string) => {
+      setExpandedAccountId((prev) => (prev === accountId ? null : accountId));
+    }, []);
+
+    const AccountItem = memo(({ account }: { account: AccountState }) => {
+      const isExpanded = expandedAccountId === account.id;
+
+      const {
+        value,
+        setValue,
+        isLoading: isSecureLoading,
+        handleSave,
+        handleDelete,
+        pinModalVisible,
+        setPinModalVisible,
+        handlePinVerified,
+        currentAction,
+      } = useSecureStorage();
+
+      const getPinPurpose = () => {
+        switch (currentAction) {
+          case "save":
+            return "save";
+          case "delete":
+            return "delete";
+          default:
+            return "save";
+        }
+      };
+
+      return (
         <View
           key={account.account_address}
           style={[styles.resultContainer, { marginBottom: 10 }]}
@@ -111,20 +145,38 @@ const AccountList = memo(
               marginTop: 10,
             }}
           >
-            <ActionButton
-              text={account.is_key_stored ? "Full Access" : "View Only"}
-              disabled={true}
+            <View
               style={{
                 paddingVertical: 8,
                 paddingHorizontal: 12,
                 backgroundColor: account.is_key_stored ? "#a5d6b7" : "#b3b8c3",
+                borderRadius: 4,
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
-              size="small"
               accessibilityLabel={
                 account.is_key_stored
                   ? "Full access account"
                   : "View only account"
               }
+            >
+              <Text style={{
+                color: '#fff',
+                fontWeight: '500',
+                fontSize: 12
+              }}>
+                {account.is_key_stored ? "Full Access" : "View Only"}
+              </Text>
+            </View>
+
+            <ActionButton
+              text={isExpanded ? "Hide Secret" : "Manage Secret Key"}
+              onPress={() => toggleAccountExpand(account.id)}
+              size="small"
+              style={{
+                backgroundColor: isExpanded ? "#6c757d" : "#4a90e2"
+              }}
+              accessibilityLabel={`${isExpanded ? "Hide" : "Show"} secret management for ${account.nickname}`}
             />
 
             <ActionButton
@@ -135,9 +187,40 @@ const AccountList = memo(
               accessibilityLabel={`Remove account ${account.nickname}`}
             />
           </View>
+
+          {isExpanded && (
+            <View style={styles.expandedContent}>
+              <SecureStorageForm
+                value={value}
+                onValueChange={setValue}
+                onSave={handleSave}
+                onDelete={handleDelete}
+                isLoading={isSecureLoading}
+                profileId={profileName}
+                accountId={account.id}
+                profileName={profileName}
+                accountName={account.nickname}
+              />
+            </View>
+          )}
+
+          <PinInputModal
+            visible={pinModalVisible}
+            onClose={() => setPinModalVisible(false)}
+            onPinVerified={handlePinVerified}
+            purpose={getPinPurpose()}
+          />
         </View>
+      );
+    });
+
+    const renderAccountItem = useCallback(
+      (account: AccountState) => (
+        <ModalProvider key={account.id}>
+          <AccountItem account={account} />
+        </ModalProvider>
       ),
-      [handleDeleteAccount],
+      [handleDeleteAccount, expandedAccountId, toggleAccountExpand, profileName],
     );
 
     const renderEmptyState = useCallback(() => {
