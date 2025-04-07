@@ -8,7 +8,11 @@ import {
 } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { appConfig, getProfileForAccount, setActiveAccount } from "../../util/app-config-store";
+import {
+  appConfig,
+  getProfileForAccount,
+  setActiveAccount,
+} from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
 import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";

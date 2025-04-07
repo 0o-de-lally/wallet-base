@@ -31,7 +31,9 @@ const EnterPinScreen = memo(() => {
   const [confirmPinModalVisible, setConfirmPinModalVisible] = useState(false);
 
   // Current operation and temporary PIN storage for rotation flow
-  const [currentOperation, setCurrentOperation] = useState<'verify' | 'rotate' | 'create' | 'confirm' | null>(null);
+  const [currentOperation, setCurrentOperation] = useState<
+    "verify" | "rotate" | "create" | "confirm" | null
+  >(null);
   const [tempNewPin, setTempNewPin] = useState<string | null>(null);
 
   const { reEncryptSecrets } = useSecureStorage();
@@ -57,125 +59,140 @@ const EnterPinScreen = memo(() => {
   /**
    * Handles PIN verification when the user wants to test their PIN
    */
-  const handleVerifyPin = useCallback(async (pin: string): Promise<void> => {
-    setIsLoading(true);
+  const handleVerifyPin = useCallback(
+    async (pin: string): Promise<void> => {
+      setIsLoading(true);
 
-    try {
-      const isValid = await verifyStoredPin(pin);
+      try {
+        const isValid = await verifyStoredPin(pin);
 
-      if (isValid) {
-        showAlert("Success", "PIN verified successfully");
-      } else {
-        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+        if (isValid) {
+          showAlert("Success", "PIN verified successfully");
+        } else {
+          showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+        }
+      } catch (error) {
+        showAlert("Error", "Failed to verify PIN");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+        setPinModalVisible(false);
       }
-    } catch (error) {
-      showAlert("Error", "Failed to verify PIN");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-      setPinModalVisible(false);
-    }
-  }, [showAlert]);
+    },
+    [showAlert],
+  );
 
   /**
    * Initiates the PIN rotation process by first verifying the old PIN
    */
-  const handleOldPinVerified = useCallback(async (oldPin: string): Promise<void> => {
-    setIsLoading(true);
+  const handleOldPinVerified = useCallback(
+    async (oldPin: string): Promise<void> => {
+      setIsLoading(true);
 
-    try {
-      const isValid = await verifyStoredPin(oldPin);
+      try {
+        const isValid = await verifyStoredPin(oldPin);
 
-      if (isValid) {
-        // Store the old PIN for re-encryption later
-        setTempNewPin(oldPin);
+        if (isValid) {
+          // Store the old PIN for re-encryption later
+          setTempNewPin(oldPin);
 
-        // Close the verification modal and show the new PIN modal
-        setPinModalVisible(false);
-        setNewPinModalVisible(true);
-      } else {
-        showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+          // Close the verification modal and show the new PIN modal
+          setPinModalVisible(false);
+          setNewPinModalVisible(true);
+        } else {
+          showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+        }
+      } catch (error) {
+        showAlert("Error", "Failed to verify PIN");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      showAlert("Error", "Failed to verify PIN");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [showAlert]);
+    },
+    [showAlert],
+  );
 
   /**
    * Handles new PIN creation during the first step of PIN setup or rotation
    */
-  const handleNewPin = useCallback(async (pin: string): Promise<void> => {
-    if (!validatePin(pin)) {
-      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-      return;
-    }
+  const handleNewPin = useCallback(
+    async (pin: string): Promise<void> => {
+      if (!validatePin(pin)) {
+        showAlert("Invalid PIN", "PIN must be exactly 6 digits");
+        return;
+      }
 
-    // Store the new PIN temporarily
-    setTempNewPin(pin);
+      // Store the new PIN temporarily
+      setTempNewPin(pin);
 
-    // Close the new PIN modal and show the confirmation modal
-    setNewPinModalVisible(false);
-    setConfirmPinModalVisible(true);
-  }, [showAlert]);
+      // Close the new PIN modal and show the confirmation modal
+      setNewPinModalVisible(false);
+      setConfirmPinModalVisible(true);
+    },
+    [showAlert],
+  );
 
   /**
    * Handles PIN confirmation during the second step of PIN setup or rotation
    */
-  const handleConfirmPin = useCallback(async (confirmPin: string): Promise<void> => {
-    setIsLoading(true);
+  const handleConfirmPin = useCallback(
+    async (confirmPin: string): Promise<void> => {
+      setIsLoading(true);
 
-    if (!validatePin(confirmPin)) {
-      showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-      setIsLoading(false);
-      return;
-    }
-
-    if (confirmPin !== tempNewPin) {
-      showAlert("PIN Mismatch", "PINs do not match. Please try again.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // Hash and save the new PIN
-      const hashedPin = await hashPin(confirmPin);
-
-      // Save the hashed PIN
-      await saveValue("user_pin", JSON.stringify(hashedPin));
-
-      // If this was a rotation, re-encrypt all secure data
-      if (currentOperation === 'rotate' && tempNewPin) {
-        await reEncryptSecrets(confirmPin);
-        showAlert("Success", "PIN updated and data re-encrypted successfully");
-      } else {
-        showAlert("Success", "PIN saved successfully");
+      if (!validatePin(confirmPin)) {
+        showAlert("Invalid PIN", "PIN must be exactly 6 digits");
+        setIsLoading(false);
+        return;
       }
 
-      // Update pin exists state
-      setPinExists(true);
+      if (confirmPin !== tempNewPin) {
+        showAlert("PIN Mismatch", "PINs do not match. Please try again.");
+        setIsLoading(false);
+        return;
+      }
 
-      // Reset the operation and temp PIN
-      setCurrentOperation(null);
-      setTempNewPin(null);
+      try {
+        // Hash and save the new PIN
+        const hashedPin = await hashPin(confirmPin);
 
-      // Close all modals
-      setConfirmPinModalVisible(false);
-    } catch (error) {
-      showAlert("Error", "Failed to save PIN");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentOperation, tempNewPin, reEncryptSecrets, showAlert]);
+        // Save the hashed PIN
+        await saveValue("user_pin", JSON.stringify(hashedPin));
+
+        // If this was a rotation, re-encrypt all secure data
+        if (currentOperation === "rotate" && tempNewPin) {
+          await reEncryptSecrets(confirmPin);
+          showAlert(
+            "Success",
+            "PIN updated and data re-encrypted successfully",
+          );
+        } else {
+          showAlert("Success", "PIN saved successfully");
+        }
+
+        // Update pin exists state
+        setPinExists(true);
+
+        // Reset the operation and temp PIN
+        setCurrentOperation(null);
+        setTempNewPin(null);
+
+        // Close all modals
+        setConfirmPinModalVisible(false);
+      } catch (error) {
+        showAlert("Error", "Failed to save PIN");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentOperation, tempNewPin, reEncryptSecrets, showAlert],
+  );
 
   /**
    * Initiates the PIN verification process
    */
   const startVerifyPin = useCallback(() => {
-    setCurrentOperation('verify');
+    setCurrentOperation("verify");
     setPinModalVisible(true);
   }, []);
 
@@ -191,7 +208,7 @@ const EnterPinScreen = memo(() => {
    */
   const confirmRotatePin = useCallback(() => {
     setRotatePinModalVisible(false);
-    setCurrentOperation('rotate');
+    setCurrentOperation("rotate");
     setPinModalVisible(true);
   }, []);
 
@@ -199,7 +216,7 @@ const EnterPinScreen = memo(() => {
    * Initiates the PIN creation process
    */
   const startCreatePin = useCallback(() => {
-    setCurrentOperation('create');
+    setCurrentOperation("create");
     setNewPinModalVisible(true);
   }, []);
 
@@ -238,12 +255,18 @@ const EnterPinScreen = memo(() => {
       <PinInputModal
         visible={pinModalVisible}
         onClose={() => setPinModalVisible(false)}
-        onPinAction={currentOperation === 'rotate' ? handleOldPinVerified : handleVerifyPin}
-        purpose={currentOperation === 'rotate' ? "retrieve" : "retrieve"}
-        actionTitle={currentOperation === 'rotate' ? "Verify Current PIN" : "Verify PIN"}
-        actionSubtitle={currentOperation === 'rotate' ?
-          "Enter your current PIN to begin the PIN change process" :
-          "Enter your PIN to verify it's correct"}
+        onPinAction={
+          currentOperation === "rotate" ? handleOldPinVerified : handleVerifyPin
+        }
+        purpose={currentOperation === "rotate" ? "retrieve" : "retrieve"}
+        actionTitle={
+          currentOperation === "rotate" ? "Verify Current PIN" : "Verify PIN"
+        }
+        actionSubtitle={
+          currentOperation === "rotate"
+            ? "Enter your current PIN to begin the PIN change process"
+            : "Enter your PIN to verify it's correct"
+        }
       />
 
       <PinInputModal
@@ -252,9 +275,11 @@ const EnterPinScreen = memo(() => {
         onPinAction={handleNewPin}
         purpose="save"
         actionTitle="Create New PIN"
-        actionSubtitle={currentOperation === 'rotate' ?
-          "Enter your new PIN to replace the current one" :
-          "Create a new PIN for secure access to your data"}
+        actionSubtitle={
+          currentOperation === "rotate"
+            ? "Enter your new PIN to replace the current one"
+            : "Create a new PIN for secure access to your data"
+        }
       />
 
       <PinInputModal

@@ -16,7 +16,7 @@ import { useModal } from "../context/ModalContext";
 import {
   verifyStoredPin,
   secureEncryptWithPin,
-  secureDecryptWithPin
+  secureDecryptWithPin,
 } from "../util/pin-security";
 
 // Fixed key for all secure storage operations
@@ -151,7 +151,7 @@ export function useSecureStorage() {
       if (result) {
         showAlert(
           "Success",
-          `Reveal scheduled. You can reveal the data after the waiting period.`
+          `Reveal scheduled. You can reveal the data after the waiting period.`,
         );
       } else {
         showAlert("Error", "Failed to schedule reveal");
@@ -234,17 +234,11 @@ export function useSecureStorage() {
       }
 
       // Use pin-security utility to decrypt
-      const decryptResult = await secureDecryptWithPin(
-        encryptedBase64,
-        pin,
-      );
+      const decryptResult = await secureDecryptWithPin(encryptedBase64, pin);
 
       if (!decryptResult) {
         setStoredValue(null);
-        showAlert(
-          "Error",
-          "Failed to decrypt value. Data may be corrupted.",
-        );
+        showAlert("Error", "Failed to decrypt value. Data may be corrupted.");
         return;
       }
 
@@ -372,7 +366,7 @@ export function useSecureStorage() {
       if (!decryptResult || !decryptResult.verified) {
         showAlert(
           "Error",
-          "Failed to decrypt with old PIN. Re-encryption aborted."
+          "Failed to decrypt with old PIN. Re-encryption aborted.",
         );
         return;
       }
@@ -380,7 +374,7 @@ export function useSecureStorage() {
       // Now encrypt with new PIN
       const newEncryptedBase64 = await secureEncryptWithPin(
         decryptResult.value,
-        newPin
+        newPin,
       );
 
       // Save the re-encrypted value

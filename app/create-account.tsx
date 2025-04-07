@@ -36,7 +36,8 @@ export default function CreateAccountScreen() {
 const CreateAccountContent = () => {
   // Use default profile or first available profile
   const profileNames = Object.keys(appConfig.profiles);
-  const defaultProfileName = profileNames.length > 0 ? profileNames[0] : "default";
+  const defaultProfileName =
+    profileNames.length > 0 ? profileNames[0] : "default";
 
   const formRef = useRef<AddAccountFormRef>(null);
 
@@ -50,8 +51,8 @@ const CreateAccountContent = () => {
       <View style={styles.content}>
         <Text style={styles.title}>Create New Account</Text>
         <Text style={styles.description}>
-          Add a new account to your wallet. You'll need to provide an account address
-          and optionally assign a nickname to it.
+          Add a new account to your wallet. You'll need to provide an account
+          address and optionally assign a nickname to it.
         </Text>
 
         <AddAccountForm

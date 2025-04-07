@@ -10,7 +10,12 @@ type PinActionCallback = (pin: string) => Promise<void>;
 interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
-  purpose: "save" | "retrieve" | "delete" | "schedule_reveal" | "execute_reveal";
+  purpose:
+    | "save"
+    | "retrieve"
+    | "delete"
+    | "schedule_reveal"
+    | "execute_reveal";
   // Callbacks for different PIN operations - only one will be called based on purpose
   onPinAction: PinActionCallback;
   actionTitle?: string;
@@ -18,7 +23,14 @@ interface PinInputModalProps {
 }
 
 export const PinInputModal = memo(
-  ({ visible, onClose, purpose, onPinAction, actionTitle, actionSubtitle }: PinInputModalProps) => {
+  ({
+    visible,
+    onClose,
+    purpose,
+    onPinAction,
+    actionTitle,
+    actionSubtitle,
+  }: PinInputModalProps) => {
     // Use a transient pin state - we'll clear it immediately after use
     const [pinValue, setPinValue] = useState("");
     const [error, setError] = useState<string | null>(null);

@@ -22,7 +22,7 @@ const AccountList = memo(
     accounts,
     onAccountsUpdated,
     activeAccountId,
-    onSetActiveAccount
+    onSetActiveAccount,
   }: AccountListProps) => {
     // State management
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -30,7 +30,9 @@ const AccountList = memo(
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
+    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
+      null,
+    );
 
     // Account deletion handling
     const handleDeleteAccount = useCallback((accountAddress: string) => {

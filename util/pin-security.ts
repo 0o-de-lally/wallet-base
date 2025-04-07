@@ -43,7 +43,13 @@ import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { constantTimeEqual } from "./security-utils";
 import { getValue } from "./secure-store";
-import { encryptWithPin as cryptoEncryptWithPin, decryptWithPin as cryptoDecryptWithPin, stringToUint8Array, uint8ArrayToBase64, base64ToUint8Array } from "./crypto";
+import {
+  encryptWithPin as cryptoEncryptWithPin,
+  decryptWithPin as cryptoDecryptWithPin,
+  stringToUint8Array,
+  uint8ArrayToBase64,
+  base64ToUint8Array,
+} from "./crypto";
 
 // Define a custom type for the hashed PIN
 export type HashedPin = {
@@ -146,7 +152,7 @@ export async function comparePins(
  */
 export async function processWithPin<T>(
   pin: string,
-  operation: (pin: string) => Promise<T>
+  operation: (pin: string) => Promise<T>,
 ): Promise<T> {
   try {
     // Execute the operation with the PIN
@@ -191,7 +197,10 @@ export async function verifyStoredPin(pin: string): Promise<boolean> {
  * @param pin - The PIN to use (will be cleared after use)
  * @returns Promise resolving to the encrypted data as base64 string
  */
-export async function secureEncryptWithPin(data: string, pin: string): Promise<string> {
+export async function secureEncryptWithPin(
+  data: string,
+  pin: string,
+): Promise<string> {
   return processWithPin(pin, async (securePin) => {
     try {
       // Convert to Uint8Arrays for processing
@@ -216,7 +225,10 @@ export async function secureEncryptWithPin(data: string, pin: string): Promise<s
  * @param pin - The PIN to use (will be cleared after use)
  * @returns Promise resolving to object with decrypted value and verification status
  */
-export async function secureDecryptWithPin(encryptedData: string, pin: string): Promise<{value: string, verified: boolean} | null> {
+export async function secureDecryptWithPin(
+  encryptedData: string,
+  pin: string,
+): Promise<{ value: string; verified: boolean } | null> {
   return processWithPin(pin, async (securePin) => {
     try {
       // Convert from base64 to Uint8Array
@@ -237,7 +249,7 @@ export async function secureDecryptWithPin(encryptedData: string, pin: string): 
 
       return {
         value: decryptedValue,
-        verified: result.verified
+        verified: result.verified,
       };
     } catch (error) {
       console.error("Decryption error:", error);
