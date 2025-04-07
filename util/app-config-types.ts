@@ -21,6 +21,7 @@ export type NetworkType = {
  * Account state represents a single blockchain account within a profile
  */
 export type AccountState = {
+  id: string; // Unique identifier for the account (e.g., UUID or random ID)
   account_address: string;
   nickname: string; // User-friendly name for the account
   is_key_stored: boolean;

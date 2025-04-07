@@ -7,6 +7,8 @@ import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
+import { getRandomBytesAsync } from "expo-crypto";
+import { uint8ArrayToBase64 } from "../../util/crypto";
 
 interface AddAccountFormProps {
   profileName: string;
@@ -38,33 +40,43 @@ const AddAccountForm = forwardRef<AddAccountFormRef, AddAccountFormProps>(
       [],
     );
 
-    const handleAddAccount = () => {
+    const handleAddAccount = async () => {
       // Validate inputs
       if (!accountAddress.trim()) {
         setError("Account address is required");
         return;
       }
 
-      // Create account state
-      const account: AccountState = {
-        account_address: accountAddress.trim(),
-        nickname:
-          nickname.trim() || accountAddress.trim().substring(0, 8) + "...",
-        is_key_stored: false, // Default value set by the app
-        balance_locked: 0, // Default value set by the app
-        balance_unlocked: 0, // Default value set by the app
-        last_update: Date.now(),
-      };
+      try {
+        // Generate a random ID for the account using crypto secure random
+        const randomBytes = await getRandomBytesAsync(16); // 16 bytes = 128 bits
+        const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ''); // Create URL-safe ID
 
-      // Add account to profile
-      const success = addAccountToProfile(profileName, account);
+        // Create account state
+        const account: AccountState = {
+          id: accountId, // Add generated ID to account
+          account_address: accountAddress.trim(),
+          nickname:
+            nickname.trim() || accountAddress.trim().substring(0, 8) + "...",
+          is_key_stored: false,
+          balance_locked: 0,
+          balance_unlocked: 0,
+          last_update: Date.now(),
+        };
 
-      if (success) {
-        setSuccessModalVisible(true);
-      } else {
-        setError(
-          "Account already exists in this profile or profile doesn't exist.",
-        );
+        // Add account to profile
+        const success = addAccountToProfile(profileName, account);
+
+        if (success) {
+          setSuccessModalVisible(true);
+        } else {
+          setError(
+            "Account already exists in this profile or profile doesn't exist."
+          );
+        }
+      } catch (error) {
+        console.error("Failed to generate account ID:", error);
+        setError("Failed to create account. Please try again.");
       }
     };
 
