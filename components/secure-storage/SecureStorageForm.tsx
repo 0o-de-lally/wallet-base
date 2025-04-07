@@ -41,7 +41,7 @@ export const SecureStorageForm = memo(
 
         <View style={styles.buttonContainer}>
           <ActionButton
-          style={styles.button}
+            style={styles.button}
             text="Save"
             onPress={onSave}
             isLoading={isLoading && value.trim().length > 0}
