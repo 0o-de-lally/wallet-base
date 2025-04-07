@@ -17,7 +17,6 @@ import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
-import { router } from "expo-router";
 
 const ProfileManagement: React.FC = () => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
@@ -80,17 +79,9 @@ const ProfileManagement: React.FC = () => {
     setDeleteAllModalVisible(false);
   }, []);
 
-  const navigateToCreateAccount = useCallback(() => {
-    router.push("/create-account");
-  }, []);
-
   const toggleCreateForm = useCallback(() => {
     setShowCreateForm((prev) => !prev);
-    // Use navigateToCreateAccount when appropriate
-    if (Object.keys(profiles).length === 0) {
-      navigateToCreateAccount();
-    }
-  }, [navigateToCreateAccount, profiles]);
+  }, []);
 
   const handleAccountsUpdated = useCallback(() => {
     // Force a UI refresh by updating the selected profile
@@ -229,16 +220,6 @@ const ProfileManagement: React.FC = () => {
             showCreateForm ? "Cancel creating profile" : "Create a new profile"
           }
         />
-
-        {/* Add direct navigation button for create account */}
-        {Object.keys(profiles).length > 0 && (
-          <ActionButton
-            text="Create Account"
-            onPress={navigateToCreateAccount}
-            style={styles.button}
-            accessibilityLabel="Create a new account"
-          />
-        )}
       </View>
 
       {showCreateForm && (
