@@ -174,7 +174,7 @@ export const RevealStatusUI = memo(
         return (
           <View style={{ alignItems: "center", marginBottom: 20 }}>
             <ActionButton
-              text={`Schedule Reveal${accountName ? ` for ${accountName}` : ''}`}
+              text={`Schedule Reveal${accountName ? ` for ${accountName}` : ""}`}
               onPress={handleScheduleReveal}
               disabled={isLoading || disabled}
               accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
@@ -263,7 +263,8 @@ export const RevealStatusUI = memo(
             }}
           >
             <Text style={styles.resultLabel}>
-              Successfully Revealed Value {accountName ? `for ${accountName}` : ""}:
+              Successfully Revealed Value{" "}
+              {accountName ? `for ${accountName}` : ""}:
             </Text>
             <ActionButton
               text="Hide"

@@ -28,7 +28,7 @@ export interface AccountItemProps {
 export const AccountItem = memo(
   ({ account, onToggleExpand, onDelete, isExpanded }: AccountItemProps) => {
     const [viewMode, setViewMode] = useState<SecretViewMode>(
-      isExpanded ? SecretViewMode.MANAGE : SecretViewMode.COLLAPSED
+      isExpanded ? SecretViewMode.MANAGE : SecretViewMode.COLLAPSED,
     );
 
     const {
@@ -231,7 +231,7 @@ export const AccountItem = memo(
         />
       </View>
     );
-  }
+  },
 );
 
 AccountItem.displayName = "AccountItem";
@@ -242,7 +242,7 @@ export const AccountItemWithContext = memo(
     <ModalProvider key={account.id || account.account_address}>
       <AccountItem account={account} {...props} />
     </ModalProvider>
-  )
+  ),
 );
 
 AccountItemWithContext.displayName = "AccountItemWithContext";
