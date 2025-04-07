@@ -130,9 +130,6 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
 
       {hasMultipleProfiles && (
         <>
-          <Text style={styles.description}>
-            Current profile: {selectedProfile}
-          </Text>
           <Dropdown
             label="Profile"
             value={selectedProfile}
