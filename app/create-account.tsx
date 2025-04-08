@@ -32,7 +32,6 @@ export default function CreateAccountScreen() {
 
 // Separate component that handles form logic
 const CreateAccountContent = () => {
-
   const handleComplete = useCallback(() => {
     // Navigate back after successful account creation
     router.back();
