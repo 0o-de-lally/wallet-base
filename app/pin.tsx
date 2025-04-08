@@ -1,20 +1,24 @@
 import React, { useState, useCallback, memo } from "react";
-import { StatusBar, View } from "react-native";
+import { View } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
-import { ModalProvider, useModal } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 import { DangerZone } from "../components/secure-storage/DangerZone";
 import { clearAllSecureStorage } from "@/util/secure-store";
+import { Stack } from "expo-router";
 
 const PinScreen = observer(() => {
   return (
-    <ModalProvider>
-      <View style={styles.root}>
-        <StatusBar backgroundColor={styles.root.backgroundColor} />
-        <PinScreenContent />
-      </View>
-    </ModalProvider>
+    <View style={styles.root}>
+      <Stack.Screen
+        options={{
+          title: "PIN Management",
+          headerBackTitle: "Back",
+        }}
+      />
+      <PinScreenContent />
+    </View>
   );
 });
 

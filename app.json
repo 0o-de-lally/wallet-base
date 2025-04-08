@@ -8,6 +8,15 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "backgroundColor": "#1a1a1f",
+    "androidStatusBar": {
+      "backgroundColor": "#1a1a1f",
+      "barStyle": "light-content"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#1a1a1f",
+      "barStyle": "light-content"
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {

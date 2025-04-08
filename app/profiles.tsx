@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { StatusBar, View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import ProfileManagement from "../components/profile/ProfileManagement";
 import { initializeApp } from "../util/initialize-app";
+import { Stack } from "expo-router";
 
 const ProfilesScreen = observer(() => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -31,10 +32,17 @@ const ProfilesScreen = observer(() => {
   }
 
   return (
-    <View style={styles.root}>
-      <StatusBar backgroundColor={styles.root.backgroundColor} />
-      <ProfileManagement />
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Profile Management",
+          headerBackTitle: "Back",
+        }}
+      />
+      <View style={styles.root}>
+        <ProfileManagement />
+      </View>
+    </>
   );
 });
 

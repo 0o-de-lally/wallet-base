@@ -1,10 +1,9 @@
 import React, { memo } from "react";
-import { View, StatusBar } from "react-native";
+import { View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Stack } from "expo-router";
 import { AccountSettings } from "../components/profile/AccountSettings";
 import { styles } from "../styles/styles";
-import { ModalProvider } from "../context/ModalContext";
 
 /**
  * Account Settings Screen
@@ -21,12 +20,9 @@ export default function AccountSettingsScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <ModalProvider>
-        <View style={styles.root}>
-          <StatusBar backgroundColor={styles.root.backgroundColor} />
-          <AccountSettingsContent />
-        </View>
-      </ModalProvider>
+      <View style={styles.root}>
+        <AccountSettingsContent />
+      </View>
     </>
   );
 }

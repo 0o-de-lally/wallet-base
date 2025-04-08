@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
-import { ModalProvider } from "../context/ModalContext";
 import { AddAccountForm } from "../components/profile/AddAccountForm";
 import { router } from "expo-router";
 
@@ -20,12 +19,10 @@ export default function CreateAccountScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <ModalProvider>
-        <View style={styles.root}>
-          <StatusBar backgroundColor={styles.root.backgroundColor} />
-          <CreateAccountContent />
-        </View>
-      </ModalProvider>
+      <View style={styles.root}>
+        <StatusBar backgroundColor={styles.root.backgroundColor} />
+        <CreateAccountContent />
+      </View>
     </>
   );
 }

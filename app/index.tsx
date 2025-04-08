@@ -1,20 +1,22 @@
 import React, { useEffect, useCallback } from "react";
-import { View, StatusBar, TouchableOpacity, Text } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { View, TouchableOpacity, Text } from "react-native";
 import { observer } from "@legendapp/state/react";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { styles } from "../styles/styles";
-import { ModalProvider } from "../context/ModalContext";
 import { initializeApp } from "@/util/initialize-app";
 
 // Main App component that combines the functionality
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ModalProvider>
-        <AppContent />
-      </ModalProvider>
-    </SafeAreaProvider>
+    <View style={styles.root}>
+      <Stack.Screen
+        options={{
+          title: "",
+          headerBackTitle: "Back",
+        }}
+      />
+      <AppContent />
+    </View>
   );
 }
 
@@ -55,16 +57,12 @@ const AppContent = observer(() => {
   );
 
   return (
-    <>
-      <StatusBar backgroundColor={styles.root.backgroundColor} />
-
-      <View style={styles.root}>
-        <View style={styles.container}>
-          {renderNavigationButton("PIN Management", navigateToPIN)}
-          {renderNavigationButton("Profile Management", navigateToProfiles)}
-          {renderNavigationButton("Create Account", navigateToCreateAccount)}
-        </View>
+    <View style={styles.root}>
+      <View style={styles.container}>
+        {renderNavigationButton("PIN Management", navigateToPIN)}
+        {renderNavigationButton("Profile Management", navigateToProfiles)}
+        {renderNavigationButton("Create Account", navigateToCreateAccount)}
       </View>
-    </>
+    </View>
   );
 });
