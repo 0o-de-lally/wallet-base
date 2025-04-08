@@ -84,7 +84,11 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
     if (accountAddress.trim()) {
       const isValid = validateAccountAddress(accountAddress);
       if (!isValid) {
-        setAddressError("Invalid account address format");
+        if (!accountAddress.startsWith("0x")) {
+          setAddressError("Address must start with 0x");
+        } else {
+          setAddressError("Address must contain only hexadecimal characters (0-9, a-f)");
+        }
       } else {
         setAddressError(undefined);
       }
@@ -111,15 +115,15 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
 
   const handleAddAccount = async () => {
     // First validate the address
-    const isValidAddress = validateAccountAddress(accountAddress);
-    if (!isValidAddress) {
-      setError("Invalid account address format");
+    const validatedAddress = validateAccountAddress(accountAddress);
+    if (!validatedAddress) {
+      setError("Invalid account address format. Address must start with 0x and contain only hexadecimal characters.");
       return;
     }
 
     const result = await createAccount(
       selectedProfile,
-      accountAddress,
+      validatedAddress, // Use the validated address
       nickname,
     );
 
@@ -172,8 +176,10 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
         label="Account Address:"
         value={accountAddress}
         onChangeText={setAccountAddress}
-        placeholder="Enter account address"
+        placeholder="Enter account address (e.g., 0x1234...)"
         error={addressError}
+        autoCapitalize="none"
+        autoCorrect={false}
       />
       {addressError && <Text style={styles.errorText}>{addressError}</Text>}
 

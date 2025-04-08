@@ -11,7 +11,7 @@ import type { AccountState } from "./app-config-store";
  * Validates if a string is a valid Open Libra account address
  *
  * @param address String to validate as an account address
- * @returns An AccountAddress object if valid, or null if invalid
+ * @returns A validated address string if valid, or null if invalid
  */
 export function validateAccountAddress(address: string): string | null {
   try {
@@ -19,7 +19,20 @@ export function validateAccountAddress(address: string): string | null {
       return null;
     }
 
-    return address.trim();
+    const trimmedAddress = address.trim();
+
+    // Check for 0x prefix
+    if (!trimmedAddress.startsWith("0x")) {
+      return null;
+    }
+
+    // Check for valid hex characters (0-9, a-f, A-F) after the 0x prefix
+    const hexPart = trimmedAddress.substring(2);
+    if (!hexPart || !/^[0-9a-fA-F]+$/.test(hexPart)) {
+      return null;
+    }
+
+    return trimmedAddress;
   } catch (error) {
     console.error("Invalid account address format:", error);
     return null;
