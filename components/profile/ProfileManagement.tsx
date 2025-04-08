@@ -27,7 +27,7 @@ const ProfileManagement: React.FC = () => {
   const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
 
   // Get all profiles from the store
-  const profiles = appConfig.profiles.get();
+  const profiles = appConfig.profiles.get() || [];
   const activeAccountId = appConfig.activeAccountId.get();
 
   // Find which profile contains the active account
@@ -39,16 +39,20 @@ const ProfileManagement: React.FC = () => {
 
   // Get the currently selected profile, or the active profile if none selected
   const selectedProfile = useMemo(() => {
+    if (!profiles) return null;
+
     if (selectedProfileName) {
-      return profiles.find(p => p.name === selectedProfileName) || null;
+      return profiles.find(p => p && p.name === selectedProfileName) || null;
     }
     if (activeProfileName) {
-      return profiles.find(p => p.name === activeProfileName) || null;
+      return profiles.find(p => p && p.name === activeProfileName) || null;
     }
     return null;
   }, [selectedProfileName, activeProfileName, profiles]);
 
   const handleSelectProfile = useCallback((profileName: string) => {
+    if (!profileName) return;
+
     // Set the selected profile name first
     setSelectedProfileName(profileName);
 
