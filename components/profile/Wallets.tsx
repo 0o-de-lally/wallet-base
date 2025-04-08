@@ -4,12 +4,12 @@ import { styles } from "../../styles/styles";
 import {
   appConfig,
   getProfileForAccount,
-  Profile,
   setActiveAccount,
 } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
 import AccountList from "./AccountList";
 import { SectionContainer } from "../common/SectionContainer";
+import { getNetworkDisplayName } from "../../util/libra-client";
 
 /**
  * Wallets component that displays all profiles and their accounts
@@ -36,19 +36,6 @@ const Wallets: React.FC = observer(() => {
     console.log(`Accounts updated for profile: ${profileName}`);
   };
 
-  // Helper function to safely get network name
-  const getNetworkDisplayName = (profile: Profile) => {
-    if (!profile || !profile.network) return "Unknown";
-
-    // Handle both string and object cases
-    if (typeof profile.network === "string") {
-      return profile.network;
-    }
-
-    // Fallback
-    return "Unknown Network";
-  };
-
   return (
     <ScrollView
       style={styles.container}
@@ -57,7 +44,7 @@ const Wallets: React.FC = observer(() => {
     >
       <Text style={styles.title}>My Wallets</Text>
 
-      {Object.keys(profiles).length === 0 ? (
+      {profiles.length === 0 ? (
         <View style={styles.resultContainer}>
           <Text style={styles.resultValue}>
             No profiles exist yet. Go to Profile Management to create your first
@@ -65,19 +52,19 @@ const Wallets: React.FC = observer(() => {
           </Text>
         </View>
       ) : (
-        Object.entries(profiles).map(([profileName, profile]) => (
+        profiles.map((profile) => (
           <SectionContainer
-            key={profileName}
-            title={`${profileName} ${activeProfileName === profileName ? "(Active)" : ""}`}
+            key={profile.name}
+            title={`${profile.name} ${activeProfileName === profile.name ? "(Active)" : ""}`}
           >
             <Text style={styles.networkInfo}>
               Network: {getNetworkDisplayName(profile)}
             </Text>
 
             <AccountList
-              profileName={profileName}
+              profileName={profile.name}
               accounts={profile.accounts}
-              onAccountsUpdated={handleAccountsUpdated(profileName)}
+              onAccountsUpdated={handleAccountsUpdated(profile.name)}
               activeAccountId={activeAccountId}
               onSetActiveAccount={handleSetActiveAccount}
             />

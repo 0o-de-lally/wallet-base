@@ -42,9 +42,7 @@ export type AppSettings = {
  */
 export type AppConfig = {
   app_settings: AppSettings;
-  profiles: {
-    [profileName: string]: Profile;
-  };
+  profiles: Profile[]; // Changed from object to array
   activeAccountId: string | null; // ID of the currently active account (replacing activeProfile)
   // Add other config sections as needed
 };
@@ -56,7 +54,7 @@ export const defaultConfig: AppConfig = {
   app_settings: {
     theme: "dark",
   },
-  profiles: {},
+  profiles: [], // Changed from empty object to empty array
   activeAccountId: null,
 };
 

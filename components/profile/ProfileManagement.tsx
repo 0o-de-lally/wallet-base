@@ -38,11 +38,15 @@ const ProfileManagement: React.FC = () => {
   }, [activeAccountId, profiles]);
 
   // Get the currently selected profile, or the active profile if none selected
-  const selectedProfile = selectedProfileName
-    ? profiles[selectedProfileName]
-    : activeProfileName
-      ? profiles[activeProfileName]
-      : null;
+  const selectedProfile = useMemo(() => {
+    if (selectedProfileName) {
+      return profiles.find(p => p.name === selectedProfileName) || null;
+    }
+    if (activeProfileName) {
+      return profiles.find(p => p.name === activeProfileName) || null;
+    }
+    return null;
+  }, [selectedProfileName, activeProfileName, profiles]);
 
   const handleSelectProfile = useCallback((profileName: string) => {
     // Set the selected profile name first
@@ -73,7 +77,7 @@ const ProfileManagement: React.FC = () => {
   }, []);
 
   const confirmDeleteAllProfiles = useCallback(() => {
-    appConfig.profiles.set({});
+    appConfig.profiles.set([]);
     appConfig.activeAccountId.set(null);
     setSelectedProfileName(null);
     setDeleteAllModalVisible(false);
@@ -91,27 +95,26 @@ const ProfileManagement: React.FC = () => {
     }
   }, [selectedProfileName]);
 
-
   const renderProfileSections = useCallback(() => {
-    return Object.entries(profiles).map(([profileName, profile]) => (
-      <View key={profileName}>
+    return profiles.map((profile) => (
+      <View key={profile.name}>
         <TouchableOpacity
           style={[
             styles.profileItem,
-            activeProfileName === profileName && {
+            activeProfileName === profile.name && {
               borderColor: "#94c2f3",
               borderWidth: 2,
             },
-            selectedProfileName === profileName && {
+            selectedProfileName === profile.name && {
               backgroundColor: "#2c3040",
             },
           ]}
-          onPress={() => handleSelectProfile(profileName)}
+          onPress={() => handleSelectProfile(profile.name)}
           activeOpacity={0.7}
           accessible={true}
           accessibilityRole="button"
-          accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(contains active account)" : ""}`}
-          accessibilityState={{ expanded: expandedProfile === profileName }}
+          accessibilityLabel={`${profile.name} profile ${activeProfileName === profile.name ? "(contains active account)" : ""}`}
+          accessibilityState={{ expanded: expandedProfile === profile.name }}
         >
           <View
             style={{
@@ -122,8 +125,8 @@ const ProfileManagement: React.FC = () => {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.profileName}>{profileName}</Text>
-              {activeProfileName === profileName && (
+              <Text style={styles.profileName}>{profile.name}</Text>
+              {activeProfileName === profile.name && (
                 <View
                   style={{
                     marginLeft: 8,
@@ -142,7 +145,7 @@ const ProfileManagement: React.FC = () => {
 
             <Text style={{ color: "#fff", fontSize: 12 }}>
               {profile.accounts.length} account(s)
-              {expandedProfile === profileName ? " ▲" : " ▼"}
+              {expandedProfile === profile.name ? " ▲" : " ▼"}
             </Text>
           </View>
 
@@ -158,10 +161,10 @@ const ProfileManagement: React.FC = () => {
           </Text>
         </TouchableOpacity>
 
-        {expandedProfile === profileName && (
+        {expandedProfile === profile.name && (
           <SectionContainer>
             <AccountList
-              profileName={profileName}
+              profileName={profile.name}
               accounts={profile.accounts}
               onAccountsUpdated={handleAccountsUpdated}
               activeAccountId={activeAccountId}
@@ -183,7 +186,7 @@ const ProfileManagement: React.FC = () => {
   ]);
 
   const renderEmptyState = useCallback(() => {
-    if (selectedProfile || Object.keys(profiles).length > 0) return null;
+    if (selectedProfile || profiles.length > 0) return null;
 
     return (
       <View
@@ -232,7 +235,7 @@ const ProfileManagement: React.FC = () => {
 
       {renderEmptyState()}
 
-      {Object.keys(profiles).length > 0 && (
+      {profiles.length > 0 && (
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <ActionButton

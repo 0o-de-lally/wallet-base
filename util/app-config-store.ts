@@ -7,12 +7,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   AppConfig,
-  NetworkType,
-  NetworkTypeEnum,
   AccountState,
   Profile,
   defaultConfig,
 } from "./app-config-types";
+import { getNetworkEndpoint } from "./libra-client";
+import { Network } from "open-libra-sdk";
 
 // Global configuration
 configureObservablePersistence({
@@ -48,24 +48,27 @@ persistObservable(appConfig, {
  * @param network Network configuration
  * @returns boolean indicating success or failure
  */
-export function createProfile(name: string, network: NetworkType): boolean {
+export function createProfile(name: string, network: Network): boolean {
   // Check if profile name already exists
-  if (appConfig.profiles[name].get()) {
+  const existingProfile = appConfig.profiles.get().find(p => p.name === name);
+  if (existingProfile) {
     return false; // Profile already exists
   }
 
   const timestamp = Date.now();
 
   // Create new profile
-  appConfig.profiles[name].set({
+  const newProfile: Profile = {
     name,
     network,
     accounts: [],
     created_at: timestamp,
     last_used: timestamp,
-  });
+    customEndpoint: getNetworkEndpoint(network)
+  };
 
-  // We don't set active account here anymore since profiles don't have accounts yet
+  // Add new profile to profiles array using push
+  appConfig.profiles.push(newProfile);
 
   return true;
 }
@@ -81,11 +84,14 @@ export function addAccountToProfile(
   profileName: string,
   account: AccountState,
 ): boolean {
-  const profile = appConfig.profiles[profileName].get();
+  const profiles = appConfig.profiles.get();
+  const profileIndex = profiles.findIndex(p => p.name === profileName);
 
-  if (!profile) {
+  if (profileIndex === -1) {
     return false; // Profile doesn't exist
   }
+
+  const profile = profiles[profileIndex];
 
   // Check if account already exists in the profile
   const accountExists = profile.accounts.some(
@@ -97,7 +103,12 @@ export function addAccountToProfile(
   }
 
   // Add account to profile
-  appConfig.profiles[profileName].accounts.push(account);
+  const updatedProfiles = [...profiles];
+  updatedProfiles[profileIndex] = {
+    ...profile,
+    accounts: [...profile.accounts, account]
+  };
+  appConfig.profiles.set(updatedProfiles);
 
   // If this is the first account added to any profile, set it as active
   if (appConfig.activeAccountId.get() === null) {
@@ -118,13 +129,12 @@ export function setActiveAccount(accountId: string): boolean {
   let found = false;
 
   const profiles = appConfig.profiles.get();
-  for (const profileName in profiles) {
-    const profile = profiles[profileName];
+  for (const profile of profiles) {
     const accountExists = profile.accounts.some((acc) => acc.id === accountId);
 
     if (accountExists) {
       // Update last_used timestamp of the profile containing this account
-      appConfig.profiles[profileName].last_used.set(Date.now());
+      profile.last_used = Date.now();
       found = true;
       break;
     }
@@ -147,12 +157,10 @@ export function setActiveAccount(accountId: string): boolean {
 export function getProfileForAccount(accountId: string): string | null {
   const profiles = appConfig.profiles.get();
 
-  for (const profileName in profiles) {
-    const profile = profiles[profileName];
+  for (const profile of profiles) {
     const account = profile.accounts.find((acc) => acc.id === accountId);
-
     if (account) {
-      return profileName;
+      return profile.name;
     }
   }
 
@@ -166,11 +174,14 @@ export function getProfileForAccount(accountId: string): string | null {
  * @returns boolean indicating success or failure
  */
 export function deleteProfile(profileName: string): boolean {
-  const profile = appConfig.profiles[profileName].get();
+  const profiles = appConfig.profiles.get();
+  const profileIndex = profiles.findIndex(p => p.name === profileName);
 
-  if (!profile) {
+  if (profileIndex === -1) {
     return false; // Profile doesn't exist
   }
+
+  const profile = profiles[profileIndex];
 
   // Get the IDs of all accounts in this profile
   const accountIdsInProfile = profile.accounts.map((acc) => acc.id);
@@ -180,17 +191,8 @@ export function deleteProfile(profileName: string): boolean {
   const isActiveAccountInProfile =
     activeAccountId !== null && accountIdsInProfile.includes(activeAccountId);
 
-  // Create a new profiles object without the deleted profile
-  const currentProfiles = appConfig.profiles.get();
-  const updatedProfiles = Object.keys(currentProfiles)
-    .filter((name) => name !== profileName)
-    .reduce(
-      (obj, name) => {
-        obj[name] = currentProfiles[name];
-        return obj;
-      },
-      {} as Record<string, Profile>,
-    );
+  // Create a new profiles array without the deleted profile
+  const updatedProfiles = profiles.filter(p => p.name !== profileName);
 
   // Update the profiles
   appConfig.profiles.set(updatedProfiles);
@@ -198,7 +200,7 @@ export function deleteProfile(profileName: string): boolean {
   // If the active account was in the deleted profile, reset active account
   if (isActiveAccountInProfile) {
     // Try to set another account as active
-    const remainingProfiles = Object.values(updatedProfiles);
+    const remainingProfiles = updatedProfiles;
     if (remainingProfiles.length > 0) {
       for (const profile of remainingProfiles) {
         if (profile.accounts.length > 0) {
@@ -225,25 +227,12 @@ export function maybeInitializeDefaultProfile() {
 
   // Only create default profile if there are no profiles AND no active account
   if (
-    Object.keys(currentProfiles).length === 0 &&
+    currentProfiles.length === 0 &&
     !appConfig.activeAccountId.get()
   ) {
     console.log("No profiles found, initializing default profile");
-    createProfile("mainnet", {
-      network_name: "Mainnet",
-      network_type: NetworkTypeEnum.MAINNET,
-    });
+    createProfile("mainnet", Network.MAINNET);
   } else {
     console.log("Profiles already exist, skipping initialization");
   }
 }
-
-// Export types from the types file for backward compatibility
-export {
-  NetworkTypeEnum,
-  type NetworkType,
-  type AccountState,
-  type Profile,
-  type AppSettings,
-  type AppConfig,
-} from "./app-config-types";

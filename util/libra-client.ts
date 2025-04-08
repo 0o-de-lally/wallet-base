@@ -1,4 +1,5 @@
 import { LibraClient, Network } from "open-libra-sdk";
+import type { Profile } from "./app-config-types";
 
 /**
  * Default API endpoints for different network types
@@ -46,4 +47,22 @@ export function createLibraClient(
  */
 export function getNetworkEndpoint(network: Network): string {
   return NETWORK_ENDPOINTS[network];
+}
+
+/**
+ * Gets a user-friendly display name for a network
+ *
+ * @param profile - The profile containing the network information
+ * @returns A user-friendly network name string
+ */
+export function getNetworkDisplayName(profile: Profile): string {
+  if (!profile || !profile.network) return "Unknown";
+
+  // Handle both string and object cases
+  if (typeof profile.network === "string") {
+    return profile.network;
+  }
+
+  // Fallback
+  return "Unknown Network";
 }
