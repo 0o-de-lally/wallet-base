@@ -20,12 +20,10 @@ export default function CreateAccountScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <ModalProvider>
         <View style={styles.root}>
           <StatusBar backgroundColor={styles.root.backgroundColor} />
           <CreateAccountContent />
         </View>
-      </ModalProvider>
     </>
   );
 }

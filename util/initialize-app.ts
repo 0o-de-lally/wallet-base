@@ -1,4 +1,5 @@
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
+import * as LocalAuthentication from 'expo-local-authentication';
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
@@ -6,6 +7,21 @@ import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
  */
 export async function initializeApp() {
   try {
+    // Check if biometric authentication is available
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    console.log("Biometric hardware available:", hasHardware);
+
+    // Prepare local authentication if available
+    if (hasHardware) {
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      console.log("Biometrics enrolled:", isEnrolled);
+
+      if (isEnrolled) {
+        // Pre-warm the biometric subsystem
+        LocalAuthentication.supportedAuthenticationTypesAsync();
+      }
+    }
+
     // Wait for persistence to load (allow some time for hydration)
     await new Promise((resolve) => setTimeout(resolve, 100));
 
