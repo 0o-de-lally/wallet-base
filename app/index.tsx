@@ -1,68 +1,50 @@
-import React, { useEffect, useCallback } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
-import { observer } from "@legendapp/state/react";
-import { Stack, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator, StatusBar } from "react-native";
 import { styles } from "../styles/styles";
-import { initializeApp } from "@/util/initialize-app";
+import { observer } from "@legendapp/state/react";
+import { initializeApp } from "../util/initialize-app";
+import { Stack } from "expo-router";
+import Wallets from "@/components/profile/Wallets";
 
-// Main App component that combines the functionality
-export default function App() {
-  return (
-    <View style={styles.root}>
-      <Stack.Screen
-        options={{
-          title: "",
-          headerBackTitle: "Back",
-        }}
-      />
-      <AppContent />
-    </View>
-  );
-}
+const HomeScreen = observer(() => {
+  const [isInitialized, setIsInitialized] = useState(false);
 
-// Content component with observer for reactive updates
-const AppContent = observer(() => {
   useEffect(() => {
-    initializeApp();
+    const init = async () => {
+      await initializeApp();
+      setIsInitialized(true);
+    };
+
+    init();
   }, []);
 
-  // Use the useRouter hook to get the router instance
-  const router = useRouter();
-
-  const navigateToPIN = useCallback(() => {
-    router.navigate("/pin");
-  }, [router]);
-
-  const navigateToProfiles = useCallback(() => {
-    router.navigate("/profiles");
-  }, [router]);
-
-  const navigateToCreateAccount = useCallback(() => {
-    router.navigate("/create-account");
-  }, [router]);
-
-  const renderNavigationButton = useCallback(
-    (text: string, onPress: () => void) => (
-      <TouchableOpacity
-        style={styles.navButton}
-        onPress={onPress}
-        accessible={true}
-        accessibilityRole="button"
-        accessibilityLabel={text}
+  if (!isInitialized) {
+    return (
+      <View
+        style={[
+          styles.root,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
       >
-        <Text style={styles.navButtonText}>{text}</Text>
-      </TouchableOpacity>
-    ),
-    [],
-  );
+        <ActivityIndicator size="large" color="#94c2f3" />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.root}>
-      <View style={styles.container}>
-        {renderNavigationButton("PIN Management", navigateToPIN)}
-        {renderNavigationButton("Profile Management", navigateToProfiles)}
-        {renderNavigationButton("Create Account", navigateToCreateAccount)}
+    <>
+      <Stack.Screen
+        options={{
+          title: "My Wallets",
+          headerLargeTitle: true,
+        }}
+      />
+      <View style={styles.root}>
+        <StatusBar backgroundColor={styles.root.backgroundColor} />
+        <Wallets />
       </View>
-    </View>
+    </>
   );
 });
+
+export default HomeScreen;
