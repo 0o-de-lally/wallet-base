@@ -91,6 +91,7 @@ const ProfileManagement: React.FC = () => {
     }
   }, [selectedProfileName]);
 
+
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
       <View key={profileName}>
