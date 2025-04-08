@@ -3,8 +3,6 @@ import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import {
   createProfile,
-  NetworkType,
-  NetworkTypeEnum,
 } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -12,6 +10,7 @@ import { FormInput } from "../common/FormInput";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import Dropdown from "../common/Dropdown";
+import { Network } from "open-libra-sdk";
 
 interface CreateProfileFormProps {
   onComplete: () => void;
@@ -19,35 +18,33 @@ interface CreateProfileFormProps {
 
 const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
   // Check if this is the first profile being created
-  const isFirstProfile = Object.keys(appConfig.profiles.get()).length === 0;
+  const isFirstProfile = Object.keys(appConfig.profiles).length === 0;
 
   const [profileName, setProfileName] = useState(
     isFirstProfile ? "mainnet" : "",
   );
-  const [networkName, setNetworkName] = useState("");
-  const [networkType, setNetworkType] = useState<NetworkTypeEnum>(
-    NetworkTypeEnum.MAINNET,
-  );
+  const [networkType, setNetworkType] = useState<Network>(Network.MAINNET);
   const [error, setError] = useState<string | null>(null);
   const [customNetwork, setCustomNetwork] = useState(false);
+  const [customNetworkUrl, setCustomNetworkUrl] = useState<string>("");
 
   // Modal states
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-  // Set the network name when network type changes
-  useEffect(() => {
-    if (networkType !== NetworkTypeEnum.CUSTOM) {
-      setNetworkName(networkType);
-    } else if (
-      networkName === NetworkTypeEnum.MAINNET ||
-      networkName === NetworkTypeEnum.TESTING ||
-      networkName === NetworkTypeEnum.TESTNET
-    ) {
-      setNetworkName(""); // Clear the name if switching to custom from a pre-defined type
-    }
+  // // Set the network name when network type changes
+  // useEffect(() => {
+  //   if (networkType !== NetworkTypeEnum.CUSsTOM) {
+  //     setNetworkName(networkType);
+  //   } else if (
+  //     networkName === NetworkTypeEnum.MAINNET ||
+  //     networkName === NetworkTypeEnum.TESTING ||
+  //     networkName === NetworkTypeEnum.TESTNET
+  //   ) {
+  //     setNetworkName(""); // Clear the name if switching to custom from a pre-defined type
+  //   }
 
-    setCustomNetwork(networkType === NetworkTypeEnum.CUSTOM);
-  }, [networkType]);
+  //   setCustomNetwork(networkType === NetworkTypeEnum.CUSTOM);
+  // }, [networkType]);
 
   const handleCreateProfile = () => {
     // Validate inputs
@@ -56,20 +53,8 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
       return;
     }
 
-    if (!networkName.trim() && networkType === NetworkTypeEnum.CUSTOM) {
-      setError("Network name is required");
-      return;
-    }
-
-    // Create network configuration
-    const network: NetworkType = {
-      network_name:
-        networkType === NetworkTypeEnum.CUSTOM ? networkName : networkType,
-      network_type: networkType,
-    };
-
     // Create profile
-    const success = createProfile(profileName, network);
+    const success = createProfile(profileName, networkType);
 
     if (success) {
       setSuccessModalVisible(true);
@@ -81,8 +66,6 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
   const handleSuccess = () => {
     setSuccessModalVisible(false);
     setProfileName("");
-    setNetworkName("");
-    setNetworkType(NetworkTypeEnum.MAINNET);
     setError(null);
     onComplete();
   };
@@ -101,15 +84,15 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
       <Dropdown
         label="Network Type"
         value={networkType}
-        options={Object.values(NetworkTypeEnum)}
+        options={Object.values(Network)}
         onSelect={setNetworkType}
       />
 
       {customNetwork && (
         <FormInput
-          label="Custom Network Name:"
-          value={networkName}
-          onChangeText={setNetworkName}
+          label="Custom Network URL:"
+          value={customNetworkUrl}
+          onChangeText={setCustomNetworkUrl}
           placeholder="Enter custom network name"
         />
       )}

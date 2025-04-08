@@ -49,9 +49,20 @@ persistObservable(appConfig, {
  * @returns boolean indicating success or failure
  */
 export function createProfile(name: string, network: Network): boolean {
-  // Check if profile name already exists
-  const existingProfile = appConfig.profiles.get().find(p => p.name === name);
-  if (existingProfile) {
+  // Get current profiles with fallback to empty array and ensure it's an array
+  let profiles = appConfig.profiles.get();
+
+  // Force profiles to be an array if it's not already
+  if (!profiles || !Array.isArray(profiles)) {
+    profiles = [];
+  }
+
+  // Check if profile with same name already exists
+  const profileExists = Array.isArray(profiles) &&
+    profiles.length > 0 &&
+    profiles.some(p => p && typeof p === 'object' && p.name === name);
+
+  if (profileExists) {
     return false; // Profile already exists
   }
 
@@ -67,8 +78,11 @@ export function createProfile(name: string, network: Network): boolean {
     customEndpoint: getNetworkEndpoint(network)
   };
 
-  // Add new profile to profiles array using push
-  appConfig.profiles.push(newProfile);
+  // Create a new array with the new profile
+  const updatedProfiles = [...profiles, newProfile];
+
+  // Set the updated profiles array
+  appConfig.profiles.set(updatedProfiles);
 
   return true;
 }

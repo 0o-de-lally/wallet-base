@@ -25,7 +25,8 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
   onResetForm,
 }) => {
   // Get all available profiles
-  const profileNames = Object.keys(appConfig.profiles.get());
+  const profiles = appConfig.profiles.get() || [];
+  const profileNames = profiles.length > 0 ? profiles.map(p => p.name) : [];
   const activeAccountId = appConfig.activeAccountId.get();
 
   // Get profile associated with active account, if any
@@ -35,8 +36,12 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
 
   // Initialize with active profile or first profile (never empty string)
   const [selectedProfile, setSelectedProfile] = useState<string>(() => {
-    // First try to use active profile if it exists in the available profiles
-    if (activeProfileName && profileNames.includes(activeProfileName)) {
+    // First try to use provided profile name
+    if (profileName && profileNames.includes(profileName)) {
+      return profileName;
+    }
+    // Then try to use active profile if it exists in the available profiles
+    else if (activeProfileName && profileNames.includes(activeProfileName)) {
       return activeProfileName;
     }
     // Otherwise use the first profile if any profiles exist
@@ -57,6 +62,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
 
   // State for modals
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   // Update selected profile if initial profile changes or profiles change
   useEffect(() => {
@@ -125,20 +131,32 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
       return;
     }
 
-    // Log the address being sent to createAccount for debugging
-    console.log("Sending validated address to createAccount:", validatedAddress);
+    // Show confirmation modal instead of proceeding directly
+    setConfirmModalVisible(true);
+  };
 
-    const result = await createAccount(
-      selectedProfile,
-      validatedAddress, // This is a blockchain address (0x...), not a UUID
-      nickname,
-    );
+  const confirmAddAccount = async () => {
+    setConfirmModalVisible(false);
 
-    if (result.success) {
-      console.log("Account created successfully:", result.account);
-      setSuccessModalVisible(true);
-    } else {
-      setError(result.error || "Unknown error occurred");
+    try {
+      // Log the address being sent to createAccount for debugging
+      console.log("Sending validated address to createAccount:", validateAccountAddress(accountAddress));
+
+      const result = await createAccount(
+        selectedProfile,
+        validateAccountAddress(accountAddress) || "", // This is a blockchain address (0x...), not a UUID
+        nickname,
+      );
+
+      if (result.success) {
+        console.log("Account created successfully:", result.account);
+        setSuccessModalVisible(true);
+      } else {
+        setError(result.error || "Unknown error occurred");
+      }
+    } catch (error) {
+      console.error("Error creating account:", error);
+      setError(error instanceof Error ? error.message : "Unknown error occurred");
     }
   };
 
@@ -203,6 +221,16 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
         onPress={handleAddAccount}
         accessibilityLabel="Add account"
         accessibilityHint={`Adds a new account to the ${selectedProfile} profile`}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        visible={confirmModalVisible}
+        title="Confirm Add Account"
+        message={`Are you sure you want to add this account (${accountAddress.substring(0, 6)}...${accountAddress.substring(accountAddress.length - 4)}) to "${selectedProfile}"?`}
+        confirmText="Add Account"
+        onConfirm={confirmAddAccount}
+        onCancel={() => setConfirmModalVisible(false)}
       />
 
       {/* Success Modal */}
