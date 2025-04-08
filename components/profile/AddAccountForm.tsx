@@ -47,7 +47,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
     return "";
   });
 
-  const [accountAddress, setAccountAddress] = useState("");
+  const [accountAddress, setAccountAddress] = useState(""); // This is the blockchain address input by user
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [addressError, setAddressError] = useState<string | undefined>(
@@ -87,7 +87,9 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
         if (!accountAddress.startsWith("0x")) {
           setAddressError("Address must start with 0x");
         } else {
-          setAddressError("Address must contain only hexadecimal characters (0-9, a-f)");
+          setAddressError(
+            "Address must contain only hexadecimal characters (0-9, a-f)",
+          );
         }
       } else {
         setAddressError(undefined);
@@ -117,17 +119,23 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
     // First validate the address
     const validatedAddress = validateAccountAddress(accountAddress);
     if (!validatedAddress) {
-      setError("Invalid account address format. Address must start with 0x and contain only hexadecimal characters.");
+      setError(
+        "Invalid account address format. Address must start with 0x and contain only hexadecimal characters.",
+      );
       return;
     }
 
+    // Log the address being sent to createAccount for debugging
+    console.log("Sending validated address to createAccount:", validatedAddress);
+
     const result = await createAccount(
       selectedProfile,
-      validatedAddress, // Use the validated address
+      validatedAddress, // This is a blockchain address (0x...), not a UUID
       nickname,
     );
 
     if (result.success) {
+      console.log("Account created successfully:", result.account);
       setSuccessModalVisible(true);
     } else {
       setError(result.error || "Unknown error occurred");

@@ -43,7 +43,7 @@ export function validateAccountAddress(address: string): string | null {
  * Creates a new account in the specified profile
  *
  * @param profileName Name of the profile to add the account to
- * @param accountAddressStr Address of the account as a string
+ * @param accountAddressStr Address of the account as a string (0x... format)
  * @param nickname Optional nickname for the account
  * @returns Object containing success status, error message (if any), and created account (if successful)
  */
@@ -87,12 +87,15 @@ export async function createAccount(
     const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
     // Get the canonical string representation of the account address
-    const addressString = accountAddress.toString();
+    const addressString = accountAddressStr; // This should be the blockchain address (0x...)
+
+    console.log("Creating account with ID:", accountId);
+    console.log("Using blockchain address:", addressString);
 
     // Create account state
     const account: AccountState = {
-      id: accountId,
-      account_address: addressString,
+      id: accountId,                         // Random UUID for internal use
+      account_address: addressString,        // The actual blockchain address (0x...)
       nickname: nickname.trim() || addressString.substring(0, 8) + "...",
       is_key_stored: false,
       balance_locked: 0,

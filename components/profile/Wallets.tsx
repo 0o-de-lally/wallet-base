@@ -1,7 +1,12 @@
 import React, { useMemo } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../../styles/styles";
-import { appConfig, getProfileForAccount, Profile, setActiveAccount } from "../../util/app-config-store";
+import {
+  appConfig,
+  getProfileForAccount,
+  Profile,
+  setActiveAccount,
+} from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
 import AccountList from "./AccountList";
 import { SectionContainer } from "../common/SectionContainer";
@@ -36,10 +41,9 @@ const Wallets: React.FC = observer(() => {
     if (!profile || !profile.network) return "Unknown";
 
     // Handle both string and object cases
-    if (typeof profile.network === 'string') {
+    if (typeof profile.network === "string") {
       return profile.network;
     }
-
 
     // Fallback
     return "Unknown Network";
@@ -56,7 +60,8 @@ const Wallets: React.FC = observer(() => {
       {Object.keys(profiles).length === 0 ? (
         <View style={styles.resultContainer}>
           <Text style={styles.resultValue}>
-            No profiles exist yet. Go to Profile Management to create your first profile.
+            No profiles exist yet. Go to Profile Management to create your first
+            profile.
           </Text>
         </View>
       ) : (

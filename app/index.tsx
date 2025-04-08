@@ -7,6 +7,10 @@ import { Stack } from "expo-router";
 import Wallets from "@/components/profile/Wallets";
 import { ActionButton } from "@/components/common/ActionButton";
 import { router } from "expo-router";
+import {
+  startBalanceChecker,
+  stopBalanceChecker,
+} from "@/util/balance-fetcher";
 
 const HomeScreen = observer(() => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -15,9 +19,16 @@ const HomeScreen = observer(() => {
     const init = async () => {
       await initializeApp();
       setIsInitialized(true);
-    };
 
+      // Start the balance checker after initialization
+      startBalanceChecker();
+    };
     init();
+
+    // Clean up when component unmounts
+    return () => {
+      stopBalanceChecker();
+    };
   }, []);
 
   const navigateToProfiles = () => {
@@ -57,7 +68,7 @@ const HomeScreen = observer(() => {
         <StatusBar backgroundColor={styles.root.backgroundColor} />
 
         {/* Button Menu - Vertical Layout */}
-        <View style={[styles.buttonContainer, { flexDirection: 'column' }]}>
+        <View style={[styles.buttonContainer, { flexDirection: "column" }]}>
           <ActionButton
             text="Manage Profiles"
             onPress={navigateToProfiles}
