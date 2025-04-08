@@ -34,21 +34,33 @@ const ProfileManagement: React.FC = () => {
   const activeProfileName = useMemo(() => {
     if (!activeAccountId) return null;
 
-    return getProfileForAccount(activeAccountId);
+    // Guard against undefined profile data
+    try {
+      return getProfileForAccount(activeAccountId);
+    } catch (error) {
+      console.error("Error getting profile for account:", error);
+      return null;
+    }
   }, [activeAccountId, profiles]);
+
+  // Ensure we have a valid profiles array to work with
+  const safeProfiles = useMemo(() => {
+    if (!profiles || !Array.isArray(profiles)) return [];
+    return profiles.filter(profile => profile && typeof profile === 'object' && profile.name && Array.isArray(profile.accounts));
+  }, [profiles]);
 
   // Get the currently selected profile, or the active profile if none selected
   const selectedProfile = useMemo(() => {
-    if (!profiles) return null;
+    if (!safeProfiles.length) return null;
 
     if (selectedProfileName) {
-      return profiles.find(p => p && p.name === selectedProfileName) || null;
+      return safeProfiles.find(p => p && p.name === selectedProfileName) || null;
     }
     if (activeProfileName) {
-      return profiles.find(p => p && p.name === activeProfileName) || null;
+      return safeProfiles.find(p => p && p.name === activeProfileName) || null;
     }
     return null;
-  }, [selectedProfileName, activeProfileName, profiles]);
+  }, [selectedProfileName, activeProfileName, safeProfiles]);
 
   const handleSelectProfile = useCallback((profileName: string) => {
     if (!profileName) return;
@@ -100,7 +112,7 @@ const ProfileManagement: React.FC = () => {
   }, [selectedProfileName]);
 
   const renderProfileSections = useCallback(() => {
-    return profiles.map((profile) => (
+    return safeProfiles.map((profile) => (
       <View key={profile.name}>
         <TouchableOpacity
           style={[
@@ -179,7 +191,7 @@ const ProfileManagement: React.FC = () => {
       </View>
     ));
   }, [
-    profiles,
+    safeProfiles,
     activeProfileName,
     activeAccountId,
     selectedProfileName,
@@ -190,7 +202,7 @@ const ProfileManagement: React.FC = () => {
   ]);
 
   const renderEmptyState = useCallback(() => {
-    if (selectedProfile || profiles.length > 0) return null;
+    if (selectedProfile || safeProfiles.length > 0) return null;
 
     return (
       <View
@@ -207,7 +219,7 @@ const ProfileManagement: React.FC = () => {
         </Text>
       </View>
     );
-  }, [selectedProfile, profiles]);
+  }, [selectedProfile, safeProfiles]);
 
   return (
     <ScrollView
@@ -239,7 +251,7 @@ const ProfileManagement: React.FC = () => {
 
       {renderEmptyState()}
 
-      {profiles.length > 0 && (
+      {safeProfiles.length > 0 && (
         <View style={styles.dangerZone}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <ActionButton
