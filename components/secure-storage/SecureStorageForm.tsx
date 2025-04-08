@@ -12,6 +12,8 @@ interface SecureStorageFormProps {
   onClearAll?: () => void;
   isLoading: boolean;
   disabled?: boolean;
+  accountId: string;
+  accountName?: string;
 }
 
 export const SecureStorageForm = memo(
@@ -22,6 +24,8 @@ export const SecureStorageForm = memo(
     onDelete,
     isLoading,
     disabled = false,
+    accountId,
+    accountName,
   }: SecureStorageFormProps) => {
     return (
       <>
@@ -37,21 +41,23 @@ export const SecureStorageForm = memo(
 
         <View style={styles.buttonContainer}>
           <ActionButton
+            style={styles.button}
             text="Save"
             onPress={onSave}
             isLoading={isLoading && value.trim().length > 0}
             disabled={disabled || value.trim().length === 0}
             accessibilityLabel="Save private value"
-            accessibilityHint="Encrypts and saves your private data"
+            accessibilityHint={`Encrypts and saves private data for ${accountName || accountId}`}
           />
 
           <ActionButton
             text="Delete"
+            style={styles.button}
             onPress={onDelete}
             isLoading={isLoading && !value.trim()}
             disabled={disabled}
             accessibilityLabel="Delete private value"
-            accessibilityHint="Deletes your stored private data"
+            accessibilityHint={`Deletes stored private data for ${accountName || accountId}`}
           />
         </View>
       </>

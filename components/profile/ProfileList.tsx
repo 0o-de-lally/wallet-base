@@ -1,26 +1,32 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../../styles/styles";
-import { appConfig } from "../../util/app-config-store";
+import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { ActionButton } from "../common/ActionButton";
 
 interface ProfileListProps {
   profiles: Record<string, Profile>;
-  activeProfileName: string | null;
   selectedProfileName: string | null;
   onSelectProfile: (profileName: string) => void;
+  activeAccountId: string | null;
 }
 
 const ProfileList = memo(
   ({
     profiles,
-    activeProfileName,
     selectedProfileName,
     onSelectProfile,
+    activeAccountId,
   }: ProfileListProps) => {
     const profileNames = Object.keys(profiles);
+
+    const activeProfileName = useMemo(() => {
+      if (!activeAccountId) return null;
+
+      return getProfileForAccount(activeAccountId);
+    }, [activeAccountId, profiles]);
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
@@ -32,10 +38,6 @@ const ProfileList = memo(
       );
     }, []);
 
-    const handleMakeActive = useCallback((profileName: string) => {
-      appConfig.activeProfile.set(profileName);
-    }, []);
-
     const handleDeleteProfile = useCallback((profileName: string) => {
       setProfileToDelete(profileName);
       setDeleteModalVisible(true);
@@ -43,6 +45,14 @@ const ProfileList = memo(
 
     const confirmDeleteProfile = useCallback(() => {
       if (!profileToDelete) return;
+
+      const accountIdsInProfile = profiles[profileToDelete].accounts.map(
+        (acc) => acc.id,
+      );
+
+      const isActiveAccountInProfile =
+        activeAccountId !== null &&
+        accountIdsInProfile.includes(activeAccountId);
 
       const currentProfiles = appConfig.profiles.get();
       const updatedProfiles = Object.keys(currentProfiles)
@@ -57,12 +67,17 @@ const ProfileList = memo(
 
       appConfig.profiles.set(updatedProfiles);
 
-      if (activeProfileName === profileToDelete) {
-        const remainingProfiles = Object.keys(updatedProfiles);
+      if (isActiveAccountInProfile) {
+        const remainingProfiles = Object.values(updatedProfiles);
         if (remainingProfiles.length > 0) {
-          appConfig.activeProfile.set(remainingProfiles[0]);
+          for (const profile of remainingProfiles) {
+            if (profile.accounts.length > 0) {
+              appConfig.activeAccountId.set(profile.accounts[0].id);
+              break;
+            }
+          }
         } else {
-          appConfig.activeProfile.set(null);
+          appConfig.activeAccountId.set(null);
         }
       }
 
@@ -74,6 +89,8 @@ const ProfileList = memo(
       setProfileToDelete(null);
     }, [
       profileToDelete,
+      activeAccountId,
+      profiles,
       activeProfileName,
       selectedProfileName,
       onSelectProfile,
@@ -115,25 +132,22 @@ const ProfileList = memo(
             <View style={styles.profileHeader}>
               <View style={styles.profileHeaderTop}>
                 <View style={styles.profileTitleRow}>
-                  <TouchableOpacity
-                    onPress={() => handleMakeActive(profileName)}
-                    style={styles.radioContainer}
-                    disabled={isActive}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: isActive }}
-                    accessibilityLabel={`Make ${profileName} the active profile`}
-                  >
-                    <View
-                      style={[
-                        styles.radioButton,
-                        isActive && styles.radioButtonActive,
-                      ]}
-                    >
-                      {isActive && <View style={styles.radioButtonInner} />}
-                    </View>
-                  </TouchableOpacity>
-
                   <Text style={styles.profileName}>{profile.name}</Text>
+                  {isActive && (
+                    <View
+                      style={{
+                        marginLeft: 8,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        backgroundColor: "rgba(148, 194, 243, 0.3)",
+                        borderRadius: 4,
+                      }}
+                    >
+                      <Text style={{ color: "#94c2f3", fontSize: 10 }}>
+                        Contains Active Account
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 <Text style={styles.accountCount}>
@@ -187,15 +201,6 @@ const ProfileList = memo(
                 size="small"
               />
 
-              {!isActive && (
-                <ActionButton
-                  text="Set Active"
-                  onPress={() => handleMakeActive(profileName)}
-                  style={{ backgroundColor: "#a5d6b7" }}
-                  size="small"
-                />
-              )}
-
               <ActionButton
                 text="Delete"
                 onPress={() => handleDeleteProfile(profileName)}
@@ -212,7 +217,6 @@ const ProfileList = memo(
         selectedProfileName,
         expandedProfile,
         onSelectProfile,
-        handleMakeActive,
         handleDeleteProfile,
         toggleExpand,
       ],

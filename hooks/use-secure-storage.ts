@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   saveValue,
   getValue,
@@ -49,6 +49,9 @@ export function useSecureStorage() {
     waitTimeRemaining: number;
     expiresIn: number;
   } | null>(null);
+
+  // Need to track which account we're working with
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
@@ -115,26 +118,113 @@ export function useSecureStorage() {
     setPinModalVisible(true);
   };
 
-  const handlePinVerified = async (pin: string) => {
-    setPinModalVisible(false);
-
-    switch (currentAction) {
-      case "save":
+  const handlePinVerified = useCallback(
+    async (pin: string) => {
+      if (currentAction === "save") {
         await saveWithPin(pin);
-        break;
-      case "schedule_reveal":
-        await scheduleRevealWithPin();
-        break;
-      case "execute_reveal":
-        await executeRevealWithPin(pin);
-        break;
-      case "delete":
+      } else if (currentAction === "delete") {
         await deleteSecurely();
-        break;
-    }
+      } else if (currentAction === "schedule_reveal") {
+        try {
+          setIsLoading(true);
+          if (!currentAccountId) {
+            throw new Error("No account selected");
+          }
 
-    setCurrentAction(null);
-  };
+          const key = `account_${currentAccountId}`;
+          scheduleReveal(key);
+
+          const status = checkRevealStatus(key);
+          if (status) {
+            setRevealStatus({
+              isScheduled: status.scheduled,
+              isAvailable: status.available,
+              isExpired: status.expired,
+              waitTimeRemaining: status.waitTimeRemaining,
+              expiresIn: status.expiresIn,
+            });
+          }
+          setPinModalVisible(false);
+        } catch (error) {
+          showAlert("Error", "Failed to schedule reveal");
+          console.error(error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else if (currentAction === "execute_reveal") {
+        try {
+          setIsLoading(true);
+          if (!currentAccountId) {
+            throw new Error("No account selected");
+          }
+
+          const key = `account_${currentAccountId}`;
+
+          // Check if reveal is available
+          const status = checkRevealStatus(key);
+          if (!status || !status.available || status.expired) {
+            showAlert(
+              "Error",
+              status && status.expired
+                ? "Reveal window has expired. Please schedule again."
+                : "No reveal scheduled or still in waiting period.",
+            );
+            return;
+          }
+
+          const encryptedBase64 = await getValue(key);
+
+          if (encryptedBase64 === null) {
+            setStoredValue(null);
+            showAlert("Error", "No value found");
+            return;
+          }
+
+          // Convert from base64 to Uint8Array
+          const encryptedBytes = base64ToUint8Array(encryptedBase64);
+
+          // Convert PIN to Uint8Array
+          const pinBytes = stringToUint8Array(pin);
+
+          // Decrypt the value with the PIN and verify integrity
+          const decryptResult = await decryptWithPin(encryptedBytes, pinBytes);
+
+          if (!decryptResult) {
+            setStoredValue(null);
+            showAlert(
+              "Error",
+              "Failed to decrypt value. Data may be corrupted.",
+            );
+            return;
+          }
+
+          if (!decryptResult.verified) {
+            // Wrong PIN was used - do not display any data
+            setStoredValue(null);
+            showAlert("Error", "Incorrect PIN. Unable to decrypt data.");
+            return;
+          }
+
+          // Convert the decrypted bytes back to a string
+          const decryptedString = uint8ArrayToString(decryptResult.value);
+
+          // Set the revealed value - the useEffect will handle setting up auto-hide
+          setStoredValue(decryptedString);
+
+          // After successful reveal, cancel the scheduling (it's been used)
+          cancelReveal(key);
+          setPinModalVisible(false);
+        } catch (error) {
+          showAlert("Error", "Failed to retrieve or decrypt value");
+          console.error(error);
+          setStoredValue(null);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    },
+    [currentAction, currentAccountId],
+  );
 
   const saveWithPin = async (pin: string) => {
     if (!value.trim()) {
@@ -180,104 +270,31 @@ export function useSecureStorage() {
     }
   };
 
-  const scheduleRevealWithPin = async () => {
+  const handleScheduleReveal = useCallback((accountId: string) => {
+    setCurrentAccountId(accountId);
+    setCurrentAction("schedule_reveal");
+    setPinModalVisible(true);
+  }, []);
+
+  const handleExecuteReveal = useCallback((accountId: string) => {
+    setCurrentAccountId(accountId);
+    setCurrentAction("execute_reveal");
+    setPinModalVisible(true);
+  }, []);
+
+  const handleCancelReveal = useCallback((accountId: string) => {
     try {
       setIsLoading(true);
-
-      // Verify PIN is correct before scheduling
-      const savedPinJson = await getValue("user_pin");
-      if (!savedPinJson) {
-        showAlert(
-          "Error",
-          "Please set up a PIN in the PIN Management screen first",
-        );
-        return;
-      }
-
-      // Schedule the reveal
-      scheduleReveal(FIXED_KEY);
-
-      // Update status
-      const status = checkRevealStatus(FIXED_KEY);
-      if (status) {
-        setRevealStatus({
-          isScheduled: status.scheduled,
-          isAvailable: status.available,
-          isExpired: status.expired,
-          waitTimeRemaining: status.waitTimeRemaining,
-          expiresIn: status.expiresIn,
-        });
-      }
+      const key = `account_${accountId}`;
+      cancelReveal(key);
+      setRevealStatus(null);
     } catch (error) {
-      showAlert("Error", "Failed to schedule reveal");
+      showAlert("Error", "Failed to cancel reveal");
       console.error(error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const executeRevealWithPin = async (pin: string) => {
-    try {
-      setIsLoading(true);
-
-      // Check if reveal is available
-      const status = checkRevealStatus(FIXED_KEY);
-      if (!status || !status.available || status.expired) {
-        showAlert(
-          "Error",
-          status && status.expired
-            ? "Reveal window has expired. Please schedule again."
-            : "No reveal scheduled or still in waiting period.",
-        );
-        return;
-      }
-
-      const encryptedBase64 = await getValue(FIXED_KEY);
-
-      if (encryptedBase64 === null) {
-        setStoredValue(null);
-        showAlert("Error", "No value found");
-        return;
-      }
-
-      // Convert from base64 to Uint8Array
-      const encryptedBytes = base64ToUint8Array(encryptedBase64);
-
-      // Convert PIN to Uint8Array
-      const pinBytes = stringToUint8Array(pin);
-
-      // Decrypt the value with the PIN and verify integrity
-      const decryptResult = await decryptWithPin(encryptedBytes, pinBytes);
-
-      if (!decryptResult) {
-        setStoredValue(null);
-        showAlert("Error", "Failed to decrypt value. Data may be corrupted.");
-        return;
-      }
-
-      if (!decryptResult.verified) {
-        // Wrong PIN was used - do not display any data
-        setStoredValue(null);
-        showAlert("Error", "Incorrect PIN. Unable to decrypt data.");
-        return;
-      }
-
-      // Convert the decrypted bytes back to a string
-      const decryptedString = uint8ArrayToString(decryptResult.value);
-
-      // Set the revealed value - the useEffect will handle setting up auto-hide
-      setStoredValue(decryptedString);
-
-      // After successful reveal, cancel the scheduling (it's been used)
-      cancelReveal(FIXED_KEY);
-    } catch (error) {
-      showAlert("Error", "Failed to retrieve or decrypt value");
-      console.error(error);
-      setStoredValue(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, []);
 
   const deleteSecurely = async () => {
     try {
@@ -297,6 +314,10 @@ export function useSecureStorage() {
       setIsLoading(false);
     }
   };
+
+  const handleDelete = useCallback(() => {
+    requestPinForAction("delete");
+  }, []);
 
   const handleClearAll = async () => {
     try {
@@ -321,28 +342,6 @@ export function useSecureStorage() {
       return;
     }
     requestPinForAction("save");
-  };
-
-  const handleScheduleReveal = () => {
-    requestPinForAction("schedule_reveal");
-  };
-
-  const handleExecuteReveal = () => {
-    requestPinForAction("execute_reveal");
-  };
-
-  const handleCancelReveal = () => {
-    try {
-      cancelReveal(FIXED_KEY);
-      setRevealStatus(null);
-      showAlert("Info", "Reveal request canceled");
-    } catch (error) {
-      console.error("Error canceling reveal:", error);
-    }
-  };
-
-  const handleDelete = () => {
-    requestPinForAction("delete");
   };
 
   const reEncryptSecrets = async (newPin: string) => {
@@ -432,7 +431,7 @@ export function useSecureStorage() {
     handleScheduleReveal,
     handleExecuteReveal,
     handleCancelReveal,
-    handleDelete,
+    handleDelete, // Now properly defined
     handleClearAll,
     pinModalVisible,
     setPinModalVisible,
@@ -442,5 +441,6 @@ export function useSecureStorage() {
     reEncryptSecrets,
     revealStatus,
     clearRevealedValue,
+    currentAccountId,
   };
 }

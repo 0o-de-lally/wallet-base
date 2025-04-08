@@ -1,100 +1,30 @@
 import { observable } from "@legendapp/state";
 import { persistObservable } from "@legendapp/state/persist";
+
 import { configureObservablePersistence } from "@legendapp/state/persist";
-import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import { ObservablePersistMMKV } from "@legendapp/state/persist-plugins/mmkv";
+import { ObservablePersistAsyncStorage } from "@legendapp/state/persist-plugins/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const isMobile = (): boolean => {
-  return typeof window !== "undefined" && typeof process === "object";
-};
+import {
+  AppConfig,
+  NetworkType,
+  NetworkTypeEnum,
+  AccountState,
+  Profile,
+  defaultConfig,
+} from "./app-config-types";
+
 // Global configuration
-if (isMobile()) {
-  // Persistence for mobile devices
-  configureObservablePersistence({
-    pluginLocal: ObservablePersistMMKV,
-  });
-} else {
-  // Enable persistence for web
-  configureObservablePersistence({
-    pluginLocal: ObservablePersistLocalStorage,
-  });
-}
 configureObservablePersistence({
-  pluginLocal: ObservablePersistLocalStorage,
-});
-
-/**
- * Network types available for selection
- */
-export enum NetworkTypeEnum {
-  MAINNET = "Mainnet",
-  TESTING = "Testing",
-  TESTNET = "Testnet",
-  CUSTOM = "Custom",
-}
-
-/**
- * Network type represents a blockchain network configuration
- */
-export type NetworkType = {
-  network_name: string;
-  network_type: NetworkTypeEnum;
-  // Additional network properties can be added here
-};
-
-/**
- * Account state represents a single blockchain account within a profile
- */
-export type AccountState = {
-  account_address: string;
-  nickname: string; // User-friendly name for the account
-  is_key_stored: boolean;
-  balance_locked: number;
-  balance_unlocked: number;
-  last_update: number; // timestamp
-};
-
-/**
- * Profile represents a user profile containing network and accounts configuration
- */
-export type Profile = {
-  name: string; // unique name (required)
-  network: NetworkType; // required
-  accounts: AccountState[]; // list of accounts
-  created_at: number; // timestamp
-  last_used: number; // timestamp
-};
-
-/**
- * Application settings for global configuration
- */
-export type AppSettings = {
-  theme: "dark" | "light"; // UI theme
-  // Add other app-wide settings here
-};
-
-/**
- * Defines the structure of the application configuration.
- */
-export type AppConfig = {
-  app_settings: AppSettings;
-  profiles: {
-    [profileName: string]: Profile;
-  };
-  activeProfile: string | null; // Name of the currently active profile
-  // Add other config sections as needed
-};
-
-/**
- * Default configuration values for the application.
- */
-const defaultConfig: AppConfig = {
-  app_settings: {
-    theme: "dark",
+  // Use AsyncStorage in React Native
+  pluginLocal: ObservablePersistAsyncStorage,
+  localOptions: {
+    asyncStorage: {
+      // The AsyncStorage plugin needs to be given the implementation of AsyncStorage
+      AsyncStorage,
+    },
   },
-  profiles: {},
-  activeProfile: null,
-};
+});
 
 /**
  * Observable application configuration state.
@@ -106,8 +36,9 @@ export const appConfig = observable<AppConfig>(defaultConfig);
  * Sets up persistence for the application configuration.
  * This enables config to survive app restarts.
  */
+// Configure persistence with the correct interface for Legend State 2.x
 persistObservable(appConfig, {
-  local: "app-config", // Storage key
+  local: "app-config",
 });
 
 /**
@@ -134,10 +65,7 @@ export function createProfile(name: string, network: NetworkType): boolean {
     last_used: timestamp,
   });
 
-  // If this is the first profile, set it as active
-  if (!appConfig.activeProfile.get()) {
-    appConfig.activeProfile.set(name);
-  }
+  // We don't set active account here anymore since profiles don't have accounts yet
 
   return true;
 }
@@ -170,23 +98,65 @@ export function addAccountToProfile(
 
   // Add account to profile
   appConfig.profiles[profileName].accounts.push(account);
+
+  // If this is the first account added to any profile, set it as active
+  if (appConfig.activeAccountId.get() === null) {
+    appConfig.activeAccountId.set(account.id);
+  }
+
   return true;
 }
 
 /**
- * Sets the active profile
+ * Sets the active account
  *
- * @param profileName Name of the profile to set as active
+ * @param accountId ID of the account to set as active
  * @returns boolean indicating success or failure
  */
-export function setActiveProfile(profileName: string): boolean {
-  if (!appConfig.profiles[profileName].get()) {
-    return false; // Profile doesn't exist
+export function setActiveAccount(accountId: string): boolean {
+  // Find the account in any profile
+  let found = false;
+
+  const profiles = appConfig.profiles.get();
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const accountExists = profile.accounts.some((acc) => acc.id === accountId);
+
+    if (accountExists) {
+      // Update last_used timestamp of the profile containing this account
+      appConfig.profiles[profileName].last_used.set(Date.now());
+      found = true;
+      break;
+    }
   }
 
-  appConfig.activeProfile.set(profileName);
-  appConfig.profiles[profileName].last_used.set(Date.now());
+  if (!found) {
+    return false; // Account doesn't exist in any profile
+  }
+
+  appConfig.activeAccountId.set(accountId);
   return true;
+}
+
+/**
+ * Gets the profile name for an account ID
+ *
+ * @param accountId ID of the account
+ * @returns profile name or null if not found
+ */
+export function getProfileForAccount(accountId: string): string | null {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const account = profile.accounts.find((acc) => acc.id === accountId);
+
+    if (account) {
+      return profileName;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -201,6 +171,14 @@ export function deleteProfile(profileName: string): boolean {
   if (!profile) {
     return false; // Profile doesn't exist
   }
+
+  // Get the IDs of all accounts in this profile
+  const accountIdsInProfile = profile.accounts.map((acc) => acc.id);
+
+  // Check if the active account is in this profile
+  const activeAccountId = appConfig.activeAccountId.get();
+  const isActiveAccountInProfile =
+    activeAccountId !== null && accountIdsInProfile.includes(activeAccountId);
 
   // Create a new profiles object without the deleted profile
   const currentProfiles = appConfig.profiles.get();
@@ -217,14 +195,21 @@ export function deleteProfile(profileName: string): boolean {
   // Update the profiles
   appConfig.profiles.set(updatedProfiles);
 
-  // If the deleted profile was active, reset active profile
-  if (appConfig.activeProfile.get() === profileName) {
-    const remainingProfiles = Object.keys(updatedProfiles);
+  // If the active account was in the deleted profile, reset active account
+  if (isActiveAccountInProfile) {
+    // Try to set another account as active
+    const remainingProfiles = Object.values(updatedProfiles);
     if (remainingProfiles.length > 0) {
-      appConfig.activeProfile.set(remainingProfiles[0]);
-    } else {
-      appConfig.activeProfile.set(null);
+      for (const profile of remainingProfiles) {
+        if (profile.accounts.length > 0) {
+          appConfig.activeAccountId.set(profile.accounts[0].id);
+          return true;
+        }
+      }
     }
+
+    // No accounts left in any profile
+    appConfig.activeAccountId.set(null);
   }
 
   return true;
@@ -232,12 +217,33 @@ export function deleteProfile(profileName: string): boolean {
 
 /**
  * Initializes a default profile if no profiles exist.
+ * This should only run if there are no profiles in the persisted state.
  */
-export function initializeDefaultProfile() {
-  if (Object.keys(appConfig.profiles.get()).length === 0) {
+export function maybeInitializeDefaultProfile() {
+  // Get current profiles and ensure we only initialize if truly empty
+  const currentProfiles = appConfig.profiles.get();
+
+  // Only create default profile if there are no profiles AND no active account
+  if (
+    Object.keys(currentProfiles).length === 0 &&
+    !appConfig.activeAccountId.get()
+  ) {
+    console.log("No profiles found, initializing default profile");
     createProfile("mainnet", {
       network_name: "Mainnet",
       network_type: NetworkTypeEnum.MAINNET,
     });
+  } else {
+    console.log("Profiles already exist, skipping initialization");
   }
 }
+
+// Export types from the types file for backward compatibility
+export {
+  NetworkTypeEnum,
+  type NetworkType,
+  type AccountState,
+  type Profile,
+  type AppSettings,
+  type AppConfig,
+} from "./app-config-types";

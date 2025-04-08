@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "bun install && expo start --clear",
     "android": "expo run:android",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
@@ -18,6 +18,7 @@
     "@legendapp/state": "^2.1.15",
     "@noble/ciphers": "^1.2.1",
     "@noble/hashes": "^1.7.1",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "expo": "~52.0.42",
     "expo-crypto": "^14.0.2",
     "expo-router": "~4.0.20",
