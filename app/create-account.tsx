@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
@@ -32,10 +32,11 @@ export default function CreateAccountScreen() {
 
 // Separate component that handles form logic
 const CreateAccountContent = () => {
-  const handleComplete = () => {
+
+  const handleComplete = useCallback(() => {
     // Navigate back after successful account creation
     router.back();
-  };
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
