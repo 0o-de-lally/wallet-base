@@ -1,5 +1,5 @@
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
-import * as LocalAuthentication from 'expo-local-authentication';
+import * as LocalAuthentication from "expo-local-authentication";
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.

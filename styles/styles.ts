@@ -65,26 +65,26 @@ export const styles = StyleSheet.create({
   // AUTH LAYOUT STYLES
   authContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   authTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   authText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
-    color: '#666',
+    color: "#666",
   },
   authButton: {
     marginTop: 20,
-    backgroundColor: '#5e35b1',
+    backgroundColor: "#5e35b1",
   },
 
   // TYPOGRAPHY STYLES

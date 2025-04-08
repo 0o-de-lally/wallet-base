@@ -9,7 +9,9 @@ interface InitializationErrorProps {
 /**
  * Component shown when app initialization fails
  */
-export const InitializationError: React.FC<InitializationErrorProps> = ({ error }) => {
+export const InitializationError: React.FC<InitializationErrorProps> = ({
+  error,
+}) => {
   const handleRetry = () => {
     // In React Native, we can't directly use window.location.reload()
     // Instead, we could implement app restart logic here

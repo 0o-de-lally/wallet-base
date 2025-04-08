@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { observer } from "@legendapp/state/react";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { styles } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
 
@@ -9,6 +9,12 @@ import { initializeApp } from "@/util/initialize-app";
 export default function App() {
   return (
     <View style={styles.root}>
+      <Stack.Screen
+        options={{
+          title: "",
+          headerBackTitle: "Back",
+        }}
+      />
       <AppContent />
     </View>
   );

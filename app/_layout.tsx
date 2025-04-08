@@ -4,9 +4,9 @@ import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
 
-import * as LocalAuthentication from 'expo-local-authentication';
-import { View, Text, StatusBar } from 'react-native';
-import { ActionButton } from '../components/common/ActionButton';
+import * as LocalAuthentication from "expo-local-authentication";
+import { View, Text, StatusBar } from "react-native";
+import { ActionButton } from "../components/common/ActionButton";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
 import { styles } from "../styles/styles";
@@ -14,10 +14,12 @@ import { styles } from "../styles/styles";
 // Layout wrapper to avoid duplication - only includes the ModalProvider once
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <ModalProvider>
-    <View style={{
-      flex: 1,
-      backgroundColor: styles.headerContainer.backgroundColor
-    }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: styles.headerContainer.backgroundColor,
+      }}
+    >
       <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
       {children}
     </View>
@@ -44,13 +46,13 @@ const RootLayout = observer(() => {
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to access your wallet',
-        fallbackLabel: 'Use passcode',
+        promptMessage: "Authenticate to access your wallet",
+        fallbackLabel: "Use passcode",
       });
 
       setIsAuthenticated(result.success);
     } catch (error) {
-      console.error('Authentication error:', error);
+      console.error("Authentication error:", error);
       // On error, allow access by default for better user experience
       setIsAuthenticated(true);
     } finally {
@@ -128,7 +130,7 @@ const RootLayout = observer(() => {
           contentStyle: {
             backgroundColor: styles.headerContainer.backgroundColor,
           },
-          animation: "fade"
+          animation: "fade",
         }}
       />
     </Layout>

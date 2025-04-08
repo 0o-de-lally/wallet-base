@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { Platform } from 'react-native';
-import { useModal } from '../context/ModalContext';
+import { useState, useCallback, useEffect } from "react";
+import * as LocalAuthentication from "expo-local-authentication";
+import { Platform } from "react-native";
+import { useModal } from "../context/ModalContext";
 
 export function useLocalAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,7 +17,7 @@ export function useLocalAuth() {
       setAuthAvailable(hasHardware && isEnrolled);
       return hasHardware && isEnrolled;
     } catch (error) {
-      console.error('Error checking authentication availability:', error);
+      console.error("Error checking authentication availability:", error);
       setAuthAvailable(false);
       return false;
     }
@@ -32,32 +32,37 @@ export function useLocalAuth() {
       const available = await checkAuthAvailability();
 
       if (!available) {
-        console.warn('Biometric authentication is not available on this device');
+        console.warn(
+          "Biometric authentication is not available on this device",
+        );
         // If biometrics aren't available, we'll consider the user "authenticated"
         // This is a fallback for devices without biometric capabilities
         setIsAuthenticated(true);
         return true;
       }
 
-      const authTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      await LocalAuthentication.supportedAuthenticationTypesAsync();
       const promptMessage = Platform.select({
-        ios: 'Authenticate to access your wallet',
-        android: 'Authenticate to access your wallet',
-        default: 'Authenticate to access your wallet',
+        ios: "Authenticate to access your wallet",
+        android: "Authenticate to access your wallet",
+        default: "Authenticate to access your wallet",
       });
 
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage,
-        fallbackLabel: 'Use passcode',
-        cancelLabel: 'Cancel',
+        fallbackLabel: "Use passcode",
+        cancelLabel: "Cancel",
         disableDeviceFallback: false,
       });
 
       setIsAuthenticated(result.success);
       return result.success;
     } catch (error) {
-      console.error('Authentication error:', error);
-      showAlert('Authentication Error', 'Failed to authenticate. Please try again.');
+      console.error("Authentication error:", error);
+      showAlert(
+        "Authentication Error",
+        "Failed to authenticate. Please try again.",
+      );
       return false;
     } finally {
       setIsLoading(false);
