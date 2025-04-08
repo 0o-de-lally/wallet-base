@@ -1,10 +1,14 @@
 import { LibraClient } from "open-libra-sdk";
 import { createLibraClient } from "./libra-client";
 import { appConfig } from "./app-config-store";
+import { ViewArgs } from "open-libra-sdk/dist/types/types/clientPayloads";
 
 // Store the interval ID for cleanup
 let balanceCheckInterval: number | null = null;
 
+export const balancePayload: ViewArgs = {
+  payload: { function: "0x1::ol_account::balance" },
+};
 /**
  * Updates the balance for a specific account in a profile
  *
@@ -18,13 +22,15 @@ export function updateAccountBalance(
   balance: string,
 ): void {
   // Find the profile and account
-  const profiles = appConfig.profiles.get();
-  const profile = profiles[profileName];
+  const profiles = appConfig.profiles.get() || [];
+  const profileIndex = profiles.findIndex(p => p.name === profileName);
 
-  if (!profile) {
+  if (profileIndex === -1) {
     console.error(`Profile ${profileName} not found`);
     return;
   }
+
+  const profile = profiles[profileIndex];
 
   // Access accounts as an array and find the correct account by ID
   const accountIndex = profile.accounts.findIndex(
@@ -35,10 +41,29 @@ export function updateAccountBalance(
     return;
   }
 
-  // Update the account balance using the correct array index
-  appConfig.profiles[profileName].accounts[accountIndex].balance_unlocked.set(
-    Number(balance),
-  );
+  // Create a copy of the profiles array
+  const updatedProfiles = [...profiles];
+
+  // Create a copy of the specific profile
+  const updatedProfile = {...updatedProfiles[profileIndex]};
+
+  // Create a copy of the accounts array
+  const updatedAccounts = [...updatedProfile.accounts];
+
+  // Create a copy of the specific account
+  const updatedAccount = {...updatedAccounts[accountIndex], balance_unlocked: Number(balance)};
+
+  // Update the account in the accounts array
+  updatedAccounts[accountIndex] = updatedAccount;
+
+  // Update the accounts in the profile
+  updatedProfile.accounts = updatedAccounts;
+
+  // Update the profile in the profiles array
+  updatedProfiles[profileIndex] = updatedProfile;
+
+  // Set the updated profiles array
+  appConfig.profiles.set(updatedProfiles);
 }
 
 /**
@@ -46,12 +71,11 @@ export function updateAccountBalance(
  */
 export async function fetchAllAccountBalances(): Promise<void> {
   try {
-    const profiles = appConfig.profiles.get();
+    const profiles = appConfig.profiles.get() || [];
 
     // Iterate through all profiles
-    for (const profileName in profiles) {
-      const profile = profiles[profileName];
-      const { network, customEndpoint } = profile;
+    for (const profile of profiles) {
+      const { name, network, customEndpoint } = profile;
 
       // Create a client specific to this profile's network configuration
       const client = createLibraClient(network, customEndpoint);
@@ -60,9 +84,9 @@ export async function fetchAllAccountBalances(): Promise<void> {
       const accounts = profile.accounts || [];
 
       // Use forEach to iterate through accounts
-      accounts.forEach(async (account) => {
-        await fetchAccountBalance(client, profileName, account.id);
-      });
+      for (const account of accounts) {
+        await fetchAccountBalance(client, name, account.id);
+      }
     }
   } catch (error) {
     console.error("Error fetching account balances:", error);
@@ -82,24 +106,15 @@ async function fetchAccountBalance(
   accountId: string,
 ): Promise<void> {
   try {
-    const profiles = appConfig.profiles.get();
-    const profile = profiles[profileName];
+    const profiles = appConfig.profiles.get() || [];
+    const profile = profiles.find(p => p.name === profileName);
 
     if (!profile || !profile.accounts) {
       console.error(`Profile ${profileName} not found or has no accounts`);
       return;
     }
 
-    const accountIndex = profile.accounts.findIndex(
-      (acc) => acc.id === accountId,
-    );
-
-    if (accountIndex === -1) {
-      console.error(`Account ${accountId} not found in profile ${profileName}`);
-      return;
-    }
-
-    const account = profile.accounts[accountIndex];
+    const account = profile.accounts.find(acc => acc.id === accountId);
 
     if (!account || !account.account_address) {
       console.error(`Account ${accountId} not found or missing address`);
@@ -107,9 +122,8 @@ async function fetchAccountBalance(
     }
 
     // Call the LibraClient to get the balance
-    const balanceResponse = await client.getAccountCoinAmount({
-      accountAddress: account.account_address,
-    });
+    const balanceResponse = await client.general.viewJson(balancePayload);
+    console.log("balanceResponse", balanceResponse);
 
     if (balanceResponse) {
       // Update the account balance in the store
