@@ -1,39 +1,92 @@
 import React, { memo, useState, useCallback, useEffect, useRef } from "react";
 import { Modal, View, Text, TextInput } from "react-native";
-import { getValue } from "../../util/secure-store";
-import { comparePins, HashedPin } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
 
+// Define callback types for PIN operations
+type PinActionCallback = (pin: string) => Promise<void>;
+
 interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
-  onPinVerified: (pin: string) => void;
   purpose:
     | "save"
     | "retrieve"
     | "delete"
     | "schedule_reveal"
     | "execute_reveal";
+  // Callbacks for different PIN operations - only one will be called based on purpose
+  onPinAction: PinActionCallback;
+  actionTitle?: string;
+  actionSubtitle?: string;
 }
 
 export const PinInputModal = memo(
-  ({ visible, onClose, onPinVerified, purpose }: PinInputModalProps) => {
-    const [pin, setPin] = useState("");
+  ({
+    visible,
+    onClose,
+    purpose,
+    onPinAction,
+    actionTitle,
+    actionSubtitle,
+  }: PinInputModalProps) => {
+    // Ensure onPinAction is always a function even if undefined is passed
+    const safeOnPinAction = useCallback(
+      async (pin: string) => {
+        if (typeof onPinAction === "function") {
+          try {
+            console.log(`Executing onPinAction for purpose: ${purpose}`);
+            await onPinAction(pin);
+            console.log(`Completed onPinAction for purpose: ${purpose}`);
+          } catch (error) {
+            console.error(
+              `Error in onPinAction for purpose "${purpose}":`,
+              error,
+            );
+            throw error; // Re-throw to be caught by the caller
+          }
+        } else {
+          console.error(
+            `ERROR: Missing onPinAction handler for purpose "${purpose}"`,
+          );
+          // Log additional context to help debug
+          console.log("PinInputModal props received:", {
+            purpose,
+            hasOnPinAction: !!onPinAction,
+            typeOfOnPinAction: typeof onPinAction,
+            hasActionTitle: !!actionTitle,
+            hasActionSubtitle: !!actionSubtitle,
+            isVisible: visible,
+          });
+
+          setError(`Internal error: Action handler not found for "${purpose}"`);
+
+          // Wait a bit before closing to show the error
+          setTimeout(() => {
+            onClose();
+          }, 2000);
+        }
+      },
+      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible],
+    );
+
+    // Use a transient pin state - we'll clear it immediately after use
+    const [pinValue, setPinValue] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
     const pinInputRef = useRef<TextInput>(null);
 
     useEffect(() => {
       if (!visible) {
-        setPin("");
+        // Clear pin and error state when modal closes
+        setPinValue("");
         setError(null);
       }
     }, [visible]);
 
-    const verifyPin = useCallback(async () => {
-      if (!pin.trim()) {
+    const processPinSecurely = useCallback(async () => {
+      if (!pinValue || !pinValue.trim()) {
         setError("PIN is required");
         return;
       }
@@ -42,40 +95,32 @@ export const PinInputModal = memo(
         setIsVerifying(true);
         setError(null);
 
-        const savedPinJson = await getValue("user_pin");
+        // Create a local copy of the PIN and clear the state immediately
+        const currentPin = pinValue;
+        setPinValue("");
 
-        if (!savedPinJson) {
-          setError("No PIN has been set up. Please set up a PIN first.");
-          return;
-        }
+        // Use the safe version that checks for function existence
+        await safeOnPinAction(currentPin);
 
-        try {
-          const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
-          const isPinValid = await comparePins(storedHashedPin, pin);
-
-          if (isPinValid) {
-            onPinVerified(pin);
-            setPin("");
-          } else {
-            setError("Incorrect PIN. Please try again.");
-          }
-        } catch (parseError) {
-          console.error("Error parsing stored PIN:", parseError);
-          setError("PIN verification failed. Please set up your PIN again.");
-        }
+        // Close the modal after successful action
+        onClose();
       } catch (error) {
-        setError("Error verifying PIN. Please try again.");
-        console.error(error);
+        console.error("Error processing PIN:", error);
+        setError("Error processing your request");
       } finally {
         setIsVerifying(false);
       }
-    }, [pin, onPinVerified]);
+    }, [pinValue, safeOnPinAction, onClose]);
 
     const handleCancel = useCallback(() => {
-      setPin("");
+      setPinValue("");
       setError(null);
       onClose();
     }, [onClose]);
+
+    const handlePinChange = useCallback((text: string) => {
+      setPinValue(text);
+    }, []);
 
     const getActionText = useCallback(() => {
       switch (purpose) {
@@ -95,6 +140,8 @@ export const PinInputModal = memo(
     }, [purpose]);
 
     const getTitle = useCallback(() => {
+      if (actionTitle) return actionTitle;
+
       switch (purpose) {
         case "schedule_reveal":
           return "Schedule Reveal";
@@ -103,9 +150,11 @@ export const PinInputModal = memo(
         default:
           return "Enter PIN";
       }
-    }, [purpose]);
+    }, [purpose, actionTitle]);
 
     const getSubtitle = useCallback(() => {
+      if (actionSubtitle) return actionSubtitle;
+
       switch (purpose) {
         case "schedule_reveal":
           return "Enter your PIN to schedule a reveal of the secured data. You'll need to wait 30 seconds before you can reveal it.";
@@ -114,11 +163,7 @@ export const PinInputModal = memo(
         default:
           return `Please enter your PIN to ${getActionText()} this secure data.`;
       }
-    }, [purpose, getActionText]);
-
-    const handlePinChange = useCallback((text: string) => {
-      setPin(text);
-    }, []);
+    }, [purpose, actionSubtitle, getActionText]);
 
     return (
       <Modal
@@ -136,13 +181,13 @@ export const PinInputModal = memo(
             <Text style={styles.modalSubtitle}>{getSubtitle()}</Text>
 
             <PinInputField
-              value={pin}
+              value={pinValue}
               onChangeText={handlePinChange}
               placeholder="******"
               label=""
               error={error ? error : undefined}
               autoFocus={true}
-              onSubmit={verifyPin}
+              onSubmit={processPinSecurely}
               clearOnSubmit={true}
               ref={pinInputRef}
             />
@@ -159,7 +204,7 @@ export const PinInputModal = memo(
 
               <ActionButton
                 text="Verify"
-                onPress={verifyPin}
+                onPress={processPinSecurely}
                 isLoading={isVerifying}
                 style={styles.confirmButton}
                 accessibilityLabel="Verify PIN"

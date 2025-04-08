@@ -8,6 +8,8 @@ import { PinInputModal } from "../pin-input/PinInputModal";
 import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
+import { observer } from "@legendapp/state/react";
+import { SecretReveal } from "../secure-storage/SecretReveal";
 
 // Define UI view modes
 enum SecretViewMode {
@@ -22,12 +24,12 @@ interface AccountSettingsProps {
 }
 
 export const AccountSettings = memo(
-  ({ accountId, profileName }: AccountSettingsProps) => {
-    const [account, setAccount] = useState<AccountState | null>(null);
+  observer(({ accountId, profileName }: AccountSettingsProps) => {
     const [viewMode, setViewMode] = useState<SecretViewMode>(
       SecretViewMode.MANAGE,
     );
     const [isLoading, setIsLoading] = useState(true);
+    const [account, setAccount] = useState<AccountState | null>(null);
 
     useEffect(() => {
       // Fetch account data using accountId (UUID)
@@ -65,23 +67,25 @@ export const AccountSettings = memo(
       fetchAccount();
     }, [accountId, profileName]);
 
+    // Pass accountId to the useSecureStorage hook to scope it to this account
     const {
       value,
       setValue,
+      storedValue,
       isLoading: isSecureLoading,
       handleSave,
-      handleDelete,
-      pinModalVisible,
-      setPinModalVisible,
-      handlePinVerified,
-      currentAction,
-      revealStatus,
-      storedValue,
       handleScheduleReveal,
       handleExecuteReveal,
       handleCancelReveal,
+      handleDelete,
+      handleClearAll,
+      pinModalVisible,
+      setPinModalVisible,
+      handlePinAction,
+      currentAction,
+      revealStatus,
       clearRevealedValue,
-    } = useSecureStorage();
+    } = useSecureStorage(); // Pass accountId here
 
     const switchToRevealMode = useCallback(() => {
       setViewMode(SecretViewMode.REVEAL);
@@ -125,25 +129,38 @@ export const AccountSettings = memo(
           <Text style={styles.resultLabel}>Security Management</Text>
 
           {account.is_key_stored && (
-            <ActionButton
-              text={
-                viewMode === SecretViewMode.MANAGE
-                  ? "Reveal Secret"
-                  : "Manage Secret"
-              }
-              onPress={
-                viewMode === SecretViewMode.MANAGE
-                  ? switchToRevealMode
-                  : switchToManageMode
-              }
-              size="medium"
-              style={{
-                backgroundColor:
-                  viewMode === SecretViewMode.MANAGE ? "#5e35b1" : "#4a90e2",
-                marginBottom: 15,
-              }}
-              accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
-            />
+            <>
+              <ActionButton
+                text={
+                  viewMode === SecretViewMode.MANAGE
+                    ? "Reveal Secret"
+                    : "Manage Secret"
+                }
+                onPress={
+                  viewMode === SecretViewMode.MANAGE
+                    ? switchToRevealMode
+                    : switchToManageMode
+                }
+                size="medium"
+                style={{
+                  backgroundColor:
+                    viewMode === SecretViewMode.MANAGE ? "#5e35b1" : "#4a90e2",
+                  marginBottom: 15,
+                }}
+                accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
+              />
+
+              {/* Add button to clear all data if in manage mode */}
+              {viewMode === SecretViewMode.MANAGE && (
+                <ActionButton
+                  text="Clear All Saved Data"
+                  onPress={() => handleClearAll(accountId)}
+                  isDestructive={true}
+                  size="small"
+                  style={{ marginBottom: 15 }}
+                />
+              )}
+            </>
           )}
 
           {viewMode === SecretViewMode.MANAGE && (
@@ -151,8 +168,8 @@ export const AccountSettings = memo(
               <SecureStorageForm
                 value={value}
                 onValueChange={setValue}
-                onSave={handleSave}
-                onDelete={handleDelete}
+                onSave={() => handleSave(accountId)}
+                onDelete={() => handleDelete(accountId)} // Remove the accountId parameter since it's already scoped
                 isLoading={isSecureLoading}
                 accountId={account.id}
                 accountName={account.nickname}
@@ -181,12 +198,19 @@ export const AccountSettings = memo(
         <PinInputModal
           visible={pinModalVisible}
           onClose={() => setPinModalVisible(false)}
-          onPinVerified={handlePinVerified}
+          onPinAction={handlePinAction}
           purpose={getPinPurpose()}
+        />
+
+        {/* Added SecretReveal as the bottom-most component */}
+        <SecretReveal
+          accountId={accountId}
+          accountName={account?.nickname}
+          onSwitchToManage={switchToManageMode}
         />
       </ScrollView>
     );
-  },
+  }),
 );
 
 AccountSettings.displayName = "AccountSettings";

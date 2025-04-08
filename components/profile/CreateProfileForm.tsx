@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from "react";
-import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
+import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import {
   createProfile,
@@ -11,6 +11,7 @@ import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
+import Dropdown from "../common/Dropdown";
 
 interface CreateProfileFormProps {
   onComplete: () => void;
@@ -29,7 +30,6 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
   );
   const [error, setError] = useState<string | null>(null);
   const [customNetwork, setCustomNetwork] = useState(false);
-  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
 
   // Modal states
   const [successModalVisible, setSuccessModalVisible] = useState(false);
@@ -87,26 +87,6 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
     onComplete();
   };
 
-  // Custom dropdown selector component for network type
-  const renderNetworkTypeItem = ({ item }: { item: NetworkTypeEnum }) => (
-    <TouchableOpacity
-      style={[
-        styles.resultContainer,
-        { marginVertical: 4, padding: 12 },
-        networkType === item && { backgroundColor: "#2c3040" },
-      ]}
-      onPress={() => {
-        setNetworkType(item);
-        setShowNetworkDropdown(false);
-      }}
-      accessible={true}
-      accessibilityRole="menuitem"
-      accessibilityLabel={`Select ${item} network type`}
-    >
-      <Text style={styles.resultValue}>{item}</Text>
-    </TouchableOpacity>
-  );
-
   return (
     <SectionContainer title="Create New Profile">
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -118,49 +98,12 @@ const CreateProfileForm = memo(({ onComplete }: CreateProfileFormProps) => {
         placeholder="Enter profile name"
       />
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Network Type:</Text>
-        <TouchableOpacity
-          style={[styles.input, { paddingVertical: 12, paddingHorizontal: 10 }]}
-          onPress={() => setShowNetworkDropdown(true)}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="Select network type"
-        >
-          <Text style={{ color: styles.resultValue.color }}>{networkType}</Text>
-        </TouchableOpacity>
-
-        {/* Network Type Dropdown Modal */}
-        <Modal
-          visible={showNetworkDropdown}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowNetworkDropdown(false)}
-          accessible={true}
-          accessibilityViewIsModal={true}
-          accessibilityLabel="Select network type"
-        >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { width: "80%" }]}>
-              <Text style={styles.modalTitle}>Select Network Type</Text>
-              <FlatList
-                data={Object.values(NetworkTypeEnum)}
-                renderItem={renderNetworkTypeItem}
-                keyExtractor={(item) => item}
-                style={{ maxHeight: 300 }}
-                accessible={true}
-                accessibilityRole="menu"
-              />
-              <ActionButton
-                text="Close"
-                onPress={() => setShowNetworkDropdown(false)}
-                style={{ marginTop: 15 }}
-                accessibilityLabel="Close network selection"
-              />
-            </View>
-          </View>
-        </Modal>
-      </View>
+      <Dropdown
+        label="Network Type"
+        value={networkType}
+        options={Object.values(NetworkTypeEnum)}
+        onSelect={setNetworkType}
+      />
 
       {customNetwork && (
         <FormInput

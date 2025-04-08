@@ -1,12 +1,10 @@
-import React, { useRef, useCallback } from "react";
+import React, { useCallback } from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { ModalProvider } from "../context/ModalContext";
-import AddAccountForm from "../components/profile/AddAccountForm";
-import type { AddAccountFormRef } from "../components/profile/AddAccountForm";
+import { AddAccountForm } from "../components/profile/AddAccountForm";
 import { router } from "expo-router";
-import { appConfig } from "../util/app-config-store";
 
 /**
  * Create Account Screen
@@ -34,13 +32,6 @@ export default function CreateAccountScreen() {
 
 // Separate component that handles form logic
 const CreateAccountContent = () => {
-  // Use default profile or first available profile
-  const profileNames = Object.keys(appConfig.profiles);
-  const defaultProfileName =
-    profileNames.length > 0 ? profileNames[0] : "default";
-
-  const formRef = useRef<AddAccountFormRef>(null);
-
   const handleComplete = useCallback(() => {
     // Navigate back after successful account creation
     router.back();
@@ -55,11 +46,7 @@ const CreateAccountContent = () => {
           account address and optionally assign a nickname to it.
         </Text>
 
-        <AddAccountForm
-          profileName={defaultProfileName}
-          onComplete={handleComplete}
-          ref={formRef}
-        />
+        <AddAccountForm onComplete={handleComplete} />
       </View>
     </ScrollView>
   );

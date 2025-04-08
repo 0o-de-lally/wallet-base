@@ -42,6 +42,14 @@ import { pbkdf2 } from "@noble/hashes/pbkdf2";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { constantTimeEqual } from "./security-utils";
+import { getValue } from "./secure-store";
+import {
+  encryptWithPin as cryptoEncryptWithPin,
+  decryptWithPin as cryptoDecryptWithPin,
+  stringToUint8Array,
+  uint8ArrayToBase64,
+  base64ToUint8Array,
+} from "./crypto";
 
 // Define a custom type for the hashed PIN
 export type HashedPin = {
@@ -132,4 +140,126 @@ export async function comparePins(
     console.error("Error comparing PINs:", error);
     return false;
   }
+}
+
+/**
+ * Processes a PIN operation securely, minimizing PIN retention in memory
+ * This function acts as a wrapper that handles PIN cleanup after use
+ *
+ * @param pin - The PIN to use for the operation
+ * @param operation - Callback function that receives the PIN and performs an operation
+ * @returns Promise resolving to the result of the operation
+ */
+export async function processWithPin<T>(
+  pin: string,
+  operation: (pin: string) => Promise<T>,
+): Promise<T> {
+  try {
+    // Execute the operation with the PIN
+    return await operation(pin);
+  } finally {
+    // Best-effort memory clearing within JavaScript's limitations
+    // This doesn't guarantee the PIN is fully removed from memory
+    // due to JavaScript's garbage collection and string immutability
+    pin = "";
+  }
+}
+
+/**
+ * Verifies a PIN against the stored hashed PIN
+ * @param pin - The PIN to verify (will be cleared after use)
+ * @returns Promise resolving to boolean indicating if PIN is valid
+ */
+export async function verifyStoredPin(pin: string): Promise<boolean> {
+  return processWithPin(pin, async (securePin) => {
+    try {
+      const savedPinJson = await getValue("user_pin");
+
+      if (!savedPinJson) {
+        return false;
+      }
+
+      // Parse the stored PIN from JSON
+      const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
+
+      // Verify PIN
+      return await comparePins(storedHashedPin, securePin);
+    } catch (error) {
+      console.error(
+        "PIN verification error:",
+        error instanceof Error ? error.message : String(error),
+      );
+      console.warn("Error verifying PIN, returning false for safety");
+      return false;
+    }
+  });
+}
+
+/**
+ * Encrypts data with PIN and returns result without storing PIN in memory
+ * @param data - The data to encrypt
+ * @param pin - The PIN to use (will be cleared after use)
+ * @returns Promise resolving to the encrypted data as base64 string
+ */
+export async function secureEncryptWithPin(
+  data: string,
+  pin: string,
+): Promise<string> {
+  return processWithPin(pin, async (securePin) => {
+    try {
+      // Convert to Uint8Arrays for processing
+      const dataBytes = stringToUint8Array(data);
+      const pinBytes = stringToUint8Array(securePin);
+
+      // Encrypt the data using the crypto module implementation
+      const encryptedBytes = await cryptoEncryptWithPin(dataBytes, pinBytes);
+
+      // Convert to base64 for storage
+      return uint8ArrayToBase64(encryptedBytes);
+    } catch (error) {
+      console.error("Encryption error:", error);
+      return "";
+    }
+  });
+}
+
+/**
+ * Decrypts data with PIN and returns result without storing PIN in memory
+ * @param encryptedData - The encrypted data as base64 string
+ * @param pin - The PIN to use (will be cleared after use)
+ * @returns Promise resolving to object with decrypted value and verification status
+ */
+export async function secureDecryptWithPin(
+  encryptedData: string,
+  pin: string,
+): Promise<{ value: string; verified: boolean } | null> {
+  return processWithPin(pin, async (securePin) => {
+    try {
+      // Convert from base64 to Uint8Array
+      const encryptedBytes = base64ToUint8Array(encryptedData);
+
+      // Convert PIN to Uint8Array
+      const pinBytes = stringToUint8Array(securePin);
+
+      // Decrypt with PIN using the crypto module implementation
+      const result = await cryptoDecryptWithPin(encryptedBytes, pinBytes);
+
+      if (!result) {
+        return null;
+      }
+
+      // Convert decrypted bytes to string
+      const decryptedValue = new TextDecoder().decode(result.value);
+
+      return {
+        value: decryptedValue,
+        verified: result.verified,
+      };
+    } catch (error) {
+      // Log a more helpful error message without exposing sensitive data
+      console.warn("Decryption failed - possibly due to incorrect PIN", error);
+      // Return null instead of re-throwing to allow for graceful error handling
+      return null;
+    }
+  });
 }

@@ -1,8 +1,8 @@
-import React, { useState, useCallback, memo, useMemo } from "react";
+import React, { memo, useState, useCallback, useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { styles } from "../../styles/styles";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
+import { styles } from "../../styles/styles";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { ActionButton } from "../common/ActionButton";
 
