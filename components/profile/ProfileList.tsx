@@ -156,8 +156,7 @@ const ProfileList = memo(
               </View>
 
               <Text style={styles.networkInfo}>
-                Network: {profile.network.network_name} (
-                {profile.network.network_type})
+                Network: {profile.network})
               </Text>
 
               <TouchableOpacity

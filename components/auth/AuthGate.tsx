@@ -28,7 +28,7 @@ export function AuthGate({ children }: AuthGateProps) {
         setSecurityError(
           !hasHardware
             ? "Your device doesn't support biometric authentication"
-            : "No biometric or PIN security is enrolled on your device"
+            : "No biometric or PIN security is enrolled on your device",
         );
         return;
       }
@@ -61,7 +61,10 @@ export function AuthGate({ children }: AuthGateProps) {
   if (isLoading) {
     return (
       <View style={styles.authContainer}>
-        <ActivityIndicator size="large" color={styles.authButton.backgroundColor} />
+        <ActivityIndicator
+          size="large"
+          color={styles.authButton.backgroundColor}
+        />
         <Text style={styles.authText}>Verifying device security...</Text>
       </View>
     );
@@ -77,10 +80,12 @@ export function AuthGate({ children }: AuthGateProps) {
             <Text style={[styles.authText, styles.dangerTitle]}>
               {securityError}
             </Text>
-            {(securityError.includes("doesn't support") || securityError.includes("enrolled")) && (
+            {(securityError.includes("doesn't support") ||
+              securityError.includes("enrolled")) && (
               <Text style={styles.authText}>
-                For security reasons, this app requires device biometrics or PIN/password protection.
-                Please set up device security in your settings to use this app.
+                For security reasons, this app requires device biometrics or
+                PIN/password protection. Please set up device security in your
+                settings to use this app.
               </Text>
             )}
           </>
@@ -90,7 +95,9 @@ export function AuthGate({ children }: AuthGateProps) {
           </Text>
         )}
 
-        {!securityError || (!securityError.includes("doesn't support") && !securityError.includes("enrolled")) ? (
+        {!securityError ||
+        (!securityError.includes("doesn't support") &&
+          !securityError.includes("enrolled")) ? (
           <ActionButton
             text="Authenticate"
             onPress={authenticate}

@@ -41,9 +41,9 @@ export async function initializeApp() {
     // This allows the UI to render faster while biometric setup happens in background
     setTimeout(() => {
       // Non-blocking biometric warmup
-      LocalAuthentication.hasHardwareAsync().then(hasHardware => {
+      LocalAuthentication.hasHardwareAsync().then((hasHardware) => {
         if (hasHardware) {
-          LocalAuthentication.isEnrolledAsync().then(isEnrolled => {
+          LocalAuthentication.isEnrolledAsync().then((isEnrolled) => {
             if (isEnrolled) {
               // Pre-warm the biometric subsystem
               LocalAuthentication.supportedAuthenticationTypesAsync();

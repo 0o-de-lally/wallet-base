@@ -8,7 +8,10 @@ import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
-import { createAccount, validateAccountAddress } from "../../util/account-utils";
+import {
+  createAccount,
+  validateAccountAddress,
+} from "../../util/account-utils";
 
 interface AddAccountFormProps {
   profileName?: string;
@@ -47,7 +50,9 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
   const [accountAddress, setAccountAddress] = useState("");
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [addressError, setAddressError] = useState<string | undefined>(undefined);
+  const [addressError, setAddressError] = useState<string | undefined>(
+    undefined,
+  );
   const hasMultipleProfiles = profileNames.length > 1;
 
   // State for modals

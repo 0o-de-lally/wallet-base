@@ -8,7 +8,7 @@ import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { styles } from "../styles/styles";
-import '@/util/crypto-polyfill';
+import "@/util/crypto-polyfill";
 
 // Layout wrapper to avoid duplication - only includes the ModalProvider once
 const Layout = ({ children }: { children: React.ReactNode }) => (
@@ -20,8 +20,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       }}
     >
       <StatusBar
-        backgroundColor={Platform.OS === 'android' ? 'transparent' : styles.statusBar.backgroundColor}
-        translucent={Platform.OS === 'android'}
+        backgroundColor={
+          Platform.OS === "android"
+            ? "transparent"
+            : styles.statusBar.backgroundColor
+        }
+        translucent={Platform.OS === "android"}
         barStyle="light-content"
       />
       {children}

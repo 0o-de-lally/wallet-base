@@ -153,8 +153,7 @@ const ProfileManagement: React.FC = () => {
               marginBottom: 10,
             }}
           >
-            Network: {profile.network.network_name} (
-            {profile.network.network_type})
+            Network: {profile.network}
           </Text>
         </TouchableOpacity>
 

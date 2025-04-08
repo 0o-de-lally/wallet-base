@@ -1,21 +1,4 @@
-/**
- * Network types available for selection
- */
-export enum NetworkTypeEnum {
-  MAINNET = "Mainnet",
-  TESTING = "Testing",
-  TESTNET = "Testnet",
-  CUSTOM = "Custom",
-}
-
-/**
- * Network type represents a blockchain network configuration
- */
-export type NetworkType = {
-  network_name: string;
-  network_type: NetworkTypeEnum;
-  // Additional network properties can be added here
-};
+import { Network } from "open-libra-sdk";
 
 /**
  * Account state represents a single blockchain account within a profile
@@ -35,7 +18,7 @@ export type AccountState = {
  */
 export type Profile = {
   name: string; // unique name (required)
-  network: NetworkType; // required
+  network: Network; // Using open-libra-sdk Network type
   accounts: AccountState[]; // list of accounts
   created_at: number; // timestamp
   last_used: number; // timestamp

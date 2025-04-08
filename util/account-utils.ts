@@ -15,7 +15,7 @@ import type { AccountState } from "./app-config-store";
  */
 export function validateAccountAddress(address: string): string | null {
   try {
-    if (!address || typeof address !== 'string') {
+    if (!address || typeof address !== "string") {
       return null;
     }
 
