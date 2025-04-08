@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "bun install && expo start --clear",
+    "start": "bun install && expo start --clear --minify",
     "android": "expo run:android",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
@@ -40,6 +40,7 @@
     "eslint-plugin-react": "^7.37.4",
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
+    "react-devtools": "^6.1.1",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.29.0"
   },
