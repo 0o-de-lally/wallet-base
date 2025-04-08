@@ -6,18 +6,38 @@ import {
   appConfig,
 } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
+import { AccountAddress } from "open-libra-sdk";
+
+/**
+ * Validates if a string is a valid Open Libra account address
+ *
+ * @param address String to validate as an account address
+ * @returns An AccountAddress object if valid, or null if invalid
+ */
+export function validateAccountAddress(address: string): AccountAddress | null {
+  try {
+    if (!address || typeof address !== 'string') {
+      return null;
+    }
+
+    return AccountAddress.fromString(address.trim());
+  } catch (error) {
+    console.error("Invalid account address format:", error);
+    return null;
+  }
+}
 
 /**
  * Creates a new account in the specified profile
  *
  * @param profileName Name of the profile to add the account to
- * @param accountAddress Address of the account
+ * @param accountAddressStr Address of the account as a string
  * @param nickname Optional nickname for the account
  * @returns Object containing success status, error message (if any), and created account (if successful)
  */
 export async function createAccount(
   profileName: string,
-  accountAddress: string,
+  accountAddressStr: string,
   nickname: string,
 ): Promise<{
   success: boolean;
@@ -26,7 +46,7 @@ export async function createAccount(
 }> {
   try {
     // Validate inputs
-    if (!accountAddress.trim()) {
+    if (!accountAddressStr || !accountAddressStr.trim()) {
       return {
         success: false,
         error: "Account address is required",
@@ -40,16 +60,28 @@ export async function createAccount(
       };
     }
 
+    // Validate and convert the address string to an AccountAddress object
+    const accountAddress = validateAccountAddress(accountAddressStr);
+
+    if (!accountAddress) {
+      return {
+        success: false,
+        error: "Invalid account address format",
+      };
+    }
+
     // Generate a random ID for the account using crypto secure random
     const randomBytes = await getRandomBytesAsync(16); // 16 bytes = 128 bits
     const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
+    // Get the canonical string representation of the account address
+    const addressString = accountAddress.toString();
+
     // Create account state
     const account: AccountState = {
       id: accountId,
-      account_address: accountAddress.trim(),
-      nickname:
-        nickname.trim() || accountAddress.trim().substring(0, 8) + "...",
+      account_address: addressString,
+      nickname: nickname.trim() || addressString.substring(0, 8) + "...",
       is_key_stored: false,
       balance_locked: 0,
       balance_unlocked: 0,

@@ -8,7 +8,7 @@ import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
-import { createAccount } from "../../util/account-utils";
+import { createAccount, validateAccountAddress } from "../../util/account-utils";
 
 interface AddAccountFormProps {
   profileName?: string;
@@ -47,6 +47,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
   const [accountAddress, setAccountAddress] = useState("");
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState<string | undefined>(undefined);
   const hasMultipleProfiles = profileNames.length > 1;
 
   // State for modals
@@ -73,11 +74,26 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
     }
   }, [profileName, profileNames, activeProfileName, selectedProfile]);
 
+  // Validate account address when it changes
+  useEffect(() => {
+    if (accountAddress.trim()) {
+      const isValid = validateAccountAddress(accountAddress);
+      if (!isValid) {
+        setAddressError("Invalid account address format");
+      } else {
+        setAddressError(undefined);
+      }
+    } else {
+      setAddressError(undefined); // Don't show error for empty field
+    }
+  }, [accountAddress]);
+
   // Expose a reset method through prop callback
   const resetForm = () => {
     setAccountAddress("");
     setNickname("");
     setError(null);
+    setAddressError(undefined);
     // Don't reset the selectedProfile here to persist selection
   };
 
@@ -89,6 +105,13 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
   }, [onResetForm]);
 
   const handleAddAccount = async () => {
+    // First validate the address
+    const isValidAddress = validateAccountAddress(accountAddress);
+    if (!isValidAddress) {
+      setError("Invalid account address format");
+      return;
+    }
+
     const result = await createAccount(
       selectedProfile,
       accountAddress,
@@ -145,7 +168,9 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
         value={accountAddress}
         onChangeText={setAccountAddress}
         placeholder="Enter account address"
+        error={addressError}
       />
+      {addressError && <Text style={styles.errorText}>{addressError}</Text>}
 
       <FormInput
         label="Nickname (optional):"

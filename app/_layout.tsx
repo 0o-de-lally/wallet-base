@@ -5,7 +5,7 @@ import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
 
 import * as LocalAuthentication from "expo-local-authentication";
-import { View, Text, StatusBar } from "react-native";
+import { View, Text, StatusBar, Platform } from "react-native";
 import { ActionButton } from "../components/common/ActionButton";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
@@ -20,7 +20,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
         backgroundColor: styles.headerContainer.backgroundColor,
       }}
     >
-      <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+      <StatusBar
+        backgroundColor={Platform.OS === 'android' ? 'transparent' : styles.statusBar.backgroundColor}
+        translucent={Platform.OS === 'android'}
+        barStyle="light-content"
+      />
       {children}
     </View>
   </ModalProvider>
@@ -92,7 +96,7 @@ const RootLayout = observer(() => {
   if (authChecking) {
     return (
       <Layout>
-        <View style={styles.authContainer}>
+        <View>
           <Text style={styles.authText}>Verifying device security...</Text>
         </View>
       </Layout>
