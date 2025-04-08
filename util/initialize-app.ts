@@ -6,41 +6,25 @@ import * as LocalAuthentication from "expo-local-authentication";
  * This function should be called once when the application starts.
  */
 export async function initializeApp() {
+  console.time('initialize-app-total');
+
   try {
-    // Check if biometric authentication is available
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    console.log("Biometric hardware available:", hasHardware);
-
-    // Prepare local authentication if available
-    if (hasHardware) {
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      console.log("Biometrics enrolled:", isEnrolled);
-
-      if (isEnrolled) {
-        // Pre-warm the biometric subsystem
-        LocalAuthentication.supportedAuthenticationTypesAsync();
-      }
-    }
-
-    // Wait for persistence to load (allow some time for hydration)
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
+    // Start with the most critical initialization - config loading
+    console.time('config-load');
     // Check if we have any profiles after persistence has loaded
     const profiles = appConfig.profiles.get();
     const profileCount = Object.keys(profiles).length;
+    console.timeEnd('config-load');
 
     // Only initialize a default profile if we truly have no profiles
     if (profileCount === 0) {
-      // Log the state before initialization
-      console.log("Before initialization:", JSON.stringify(appConfig.get()));
-
+      console.time('default-profile-init');
       maybeInitializeDefaultProfile();
-
-      // Log the state after initialization
-      console.log("After initialization:", JSON.stringify(appConfig.get()));
+      console.timeEnd('default-profile-init');
     }
 
     // Verify active account validity
+    console.time('verify-active-account');
     const activeAccountId = appConfig.activeAccountId.get();
     if (activeAccountId !== null) {
       // Check if this account actually exists in any profile
@@ -59,10 +43,31 @@ export async function initializeApp() {
         appConfig.activeAccountId.set(null);
       }
     }
+    console.timeEnd('verify-active-account');
+
+    // Biometric checks can be moved to authentication flow instead of initialization
+    // This allows the UI to render faster while biometric setup happens in background
+    setTimeout(() => {
+      // Non-blocking biometric warmup
+      LocalAuthentication.hasHardwareAsync().then(hasHardware => {
+        console.log("Biometric hardware available:", hasHardware);
+        if (hasHardware) {
+          LocalAuthentication.isEnrolledAsync().then(isEnrolled => {
+            console.log("Biometrics enrolled:", isEnrolled);
+            if (isEnrolled) {
+              // Pre-warm the biometric subsystem
+              LocalAuthentication.supportedAuthenticationTypesAsync();
+            }
+          });
+        }
+      });
+    }, 0);
 
     return true;
   } catch (error) {
     console.error("Failed to initialize app:", error);
     return false;
+  } finally {
+    console.timeEnd('initialize-app-total');
   }
 }

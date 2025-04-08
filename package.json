@@ -19,6 +19,7 @@
     "@noble/ciphers": "^1.2.1",
     "@noble/hashes": "^1.7.1",
     "@react-native-async-storage/async-storage": "1.23.1",
+    "buffer": "^6.0.3",
     "expo": "~52.0.42",
     "expo-crypto": "^14.0.2",
     "expo-local-authentication": "~15.0.2",
@@ -50,5 +51,6 @@
       }
     }
   },
+  "sideEffects": false,
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

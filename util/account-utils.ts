@@ -6,7 +6,6 @@ import {
   appConfig,
 } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
-import { AccountAddress } from "open-libra-sdk";
 
 /**
  * Validates if a string is a valid Open Libra account address
@@ -14,13 +13,13 @@ import { AccountAddress } from "open-libra-sdk";
  * @param address String to validate as an account address
  * @returns An AccountAddress object if valid, or null if invalid
  */
-export function validateAccountAddress(address: string): AccountAddress | null {
+export function validateAccountAddress(address: string): string | null {
   try {
     if (!address || typeof address !== 'string') {
       return null;
     }
 
-    return AccountAddress.fromString(address.trim());
+    return address.trim();
   } catch (error) {
     console.error("Invalid account address format:", error);
     return null;
