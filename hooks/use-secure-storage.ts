@@ -117,9 +117,6 @@ export function useSecureStorage() {
     action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
     accountId: string,
   ) => {
-    console.log(
-      `Setting action: ${action} for account ${accountId} and showing PIN modal`,
-    );
     setCurrentAction(action);
     setCurrentAccountId(accountId);
     setPinModalVisible(true);
@@ -316,7 +313,6 @@ export function useSecureStorage() {
 
   const handlePinAction = useCallback(
     async (pin: string) => {
-      console.log(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
         showAlert("Error", "PIN is required");
         return;

@@ -4,7 +4,6 @@ import { observer } from "@legendapp/state/react";
 import { Stack, useRouter } from "expo-router";
 import { styles } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
-import { AccountAddress } from "open-libra-sdk";
 
 // Main App component that combines the functionality
 export default function App() {
@@ -59,8 +58,6 @@ const AppContent = observer(() => {
 
   return (
     <View style={styles.root}>
-      <Text> {AccountAddress.fromStringStrict("0x1").toStringLong()}</Text>
-
       <View style={styles.container}>
         {renderNavigationButton("PIN Management", navigateToPIN)}
         {renderNavigationButton("Profile Management", navigateToProfiles)}

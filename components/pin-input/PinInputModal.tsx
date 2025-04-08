@@ -36,9 +36,7 @@ export const PinInputModal = memo(
       async (pin: string) => {
         if (typeof onPinAction === "function") {
           try {
-            console.log(`Executing onPinAction for purpose: ${purpose}`);
             await onPinAction(pin);
-            console.log(`Completed onPinAction for purpose: ${purpose}`);
           } catch (error) {
             console.error(
               `Error in onPinAction for purpose "${purpose}":`,
@@ -50,16 +48,6 @@ export const PinInputModal = memo(
           console.error(
             `ERROR: Missing onPinAction handler for purpose "${purpose}"`,
           );
-          // Log additional context to help debug
-          console.log("PinInputModal props received:", {
-            purpose,
-            hasOnPinAction: !!onPinAction,
-            typeOfOnPinAction: typeof onPinAction,
-            hasActionTitle: !!actionTitle,
-            hasActionSubtitle: !!actionSubtitle,
-            isVisible: visible,
-          });
-
           setError(`Internal error: Action handler not found for "${purpose}"`);
 
           // Wait a bit before closing to show the error
@@ -68,7 +56,7 @@ export const PinInputModal = memo(
           }, 2000);
         }
       },
-      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible],
+      [onPinAction, onClose, purpose],
     );
 
     // Use a transient pin state - we'll clear it immediately after use
