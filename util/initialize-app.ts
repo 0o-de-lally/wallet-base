@@ -1,6 +1,7 @@
 import * as LocalAuthentication from "expo-local-authentication";
 import { appConfig } from "./app-config-store";
 import { maybeInitializeDefaultProfile } from "./app-config-store";
+import { startPeriodicUpdates } from "@/util/update-controller";
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
@@ -52,6 +53,8 @@ export async function initializeApp() {
         }
       });
     }, 0);
+
+    startPeriodicUpdates(15_000);
 
     return true;
   } catch (error) {

@@ -12,30 +12,34 @@ export const NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.LOCAL]: "http://localhost:8080", // Added LOCAL network
 };
 
+// Global client instance that can be modified as needed
+export let globalClient = new LibraClient(Network.MAINNET);
+
 /**
- * Creates and returns a LibraClient configured for the specified network
+ * Updates the global client to use the specified network
  *
- * @param network - The network to use
- * @param customEndpoint - Custom endpoint URL (required when network is CUSTOM)
- * @param timeout - Optional request timeout in milliseconds
- * @returns Initialized LibraClient instance
- * @throws Error if no endpoint is provided for CUSTOM network
+ * @param network The network to connect to
+ * @param customEndpoint Optional custom endpoint URL
+ * @returns The updated global client instance
  */
-export function createLibraClient(
-  network: Network,
-  customEndpoint?: string,
-): LibraClient {
-  let endpoint = getNetworkEndpoint(network);
+export function updateClientNetwork(network: Network, customEndpoint?: string): LibraClient {
+  const endpoint = customEndpoint || getNetworkEndpoint(network);
 
-  // If using a custom network, a custom endpoint must be provided
-  if (network === Network.CUSTOM) {
-    if (!customEndpoint) {
-      throw new Error("Custom endpoint URL is required for CUSTOM network");
-    }
-    endpoint = customEndpoint;
-  }
+  globalClient = new LibraClient(network, endpoint);
+  console.log(`Updated global client endpoint to ${endpoint} for network ${network}`);
+  return globalClient;
+}
 
-  // Initialize the client with the appropriate endpoint
+/**
+ * Creates a new LibraClient instance
+ * @deprecated Use the globalClient or updateClientNetwork instead
+ *
+ * @param network The network to connect to
+ * @param customEndpoint Optional custom endpoint URL
+ * @returns A new LibraClient instance
+ */
+export function createLibraClient(network: Network, customEndpoint?: string): LibraClient {
+  const endpoint = customEndpoint || getNetworkEndpoint(network);
   return new LibraClient(network, endpoint);
 }
 

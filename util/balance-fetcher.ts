@@ -3,9 +3,6 @@ import { createLibraClient } from "./libra-client";
 import { appConfig } from "./app-config-store";
 import { ViewArgs } from "open-libra-sdk/dist/types/types/clientPayloads";
 
-// Store the interval ID for cleanup
-let balanceCheckInterval: number | null = null;
-
 export const balancePayload: ViewArgs = {
   payload: { function: "0x1::ol_account::balance" },
 };
@@ -134,29 +131,21 @@ async function fetchAccountBalance(
   }
 }
 
+// These functions are now deprecated and will be removed in future versions
+// Use the equivalent functions from UpdateController instead
+
 /**
- * Starts the background process to periodically fetch account balances
- * @param intervalMs - Interval in milliseconds (default: 15000)
+ * @deprecated Use startPeriodicUpdates from UpdateController instead
  */
 export function startBalanceChecker(intervalMs: number = 15000): void {
-  // First clear any existing interval to avoid duplicates
-  stopBalanceChecker();
-
-  // Fetch once immediately
-  fetchAllAccountBalances();
-
-  // Then set up recurring checks - use global.setInterval instead of NodeJS version
-  balanceCheckInterval = setInterval(() => {
-    fetchAllAccountBalances();
-  }, intervalMs) as unknown as number;
+  console.warn("startBalanceChecker is deprecated. Use startPeriodicUpdates from UpdateController instead.");
+  // Implementation removed to ensure usage of the new controller
 }
 
 /**
- * Stops the background balance checking process
+ * @deprecated Use stopPeriodicUpdates from UpdateController instead
  */
 export function stopBalanceChecker(): void {
-  if (balanceCheckInterval !== null) {
-    clearInterval(balanceCheckInterval);
-    balanceCheckInterval = null;
-  }
+  console.warn("stopBalanceChecker is deprecated. Use stopPeriodicUpdates from UpdateController instead.");
+  // Implementation removed to ensure usage of the new controller
 }
