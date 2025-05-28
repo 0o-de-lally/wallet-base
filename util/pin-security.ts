@@ -18,7 +18,7 @@
  * - The original PIN is never stored anywhere
  * - We minimize PIN retention in memory and attempt to clear sensitive data when possible,
  *   though JavaScript's garbage collection makes this imperfect
- * - We use secure random salt generation via expo-crypto (which uses OS-level randomness)
+ * - We use secure random salt generation via native crypto API (which uses OS-level randomness)
  * - Constant-time comparison prevents timing attacks, though we recognize this is a
  *   secondary defense as most attacks would target the application layer directly
  * - We acknowledge that an attacker with debug access to the device/application can
@@ -37,10 +37,10 @@
  *
  * @module pin_security
  */
-import * as crypto from "expo-crypto";
 import { pbkdf2 } from "@noble/hashes/pbkdf2";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
 import { getValue } from "./secure-store";
 import {
@@ -83,7 +83,7 @@ export async function hashPin(
 ): Promise<HashedPin> {
   try {
     // Generate a random salt (16 bytes)
-    const saltBytes = crypto.getRandomBytes(16);
+    const saltBytes = getRandomBytes(16);
     const salt = bytesToHex(saltBytes);
 
     // Use Noble's PBKDF2 implementation to derive a key from the PIN
