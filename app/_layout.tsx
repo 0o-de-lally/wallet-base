@@ -4,8 +4,8 @@ import { Stack } from "expo-router";
 import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { enableScreens } from 'react-native-screens';
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { enableScreens } from "react-native-screens";
 
 import * as LocalAuthentication from "expo-local-authentication";
 import { View, Text, StatusBar } from "react-native";
