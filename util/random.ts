@@ -24,6 +24,6 @@ export function getRandomBytes(size: number): Uint8Array {
 export function getRandomHex(size: number): string {
   const bytes = getRandomBytes(size);
   return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
