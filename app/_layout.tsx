@@ -4,6 +4,8 @@ import { Stack } from "expo-router";
 import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
 
 import * as LocalAuthentication from "expo-local-authentication";
 import { View, Text, StatusBar } from "react-native";
@@ -12,19 +14,24 @@ import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
 import { styles } from "../styles/styles";
 
+// Enable screens for react-native-screens
+enableScreens();
+
 // Layout wrapper to avoid duplication - only includes the ModalProvider once
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <ModalProvider>
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: styles.headerContainer.backgroundColor,
-      }}
-    >
-      <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
-      {children}
-    </View>
-  </ModalProvider>
+  <SafeAreaProvider>
+    <ModalProvider>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: styles.headerContainer.backgroundColor,
+        }}
+      >
+        <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+        {children}
+      </View>
+    </ModalProvider>
+  </SafeAreaProvider>
 );
 
 // App layout with navigation and global providers
