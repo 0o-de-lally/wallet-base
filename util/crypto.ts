@@ -5,7 +5,7 @@
 import { gcm } from "@noble/ciphers/aes";
 import { pbkdf2 } from "@noble/hashes/pbkdf2";
 import { sha256 } from "@noble/hashes/sha256";
-import { getRandomBytesAsync } from "expo-crypto";
+import { getRandomBytes } from "./random";
 
 // Add a verification token to check if decryption was successful
 const INTEGRITY_CHECK = stringToUint8Array("VALID_DECRYPTION_TOKEN_123");
@@ -55,8 +55,8 @@ export async function encryptWithPin(
     // Generate a key from the PIN
     const keyBytes = await generateKeyFromPin(pin);
 
-    // Generate a random nonce/IV using expo-crypto's secure random generator
-    const nonce = await getRandomBytesAsync(12); // 12-byte nonce is standard for GCM
+    // Generate a random nonce/IV using our random utility
+    const nonce = getRandomBytes(12); // 12-byte nonce is standard for GCM
 
     // Use AES-GCM for authenticated encryption
     const cipher = gcm(keyBytes, nonce);

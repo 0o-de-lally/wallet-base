@@ -1,5 +1,5 @@
-import { getRandomBytesAsync } from "expo-crypto";
 import { uint8ArrayToBase64 } from "./crypto";
+import { getRandomBytes } from "./random";
 import {
   addAccountToProfile,
   setActiveAccount,
@@ -41,7 +41,7 @@ export async function createAccount(
     }
 
     // Generate a random ID for the account using crypto secure random
-    const randomBytes = await getRandomBytesAsync(16); // 16 bytes = 128 bits
+    const randomBytes = getRandomBytes(16); // 16 bytes = 128 bits
     const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
     // Create account state
