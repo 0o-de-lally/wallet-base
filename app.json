@@ -40,17 +40,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#1a1a1f"
-        }
-      ],
-      "expo-secure-store"
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
