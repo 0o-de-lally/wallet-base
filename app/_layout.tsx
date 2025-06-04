@@ -1,4 +1,7 @@
+// Polyfills
 import "react-native-get-random-values";
+import "react-native-buffer";
+
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { ModalProvider } from "../context/ModalContext";
