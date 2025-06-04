@@ -101,11 +101,7 @@ const LibraSDKTest = memo(() => {
               ]}
               showsVerticalScrollIndicator={true}
             >
-              <Text
-                style={[styles.errorText, { fontSize: 12 }]}
-              >
-                {error}
-              </Text>
+              <Text style={[styles.errorText, { fontSize: 12 }]}>{error}</Text>
             </ScrollView>
           </View>
         )}
@@ -122,68 +118,43 @@ const LibraSDKTest = memo(() => {
               showsVerticalScrollIndicator={true}
             >
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
                 <Text style={{ fontWeight: "bold" }}>Block Height:</Text>{" "}
                 {ledgerInfo.block_height}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
                 <Text style={{ fontWeight: "bold" }}>Chain ID:</Text>{" "}
                 {ledgerInfo.chain_id}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
                 <Text style={{ fontWeight: "bold" }}>Epoch:</Text>{" "}
                 {ledgerInfo.epoch}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
                 <Text style={{ fontWeight: "bold" }}>Ledger Version:</Text>{" "}
                 {ledgerInfo.ledger_version}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
-                <Text style={{ fontWeight: "bold" }}>
-                  Ledger Timestamp:
-                </Text>{" "}
+                <Text style={{ fontWeight: "bold" }}>Ledger Timestamp:</Text>{" "}
                 {ledgerInfo.ledger_timestamp}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
-                <Text style={{ fontWeight: "bold" }}>
-                  Oldest Block Height:
-                </Text>{" "}
+                <Text style={{ fontWeight: "bold" }}>Oldest Block Height:</Text>{" "}
                 {ledgerInfo.oldest_block_height}
               </Text>
               <Text
-                style={[
-                  styles.resultValue,
-                  { fontSize: 12, marginBottom: 5 },
-                ]}
+                style={[styles.resultValue, { fontSize: 12, marginBottom: 5 }]}
               >
                 <Text style={{ fontWeight: "bold" }}>
                   Oldest Ledger Version:

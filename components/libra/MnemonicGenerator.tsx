@@ -3,7 +3,12 @@ import React, { useState, useCallback, memo } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { generateMnemonic, LibraWallet, addressFromString, Network } from "open-libra-sdk";
+import {
+  generateMnemonic,
+  LibraWallet,
+  addressFromString,
+  Network,
+} from "open-libra-sdk";
 
 const MainnetURL = "https://rpc.scan.openlibra.world/v1";
 
@@ -29,7 +34,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
     try {
       // Step 1: UI delay for better UX
       const delayStart = performance.now();
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const delayEnd = performance.now();
       console.log(`UI delay: ${(delayEnd - delayStart).toFixed(2)}ms`);
 
@@ -38,19 +43,31 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       console.log("Generating mnemonic phrase...");
       const newMnemonic = generateMnemonic();
       const mnemonicEnd = performance.now();
-      console.log(`Mnemonic generated in: ${(mnemonicEnd - mnemonicStart).toFixed(2)}ms`);
-      console.log(`Mnemonic length: ${newMnemonic.split(' ').length} words`);
+      console.log(
+        `Mnemonic generated in: ${(mnemonicEnd - mnemonicStart).toFixed(2)}ms`,
+      );
+      console.log(`Mnemonic length: ${newMnemonic.split(" ").length} words`);
 
       setMnemonic(newMnemonic);
 
       // Step 3: Create wallet from mnemonic with mainnet connectivity
       const walletStart = performance.now();
       console.log("Creating wallet from mnemonic with mainnet connectivity...");
-      const wallet = LibraWallet.fromMnemonic(newMnemonic, Network.MAINNET, MainnetURL);
+      const wallet = LibraWallet.fromMnemonic(
+        newMnemonic,
+        Network.MAINNET,
+        MainnetURL,
+      );
       const walletEnd = performance.now();
-      console.log(`Wallet created in: ${(walletEnd - walletStart).toFixed(2)}ms`);
-      console.log(`Wallet network: ${wallet.client?.config.network || 'Unknown'}`);
-      console.log(`Fullnode URL: ${wallet.client?.config.fullnode || 'Unknown'}`);
+      console.log(
+        `Wallet created in: ${(walletEnd - walletStart).toFixed(2)}ms`,
+      );
+      console.log(
+        `Wallet network: ${wallet.client?.config.network || "Unknown"}`,
+      );
+      console.log(
+        `Fullnode URL: ${wallet.client?.config.fullnode || "Unknown"}`,
+      );
 
       // Store the wallet instance for transaction testing
       setCurrentWallet(wallet);
@@ -60,14 +77,18 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       console.log("Generating wallet address...");
       const address = wallet.getAddress().toStringLong();
       const addressEnd = performance.now();
-      console.log(`Address generated in: ${(addressEnd - addressStart).toFixed(2)}ms`);
+      console.log(
+        `Address generated in: ${(addressEnd - addressStart).toFixed(2)}ms`,
+      );
       console.log(`Address: ${address}`);
 
       setWalletAddress(address);
 
       const totalTime = performance.now() - startTime;
       console.log(`Total process completed in: ${totalTime.toFixed(2)}ms`);
-      console.log(`Breakdown: Delay=${(delayEnd - delayStart).toFixed(2)}ms, Mnemonic=${(mnemonicEnd - mnemonicStart).toFixed(2)}ms, Wallet=${(walletEnd - walletStart).toFixed(2)}ms, Address=${(addressEnd - addressStart).toFixed(2)}ms`);
+      console.log(
+        `Breakdown: Delay=${(delayEnd - delayStart).toFixed(2)}ms, Mnemonic=${(mnemonicEnd - mnemonicStart).toFixed(2)}ms, Wallet=${(walletEnd - walletStart).toFixed(2)}ms, Address=${(addressEnd - addressStart).toFixed(2)}ms`,
+      );
 
       Alert.alert(
         "Success",
@@ -87,7 +108,9 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       ]);
     } finally {
       const finalTime = performance.now() - startTime;
-      console.log(`Process finished, setting loading to false after: ${finalTime.toFixed(2)}ms`);
+      console.log(
+        `Process finished, setting loading to false after: ${finalTime.toFixed(2)}ms`,
+      );
       setIsLoading(false);
     }
   }, []);
@@ -102,7 +125,10 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
 
   const testTransaction = useCallback(async () => {
     if (!currentWallet) {
-      Alert.alert("Error", "No wallet available. Please generate a mnemonic first.");
+      Alert.alert(
+        "Error",
+        "No wallet available. Please generate a mnemonic first.",
+      );
       return;
     }
 
@@ -119,7 +145,9 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       await currentWallet.syncOnchain();
       const syncEnd = performance.now();
       console.log(`Wallet synced in: ${(syncEnd - syncStart).toFixed(2)}ms`);
-      console.log(`Current sequence number: ${currentWallet.txOptions.accountSequenceNumber}`);
+      console.log(
+        `Current sequence number: ${currentWallet.txOptions.accountSequenceNumber}`,
+      );
 
       // Step 2: Create a test transfer transaction (to a test address)
       const txStart = performance.now();
@@ -138,7 +166,9 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       console.log("Signing and submitting transaction...");
       const result = await currentWallet.signSubmitWait(tx);
       const submitEnd = performance.now();
-      console.log(`Transaction submitted in: ${(submitEnd - submitStart).toFixed(2)}ms`);
+      console.log(
+        `Transaction submitted in: ${(submitEnd - submitStart).toFixed(2)}ms`,
+      );
 
       const totalTime = performance.now() - startTime;
       console.log(`Transaction test completed in: ${totalTime.toFixed(2)}ms`);
@@ -151,19 +181,26 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
           [{ text: "OK" }],
         );
       } else {
-        throw new Error(`Transaction failed: ${result.vm_status || 'Unknown error'}`);
+        throw new Error(
+          `Transaction failed: ${result.vm_status || "Unknown error"}`,
+        );
       }
-
     } catch (err) {
       const errorTime = performance.now() - startTime;
-      console.error(`Transaction test error after ${errorTime.toFixed(2)}ms:`, err);
+      console.error(
+        `Transaction test error after ${errorTime.toFixed(2)}ms:`,
+        err,
+      );
 
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(`Transaction test failed: ${errorMessage}`);
 
-      Alert.alert("Transaction Error", `Transaction test failed: ${errorMessage}`, [
-        { text: "OK" },
-      ]);
+      Alert.alert(
+        "Transaction Error",
+        `Transaction test failed: ${errorMessage}`,
+        [{ text: "OK" }],
+      );
     } finally {
       const finalTime = performance.now() - startTime;
       console.log(`Transaction test finished after: ${finalTime.toFixed(2)}ms`);
@@ -215,9 +252,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
             ]}
             showsVerticalScrollIndicator={true}
           >
-            <Text style={[styles.errorText, { fontSize: 12 }]}>
-              {error}
-            </Text>
+            <Text style={[styles.errorText, { fontSize: 12 }]}>{error}</Text>
           </ScrollView>
         </View>
       )}
@@ -242,7 +277,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                   backgroundColor: "#2a2a2a",
                   padding: 10,
                   borderRadius: 5,
-                  fontFamily: "monospace"
+                  fontFamily: "monospace",
                 },
               ]}
             >
@@ -290,7 +325,8 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                 },
               ]}
             >
-              ⚠️ Store this mnemonic securely. Anyone with access to it can control your wallet.
+              ⚠️ Store this mnemonic securely. Anyone with access to it can
+              control your wallet.
             </Text>
           </ScrollView>
         </View>
