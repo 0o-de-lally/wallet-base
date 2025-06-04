@@ -1,3 +1,4 @@
+import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useCallback, memo } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
