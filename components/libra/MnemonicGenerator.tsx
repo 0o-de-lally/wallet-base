@@ -186,11 +186,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
         console.warn("Transaction failed:", failureMessage);
         setError(`Transaction failed: ${failureMessage}`);
 
-        Alert.alert(
-          "Transaction Failed",
-          failureMessage,
-          [{ text: "OK" }],
-        );
+        Alert.alert("Transaction Failed", failureMessage, [{ text: "OK" }]);
       }
     } catch (err) {
       const errorTime = performance.now() - startTime;
