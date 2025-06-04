@@ -97,10 +97,10 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       );
     } catch (err) {
       const errorTime = performance.now() - startTime;
-      console.error(`Error after ${errorTime.toFixed(2)}ms:`, err);
+      console.warn(`Error after ${errorTime.toFixed(2)}ms:`, err);
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";
-      console.error("Error generating mnemonic:", err);
+      console.warn("Error generating mnemonic:", err);
       setError(errorMessage);
 
       Alert.alert("Error", `Failed to generate mnemonic: ${errorMessage}`, [
@@ -181,13 +181,20 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
           [{ text: "OK" }],
         );
       } else {
-        throw new Error(
-          `Transaction failed: ${result.vm_status || "Unknown error"}`,
+        // Handle transaction failure gracefully without throwing
+        const failureMessage = `Transaction failed: ${result.vm_status || "Unknown error"}`;
+        console.warn("Transaction failed:", failureMessage);
+        setError(`Transaction failed: ${failureMessage}`);
+
+        Alert.alert(
+          "Transaction Failed",
+          failureMessage,
+          [{ text: "OK" }],
         );
       }
     } catch (err) {
       const errorTime = performance.now() - startTime;
-      console.error(
+      console.warn(
         `Transaction test error after ${errorTime.toFixed(2)}ms:`,
         err,
       );
