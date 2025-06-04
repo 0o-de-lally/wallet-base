@@ -1,4 +1,10 @@
+// Polyfills
 import "react-native-get-random-values";
+import { Buffer } from "buffer";
+
+// Make Buffer globally available
+global.Buffer = Buffer;
+
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { ModalProvider } from "../context/ModalContext";

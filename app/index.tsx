@@ -41,6 +41,10 @@ const AppContent = observer(() => {
     router.navigate("/create-account");
   }, [router]);
 
+  const navigateToLibraTest = useCallback(() => {
+    router.navigate("/libra-test");
+  }, [router]);
+
   const renderNavigationButton = useCallback(
     (text: string, onPress: () => void) => (
       <TouchableOpacity
@@ -62,6 +66,7 @@ const AppContent = observer(() => {
         {renderNavigationButton("PIN Management", navigateToPIN)}
         {renderNavigationButton("Profile Management", navigateToProfiles)}
         {renderNavigationButton("Create Account", navigateToCreateAccount)}
+        {renderNavigationButton("Libra SDK Test", navigateToLibraTest)}
       </View>
     </View>
   );
