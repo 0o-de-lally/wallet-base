@@ -3,7 +3,9 @@ import React, { useState, useCallback, memo } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { generateMnemonic, LibraWallet } from "open-libra-sdk/dist/browser/index.js";
+import { generateMnemonic, LibraWallet, addressFromString, Network } from "open-libra-sdk";
+
+const MainnetURL = "https://rpc.scan.openlibra.world/v1";
 
 interface MnemonicGeneratorProps {
   onClear?: () => void;
@@ -14,6 +16,8 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentWallet, setCurrentWallet] = useState<LibraWallet | null>(null);
+  const [isTestingTransaction, setIsTestingTransaction] = useState(false);
 
   const generateMnemonicPhrase = useCallback(async () => {
     const startTime = performance.now();
@@ -39,12 +43,17 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
 
       setMnemonic(newMnemonic);
 
-      // Step 3: Create wallet from mnemonic
+      // Step 3: Create wallet from mnemonic with mainnet connectivity
       const walletStart = performance.now();
-      console.log("Creating wallet from mnemonic...");
-      const wallet = LibraWallet.fromMnemonic(newMnemonic);
+      console.log("Creating wallet from mnemonic with mainnet connectivity...");
+      const wallet = LibraWallet.fromMnemonic(newMnemonic, Network.MAINNET, MainnetURL);
       const walletEnd = performance.now();
       console.log(`Wallet created in: ${(walletEnd - walletStart).toFixed(2)}ms`);
+      console.log(`Wallet network: ${wallet.client?.config.network || 'Unknown'}`);
+      console.log(`Fullnode URL: ${wallet.client?.config.fullnode || 'Unknown'}`);
+
+      // Store the wallet instance for transaction testing
+      setCurrentWallet(wallet);
 
       // Step 4: Generate address
       const addressStart = performance.now();
@@ -87,8 +96,80 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
     setMnemonic(null);
     setWalletAddress(null);
     setError(null);
+    setCurrentWallet(null);
     onClear?.();
   }, [onClear]);
+
+  const testTransaction = useCallback(async () => {
+    if (!currentWallet) {
+      Alert.alert("Error", "No wallet available. Please generate a mnemonic first.");
+      return;
+    }
+
+    const startTime = performance.now();
+    console.log("Starting transaction test...");
+
+    setIsTestingTransaction(true);
+    setError(null);
+
+    try {
+      // Step 1: Sync wallet with blockchain
+      const syncStart = performance.now();
+      console.log("Syncing wallet with blockchain...");
+      await currentWallet.syncOnchain();
+      const syncEnd = performance.now();
+      console.log(`Wallet synced in: ${(syncEnd - syncStart).toFixed(2)}ms`);
+      console.log(`Current sequence number: ${currentWallet.txOptions.accountSequenceNumber}`);
+
+      // Step 2: Create a test transfer transaction (to a test address)
+      const txStart = performance.now();
+      console.log("Building test transaction...");
+
+      // Using a well-known test address (0x1 is usually a system address)
+      const testAddress = addressFromString("0x1");
+      const amount = 1; // 1 unit (smallest denomination)
+
+      const tx = await currentWallet.buildTransferTx(testAddress, amount);
+      const txEnd = performance.now();
+      console.log(`Transaction built in: ${(txEnd - txStart).toFixed(2)}ms`);
+
+      // Step 3: Sign and submit transaction
+      const submitStart = performance.now();
+      console.log("Signing and submitting transaction...");
+      const result = await currentWallet.signSubmitWait(tx);
+      const submitEnd = performance.now();
+      console.log(`Transaction submitted in: ${(submitEnd - submitStart).toFixed(2)}ms`);
+
+      const totalTime = performance.now() - startTime;
+      console.log(`Transaction test completed in: ${totalTime.toFixed(2)}ms`);
+      console.log(`Transaction result:`, result);
+
+      if (result.success) {
+        Alert.alert(
+          "Transaction Success",
+          `Transaction completed successfully!\nHash: ${result.hash?.substring(0, 20)}...\nTotal time: ${totalTime.toFixed(0)}ms`,
+          [{ text: "OK" }],
+        );
+      } else {
+        throw new Error(`Transaction failed: ${result.vm_status || 'Unknown error'}`);
+      }
+
+    } catch (err) {
+      const errorTime = performance.now() - startTime;
+      console.error(`Transaction test error after ${errorTime.toFixed(2)}ms:`, err);
+
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Transaction test failed: ${errorMessage}`);
+
+      Alert.alert("Transaction Error", `Transaction test failed: ${errorMessage}`, [
+        { text: "OK" },
+      ]);
+    } finally {
+      const finalTime = performance.now() - startTime;
+      console.log(`Transaction test finished after: ${finalTime.toFixed(2)}ms`);
+      setIsTestingTransaction(false);
+    }
+  }, [currentWallet]);
 
   return (
     <View>
@@ -96,16 +177,28 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
         text="Generate Mnemonic"
         onPress={generateMnemonicPhrase}
         isLoading={isLoading}
-        disabled={isLoading}
+        disabled={isLoading || isTestingTransaction}
         accessibilityLabel="Generate new wallet mnemonic"
         accessibilityHint="Creates a new BIP39 mnemonic phrase for wallet creation"
       />
+
+      {currentWallet && (
+        <ActionButton
+          text="Test Transaction"
+          onPress={testTransaction}
+          isLoading={isTestingTransaction}
+          disabled={isLoading || isTestingTransaction}
+          style={{ marginTop: 10 }}
+          accessibilityLabel="Test transaction with current wallet"
+          accessibilityHint="Attempts to send a test transaction using the generated wallet"
+        />
+      )}
 
       {(mnemonic || error) && (
         <ActionButton
           text="Clear Mnemonic"
           onPress={clearResults}
-          disabled={isLoading}
+          disabled={isLoading || isTestingTransaction}
           style={{ marginTop: 10 }}
           accessibilityLabel="Clear mnemonic results"
         />
