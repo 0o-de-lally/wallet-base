@@ -6,7 +6,7 @@
     "start": "bun install && expo start --clear",
     "android": "expo run:android",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
-    "emulator:maestro": "maestro start-device --platform android",
+    "emulator:maestro": "yes | maestro start-device --platform android",
     "e2e": "bun ./testing/e2e-harness.ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx",
