@@ -42,6 +42,27 @@ function spawnEmulator() {
   });
 }
 
+// Start a the `bun emulator:maestro` script and wait for it to complete
+function spawnMaestroEmulator() {
+  return new Promise<void>((resolve, reject) => {
+    maestroProc = spawn("bun", ["emulator:maestro"], {
+      stdio: "inherit",
+    });
+
+    maestroProc.on("exit", (code: number | null) => {
+      if (code !== 0 && code !== null) {
+        reject(new Error(`Maestro emulator failed with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+
+    maestroProc.on("error", (error) => {
+      reject(new Error(`Failed to start maestro emulator: ${error.message}`));
+    });
+  });
+}
+
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
     expoProc = spawn("bun", ["android"], {
@@ -83,7 +104,7 @@ function spawnMaestroTest() {
 }
 
 async function main() {
-  spawnEmulator();
+  await spawnMaestroEmulator();
   await waitForDeviceBoot();
   try {
     await spawnExpoAndroid();
