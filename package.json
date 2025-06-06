@@ -24,22 +24,22 @@
     "expo-secure-store": "^14.2.3",
     "open-libra-sdk": "^1.1.4-beta.0",
     "react": "19.0.0",
-    "react-native": "0.79.2",
+    "react-native": "0.79.3",
     "react-native-get-random-values": "^1.11.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.11.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
+    "@types/bun": "latest",
     "@types/react": "~19.0.14",
     "eslint": "^9.27.0",
     "eslint-plugin-react": "^7.37.5",
-    "expo": "^53.0.9",
+    "expo": "53.0.10",
     "globals": "^16.2.0",
     "prettier": "^3.5.3",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.33.0",
-    "@types/bun": "latest"
+    "typescript-eslint": "^8.33.0"
   },
   "private": true,
   "expo": {
