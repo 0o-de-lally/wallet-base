@@ -155,11 +155,13 @@ export function useSecureStorage(initialAccountId?: string) {
   const saveSecurelyWithPin = async (pin: string) => {
     if (!value.trim()) {
       showAlert("Error", "Please enter a value to store");
+      setPinModalVisible(false);
       return;
     }
 
     if (!currentAccountId) {
       showAlert("Error", "No account selected");
+      setPinModalVisible(false);
       return;
     }
 
@@ -170,6 +172,7 @@ export function useSecureStorage(initialAccountId?: string) {
       const isValid = await verifyStoredPin(pin);
       if (!isValid) {
         showAlert("Error", "Invalid PIN");
+        setPinModalVisible(false); // Close PIN modal on failure
         return;
       }
 
@@ -192,9 +195,13 @@ export function useSecureStorage(initialAccountId?: string) {
       // Cancel any active reveals when saving a new value
       cancelReveal(currentAccountId);
       setRevealStatus(null);
+
+      // Close PIN modal on success
+      setPinModalVisible(false);
     } catch (error) {
       showAlert("Error", "Failed to save encrypted value");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
     } finally {
       setIsLoading(false);
     }
@@ -241,6 +248,7 @@ export function useSecureStorage(initialAccountId?: string) {
     } catch (error) {
       showAlert("Error", "Failed to schedule reveal");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
     } finally {
       setIsLoading(false);
     }
@@ -263,6 +271,7 @@ export function useSecureStorage(initialAccountId?: string) {
             ? "Reveal window has expired. Please schedule again."
             : "No reveal scheduled or still in waiting period.",
         );
+        setPinModalVisible(false); // Close PIN modal on status error
         return;
       }
 
@@ -272,6 +281,7 @@ export function useSecureStorage(initialAccountId?: string) {
       if (encryptedBase64 === null) {
         setStoredValue(null);
         showAlert("Error", "No value found");
+        setPinModalVisible(false); // Close PIN modal on data error
         return;
       }
 
@@ -336,9 +346,11 @@ export function useSecureStorage(initialAccountId?: string) {
       setRevealStatus(null);
 
       showAlert("Success", "Value deleted");
+      setPinModalVisible(false); // Close PIN modal on success
     } catch (error) {
       showAlert("Error", "Failed to delete value");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
     } finally {
       setIsLoading(false);
     }
@@ -391,6 +403,8 @@ export function useSecureStorage(initialAccountId?: string) {
       console.log(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
         showAlert("Error", "PIN is required");
+        setPinModalVisible(false); // Close modal on validation error
+        setCurrentAction(null); // Reset action to prevent re-opening
         return;
       }
 
@@ -408,10 +422,18 @@ export function useSecureStorage(initialAccountId?: string) {
           await clearAccountDataWithPin(pin);
         } else {
           console.error(`Unknown pin action: ${currentAction}`);
+          showAlert("Error", "Unknown action requested");
+          setPinModalVisible(false); // Close modal on unknown action
+          setCurrentAction(null); // Reset action to prevent re-opening
         }
+
+        // Reset action after successful completion
+        setCurrentAction(null);
       } catch (error) {
         console.error(`Error in handlePinAction:`, error);
         showAlert("Error", "Failed to process your request");
+        setPinModalVisible(false); // Close modal on unexpected error
+        setCurrentAction(null); // Reset action to prevent re-opening
       }
     },
     [currentAction, showAlert, value],
@@ -457,6 +479,19 @@ export function useSecureStorage(initialAccountId?: string) {
     [value, showAlert],
   );
 
+  const handleSaveWithValue = useCallback(
+    (accountId: string, valueToSave: string) => {
+      if (!valueToSave.trim()) {
+        showAlert("Error", "Please enter a value to store");
+        return;
+      }
+      // Set the value first, then request PIN
+      setValue(valueToSave);
+      requestPinForAction("save", accountId);
+    },
+    [showAlert],
+  );
+
   const handleClearAll = useCallback((accountId: string) => {
     requestPinForAction("clear_all", accountId);
   }, []);
@@ -472,12 +507,19 @@ export function useSecureStorage(initialAccountId?: string) {
     }
   };
 
+  // Add a proper onClose handler that resets the action
+  const handlePinModalClose = useCallback(() => {
+    setPinModalVisible(false);
+    setCurrentAction(null); // Reset action to prevent re-opening
+  }, []);
+
   return {
     value,
     setValue,
     storedValue,
     isLoading,
     handleSave,
+    handleSaveWithValue,
     handleScheduleReveal,
     handleExecuteReveal,
     handleCancelReveal,
@@ -485,6 +527,7 @@ export function useSecureStorage(initialAccountId?: string) {
     handleClearAll,
     pinModalVisible,
     setPinModalVisible,
+    handlePinModalClose, // Export the proper close handler
     handlePinAction,
     currentAction,
     revealStatus,

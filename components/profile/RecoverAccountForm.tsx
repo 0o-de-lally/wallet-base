@@ -80,17 +80,25 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   // State for modals
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
+  // State for tracking if save has been initiated to prevent multiple saves
+  const [saveInitiated, setSaveInitiated] = useState(false);
+
   // Initialize secure storage hook without an initial account (we'll set it after account creation)
   const secureStorage = useSecureStorage();
 
-  // Update secure storage when account is created
-  useEffect(() => {
-    if (createdAccountId && mnemonic.trim()) {
-      // Set the value in secure storage and trigger save
-      secureStorage.setValue(mnemonic);
-      secureStorage.handleSave(createdAccountId);
-    }
-  }, [createdAccountId, mnemonic, secureStorage]);
+  // Check if the derived address already exists in the selected profile
+  const accountExistsInProfile = React.useMemo(() => {
+    if (!derivedAddress || !selectedProfile) return false;
+    
+    const profiles = appConfig.profiles.get();
+    const profile = profiles[selectedProfile];
+    
+    if (!profile) return false;
+    
+    return profile.accounts.some(
+      (acc) => acc.account_address === derivedAddress
+    );
+  }, [derivedAddress, selectedProfile]);
 
   // Update selected profile if initial profile changes or profiles change
   useEffect(() => {
@@ -163,6 +171,16 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     deriveAddress();
   }, [isVerifiedMnemonic, mnemonic, nickname]);
 
+  // Show error when account already exists in the selected profile
+  useEffect(() => {
+    if (accountExistsInProfile && derivedAddress) {
+      setError(`Account ${derivedAddress} already exists in profile "${selectedProfile}"`);
+    } else if (!accountExistsInProfile && derivedAddress) {
+      // Clear the error if account doesn't exist (but keep other errors)
+      setError(null);
+    }
+  }, [accountExistsInProfile, derivedAddress, selectedProfile]);
+
   // Expose a reset method through prop callback
   const resetForm = () => {
     setMnemonic("");
@@ -170,6 +188,8 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     setError(null);
     setIsVerifiedMnemonic(false);
     setDerivedAddress(null);
+    setCreatedAccountId(null);
+    setSaveInitiated(false); // Reset save state
     // Don't reset the selectedProfile here to persist selection
   };
 
@@ -181,33 +201,54 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   }, [onResetForm]);
 
   const handleRecoverAccount = async () => {
+    console.log("handleRecoverAccount called");
+    console.log("derivedAddress:", derivedAddress);
+    console.log("selectedProfile:", selectedProfile);
+    console.log("canRecover:", canRecover);
+
     if (!derivedAddress) {
+      console.log("Error: No derived address");
       setError("Please enter a valid mnemonic phrase");
       return;
     }
 
+    console.log("Starting recovery process...");
     setIsLoading(true);
     setError(null);
 
     try {
+      console.log("Calling createAccount with:", { selectedProfile, derivedAddress, nickname });
       const result = await createAccount(
         selectedProfile,
         derivedAddress,
         nickname || deriveShortNickname(derivedAddress),
       );
 
+      console.log("createAccount result:", result);
+
       if (result.success && result.account) {
+        console.log("Account created successfully:", result.account.id);
         // Store the created account ID for secure storage integration
         setCreatedAccountId(result.account.id);
+
+        // Trigger mnemonic save immediately now that we have the account ID
+        if (mnemonic.trim() && !saveInitiated) {
+          setSaveInitiated(true);
+          secureStorage.handleSaveWithValue(result.account.id, mnemonic);
+        }
+
         setSuccessModalVisible(true);
       } else {
+        console.log("Account creation failed:", result.error);
         setError(result.error || "Unknown error occurred");
       }
     } catch (err) {
+      console.error("Exception in handleRecoverAccount:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to recover account";
       setError(errorMessage);
     } finally {
+      console.log("Recovery process completed, setting isLoading to false");
       setIsLoading(false);
     }
   };
@@ -229,7 +270,10 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   // Mnemonic validation handler
   const handleMnemonicValidation = (isValid: boolean, isVerified: boolean) => {
     setIsVerifiedMnemonic(isVerified);
-    setError(null); // Clear errors when validation changes
+    // Clear errors when mnemonic validation changes (but let the address check set new ones)
+    if (!isVerified) {
+      setError(null);
+    }
   };
 
   // Debug the current selection state
@@ -238,7 +282,17 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     console.log("Available profiles:", profileNames);
   }, [selectedProfile, profileNames]);
 
-  const canRecover = isVerifiedMnemonic && derivedAddress && !isLoading;
+  const canRecover = isVerifiedMnemonic && derivedAddress && !isLoading && !accountExistsInProfile;
+
+  // Debug the canRecover state
+  useEffect(() => {
+    console.log("canRecover calculation:");
+    console.log("  isVerifiedMnemonic:", isVerifiedMnemonic);
+    console.log("  derivedAddress:", derivedAddress);
+    console.log("  isLoading:", isLoading);
+    console.log("  accountExistsInProfile:", accountExistsInProfile);
+    console.log("  canRecover:", canRecover);
+  }, [isVerifiedMnemonic, derivedAddress, isLoading, accountExistsInProfile, canRecover]);
 
   return (
     <SectionContainer
@@ -291,7 +345,12 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       <ActionButton
         text="Recover Account"
-        onPress={handleRecoverAccount}
+        onPress={() => {
+          console.log("Recover Account button clicked");
+          console.log("Button disabled state:", !canRecover);
+          console.log("Button loading state:", isLoading);
+          handleRecoverAccount();
+        }}
         disabled={!canRecover}
         isLoading={isLoading}
         accessibilityLabel="Recover account from mnemonic"
@@ -311,7 +370,7 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       {/* PIN Input Modal for Secure Storage */}
       <PinInputModal
         visible={secureStorage.pinModalVisible}
-        onClose={() => secureStorage.setPinModalVisible(false)}
+        onClose={secureStorage.handlePinModalClose}
         purpose="save"
         onPinAction={secureStorage.handlePinAction}
         actionTitle="Secure Mnemonic"

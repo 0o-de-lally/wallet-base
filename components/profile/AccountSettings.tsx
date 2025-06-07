@@ -65,7 +65,7 @@ export const AccountSettings = memo(
       handleClearAll,
       checkHasStoredData,
       pinModalVisible,
-      setPinModalVisible,
+      handlePinModalClose,
       handlePinAction,
       currentAction,
     } = useSecureStorage(accountId);
@@ -115,7 +115,7 @@ export const AccountSettings = memo(
 
         <PinInputModal
           visible={pinModalVisible}
-          onClose={() => setPinModalVisible(false)}
+          onClose={handlePinModalClose}
           onPinAction={handlePinAction}
           purpose={getPinPurpose()}
         />

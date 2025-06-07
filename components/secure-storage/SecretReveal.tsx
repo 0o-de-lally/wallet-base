@@ -22,7 +22,7 @@ export const SecretReveal = memo(
       handleCancelReveal,
       clearRevealedValue,
       pinModalVisible,
-      setPinModalVisible,
+      handlePinModalClose,
       handlePinAction,
       currentAction,
       revealStatus,
@@ -65,7 +65,7 @@ export const SecretReveal = memo(
         {/* PIN Input Modal */}
         <PinInputModal
           visible={pinModalVisible}
-          onClose={() => setPinModalVisible(false)}
+          onClose={handlePinModalClose}
           onPinAction={handlePinAction}
           purpose={getPinPurpose()}
         />

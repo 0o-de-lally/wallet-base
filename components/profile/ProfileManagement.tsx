@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
+import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import {
   appConfig,
@@ -18,7 +19,7 @@ import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 
-const ProfileManagement: React.FC = () => {
+const ProfileManagement: React.FC = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
     null,
   );
@@ -84,12 +85,9 @@ const ProfileManagement: React.FC = () => {
   }, []);
 
   const handleAccountsUpdated = useCallback(() => {
-    // Force a UI refresh by updating the selected profile
-    if (selectedProfileName) {
-      // This will trigger a re-render with the updated accounts
-      setSelectedProfileName(selectedProfileName);
-    }
-  }, [selectedProfileName]);
+    // No need to force re-render since this component is now an observer
+    // The component will automatically re-render when appConfig state changes
+  }, []);
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
@@ -257,7 +255,7 @@ const ProfileManagement: React.FC = () => {
       />
     </ScrollView>
   );
-};
+});
 
 ProfileManagement.displayName = "ProfileManagement";
 
