@@ -429,7 +429,8 @@ export function useSecureStorage(initialAccountId?: string) {
     (accountId: string) => {
       try {
         setIsLoading(true);
-        cancelReveal(accountId);
+        const key = getStorageKey(accountId);
+        cancelReveal(key);
         setRevealStatus(null);
       } catch (error) {
         showAlert("Error", "Failed to cancel reveal");
@@ -438,7 +439,7 @@ export function useSecureStorage(initialAccountId?: string) {
         setIsLoading(false);
       }
     },
-    [showAlert],
+    [showAlert, getStorageKey],
   );
 
   const handleDelete = useCallback((accountId: string) => {
