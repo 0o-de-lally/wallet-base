@@ -44,8 +44,8 @@ export const MnemonicManagement = memo(
 
     return (
       <View>
-        <Text style={[styles.label, { marginBottom: 16 }]}>
-          Mnemonic Management for {accountName || accountId}
+        <Text style={[styles.label]}>
+          Mnemonic Management
         </Text>
 
         <Text style={[styles.description, { marginBottom: 20 }]}>
@@ -65,7 +65,7 @@ export const MnemonicManagement = memo(
           />
 
           <ActionButton
-            text="Clear Account Data"
+            text="Clear Mnemonic"
             onPress={onClearAll}
             isLoading={isLoading}
             disabled={disabled}

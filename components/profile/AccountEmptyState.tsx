@@ -3,14 +3,12 @@ import { View } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import AddAccountForm from "./AddAccountForm";
-import type { AddAccountFormRef } from "./AddAccountForm";
 
 interface AccountEmptyStateProps {
   profileName: string;
   showAddForm: boolean;
   onToggleAddForm: () => void;
   onAccountAdded: () => void;
-  formRef: React.RefObject<AddAccountFormRef>;
 }
 
 export const AccountEmptyState = memo(
@@ -19,7 +17,6 @@ export const AccountEmptyState = memo(
     showAddForm,
     onToggleAddForm,
     onAccountAdded,
-    formRef,
   }: AccountEmptyStateProps) => {
     return (
       <View style={styles.content}>
@@ -34,7 +31,6 @@ export const AccountEmptyState = memo(
           <AddAccountForm
             profileName={profileName}
             onComplete={onAccountAdded}
-            ref={formRef}
           />
         )}
       </View>

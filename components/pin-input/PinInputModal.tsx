@@ -3,6 +3,7 @@ import { Modal, View, Text, TextInput } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
+import { formatWaitingPeriod } from "../../util/reveal-controller";
 
 // Define callback types for PIN operations
 type PinActionCallback = (pin: string) => Promise<void>;
@@ -162,7 +163,7 @@ export const PinInputModal = memo(
 
       switch (purpose) {
         case "schedule_reveal":
-          return "Enter your PIN to schedule a reveal of the secured data. You'll need to wait 30 seconds before you can reveal it.";
+          return `Enter your PIN to schedule a reveal of the secured data. You'll need to wait ${formatWaitingPeriod()} before you can reveal it.`;
         case "execute_reveal":
           return "Enter your PIN again to reveal the secured data. This data will be visible on screen.";
         case "clear_all":

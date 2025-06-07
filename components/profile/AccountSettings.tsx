@@ -1,20 +1,13 @@
-import React, { memo, useState, useCallback, useEffect } from "react";
+import React, { memo, useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
-import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
-
-// Define UI view modes
-enum SecretViewMode {
-  MANAGE,
-  REVEAL,
-}
 
 // Define the component props
 interface AccountSettingsProps {
@@ -24,9 +17,6 @@ interface AccountSettingsProps {
 
 export const AccountSettings = memo(
   observer(({ accountId, profileName }: AccountSettingsProps) => {
-    const [viewMode, setViewMode] = useState<SecretViewMode>(
-      SecretViewMode.MANAGE,
-    );
     const [isLoading, setIsLoading] = useState(true);
     const [account, setAccount] = useState<AccountState | null>(null);
 
@@ -73,9 +63,6 @@ export const AccountSettings = memo(
       storedValue,
       isLoading: isSecureLoading,
       handleSave,
-      handleScheduleReveal,
-      handleExecuteReveal,
-      handleCancelReveal,
       handleDelete,
       handleClearAll,
       checkHasStoredData,
@@ -83,17 +70,7 @@ export const AccountSettings = memo(
       setPinModalVisible,
       handlePinAction,
       currentAction,
-      revealStatus,
-      clearRevealedValue,
     } = useSecureStorage(accountId);
-
-    const switchToRevealMode = useCallback(() => {
-      setViewMode(SecretViewMode.REVEAL);
-    }, []);
-
-    const switchToManageMode = useCallback(() => {
-      setViewMode(SecretViewMode.MANAGE);
-    }, []);
 
     const getPinPurpose = () => {
       switch (currentAction) {
@@ -101,10 +78,6 @@ export const AccountSettings = memo(
           return "save";
         case "delete":
           return "delete";
-        case "schedule_reveal":
-          return "schedule_reveal";
-        case "execute_reveal":
-          return "execute_reveal";
         case "clear_all":
           return "clear_all";
         default:
@@ -126,88 +99,28 @@ export const AccountSettings = memo(
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultLabel}>Account Settings</Text>
-          <Text style={styles.resultValue}>{account.nickname}</Text>
-        </View>
+        <Text style={styles.label}>{account.nickname}</Text>
 
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultLabel}>Security Management</Text>
+        <View>
+          <SecureStorageForm
+            value={value}
+            onValueChange={setValue}
+            onSave={() => handleSave(accountId)}
+            onDelete={() => handleDelete(accountId)}
+            onClearAll={() => handleClearAll(accountId)}
+            checkHasStoredData={checkHasStoredData}
+            isLoading={isSecureLoading}
+            accountId={account.id}
+            accountName={account.nickname}
+          />
+          </View>
 
-          {account.is_key_stored && (
-            <>
-              <ActionButton
-                text={
-                  viewMode === SecretViewMode.MANAGE
-                    ? "Reveal Secret"
-                    : "Manage Secret"
-                }
-                onPress={
-                  viewMode === SecretViewMode.MANAGE
-                    ? switchToRevealMode
-                    : switchToManageMode
-                }
-                size="medium"
-                style={{
-                  backgroundColor:
-                    viewMode === SecretViewMode.MANAGE ? "#5e35b1" : "#4a90e2",
-                  marginBottom: 15,
-                }}
-                accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
-              />
-
-              {/* Add button to clear account data if in manage mode */}
-              {viewMode === SecretViewMode.MANAGE && (
-                <ActionButton
-                  text="Clear Account Data"
-                  onPress={() => handleClearAll(accountId)}
-                  isDestructive={true}
-                  size="small"
-                  style={{ marginBottom: 15 }}
-                />
-              )}
-            </>
-          )}
-
-          {viewMode === SecretViewMode.MANAGE && (
-            <View style={[styles.expandedContent, { marginBottom: 40 }]}>
-              <SecureStorageForm
-                value={value}
-                onValueChange={setValue}
-                onSave={() => handleSave(accountId)}
-                onDelete={() => handleDelete(accountId)}
-                onClearAll={() => handleClearAll(accountId)}
-                checkHasStoredData={checkHasStoredData}
-                isLoading={isSecureLoading}
-                accountId={account.id}
-                accountName={account.nickname}
-              />
-            </View>
-          )}
-
-          {viewMode === SecretViewMode.REVEAL && (
-            <View style={[styles.expandedContent, { marginBottom: 40 }]}>
-              <RevealStatusUI
-                accountId={account.id}
-                accountName={account.nickname}
-                revealStatus={revealStatus}
-                storedValue={storedValue}
-                isLoading={isSecureLoading}
-                onScheduleReveal={handleScheduleReveal}
-                onExecuteReveal={handleExecuteReveal}
-                onCancelReveal={handleCancelReveal}
-                onClearRevealedValue={clearRevealedValue}
-              />
-            </View>
-          )}
-        </View>
-
-        <PinInputModal
-          visible={pinModalVisible}
-          onClose={() => setPinModalVisible(false)}
-          onPinAction={handlePinAction}
-          purpose={getPinPurpose()}
-        />
+          <PinInputModal
+            visible={pinModalVisible}
+            onClose={() => setPinModalVisible(false)}
+            onPinAction={handlePinAction}
+            purpose={getPinPurpose()}
+          />
       </ScrollView>
     );
   }),

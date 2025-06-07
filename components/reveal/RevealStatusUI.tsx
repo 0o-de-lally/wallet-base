@@ -43,8 +43,8 @@ export const RevealStatusUI = memo(
     const [hideCountdown, setHideCountdown] = useState<number>(
       AUTO_HIDE_DELAY_MS / 1000,
     );
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hideTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Create a safe handler for clearing revealed value
     const handleClearRevealedValue = useCallback(() => {
@@ -153,16 +153,14 @@ export const RevealStatusUI = memo(
       // If no reveal is scheduled yet, show the initial schedule button
       if (!revealStatus || !revealStatus.isScheduled) {
         return (
-          <View style={{ alignItems: "center", marginBottom: 20 }}>
             <ActionButton
-              text={`Schedule Reveal${accountName ? ` for ${accountName}` : ""}`}
+              text={`Schedule Reveal`}
               onPress={handleScheduleReveal}
               disabled={isLoading || disabled}
               accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
               accessibilityHint="Starts the reveal process with a waiting period"
               style={[styles.button]}
             />
-          </View>
         );
       }
 

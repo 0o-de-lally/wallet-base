@@ -1,4 +1,5 @@
 import { getValue } from "./secure-store";
+import { IS_PRODUCTION } from "./environment";
 
 // Define types for the reveal scheduling system
 export type RevealSchedule = {
@@ -11,9 +12,33 @@ export type RevealSchedule = {
 // In-memory store for scheduled reveals (cleared on app restart)
 let scheduledReveals: Record<string, RevealSchedule> = {};
 
+// Build-time constants for reveal timing based on environment
+const WAITING_PERIOD_MS = IS_PRODUCTION
+  ? 24 * 60 * 60 * 1000  // 24 hours in production
+  : 30 * 1000;           // 30 seconds in development/preview
+
+/**
+ * Formats the waiting period duration for reveal feature based on current environment
+ * @returns A human-readable string describing the waiting period
+ */
+export function formatWaitingPeriod(): string {
+  const waitingPeriodMs = WAITING_PERIOD_MS;
+
+  if (waitingPeriodMs >= 24 * 60 * 60 * 1000) {
+    const hours = Math.round(waitingPeriodMs / (60 * 60 * 1000));
+    return `${hours} hour${hours > 1 ? 's' : ''}`;
+  } else if (waitingPeriodMs >= 60 * 1000) {
+    const minutes = Math.round(waitingPeriodMs / (60 * 1000));
+    return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  } else {
+    const seconds = Math.round(waitingPeriodMs / 1000);
+    return `${seconds} second${seconds > 1 ? 's' : ''}`;
+  }
+}
+
 // Configuration for the reveal timing windows
 export const REVEAL_CONFIG = {
-  waitingPeriodMs: 30 * 1000, // 30 seconds waiting period
+  waitingPeriodMs: WAITING_PERIOD_MS,
   revealWindowMs: 2 * 60 * 1000, // 2 minutes to reveal after available
 };
 

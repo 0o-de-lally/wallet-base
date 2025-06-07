@@ -5,6 +5,7 @@ import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { observer } from "@legendapp/state/react";
+import { formatWaitingPeriod } from "../../util/reveal-controller";
 
 interface SecretRevealProps {
   accountId: string;
@@ -42,13 +43,10 @@ export const SecretReveal = memo(
       }, [currentAction]);
 
       return (
-        <View style={styles.content}>
-          <Text style={styles.title}>Reveal Secure Data</Text>
+        <View>
+          <Text style={styles.label}>Reveal Secure Data</Text>
           <Text style={styles.description}>
-            This screen allows you to securely reveal your saved data. You must
-            first schedule a reveal and wait 30 seconds before you can access
-            the data. Once revealed, the data will automatically hide after 30
-            seconds.
+            This screen allows you to securely reveal your recovery mnemonic. You must first schedule a reveal and wait {formatWaitingPeriod()} before you can access the data. Once revealed, the data will automatically hide after 30 seconds.
           </Text>
 
           <RevealStatusUI

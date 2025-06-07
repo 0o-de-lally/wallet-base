@@ -79,7 +79,6 @@ const AccountList = memo(
               showAddForm={false}
               onToggleAddForm={() => navigateToCreateAccount()}
               onAccountAdded={() => {}}
-              formRef={React.createRef()}
             />
           </View>
         );
