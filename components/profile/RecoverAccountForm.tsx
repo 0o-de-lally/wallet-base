@@ -74,7 +74,6 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifiedMnemonic, setIsVerifiedMnemonic] = useState(false);
   const [derivedAddress, setDerivedAddress] = useState<string | null>(null);
-  const [createdAccountId, setCreatedAccountId] = useState<string | null>(null);
   const hasMultipleProfiles = profileNames.length > 1;
 
   // State for modals
@@ -89,14 +88,14 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   // Check if the derived address already exists in the selected profile
   const accountExistsInProfile = React.useMemo(() => {
     if (!derivedAddress || !selectedProfile) return false;
-    
+
     const profiles = appConfig.profiles.get();
     const profile = profiles[selectedProfile];
-    
+
     if (!profile) return false;
-    
+
     return profile.accounts.some(
-      (acc) => acc.account_address === derivedAddress
+      (acc) => acc.account_address === derivedAddress,
     );
   }, [derivedAddress, selectedProfile]);
 
@@ -174,7 +173,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   // Show error when account already exists in the selected profile
   useEffect(() => {
     if (accountExistsInProfile && derivedAddress) {
-      setError(`Account ${derivedAddress} already exists in profile "${selectedProfile}"`);
+      setError(
+        `Account ${derivedAddress} already exists in profile "${selectedProfile}"`,
+      );
     } else if (!accountExistsInProfile && derivedAddress) {
       // Clear the error if account doesn't exist (but keep other errors)
       setError(null);
@@ -188,7 +189,6 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     setError(null);
     setIsVerifiedMnemonic(false);
     setDerivedAddress(null);
-    setCreatedAccountId(null);
     setSaveInitiated(false); // Reset save state
     // Don't reset the selectedProfile here to persist selection
   };
@@ -217,7 +217,11 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     setError(null);
 
     try {
-      console.log("Calling createAccount with:", { selectedProfile, derivedAddress, nickname });
+      console.log("Calling createAccount with:", {
+        selectedProfile,
+        derivedAddress,
+        nickname,
+      });
       const result = await createAccount(
         selectedProfile,
         derivedAddress,
@@ -228,8 +232,6 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       if (result.success && result.account) {
         console.log("Account created successfully:", result.account.id);
-        // Store the created account ID for secure storage integration
-        setCreatedAccountId(result.account.id);
 
         // Trigger mnemonic save immediately now that we have the account ID
         if (mnemonic.trim() && !saveInitiated) {
@@ -282,7 +284,11 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     console.log("Available profiles:", profileNames);
   }, [selectedProfile, profileNames]);
 
-  const canRecover = isVerifiedMnemonic && derivedAddress && !isLoading && !accountExistsInProfile;
+  const canRecover =
+    isVerifiedMnemonic &&
+    derivedAddress &&
+    !isLoading &&
+    !accountExistsInProfile;
 
   // Debug the canRecover state
   useEffect(() => {
@@ -292,7 +298,13 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     console.log("  isLoading:", isLoading);
     console.log("  accountExistsInProfile:", accountExistsInProfile);
     console.log("  canRecover:", canRecover);
-  }, [isVerifiedMnemonic, derivedAddress, isLoading, accountExistsInProfile, canRecover]);
+  }, [
+    isVerifiedMnemonic,
+    derivedAddress,
+    isLoading,
+    accountExistsInProfile,
+    canRecover,
+  ]);
 
   return (
     <SectionContainer
