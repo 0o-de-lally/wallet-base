@@ -291,9 +291,9 @@ export function setAccountRevealSchedule(
 
     if (accountIndex !== -1) {
       // Set the reveal schedule for the found account
-      appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
-        schedule,
-      );
+      appConfig.profiles[profileName].accounts[
+        accountIndex
+      ].reveal_schedule.set(schedule);
       return true;
     }
   }
@@ -341,9 +341,9 @@ export function clearAccountRevealSchedule(accountId: string): boolean {
 
     if (accountIndex !== -1) {
       // Clear the reveal schedule for the found account
-      appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
-        undefined,
-      );
+      appConfig.profiles[profileName].accounts[
+        accountIndex
+      ].reveal_schedule.set(undefined);
       return true;
     }
   }
@@ -364,9 +364,9 @@ export function cleanupExpiredRevealSchedules(): void {
     profile.accounts.forEach((account, accountIndex) => {
       if (account.reveal_schedule && account.reveal_schedule.expiresAt <= now) {
         // Clear expired schedule
-        appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
-          undefined,
-        );
+        appConfig.profiles[profileName].accounts[
+          accountIndex
+        ].reveal_schedule.set(undefined);
       }
     });
   }

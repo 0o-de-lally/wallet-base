@@ -41,6 +41,10 @@ const AppContent = observer(() => {
     router.navigate("/create-account");
   }, [router]);
 
+  const navigateToRecoverAccount = useCallback(() => {
+    router.navigate("/recover-account");
+  }, [router]);
+
   const navigateToLibraTest = useCallback(() => {
     router.navigate("/libra-test");
   }, [router]);
@@ -66,6 +70,7 @@ const AppContent = observer(() => {
         {renderNavigationButton("PIN Management", navigateToPIN)}
         {renderNavigationButton("Profile Management", navigateToProfiles)}
         {renderNavigationButton("Create Account", navigateToCreateAccount)}
+        {renderNavigationButton("Recover Account", navigateToRecoverAccount)}
         {renderNavigationButton("Libra SDK Test", navigateToLibraTest)}
       </View>
     </View>

@@ -1,7 +1,6 @@
 import React, { memo, useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../../styles/styles";
-import { ActionButton } from "../common/ActionButton";
 import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
@@ -60,7 +59,6 @@ export const AccountSettings = memo(
     const {
       value,
       setValue,
-      storedValue,
       isLoading: isSecureLoading,
       handleSave,
       handleDelete,
@@ -113,14 +111,14 @@ export const AccountSettings = memo(
             accountId={account.id}
             accountName={account.nickname}
           />
-          </View>
+        </View>
 
-          <PinInputModal
-            visible={pinModalVisible}
-            onClose={() => setPinModalVisible(false)}
-            onPinAction={handlePinAction}
-            purpose={getPinPurpose()}
-          />
+        <PinInputModal
+          visible={pinModalVisible}
+          onClose={() => setPinModalVisible(false)}
+          onPinAction={handlePinAction}
+          purpose={getPinPurpose()}
+        />
       </ScrollView>
     );
   }),

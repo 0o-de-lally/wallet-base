@@ -41,12 +41,9 @@ export const MnemonicManagement = memo(
     onRotateMnemonic,
     onClearAll,
   }: MnemonicManagementProps) => {
-
     return (
       <View>
-        <Text style={[styles.label]}>
-          Mnemonic Management
-        </Text>
+        <Text style={[styles.label]}>Mnemonic Management</Text>
 
         <Text style={[styles.description, { marginBottom: 20 }]}>
           This account already has a saved mnemonic phrase. Choose an action
@@ -76,10 +73,7 @@ export const MnemonicManagement = memo(
           />
         </View>
 
-        <SecretReveal
-          accountId={accountId}
-          accountName={accountName}
-        />
+        <SecretReveal accountId={accountId} accountName={accountName} />
       </View>
     );
   },

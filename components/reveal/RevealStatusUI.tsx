@@ -158,14 +158,14 @@ export const RevealStatusUI = memo(
       // If no reveal is scheduled yet, show the initial schedule button
       if (!revealStatus || !revealStatus.isScheduled) {
         return (
-            <ActionButton
-              text={`Schedule Reveal`}
-              onPress={handleScheduleReveal}
-              disabled={isLoading || disabled}
-              accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
-              accessibilityHint="Starts the reveal process with a waiting period"
-              style={[styles.button]}
-            />
+          <ActionButton
+            text={`Schedule Reveal`}
+            onPress={handleScheduleReveal}
+            disabled={isLoading || disabled}
+            accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
+            accessibilityHint="Starts the reveal process with a waiting period"
+            style={[styles.button]}
+          />
         );
       }
 

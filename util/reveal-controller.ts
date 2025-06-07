@@ -10,8 +10,8 @@ import {
 
 // Build-time constants for reveal timing based on environment
 const WAITING_PERIOD_MS = IS_PRODUCTION
-  ? 24 * 60 * 60 * 1000  // 24 hours in production
-  : 30 * 1000;           // 30 seconds in development/preview
+  ? 24 * 60 * 60 * 1000 // 24 hours in production
+  : 30 * 1000; // 30 seconds in development/preview
 
 /**
  * Formats the waiting period duration for reveal feature based on current environment
@@ -22,13 +22,13 @@ export function formatWaitingPeriod(): string {
 
   if (waitingPeriodMs >= 24 * 60 * 60 * 1000) {
     const hours = Math.round(waitingPeriodMs / (60 * 60 * 1000));
-    return `${hours} hour${hours > 1 ? 's' : ''}`;
+    return `${hours} hour${hours > 1 ? "s" : ""}`;
   } else if (waitingPeriodMs >= 60 * 1000) {
     const minutes = Math.round(waitingPeriodMs / (60 * 1000));
-    return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+    return `${minutes} minute${minutes > 1 ? "s" : ""}`;
   } else {
     const seconds = Math.round(waitingPeriodMs / 1000);
-    return `${seconds} second${seconds > 1 ? 's' : ''}`;
+    return `${seconds} second${seconds > 1 ? "s" : ""}`;
   }
 }
 
