@@ -1,15 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  saveValue,
-  getValue,
-  deleteValue,
-  clearAllSecureStorage,
-} from "../util/secure-store";
+import { saveValue, getValue, deleteValue } from "../util/secure-store";
 import {
   scheduleReveal,
   checkRevealStatus,
   cancelReveal,
-  clearAllScheduledReveals,
   REVEAL_CONFIG,
 } from "../util/reveal-controller";
 import { useModal } from "../context/ModalContext";
@@ -31,7 +25,12 @@ export function useSecureStorage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<
-    "save" | "schedule_reveal" | "execute_reveal" | "delete" | "clear_all" | null
+    | "save"
+    | "schedule_reveal"
+    | "execute_reveal"
+    | "delete"
+    | "clear_all"
+    | null
   >(null);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
@@ -53,16 +52,19 @@ export function useSecureStorage() {
   }, []);
 
   // Function to check if an account has stored data
-  const checkHasStoredData = useCallback(async (accountId: string): Promise<boolean> => {
-    try {
-      const key = getStorageKey(accountId);
-      const storedData = await getValue(key);
-      return storedData !== null;
-    } catch (error) {
-      console.error("Error checking stored data:", error);
-      return false;
-    }
-  }, [getStorageKey]);
+  const checkHasStoredData = useCallback(
+    async (accountId: string): Promise<boolean> => {
+      try {
+        const key = getStorageKey(accountId);
+        const storedData = await getValue(key);
+        return storedData !== null;
+      } catch (error) {
+        console.error("Error checking stored data:", error);
+        return false;
+      }
+    },
+    [getStorageKey],
+  );
 
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
@@ -127,7 +129,12 @@ export function useSecureStorage() {
   }, [storedValue]);
 
   const requestPinForAction = (
-    action: "save" | "schedule_reveal" | "execute_reveal" | "delete" | "clear_all",
+    action:
+      | "save"
+      | "schedule_reveal"
+      | "execute_reveal"
+      | "delete"
+      | "clear_all",
     accountId: string,
   ) => {
     console.log(

@@ -245,16 +245,23 @@ export function maybeInitializeDefaultProfile() {
  * @param isStored Whether the key is stored or not
  * @returns boolean indicating success or failure
  */
-export function updateAccountKeyStoredStatus(accountId: string, isStored: boolean): boolean {
+export function updateAccountKeyStoredStatus(
+  accountId: string,
+  isStored: boolean,
+): boolean {
   const profiles = appConfig.profiles.get();
 
   for (const profileName in profiles) {
     const profile = profiles[profileName];
-    const accountIndex = profile.accounts.findIndex((acc) => acc.id === accountId);
+    const accountIndex = profile.accounts.findIndex(
+      (acc) => acc.id === accountId,
+    );
 
     if (accountIndex !== -1) {
       // Update the is_key_stored property for the found account
-      appConfig.profiles[profileName].accounts[accountIndex].is_key_stored.set(isStored);
+      appConfig.profiles[profileName].accounts[accountIndex].is_key_stored.set(
+        isStored,
+      );
       return true;
     }
   }

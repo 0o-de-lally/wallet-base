@@ -1,7 +1,6 @@
 import React, { memo, useState, useEffect } from "react";
 import { View } from "react-native";
 import { styles } from "../../styles/styles";
-import { FormInput } from "../common/FormInput";
 import { MnemonicInput } from "../common/MnemonicInput";
 import { MnemonicManagement } from "./MnemonicManagement";
 import { ActionButton } from "../common/ActionButton";
@@ -26,7 +25,6 @@ export const SecureStorageForm = memo(
     onValueChange,
     onSave,
     onDelete,
-    onScheduleReveal,
     onClearAll,
     checkHasStoredData,
     isLoading,
@@ -34,20 +32,18 @@ export const SecureStorageForm = memo(
     accountId,
     accountName,
   }: SecureStorageFormProps) => {
-    const [isMnemonicValid, setIsMnemonicValid] = useState(false);
     const [isMnemonicVerified, setIsMnemonicVerified] = useState(false);
     const [hasStoredData, setHasStoredData] = useState(false);
     const [isCheckingData, setIsCheckingData] = useState(true);
 
     const handleValidationChange = (isValid: boolean, isVerified: boolean) => {
-      setIsMnemonicValid(isValid);
       setIsMnemonicVerified(isVerified);
     };
 
     const handleRotateMnemonic = () => {
       // For rotation, we first delete the existing data, then allow new input
       setHasStoredData(false);
-      onValueChange(''); // Clear any current input
+      onValueChange(""); // Clear any current input
     };
 
     const handleClearAll = async () => {
@@ -58,7 +54,7 @@ export const SecureStorageForm = memo(
         const hasData = await checkHasStoredData(accountId);
         setHasStoredData(hasData);
       } catch (error) {
-        console.error('Error checking stored data after clear:', error);
+        console.error("Error checking stored data after clear:", error);
         setHasStoredData(false);
       }
     };
@@ -71,7 +67,7 @@ export const SecureStorageForm = memo(
           const hasData = await checkHasStoredData(accountId);
           setHasStoredData(hasData);
         } catch (error) {
-          console.error('Error checking stored data:', error);
+          console.error("Error checking stored data:", error);
           setHasStoredData(false);
         } finally {
           setIsCheckingData(false);
@@ -89,7 +85,7 @@ export const SecureStorageForm = memo(
             const hasData = await checkHasStoredData(accountId);
             setHasStoredData(hasData);
           } catch (error) {
-            console.error('Error rechecking stored data:', error);
+            console.error("Error rechecking stored data:", error);
           }
         };
 
@@ -148,9 +144,7 @@ export const SecureStorageForm = memo(
             onPress={onSave}
             isLoading={isLoading && value.trim().length > 0}
             disabled={
-              disabled ||
-              value.trim().length === 0 ||
-              !isMnemonicVerified
+              disabled || value.trim().length === 0 || !isMnemonicVerified
             }
             accessibilityLabel="Save mnemonic phrase"
             accessibilityHint={`Encrypts and saves mnemonic phrase for ${accountName || accountId}`}

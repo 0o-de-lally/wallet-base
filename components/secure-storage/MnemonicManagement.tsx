@@ -31,48 +31,51 @@ interface MnemonicManagementProps {
   onClearAll: () => void;
 }
 
-export const MnemonicManagement = memo(({
-  accountId,
-  accountName,
-  isLoading,
-  disabled = false,
-  onRotateMnemonic,
-  onClearAll,
-}: MnemonicManagementProps) => {
-  return (
-    <View>
-      <Text style={[styles.label, { marginBottom: 16 }]}>
-        Mnemonic Management for {accountName || accountId}
-      </Text>
+export const MnemonicManagement = memo(
+  ({
+    accountId,
+    accountName,
+    isLoading,
+    disabled = false,
+    onRotateMnemonic,
+    onClearAll,
+  }: MnemonicManagementProps) => {
+    return (
+      <View>
+        <Text style={[styles.label, { marginBottom: 16 }]}>
+          Mnemonic Management for {accountName || accountId}
+        </Text>
 
-      <Text style={[styles.description, { marginBottom: 20 }]}>
-        This account already has a saved mnemonic phrase. Choose an action below:
-      </Text>
+        <Text style={[styles.description, { marginBottom: 20 }]}>
+          This account already has a saved mnemonic phrase. Choose an action
+          below:
+        </Text>
 
-      <View style={localStyles.verticalButtonContainer}>
-        <ActionButton
-          text="Rotate Mnemonic"
-          onPress={onRotateMnemonic}
-          isLoading={isLoading}
-          disabled={disabled}
-          style={localStyles.verticalButton}
-          accessibilityLabel="Replace mnemonic phrase"
-          accessibilityHint="Replace the current mnemonic phrase with a new one"
-        />
+        <View style={localStyles.verticalButtonContainer}>
+          <ActionButton
+            text="Rotate Mnemonic"
+            onPress={onRotateMnemonic}
+            isLoading={isLoading}
+            disabled={disabled}
+            style={localStyles.verticalButton}
+            accessibilityLabel="Replace mnemonic phrase"
+            accessibilityHint="Replace the current mnemonic phrase with a new one"
+          />
 
-        <ActionButton
-          text="Clear Account Data"
-          onPress={onClearAll}
-          isLoading={isLoading}
-          disabled={disabled}
-          isDestructive={true}
-          style={localStyles.verticalButton}
-          accessibilityLabel="Clear account data"
-          accessibilityHint="Permanently delete the stored mnemonic phrase for this account only"
-        />
+          <ActionButton
+            text="Clear Account Data"
+            onPress={onClearAll}
+            isLoading={isLoading}
+            disabled={disabled}
+            isDestructive={true}
+            style={localStyles.verticalButton}
+            accessibilityLabel="Clear account data"
+            accessibilityHint="Permanently delete the stored mnemonic phrase for this account only"
+          />
+        </View>
       </View>
-    </View>
-  );
-});
+    );
+  },
+);
 
 MnemonicManagement.displayName = "MnemonicManagement";
