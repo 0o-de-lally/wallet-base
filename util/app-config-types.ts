@@ -18,6 +18,15 @@ export type NetworkType = {
 };
 
 /**
+ * Reveal schedule for secure data access
+ */
+export type RevealSchedule = {
+  scheduledAt: number;
+  availableAt: number;
+  expiresAt: number;
+};
+
+/**
  * Account state represents a single blockchain account within a profile
  */
 export type AccountState = {
@@ -28,6 +37,7 @@ export type AccountState = {
   balance_locked: number;
   balance_unlocked: number;
   last_update: number; // timestamp
+  reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
 };
 
 /**

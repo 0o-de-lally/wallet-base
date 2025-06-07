@@ -28,7 +28,7 @@ export const SecretReveal = memo(
         handlePinAction,
         currentAction,
         revealStatus,
-      } = useSecureStorage();
+      } = useSecureStorage(accountId);
 
       // Get purpose for pin modal
       const getPinPurpose = useCallback(() => {

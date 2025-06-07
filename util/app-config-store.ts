@@ -11,6 +11,7 @@ import {
   NetworkTypeEnum,
   AccountState,
   Profile,
+  RevealSchedule,
   defaultConfig,
 } from "./app-config-types";
 
@@ -269,6 +270,108 @@ export function updateAccountKeyStoredStatus(
   return false; // Account not found
 }
 
+/**
+ * Sets a reveal schedule for an account
+ *
+ * @param accountId ID of the account to set the reveal schedule for
+ * @param schedule The reveal schedule to set
+ * @returns boolean indicating success or failure
+ */
+export function setAccountRevealSchedule(
+  accountId: string,
+  schedule: RevealSchedule,
+): boolean {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const accountIndex = profile.accounts.findIndex(
+      (acc) => acc.id === accountId,
+    );
+
+    if (accountIndex !== -1) {
+      // Set the reveal schedule for the found account
+      appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
+        schedule,
+      );
+      return true;
+    }
+  }
+
+  return false; // Account not found
+}
+
+/**
+ * Gets the reveal schedule for an account
+ *
+ * @param accountId ID of the account to get the reveal schedule for
+ * @returns The reveal schedule or null if not found
+ */
+export function getAccountRevealSchedule(
+  accountId: string,
+): RevealSchedule | null {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const account = profile.accounts.find((acc) => acc.id === accountId);
+
+    if (account) {
+      return account.reveal_schedule || null;
+    }
+  }
+
+  return null; // Account not found
+}
+
+/**
+ * Clears the reveal schedule for an account
+ *
+ * @param accountId ID of the account to clear the reveal schedule for
+ * @returns boolean indicating success or failure
+ */
+export function clearAccountRevealSchedule(accountId: string): boolean {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const accountIndex = profile.accounts.findIndex(
+      (acc) => acc.id === accountId,
+    );
+
+    if (accountIndex !== -1) {
+      // Clear the reveal schedule for the found account
+      appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
+        undefined,
+      );
+      return true;
+    }
+  }
+
+  return false; // Account not found
+}
+
+/**
+ * Cleans up expired reveal schedules across all accounts
+ * This should be called periodically or on app startup
+ */
+export function cleanupExpiredRevealSchedules(): void {
+  const profiles = appConfig.profiles.get();
+  const now = Date.now();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    profile.accounts.forEach((account, accountIndex) => {
+      if (account.reveal_schedule && account.reveal_schedule.expiresAt <= now) {
+        // Clear expired schedule
+        appConfig.profiles[profileName].accounts[accountIndex].reveal_schedule.set(
+          undefined,
+        );
+      }
+    });
+  }
+}
+
 // Export types from the types file for backward compatibility
 export {
   NetworkTypeEnum,
@@ -277,4 +380,5 @@ export {
   type Profile,
   type AppSettings,
   type AppConfig,
+  type RevealSchedule,
 } from "./app-config-types";

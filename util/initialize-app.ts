@@ -1,4 +1,5 @@
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
+import { initializeRevealController } from "./reveal-controller";
 import * as LocalAuthentication from "expo-local-authentication";
 
 /**
@@ -59,6 +60,9 @@ export async function initializeApp() {
         appConfig.activeAccountId.set(null);
       }
     }
+
+    // Initialize reveal controller and cleanup expired schedules
+    initializeRevealController();
 
     return true;
   } catch (error) {

@@ -1,16 +1,12 @@
 import { getValue } from "./secure-store";
 import { IS_PRODUCTION } from "./environment";
-
-// Define types for the reveal scheduling system
-export type RevealSchedule = {
-  key: string;
-  scheduledAt: number;
-  availableAt: number;
-  expiresAt: number;
-};
-
-// In-memory store for scheduled reveals (cleared on app restart)
-let scheduledReveals: Record<string, RevealSchedule> = {};
+import {
+  setAccountRevealSchedule,
+  getAccountRevealSchedule,
+  clearAccountRevealSchedule,
+  cleanupExpiredRevealSchedules,
+  type RevealSchedule,
+} from "./app-config-store";
 
 // Build-time constants for reveal timing based on environment
 const WAITING_PERIOD_MS = IS_PRODUCTION
@@ -43,41 +39,40 @@ export const REVEAL_CONFIG = {
 };
 
 /**
- * Schedules a reveal for a secure value.
+ * Schedules a reveal for a secure value for a specific account.
  * The user must wait for the waiting period before they can reveal the value,
  * and must complete the reveal within the reveal window.
  *
- * @param key - The key of the value to be revealed
- * @returns The scheduled reveal details
+ * @param accountId - The ID of the account to schedule the reveal for
+ * @returns The scheduled reveal details or null if failed
  */
-export function scheduleReveal(key: string): RevealSchedule {
+export function scheduleReveal(accountId: string): RevealSchedule | null {
   const now = Date.now();
   const schedule: RevealSchedule = {
-    key,
     scheduledAt: now,
     availableAt: now + REVEAL_CONFIG.waitingPeriodMs,
     expiresAt:
       now + REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs,
   };
 
-  scheduledReveals[key] = schedule;
-  return schedule;
+  const success = setAccountRevealSchedule(accountId, schedule);
+  return success ? schedule : null;
 }
 
 /**
- * Checks the status of a scheduled reveal.
+ * Checks the status of a scheduled reveal for an account.
  *
- * @param key - The key of the scheduled reveal
+ * @param accountId - The ID of the account to check
  * @returns Object with status information, or null if no reveal is scheduled
  */
-export function checkRevealStatus(key: string): {
+export function checkRevealStatus(accountId: string): {
   scheduled: boolean;
   available: boolean;
   expired: boolean;
   waitTimeRemaining: number;
   expiresIn: number;
 } | null {
-  const schedule = scheduledReveals[key];
+  const schedule = getAccountRevealSchedule(accountId);
   if (!schedule) {
     return null;
   }
@@ -85,6 +80,11 @@ export function checkRevealStatus(key: string): {
   const now = Date.now();
   const available = now >= schedule.availableAt;
   const expired = now >= schedule.expiresAt;
+
+  // Clean up expired schedules automatically
+  if (expired) {
+    clearAccountRevealSchedule(accountId);
+  }
 
   return {
     scheduled: true,
@@ -96,15 +96,15 @@ export function checkRevealStatus(key: string): {
 }
 
 /**
- * Gets a value if its reveal has been scheduled and is currently available.
+ * Gets a value if its reveal has been scheduled and is currently available for an account.
  *
- * @param key - The key of the value to reveal
+ * @param accountId - The ID of the account
  * @returns A Promise that resolves to the value if available within the reveal window, or null otherwise
  */
 export async function getScheduledReveal(
-  key: string,
+  accountId: string,
 ): Promise<{ value: string | null; status: string }> {
-  const status = checkRevealStatus(key);
+  const status = checkRevealStatus(accountId);
 
   if (!status) {
     return { value: null, status: "not_scheduled" };
@@ -116,12 +116,14 @@ export async function getScheduledReveal(
 
   if (status.expired) {
     // Clean up expired reveal request
-    delete scheduledReveals[key];
+    clearAccountRevealSchedule(accountId);
     return { value: null, status: "expired" };
   }
 
   try {
     // Retrieve the value since we're in the valid reveal window
+    // Use the account storage key format
+    const key = `account_${accountId}`;
     const value = await getValue(key);
 
     // Keep the scheduled reveal active until it expires
@@ -134,17 +136,26 @@ export async function getScheduledReveal(
 }
 
 /**
- * Cancels a scheduled reveal.
+ * Cancels a scheduled reveal for an account.
  *
- * @param key - The key of the scheduled reveal to cancel
+ * @param accountId - The ID of the account to cancel the reveal for
  */
-export function cancelReveal(key: string): void {
-  delete scheduledReveals[key];
+export function cancelReveal(accountId: string): void {
+  clearAccountRevealSchedule(accountId);
 }
 
 /**
  * Clears all scheduled reveals.
+ * This calls the cleanup function that removes expired schedules across all accounts.
  */
 export function clearAllScheduledReveals(): void {
-  scheduledReveals = {};
+  cleanupExpiredRevealSchedules();
+}
+
+/**
+ * Initialize reveal controller - clean up any expired schedules
+ * This should be called when the app starts
+ */
+export function initializeRevealController(): void {
+  cleanupExpiredRevealSchedules();
 }

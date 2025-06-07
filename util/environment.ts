@@ -1,6 +1,6 @@
 /**
  * Environment Detection Utilities
- * 
+ *
  * Provides build-time constants for environment detection that can be used
  * across the application to enable environment-specific behavior.
  */
@@ -10,7 +10,7 @@
  * This is determined at build time using environment flags:
  * - __DEV__ flag (React Native development mode)
  * - process.env.NODE_ENV (Node.js environment)
- * 
+ *
  * Returns true for production builds, false for development/preview builds.
  */
 export const IS_PRODUCTION = !__DEV__ && process.env.NODE_ENV === 'production';

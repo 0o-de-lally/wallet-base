@@ -150,6 +150,11 @@ export const RevealStatusUI = memo(
     }, [storedValue, handleClearRevealedValue]);
 
     const renderActionButton = useCallback(() => {
+      // If value is currently revealed, don't show the schedule button
+      if (storedValue !== null) {
+        return null;
+      }
+
       // If no reveal is scheduled yet, show the initial schedule button
       if (!revealStatus || !revealStatus.isScheduled) {
         return (
