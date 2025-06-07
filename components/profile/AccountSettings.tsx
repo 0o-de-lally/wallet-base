@@ -79,6 +79,7 @@ export const AccountSettings = memo(
       handleCancelReveal,
       handleDelete,
       handleClearAll,
+      checkHasStoredData,
       pinModalVisible,
       setPinModalVisible,
       handlePinAction,
@@ -119,7 +120,11 @@ export const AccountSettings = memo(
     }
 
     return (
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.resultContainer}>
           <Text style={styles.resultLabel}>Account Settings</Text>
           <Text style={styles.resultValue}>{account.nickname}</Text>
@@ -150,10 +155,10 @@ export const AccountSettings = memo(
                 accessibilityLabel={`${viewMode === SecretViewMode.MANAGE ? "Reveal" : "Manage"} secret for ${account.nickname}`}
               />
 
-              {/* Add button to clear all data if in manage mode */}
+              {/* Add button to clear account data if in manage mode */}
               {viewMode === SecretViewMode.MANAGE && (
                 <ActionButton
-                  text="Clear All Saved Data"
+                  text="Clear Account Data"
                   onPress={() => handleClearAll(accountId)}
                   isDestructive={true}
                   size="small"
@@ -164,12 +169,15 @@ export const AccountSettings = memo(
           )}
 
           {viewMode === SecretViewMode.MANAGE && (
-            <View style={styles.expandedContent}>
+            <View style={[styles.expandedContent, { marginBottom: 40 }]}>
               <SecureStorageForm
                 value={value}
                 onValueChange={setValue}
                 onSave={() => handleSave(accountId)}
                 onDelete={() => handleDelete(accountId)} // Remove the accountId parameter since it's already scoped
+                onScheduleReveal={() => handleScheduleReveal(accountId)}
+                onClearAll={() => handleClearAll(accountId)}
+                checkHasStoredData={checkHasStoredData}
                 isLoading={isSecureLoading}
                 accountId={account.id}
                 accountName={account.nickname}
@@ -178,7 +186,7 @@ export const AccountSettings = memo(
           )}
 
           {viewMode === SecretViewMode.REVEAL && (
-            <View style={styles.expandedContent}>
+            <View style={[styles.expandedContent, { marginBottom: 40 }]}>
               <RevealStatusUI
                 accountId={account.id}
                 accountName={account.nickname}
@@ -203,11 +211,13 @@ export const AccountSettings = memo(
         />
 
         {/* Added SecretReveal as the bottom-most component */}
-        <SecretReveal
-          accountId={accountId}
-          accountName={account?.nickname}
-          onSwitchToManage={switchToManageMode}
-        />
+        <View style={{ marginTop: 24, marginBottom: 40 }}>
+          <SecretReveal
+            accountId={accountId}
+            accountName={account?.nickname}
+            onSwitchToManage={switchToManageMode}
+          />
+        </View>
       </ScrollView>
     );
   }),

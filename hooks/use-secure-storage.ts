@@ -51,6 +51,18 @@ export function useSecureStorage() {
     return `account_${accountId}`;
   }, []);
 
+  // Function to check if an account has stored data
+  const checkHasStoredData = useCallback(async (accountId: string): Promise<boolean> => {
+    try {
+      const key = getStorageKey(accountId);
+      const storedData = await getValue(key);
+      return storedData !== null;
+    } catch (error) {
+      console.error("Error checking stored data:", error);
+      return false;
+    }
+  }, [getStorageKey]);
+
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
     return () => {
@@ -386,20 +398,20 @@ export function useSecureStorage() {
   const handleClearAll = async (accountId: string) => {
     try {
       setIsLoading(true);
-      // Use the account ID to clear specific account data
+      // Only clear the specific account's data
       const key = getStorageKey(accountId);
       await deleteValue(key);
-      // Also clear all secure storage and scheduled reveals
-      await clearAllSecureStorage();
-      clearAllScheduledReveals();
+
+      // Also cancel any scheduled reveals for this account
+      cancelReveal(key);
 
       // Clear UI state
       setStoredValue(null);
       setValue("");
       setRevealStatus(null);
-      showAlert("Success", "All secure storage data has been cleared");
+      showAlert("Success", `Account data cleared for ${accountId}`);
     } catch (error) {
-      showAlert("Error", "Failed to clear secure storage");
+      showAlert("Error", "Failed to clear account data");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -434,5 +446,6 @@ export function useSecureStorage() {
     currentAction,
     revealStatus,
     clearRevealedValue,
+    checkHasStoredData,
   };
 }
