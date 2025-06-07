@@ -23,7 +23,6 @@ interface RevealStatusUIProps {
   onExecuteReveal: (accountId: string) => void;
   onCancelReveal: (accountId: string) => void;
   onClearRevealedValue?: () => void;
-  onSwitchToManage?: () => void; // Callback to switch back to manage mode
 }
 
 export const RevealStatusUI = memo(
@@ -38,7 +37,6 @@ export const RevealStatusUI = memo(
     onExecuteReveal,
     onCancelReveal,
     onClearRevealedValue,
-    onSwitchToManage,
   }: RevealStatusUIProps) => {
     const [waitTimeDisplay, setWaitTimeDisplay] = useState("");
     const [expiryTimeDisplay, setExpiryTimeDisplay] = useState("");
@@ -190,7 +188,6 @@ export const RevealStatusUI = memo(
       isLoading,
       disabled,
       handleScheduleReveal,
-      onSwitchToManage,
       accountName,
     ]);
 

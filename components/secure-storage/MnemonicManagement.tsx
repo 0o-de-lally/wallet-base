@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
+import { SecretReveal } from "./SecretReveal";
 
 // Local styles for vertical button layout
 const localStyles = StyleSheet.create({
@@ -40,6 +41,7 @@ export const MnemonicManagement = memo(
     onRotateMnemonic,
     onClearAll,
   }: MnemonicManagementProps) => {
+
     return (
       <View>
         <Text style={[styles.label, { marginBottom: 16 }]}>
@@ -73,6 +75,11 @@ export const MnemonicManagement = memo(
             accessibilityHint="Permanently delete the stored mnemonic phrase for this account only"
           />
         </View>
+
+        <SecretReveal
+          accountId={accountId}
+          accountName={accountName}
+        />
       </View>
     );
   },

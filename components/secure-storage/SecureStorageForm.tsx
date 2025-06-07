@@ -10,7 +10,6 @@ interface SecureStorageFormProps {
   onValueChange: (text: string) => void;
   onSave: () => void;
   onDelete: () => void;
-  onScheduleReveal?: () => void;
   onClearAll: () => void;
   checkHasStoredData: (accountId: string) => Promise<boolean>;
   isLoading: boolean;

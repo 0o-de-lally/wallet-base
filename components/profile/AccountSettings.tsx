@@ -9,7 +9,6 @@ import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
-import { SecretReveal } from "../secure-storage/SecretReveal";
 
 // Define UI view modes
 enum SecretViewMode {
@@ -86,7 +85,7 @@ export const AccountSettings = memo(
       currentAction,
       revealStatus,
       clearRevealedValue,
-    } = useSecureStorage(); // Pass accountId here
+    } = useSecureStorage(accountId);
 
     const switchToRevealMode = useCallback(() => {
       setViewMode(SecretViewMode.REVEAL);
@@ -176,8 +175,7 @@ export const AccountSettings = memo(
                 value={value}
                 onValueChange={setValue}
                 onSave={() => handleSave(accountId)}
-                onDelete={() => handleDelete(accountId)} // Remove the accountId parameter since it's already scoped
-                onScheduleReveal={() => handleScheduleReveal(accountId)}
+                onDelete={() => handleDelete(accountId)}
                 onClearAll={() => handleClearAll(accountId)}
                 checkHasStoredData={checkHasStoredData}
                 isLoading={isSecureLoading}
@@ -199,7 +197,6 @@ export const AccountSettings = memo(
                 onExecuteReveal={handleExecuteReveal}
                 onCancelReveal={handleCancelReveal}
                 onClearRevealedValue={clearRevealedValue}
-                onSwitchToManage={switchToManageMode}
               />
             </View>
           )}
@@ -211,17 +208,6 @@ export const AccountSettings = memo(
           onPinAction={handlePinAction}
           purpose={getPinPurpose()}
         />
-
-        {/* Only show SecretReveal if user has saved a mnemonic */}
-        {account.is_key_stored && (
-          <View style={{ marginTop: 24, marginBottom: 40 }}>
-            <SecretReveal
-              accountId={accountId}
-              accountName={account?.nickname}
-              onSwitchToManage={switchToManageMode}
-            />
-          </View>
-        )}
       </ScrollView>
     );
   }),

@@ -18,7 +18,7 @@ import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
 
-export function useSecureStorage() {
+export function useSecureStorage(initialAccountId?: string) {
   const { showAlert } = useModal();
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
@@ -32,7 +32,9 @@ export function useSecureStorage() {
     | "clear_all"
     | null
   >(null);
-  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(
+    initialAccountId || null,
+  );
 
   // Add timer ref for auto-hiding the value
   const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,6 +76,13 @@ export function useSecureStorage() {
       }
     };
   }, []);
+
+  // Update current account ID when initial account ID changes
+  useEffect(() => {
+    if (initialAccountId && initialAccountId !== currentAccountId) {
+      setCurrentAccountId(initialAccountId);
+    }
+  }, [initialAccountId, currentAccountId]);
 
   // Check reveal status periodically for the current account
   useEffect(() => {

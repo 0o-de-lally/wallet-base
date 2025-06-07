@@ -61,7 +61,6 @@ export const SecretReveal = memo(
             onExecuteReveal={handleExecuteReveal}
             onCancelReveal={handleCancelReveal}
             onClearRevealedValue={clearRevealedValue}
-            onSwitchToManage={onSwitchToManage}
           />
 
           {/* PIN Input Modal */}
