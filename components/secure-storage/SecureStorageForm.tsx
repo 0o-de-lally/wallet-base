@@ -1,7 +1,8 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { View } from "react-native";
 import { styles } from "../../styles/styles";
 import { FormInput } from "../common/FormInput";
+import { MnemonicInput } from "../common/MnemonicInput";
 import { ActionButton } from "../common/ActionButton";
 
 interface SecureStorageFormProps {
@@ -27,16 +28,25 @@ export const SecureStorageForm = memo(
     accountId,
     accountName,
   }: SecureStorageFormProps) => {
+    const [isMnemonicValid, setIsMnemonicValid] = useState(false);
+    const [isMnemonicVerified, setIsMnemonicVerified] = useState(false);
+
+    const handleValidationChange = (isValid: boolean, isVerified: boolean) => {
+      setIsMnemonicValid(isValid);
+      setIsMnemonicVerified(isVerified);
+    };
+
     return (
       <>
-        <FormInput
-          label="Private Value:"
+        <MnemonicInput
+          label="Mnemonic Phrase:"
           value={value}
           onChangeText={onValueChange}
-          placeholder="Enter sensitive value to store"
-          multiline={true}
-          numberOfLines={3}
+          onValidationChange={handleValidationChange}
+          placeholder="Enter your 24-word recovery phrase..."
           disabled={disabled}
+          showWordCount={true}
+          autoValidate={true}
         />
 
         <View style={styles.buttonContainer}>
@@ -45,9 +55,13 @@ export const SecureStorageForm = memo(
             text="Save"
             onPress={onSave}
             isLoading={isLoading && value.trim().length > 0}
-            disabled={disabled || value.trim().length === 0}
-            accessibilityLabel="Save private value"
-            accessibilityHint={`Encrypts and saves private data for ${accountName || accountId}`}
+            disabled={
+              disabled ||
+              value.trim().length === 0 ||
+              !isMnemonicVerified
+            }
+            accessibilityLabel="Save mnemonic phrase"
+            accessibilityHint={`Encrypts and saves mnemonic phrase for ${accountName || accountId}`}
           />
 
           <ActionButton
@@ -56,8 +70,8 @@ export const SecureStorageForm = memo(
             onPress={onDelete}
             isLoading={isLoading && !value.trim()}
             disabled={disabled}
-            accessibilityLabel="Delete private value"
-            accessibilityHint={`Deletes stored private data for ${accountName || accountId}`}
+            accessibilityLabel="Delete mnemonic phrase"
+            accessibilityHint={`Deletes stored mnemonic phrase for ${accountName || accountId}`}
           />
         </View>
       </>
