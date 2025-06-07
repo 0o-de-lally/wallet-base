@@ -106,6 +106,8 @@ export const AccountSettings = memo(
           return "schedule_reveal";
         case "execute_reveal":
           return "execute_reveal";
+        case "clear_all":
+          return "clear_all";
         default:
           return "save";
       }
@@ -210,14 +212,16 @@ export const AccountSettings = memo(
           purpose={getPinPurpose()}
         />
 
-        {/* Added SecretReveal as the bottom-most component */}
-        <View style={{ marginTop: 24, marginBottom: 40 }}>
-          <SecretReveal
-            accountId={accountId}
-            accountName={account?.nickname}
-            onSwitchToManage={switchToManageMode}
-          />
-        </View>
+        {/* Only show SecretReveal if user has saved a mnemonic */}
+        {account.is_key_stored && (
+          <View style={{ marginTop: 24, marginBottom: 40 }}>
+            <SecretReveal
+              accountId={accountId}
+              accountName={account?.nickname}
+              onSwitchToManage={switchToManageMode}
+            />
+          </View>
+        )}
       </ScrollView>
     );
   }),

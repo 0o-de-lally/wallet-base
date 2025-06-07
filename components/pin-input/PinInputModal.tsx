@@ -15,7 +15,8 @@ interface PinInputModalProps {
     | "retrieve"
     | "delete"
     | "schedule_reveal"
-    | "execute_reveal";
+    | "execute_reveal"
+    | "clear_all";
   // Callbacks for different PIN operations - only one will be called based on purpose
   onPinAction: PinActionCallback;
   actionTitle?: string;
@@ -134,6 +135,8 @@ export const PinInputModal = memo(
           return "reveal";
         case "delete":
           return "delete";
+        case "clear_all":
+          return "clear all data for";
         default:
           return "access";
       }
@@ -147,6 +150,8 @@ export const PinInputModal = memo(
           return "Schedule Reveal";
         case "execute_reveal":
           return "Reveal Secured Data";
+        case "clear_all":
+          return "Clear Account Data";
         default:
           return "Enter PIN";
       }
@@ -160,6 +165,8 @@ export const PinInputModal = memo(
           return "Enter your PIN to schedule a reveal of the secured data. You'll need to wait 30 seconds before you can reveal it.";
         case "execute_reveal":
           return "Enter your PIN again to reveal the secured data. This data will be visible on screen.";
+        case "clear_all":
+          return "Enter your PIN to permanently delete all secure data for this account. This action cannot be undone.";
         default:
           return `Please enter your PIN to ${getActionText()} this secure data.`;
       }

@@ -19,6 +19,7 @@ import {
   secureEncryptWithPin,
   secureDecryptWithPin,
 } from "../util/pin-security";
+import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
@@ -30,7 +31,7 @@ export function useSecureStorage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<
-    "save" | "schedule_reveal" | "execute_reveal" | "delete" | null
+    "save" | "schedule_reveal" | "execute_reveal" | "delete" | "clear_all" | null
   >(null);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
@@ -115,7 +116,7 @@ export function useSecureStorage() {
       // Set new timer to clear the value after delay
       autoHideTimerRef.current = setTimeout(() => {
         setStoredValue(null);
-      }, AUTO_HIDE_DELAY_MS);
+      }, AUTO_HIDE_DELAY_MS) as unknown as NodeJS.Timeout;
     }
 
     return () => {
@@ -126,7 +127,7 @@ export function useSecureStorage() {
   }, [storedValue]);
 
   const requestPinForAction = (
-    action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
+    action: "save" | "schedule_reveal" | "execute_reveal" | "delete" | "clear_all",
     accountId: string,
   ) => {
     console.log(
@@ -167,6 +168,9 @@ export function useSecureStorage() {
 
       const key = getStorageKey(currentAccountId);
       await saveValue(key, encryptedBase64);
+
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, true);
 
       showAlert("Success", "Value saved securely and encrypted");
       setValue("");
@@ -313,6 +317,9 @@ export function useSecureStorage() {
       await deleteValue(key);
       setStoredValue(null);
 
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, false);
+
       // Also cancel any scheduled reveals
       cancelReveal(key);
       setRevealStatus(null);
@@ -321,6 +328,48 @@ export function useSecureStorage() {
     } catch (error) {
       showAlert("Error", "Failed to delete value");
       console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearAccountDataWithPin = async (pin: string) => {
+    try {
+      setIsLoading(true);
+
+      if (!currentAccountId) {
+        throw new Error("No account selected");
+      }
+
+      // First verify this is really the user's PIN
+      const isValid = await verifyStoredPin(pin);
+      if (!isValid) {
+        showAlert("Error", "Invalid PIN");
+        setPinModalVisible(false);
+        return;
+      }
+
+      // Clear the specific account's data
+      const key = getStorageKey(currentAccountId);
+      await deleteValue(key);
+
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, false);
+
+      // Also cancel any scheduled reveals for this account
+      cancelReveal(key);
+
+      // Clear UI state
+      setStoredValue(null);
+      setValue("");
+      setRevealStatus(null);
+
+      setPinModalVisible(false);
+      showAlert("Success", "Account data cleared successfully");
+    } catch (error) {
+      showAlert("Error", "Failed to clear account data");
+      console.error(error);
+      setPinModalVisible(false);
     } finally {
       setIsLoading(false);
     }
@@ -344,6 +393,8 @@ export function useSecureStorage() {
           await scheduleRevealWithPin(pin);
         } else if (currentAction === "execute_reveal") {
           await executeRevealWithPin(pin);
+        } else if (currentAction === "clear_all") {
+          await clearAccountDataWithPin(pin);
         } else {
           console.error(`Unknown pin action: ${currentAction}`);
         }
@@ -395,28 +446,9 @@ export function useSecureStorage() {
     [value, showAlert],
   );
 
-  const handleClearAll = async (accountId: string) => {
-    try {
-      setIsLoading(true);
-      // Only clear the specific account's data
-      const key = getStorageKey(accountId);
-      await deleteValue(key);
-
-      // Also cancel any scheduled reveals for this account
-      cancelReveal(key);
-
-      // Clear UI state
-      setStoredValue(null);
-      setValue("");
-      setRevealStatus(null);
-      showAlert("Success", `Account data cleared for ${accountId}`);
-    } catch (error) {
-      showAlert("Error", "Failed to clear account data");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleClearAll = useCallback((accountId: string) => {
+    requestPinForAction("clear_all", accountId);
+  }, []);
 
   const clearRevealedValue = () => {
     // Clear the value
