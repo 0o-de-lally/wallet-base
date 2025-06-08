@@ -36,7 +36,7 @@ export const Menu: React.FC<MenuProps> = observer(({ onProfileChange }) => {
   const hasMultipleProfilesAvailable = hasMultipleProfiles();
 
   const navigateToScreen = useCallback((screen: string) => {
-    router.navigate(screen as any);
+    router.navigate(screen as `/profiles` | `/create-account` | `/recover-account` | `/pin` | `/libra-test`);
   }, [router]);
 
   const handleProfileSwitch = useCallback((profileName: string) => {

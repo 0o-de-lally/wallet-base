@@ -22,7 +22,7 @@ export async function resetAppToFirstTimeUser(): Promise<void> {
     for (const key of commonKeys) {
       try {
         await deleteValue(key);
-      } catch (error) {
+      } catch {
         // Ignore errors for keys that don't exist
       }
     }

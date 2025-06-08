@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
@@ -26,7 +26,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(({ onC
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [tempPin, setTempPin] = useState<string | null>(null);
   const [accountChoice, setAccountChoice] = useState<"create" | "recover" | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const { showAlert } = useModal();
 
@@ -67,8 +66,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(({ onC
     }
 
     try {
-      setIsLoading(true);
-
       // Hash and save the PIN
       const hashedPin = await hashPin(confirmPin);
       await saveValue("user_pin", JSON.stringify(hashedPin));
@@ -83,8 +80,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(({ onC
       console.error("PIN save error:", error);
       setCurrentStep("pin-setup");
       setTempPin(null);
-    } finally {
-      setIsLoading(false);
     }
   }, [tempPin, showAlert]);
 
@@ -112,7 +107,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(({ onC
         return (
           <SectionContainer title="Welcome to Your Wallet">
             <Text style={styles.resultValue}>
-              Let's get you set up! This wizard will guide you through:
+              Let&apos;s get you set up! This wizard will guide you through:
             </Text>
             <Text style={[styles.resultValue, { marginTop: 10 }]}>
               • Creating a secure PIN for your wallet
@@ -137,7 +132,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(({ onC
         return (
           <SectionContainer title="Account Setup">
             <Text style={styles.resultValue}>
-              Great! Your PIN is set up. Now let's add your first account:
+              Great! Your PIN is set up. Now let&apos;s add your first account:
             </Text>
 
             <ActionButton
