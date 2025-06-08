@@ -37,7 +37,8 @@ export function useSecureStorage(initialAccountId?: string) {
   );
 
   // Add timer ref for auto-hiding the value
-  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Cross environment issues with TimeoutTypes
+  const autoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // State for reveal scheduling
   const [revealStatus, setRevealStatus] = useState<{
@@ -125,7 +126,7 @@ export function useSecureStorage(initialAccountId?: string) {
       // Set new timer to clear the value after delay
       autoHideTimerRef.current = setTimeout(() => {
         setStoredValue(null);
-      }, AUTO_HIDE_DELAY_MS) as unknown as NodeJS.Timeout;
+      }, AUTO_HIDE_DELAY_MS);
     }
 
     return () => {

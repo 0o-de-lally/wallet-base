@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import { styles } from "../../styles/styles";
-import { validateMnemonic as scureValidateMnemonic } from "@scure/bip39";
+import { validateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { ActionButton } from "./ActionButton";
 
@@ -22,7 +22,7 @@ interface ValidationResult {
   wordCount: number;
 }
 
-const validateMnemonic = (mnemonic: string): ValidationResult => {
+const checkValidMnem = (mnemonic: string): ValidationResult => {
   const trimmed = mnemonic.trim();
   const words = trimmed ? trimmed.split(/\s+/) : [];
   const wordCount = words.length;
@@ -59,7 +59,7 @@ const validateMnemonic = (mnemonic: string): ValidationResult => {
   if (wordCount === 24) {
     try {
       // Use @scure/bip39 for instant validation instead of LibraWallet.fromMnemonic()
-      const isValidMnemonic = scureValidateMnemonic(trimmed, wordlist);
+      const isValidMnemonic = validateMnemonic(trimmed, wordlist);
       if (!isValidMnemonic) {
         return {
           isValid: false,
@@ -103,7 +103,7 @@ export const MnemonicInput = memo(
         onChangeText(text);
 
         if (autoValidate) {
-          const validationResult = validateMnemonic(text);
+          const validationResult = checkValidMnem(text);
           setValidation(validationResult);
 
           // For complete, valid mnemonics, validation includes full verification
@@ -124,7 +124,7 @@ export const MnemonicInput = memo(
     // Update validation when value changes externally
     useEffect(() => {
       if (autoValidate) {
-        const validationResult = validateMnemonic(value);
+        const validationResult = checkValidMnem(value);
         setValidation(validationResult);
 
         // For complete, valid mnemonics, validation includes full verification
