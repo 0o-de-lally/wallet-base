@@ -1,5 +1,4 @@
-// Polyfills
-import "react-native-get-random-values";
+import "../util/polyfills";
 
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
