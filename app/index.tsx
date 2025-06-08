@@ -87,7 +87,12 @@ const AppContent = observer(() => {
   // Show loading state while initializing
   if (!isInitialized) {
     return (
-      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View
+        style={[
+          styles.root,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
         <ActivityIndicator size="large" color="#94c2f3" />
         <Text style={[styles.resultValue, { marginTop: 10 }]}>
           Initializing wallet...
@@ -104,10 +109,7 @@ const AppContent = observer(() => {
   // Show menu if user has no accounts or wants to access menu
   if (showMenu) {
     return (
-      <Menu 
-        onProfileChange={handleMenuProfileChange} 
-        onExit={handleMenuExit}
-      />
+      <Menu onProfileChange={handleMenuProfileChange} onExit={handleMenuExit} />
     );
   }
 
@@ -116,61 +118,82 @@ const AppContent = observer(() => {
 });
 
 // Smart Account List component that shows accounts for the active profile
-const SmartAccountList = observer(({ onShowMenu }: { onShowMenu: () => void }) => {
-  const activeAccountId = appConfig.activeAccountId.get();
-  const profiles = appConfig.profiles.get();
+const SmartAccountList = observer(
+  ({ onShowMenu }: { onShowMenu: () => void }) => {
+    const activeAccountId = appConfig.activeAccountId.get();
+    const profiles = appConfig.profiles.get();
 
-  // Early return if profiles aren't loaded yet
-  if (!profiles || Object.keys(profiles).length === 0) {
+    // Early return if profiles aren't loaded yet
+    if (!profiles || Object.keys(profiles).length === 0) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>Loading...</Text>
+          <Text style={styles.resultValue}>Loading account data...</Text>
+        </View>
+      );
+    }
+
+    // Get the active profile
+    const activeProfileName = activeAccountId
+      ? getProfileForAccount(activeAccountId)
+      : null;
+    const activeProfile = activeProfileName
+      ? profiles[activeProfileName]
+      : null;
+
+    // If no active profile, fall back to first profile with accounts
+    const fallbackProfile = Object.values(profiles).find(
+      (profile) => profile?.accounts?.length > 0,
+    );
+    const displayProfile = activeProfile || fallbackProfile;
+
+    if (
+      !displayProfile ||
+      !displayProfile.accounts ||
+      displayProfile.accounts.length === 0
+    ) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>No Accounts</Text>
+          <Text style={styles.resultValue}>
+            No accounts found. Use the menu to add accounts.
+          </Text>
+          <Menu onProfileChange={() => {}} onExit={undefined} />
+        </View>
+      );
+    }
+
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Loading...</Text>
-        <Text style={styles.resultValue}>Loading account data...</Text>
-      </View>
-    );
-  }
-
-  // Get the active profile
-  const activeProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
-  const activeProfile = activeProfileName ? profiles[activeProfileName] : null;
-
-  // If no active profile, fall back to first profile with accounts
-  const fallbackProfile = Object.values(profiles).find(profile => profile?.accounts?.length > 0);
-  const displayProfile = activeProfile || fallbackProfile;
-
-  if (!displayProfile || !displayProfile.accounts || displayProfile.accounts.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>No Accounts</Text>
-        <Text style={styles.resultValue}>No accounts found. Use the menu to add accounts.</Text>
-        <Menu onProfileChange={() => {}} onExit={undefined} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <Text style={styles.title}>{displayProfile.name}</Text>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={onShowMenu}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="Open menu"
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+          }}
         >
-          <Text style={styles.navButtonText}>Menu</Text>
-        </TouchableOpacity>
-      </View>
+          <Text style={styles.title}>{displayProfile.name}</Text>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={onShowMenu}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Open menu"
+          >
+            <Text style={styles.navButtonText}>Menu</Text>
+          </TouchableOpacity>
+        </View>
 
-      <AccountList
-        profileName={displayProfile.name}
-        accounts={displayProfile.accounts}
-        activeAccountId={activeAccountId}
-        onSetActiveAccount={(accountId: string) => {
-          appConfig.activeAccountId.set(accountId);
-        }}
-      />
-    </View>
-  );
-});
+        <AccountList
+          profileName={displayProfile.name}
+          accounts={displayProfile.accounts}
+          activeAccountId={activeAccountId}
+          onSetActiveAccount={(accountId: string) => {
+            appConfig.activeAccountId.set(accountId);
+          }}
+        />
+      </View>
+    );
+  },
+);

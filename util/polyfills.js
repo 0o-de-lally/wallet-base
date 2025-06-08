@@ -3,6 +3,7 @@ import "react-native-get-random-values";
 import { Buffer } from 'buffer';
 
 // Make Buffer available globally
+
 if (typeof global !== 'undefined') {
   global.Buffer = Buffer;
 }

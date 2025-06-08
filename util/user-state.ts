@@ -18,7 +18,7 @@ export async function isFirstTimeUser(): Promise<boolean> {
     // Check if there are any profiles with accounts
     const profiles = appConfig.profiles.get();
     const hasAccountsInAnyProfile = Object.values(profiles).some(
-      profile => profile.accounts.length > 0
+      (profile) => profile.accounts.length > 0,
     );
 
     // First-time user has no PIN and no accounts
@@ -49,11 +49,11 @@ export async function hasCompletedBasicSetup(): Promise<boolean> {
 export function hasAccounts(): boolean {
   try {
     const profiles = appConfig.profiles.get();
-    if (!profiles || typeof profiles !== 'object') {
+    if (!profiles || typeof profiles !== "object") {
       return false;
     }
     return Object.values(profiles).some(
-      profile => profile && profile.accounts && profile.accounts.length > 0
+      (profile) => profile && profile.accounts && profile.accounts.length > 0,
     );
   } catch (error) {
     console.error("Error checking accounts status:", error);
@@ -67,7 +67,7 @@ export function hasAccounts(): boolean {
 export function getProfileCount(): number {
   try {
     const profiles = appConfig.profiles.get();
-    if (!profiles || typeof profiles !== 'object') {
+    if (!profiles || typeof profiles !== "object") {
       return 0;
     }
     return Object.keys(profiles).length;

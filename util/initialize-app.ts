@@ -1,4 +1,8 @@
-import { appConfig, maybeInitializeDefaultProfile, fixAccountAddresses } from "./app-config-store";
+import {
+  appConfig,
+  maybeInitializeDefaultProfile,
+  fixAccountAddresses,
+} from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
 import * as LocalAuthentication from "expo-local-authentication";
 

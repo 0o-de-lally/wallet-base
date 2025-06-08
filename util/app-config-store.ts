@@ -382,35 +382,43 @@ export function cleanupExpiredRevealSchedules(): void {
 export function fixAccountAddresses(): void {
   try {
     const profiles = appConfig.profiles.get();
-    
-    if (!profiles || typeof profiles !== 'object') {
+
+    if (!profiles || typeof profiles !== "object") {
       return;
     }
-    
+
     let hasChanges = false;
-    
+
     Object.entries(profiles).forEach(([profileName, profile]) => {
       if (profile?.accounts) {
         profile.accounts.forEach((account, index) => {
-          if (account?.account_address && typeof account.account_address === 'string') {
+          if (
+            account?.account_address &&
+            typeof account.account_address === "string"
+          ) {
             try {
               // Convert string back to AccountAddress object
               const fixedAddress = AccountAddress.from(account.account_address);
-              appConfig.profiles[profileName].accounts[index].account_address.set(fixedAddress);
+              appConfig.profiles[profileName].accounts[
+                index
+              ].account_address.set(fixedAddress);
               hasChanges = true;
             } catch (error) {
-              console.error(`Failed to fix AccountAddress for account ${account.id}:`, error);
+              console.error(
+                `Failed to fix AccountAddress for account ${account.id}:`,
+                error,
+              );
             }
           }
         });
       }
     });
-    
+
     if (hasChanges) {
-      console.log('Fixed AccountAddress objects after loading from storage');
+      console.log("Fixed AccountAddress objects after loading from storage");
     }
   } catch (error) {
-    console.error('Error fixing AccountAddress objects:', error);
+    console.error("Error fixing AccountAddress objects:", error);
   }
 }
 
