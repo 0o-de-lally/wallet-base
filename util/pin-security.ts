@@ -38,7 +38,7 @@
  * @module pin_security
  */
 import { pbkdf2 } from "@noble/hashes/pbkdf2";
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
