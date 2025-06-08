@@ -8,7 +8,7 @@ import { router } from "expo-router";
 
 export interface AccountItemProps {
   account: AccountState;
-  onDelete: (accountAddress: string) => void;
+  onDelete: (accountId: string) => void;
   profileName: string;
   onToggleExpand?: (accountId: string) => void;
   isActive?: boolean;
@@ -33,7 +33,7 @@ export const AccountItem = memo(
 
     return (
       <TouchableOpacity
-        key={account.account_address}
+        key={account.id}
         style={[
           styles.resultContainer,
           { marginBottom: 10 },
@@ -78,7 +78,7 @@ export const AccountItem = memo(
           ellipsizeMode="middle"
           selectable={true}
         >
-          {account.account_address}
+          {account.account_address.toStringLong()}
         </Text>
         <View
           style={{
@@ -150,7 +150,7 @@ export const AccountItem = memo(
 
           <ActionButton
             text="Remove"
-            onPress={() => onDelete(account.account_address)}
+            onPress={() => onDelete(account.id)}
             isDestructive={true}
             size="small"
             accessibilityLabel={`Remove account ${account.nickname}`}

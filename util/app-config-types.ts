@@ -1,3 +1,5 @@
+import { AccountAddress } from "open-libra-sdk";
+
 /**
  * Network types available for selection
  */
@@ -31,7 +33,7 @@ export type RevealSchedule = {
  */
 export type AccountState = {
   id: string; // Unique identifier for the account (e.g., UUID or random ID)
-  account_address: string;
+  account_address: AccountAddress;
   nickname: string; // User-friendly name for the account
   is_key_stored: boolean;
   balance_locked: number;

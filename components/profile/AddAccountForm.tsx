@@ -9,6 +9,7 @@ import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
 import { createAccount } from "../../util/account-utils";
+import { AccountAddress } from "open-libra-sdk";
 
 interface AddAccountFormProps {
   profileName?: string;
@@ -89,16 +90,24 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
   }, [onResetForm]);
 
   const handleAddAccount = async () => {
-    const result = await createAccount(
-      selectedProfile,
-      accountAddress,
-      nickname,
-    );
+    try {
+      // Convert string address to AccountAddress
+      const address = AccountAddress.fromString(accountAddress.trim());
 
-    if (result.success) {
-      setSuccessModalVisible(true);
-    } else {
-      setError(result.error || "Unknown error occurred");
+      const result = await createAccount(
+        selectedProfile,
+        address,
+        nickname,
+      );
+
+      if (result.success) {
+        setSuccessModalVisible(true);
+      } else {
+        setError(result.error || "Unknown error occurred");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Invalid account address format";
+      setError(errorMessage);
     }
   };
 
