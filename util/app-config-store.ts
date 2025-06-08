@@ -90,7 +90,9 @@ export function addAccountToProfile(
 
   // Check if account already exists in the profile
   const accountExists = profile.accounts.some(
-    (acc) => acc.account_address.toStringLong() === account.account_address.toStringLong(),
+    (acc) =>
+      acc.account_address.toStringLong() ===
+      account.account_address.toStringLong(),
   );
 
   if (accountExists) {

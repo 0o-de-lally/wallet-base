@@ -33,7 +33,9 @@ function deriveShortNickname(address: AccountAddress): string {
   const addressString = address.toStringLong();
 
   // Remove '0x' prefix if present
-  let cleanAddress = addressString.startsWith("0x") ? addressString.slice(2) : addressString;
+  let cleanAddress = addressString.startsWith("0x")
+    ? addressString.slice(2)
+    : addressString;
 
   // Remove leading zeros
   cleanAddress = cleanAddress.replace(/^0+/, "");
@@ -84,7 +86,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifiedMnemonic, setIsVerifiedMnemonic] = useState(false);
-  const [derivedAddress, setDerivedAddress] = useState<AccountAddress | null>(null);
+  const [derivedAddress, setDerivedAddress] = useState<AccountAddress | null>(
+    null,
+  );
 
   // New state for chain verification
   const [isChainVerified, setIsChainVerified] = useState(false);
@@ -224,7 +228,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         const actualAddressString = actualAddress.toStringLong();
         const derivedAddressString = derivedAddress!.toStringLong();
         if (actualAddressString !== derivedAddressString) {
-          console.log(`Key rotation detected. On-chain address: ${actualAddressString}, derived: ${derivedAddressString}`);
+          console.log(
+            `Key rotation detected. On-chain address: ${actualAddressString}, derived: ${derivedAddressString}`,
+          );
         }
         setError(null);
 
@@ -272,7 +278,13 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         setError(null);
       }
     }
-  }, [accountExistsInProfile, chainAddress, derivedAddress, selectedProfile, error]);
+  }, [
+    accountExistsInProfile,
+    chainAddress,
+    derivedAddress,
+    selectedProfile,
+    error,
+  ]);
 
   // Expose a reset method through prop callback
   const resetForm = () => {
@@ -310,7 +322,10 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       return;
     }
 
-    console.log("Starting recovery process with address:", addressToUse.toStringLong());
+    console.log(
+      "Starting recovery process with address:",
+      addressToUse.toStringLong(),
+    );
     setIsLoading(true);
     setError(null);
 
@@ -454,7 +469,8 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       {derivedAddress && !isChainVerified && (
         <View style={styles.inputContainer}>
           <Text style={styles.label}>
-            Verify the mnemonic by connecting to the blockchain. This works for both existing accounts and new accounts.
+            Verify the mnemonic by connecting to the blockchain. This works for
+            both existing accounts and new accounts.
           </Text>
           <ActionButton
             text="Verify on Chain"
@@ -471,9 +487,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: "#a5d6b7" }]}>
             ✓ Chain verification successful!
-            {chainAddress?.toStringLong() === derivedAddress?.toStringLong() ?
-              " (Account verified or new)" :
-              " (Account found with rotated keys)"}
+            {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
+              ? " (Account verified or new)"
+              : " (Account found with rotated keys)"}
           </Text>
           <FormInput
             label="Actual Chain Address:"

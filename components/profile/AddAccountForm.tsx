@@ -94,11 +94,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
       // Convert string address to AccountAddress
       const address = AccountAddress.fromString(accountAddress.trim());
 
-      const result = await createAccount(
-        selectedProfile,
-        address,
-        nickname,
-      );
+      const result = await createAccount(selectedProfile, address, nickname);
 
       if (result.success) {
         setSuccessModalVisible(true);
@@ -106,7 +102,8 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({
         setError(result.error || "Unknown error occurred");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Invalid account address format";
+      const errorMessage =
+        err instanceof Error ? err.message : "Invalid account address format";
       setError(errorMessage);
     }
   };

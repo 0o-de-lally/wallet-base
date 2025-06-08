@@ -49,7 +49,9 @@ export const AccountItem = memo(
         <View
           style={[
             styles.accessTypeBadge,
-            account.is_key_stored ? styles.accessTypeBadgeHot : styles.accessTypeBadgeView,
+            account.is_key_stored
+              ? styles.accessTypeBadgeHot
+              : styles.accessTypeBadgeView,
           ]}
           accessibilityRole="text"
           accessibilityLabel={account.is_key_stored ? "Hot" : "View"}
@@ -91,9 +93,7 @@ export const AccountItem = memo(
 
           {isActive && (
             <View style={styles.activeIndicatorBadge}>
-              <Text style={styles.activeIndicatorText}>
-                Active
-              </Text>
+              <Text style={styles.activeIndicatorText}>Active</Text>
             </View>
           )}
 

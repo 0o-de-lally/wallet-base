@@ -52,8 +52,7 @@ export async function createAccount(
     const account: AccountState = {
       id: accountId,
       account_address: accountAddress,
-      nickname:
-        nickname.trim() || addressString.substring(0, 8) + "...",
+      nickname: nickname.trim() || addressString.substring(0, 8) + "...",
       is_key_stored: false,
       balance_locked: 0,
       balance_unlocked: 0,
