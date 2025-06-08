@@ -95,13 +95,8 @@ const ProfileManagement: React.FC = observer(() => {
         <TouchableOpacity
           style={[
             styles.profileItem,
-            activeProfileName === profileName && {
-              borderColor: "#94c2f3",
-              borderWidth: 2,
-            },
-            selectedProfileName === profileName && {
-              backgroundColor: "#2c3040",
-            },
+            activeProfileName === profileName && styles.accountItemActive,
+            selectedProfileName === profileName && styles.profileItemSelected,
           ]}
           onPress={() => handleSelectProfile(profileName)}
           activeOpacity={0.7}
@@ -110,47 +105,25 @@ const ProfileManagement: React.FC = observer(() => {
           accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(contains active account)" : ""}`}
           accessibilityState={{ expanded: expandedProfile === profileName }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 10,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.profileContentRow}>
+            <View style={styles.profileTitleContainer}>
               <Text style={styles.profileName}>{profileName}</Text>
               {activeProfileName === profileName && (
-                <View
-                  style={{
-                    marginLeft: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    backgroundColor: "rgba(148, 194, 243, 0.3)",
-                    borderRadius: 4,
-                  }}
-                >
-                  <Text style={{ color: "#94c2f3", fontSize: 10 }}>
+                <View style={styles.activeProfileBadge}>
+                  <Text style={styles.activeProfileBadgeText}>
                     Contains Active Account
                   </Text>
                 </View>
               )}
             </View>
 
-            <Text style={{ color: "#fff", fontSize: 12 }}>
+            <Text style={styles.profileAccountCountText}>
               {profile.accounts.length} account(s)
               {expandedProfile === profileName ? " ▲" : " ▼"}
             </Text>
           </View>
 
-          <Text
-            style={{
-              color: "#ddd",
-              fontSize: 12,
-              marginLeft: 10,
-              marginBottom: 10,
-            }}
-          >
+          <Text style={styles.profileNetworkText}>
             Network: {profile.network.network_name} (
             {profile.network.network_type})
           </Text>

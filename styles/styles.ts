@@ -418,4 +418,110 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
+
+  // ACCOUNT ITEM STYLES
+  accountItemContainer: {
+    marginBottom: 10,
+  },
+  accountItemActive: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  accessTypeBadge: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 80,
+  },
+  accessTypeBadgeHot: {
+    backgroundColor: colors.success,
+  },
+  accessTypeBadgeView: {
+    backgroundColor: colors.secondary,
+  },
+  accessTypeBadgeText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 11,
+    textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+  balanceText: {
+    fontSize: 14,
+  },
+  lastUpdatedText: {
+    fontSize: 12,
+    color: colors.placeholderText,
+    marginTop: 5,
+  },
+  accountActionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  activeIndicatorBadge: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#4a90e2",
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  activeIndicatorText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  setActiveButtonStyle: {
+    backgroundColor: colors.success,
+  },
+  manageAccountButtonStyle: {
+    backgroundColor: "#4a90e2",
+  },
+
+  // PROFILE MANAGEMENT STYLES
+  profileManagementContainer: {
+    marginBottom: 15,
+  },
+  profileItemSelected: {
+    backgroundColor: "#2c3040",
+  },
+  profileContentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+  },
+  profileTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  activeProfileBadge: {
+    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: "rgba(148, 194, 243, 0.3)",
+    borderRadius: 4,
+  },
+  activeProfileBadgeText: {
+    color: "#94c2f3",
+    fontSize: 10,
+  },
+  profileAccountCountText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  profileNetworkText: {
+    color: "#ddd",
+    fontSize: 12,
+    marginLeft: 10,
+    marginBottom: 10,
+  },
 });

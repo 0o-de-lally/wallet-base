@@ -36,8 +36,8 @@ export const AccountItem = memo(
         key={account.id}
         style={[
           styles.resultContainer,
-          { marginBottom: 10 },
-          isActive && { borderColor: "#94c2f3", borderWidth: 2 },
+          styles.accountItemContainer,
+          isActive && styles.accountItemActive,
         ]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}`}
@@ -47,28 +47,14 @@ export const AccountItem = memo(
       >
         <Text style={styles.resultLabel}>{account.nickname}</Text>
         <View
-          style={{
-            paddingVertical: 6,
-            paddingHorizontal: 10,
-            backgroundColor: account.is_key_stored ? "#a5d6b7" : "#b3b8c3",
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: 80,
-          }}
+          style={[
+            styles.accessTypeBadge,
+            account.is_key_stored ? styles.accessTypeBadgeHot : styles.accessTypeBadgeView,
+          ]}
           accessibilityRole="text"
           accessibilityLabel={account.is_key_stored ? "Hot" : "View"}
         >
-          <Text
-            style={{
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: 11,
-              textAlign: "center",
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
+          <Text style={styles.accessTypeBadgeText}>
             {account.is_key_stored ? "Full Access" : "View Only"}
           </Text>
         </View>
@@ -80,59 +66,32 @@ export const AccountItem = memo(
         >
           {account.account_address.toStringLong()}
         </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 5,
-          }}
-        >
-          <Text style={[styles.resultValue, { fontSize: 14 }]}>
+        <View style={styles.balanceRow}>
+          <Text style={[styles.resultValue, styles.balanceText]}>
             Locked: {formatCurrency(account.balance_locked)}
           </Text>
-          <Text style={[styles.resultValue, { fontSize: 14 }]}>
+          <Text style={[styles.resultValue, styles.balanceText]}>
             Unlocked: {formatCurrency(account.balance_unlocked)}
           </Text>
         </View>
-        <Text
-          style={[
-            styles.resultValue,
-            { fontSize: 12, color: "#8c8c9e", marginTop: 5 },
-          ]}
-        >
+        <Text style={[styles.resultValue, styles.lastUpdatedText]}>
           Last updated: {formatTimestamp(account.last_update)}
         </Text>
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 10,
-          }}
-        >
+        <View style={styles.accountActionsRow}>
           {onSetActive && !isActive && (
             <ActionButton
               text="Set Active"
               onPress={() => onSetActive(account.id)}
               size="small"
-              style={{
-                backgroundColor: "#a5d6b7",
-              }}
+              style={styles.setActiveButtonStyle}
               accessibilityLabel={`Set ${account.nickname} as active account`}
             />
           )}
 
           {isActive && (
-            <View
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                backgroundColor: "#4a90e2",
-                borderRadius: 4,
-                marginRight: 8,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
+            <View style={styles.activeIndicatorBadge}>
+              <Text style={styles.activeIndicatorText}>
                 Active
               </Text>
             </View>
@@ -142,9 +101,7 @@ export const AccountItem = memo(
             text="Manage Account"
             onPress={navigateToSettings}
             size="small"
-            style={{
-              backgroundColor: "#4a90e2",
-            }}
+            style={styles.manageAccountButtonStyle}
             accessibilityLabel={`Manage account ${account.nickname}`}
           />
 
