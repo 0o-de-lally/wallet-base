@@ -66,7 +66,7 @@ export const AccountItem = memo(
           ellipsizeMode="middle"
           selectable={true}
         >
-          {account.account_address.toStringLong()}
+          {account.account_address?.toStringLong?.() || "Address not available"}
         </Text>
         <View style={styles.balanceRow}>
           <Text style={[styles.resultValue, styles.balanceText]}>

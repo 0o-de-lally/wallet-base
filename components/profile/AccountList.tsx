@@ -94,17 +94,19 @@ const AccountList = memo(
     // Render with accounts
     return (
       <View>
-        {accounts.map((account) => (
-          <AccountItem
-            key={account.id}
-            account={account}
-            onToggleExpand={toggleAccountExpand}
-            onDelete={handleDeleteAccount}
-            profileName={profileName}
-            isActive={account.id === activeAccountId}
-            onSetActive={onSetActiveAccount}
-          />
-        ))}
+        {accounts
+          .filter((account) => account && account.id && account.account_address)
+          .map((account) => (
+            <AccountItem
+              key={account.id}
+              account={account}
+              onToggleExpand={toggleAccountExpand}
+              onDelete={handleDeleteAccount}
+              profileName={profileName}
+              isActive={account.id === activeAccountId}
+              onSetActive={onSetActiveAccount}
+            />
+          ))}
 
         {expandedAccountId && (
           <View style={{ paddingHorizontal: 10, paddingVertical: 5 }}>
