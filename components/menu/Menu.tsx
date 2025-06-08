@@ -14,13 +14,14 @@ import { useModal } from "../../context/ModalContext";
 
 interface MenuProps {
   onProfileChange?: () => void;
+  onExit?: () => void;
 }
 
 /**
  * Main navigation menu for the wallet app
  * Shows when the user has completed onboarding
  */
-export const Menu: React.FC<MenuProps> = observer(({ onProfileChange }) => {
+export const Menu: React.FC<MenuProps> = observer(({ onProfileChange, onExit }) => {
   const router = useRouter();
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
   const { showAlert, showConfirmation } = useModal();
@@ -28,6 +29,11 @@ export const Menu: React.FC<MenuProps> = observer(({ onProfileChange }) => {
   // Get current app state
   const profiles = appConfig.profiles.get();
   const activeAccountId = appConfig.activeAccountId.get();
+  
+  // Check if user has any accounts to go back to
+  const hasAnyAccounts = Object.values(profiles).some(
+    profile => profile && profile.accounts && profile.accounts.length > 0
+  );
 
   // Get current profile info
   const currentProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
@@ -60,7 +66,17 @@ export const Menu: React.FC<MenuProps> = observer(({ onProfileChange }) => {
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
     >
-      <Text style={styles.title}>Wallet Menu</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <Text style={styles.title}>Wallet Menu</Text>
+        {onExit && hasAnyAccounts && (
+          <ActionButton
+            text="Back to Accounts"
+            onPress={onExit}
+            size="small"
+            accessibilityLabel="Exit menu and return to account list"
+          />
+        )}
+      </View>
 
       {/* Current Profile & Account Info */}
       {currentProfile && (

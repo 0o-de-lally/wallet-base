@@ -70,7 +70,18 @@ const AppContent = observer(() => {
   const handleMenuProfileChange = useCallback(() => {
     // Force re-render when profile changes
     const hasUserAccounts = hasAccounts();
-    setShowMenu(!hasUserAccounts);
+    // Only close menu if user now has accounts and menu was opened manually
+    if (hasUserAccounts) {
+      setShowMenu(false);
+    }
+  }, []);
+
+  const handleMenuExit = useCallback(() => {
+    // Only allow exiting if user has accounts to show
+    const hasUserAccounts = hasAccounts();
+    if (hasUserAccounts) {
+      setShowMenu(false);
+    }
   }, []);
 
   // Show loading state while initializing
@@ -92,7 +103,12 @@ const AppContent = observer(() => {
 
   // Show menu if user has no accounts or wants to access menu
   if (showMenu) {
-    return <Menu onProfileChange={handleMenuProfileChange} />;
+    return (
+      <Menu 
+        onProfileChange={handleMenuProfileChange} 
+        onExit={handleMenuExit}
+      />
+    );
   }
 
   // Show account list for users with accounts
@@ -104,20 +120,30 @@ const SmartAccountList = observer(({ onShowMenu }: { onShowMenu: () => void }) =
   const activeAccountId = appConfig.activeAccountId.get();
   const profiles = appConfig.profiles.get();
 
+  // Early return if profiles aren't loaded yet
+  if (!profiles || Object.keys(profiles).length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Loading...</Text>
+        <Text style={styles.resultValue}>Loading account data...</Text>
+      </View>
+    );
+  }
+
   // Get the active profile
   const activeProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
   const activeProfile = activeProfileName ? profiles[activeProfileName] : null;
 
   // If no active profile, fall back to first profile with accounts
-  const fallbackProfile = Object.values(profiles).find(profile => profile.accounts.length > 0);
+  const fallbackProfile = Object.values(profiles).find(profile => profile?.accounts?.length > 0);
   const displayProfile = activeProfile || fallbackProfile;
 
-  if (!displayProfile) {
+  if (!displayProfile || !displayProfile.accounts || displayProfile.accounts.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>No Accounts</Text>
         <Text style={styles.resultValue}>No accounts found. Use the menu to add accounts.</Text>
-        <Menu onProfileChange={() => {}} />
+        <Menu onProfileChange={() => {}} onExit={undefined} />
       </View>
     );
   }

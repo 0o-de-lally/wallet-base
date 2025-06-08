@@ -94,7 +94,9 @@ const AccountList = memo(
     // Render with accounts
     return (
       <View>
-        {accounts.map((account) => (
+        {accounts
+          .filter((account) => account && account.id && account.account_address)
+          .map((account) => (
           <AccountItem
             key={account.id}
             account={account}

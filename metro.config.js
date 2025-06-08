@@ -5,7 +5,7 @@ const config = getDefaultConfig(__dirname);
 // Add alias for buffer polyfill
 config.resolver.alias = {
   ...config.resolver.alias,
-  buffer: 'buffer',
+  Buffer: 'buffer',
 };
 
 // Add buffer to the list of modules to be resolved as packages

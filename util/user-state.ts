@@ -47,18 +47,34 @@ export async function hasCompletedBasicSetup(): Promise<boolean> {
  * Checks if the user has any accounts configured
  */
 export function hasAccounts(): boolean {
-  const profiles = appConfig.profiles.get();
-  return Object.values(profiles).some(
-    profile => profile.accounts.length > 0
-  );
+  try {
+    const profiles = appConfig.profiles.get();
+    if (!profiles || typeof profiles !== 'object') {
+      return false;
+    }
+    return Object.values(profiles).some(
+      profile => profile && profile.accounts && profile.accounts.length > 0
+    );
+  } catch (error) {
+    console.error("Error checking accounts status:", error);
+    return false;
+  }
 }
 
 /**
  * Gets the number of profiles the user has
  */
 export function getProfileCount(): number {
-  const profiles = appConfig.profiles.get();
-  return Object.keys(profiles).length;
+  try {
+    const profiles = appConfig.profiles.get();
+    if (!profiles || typeof profiles !== 'object') {
+      return 0;
+    }
+    return Object.keys(profiles).length;
+  } catch (error) {
+    console.error("Error getting profile count:", error);
+    return 0;
+  }
 }
 
 /**
