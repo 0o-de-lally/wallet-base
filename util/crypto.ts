@@ -4,7 +4,7 @@
  */
 import { gcm } from "@noble/ciphers/aes";
 import { pbkdf2 } from "@noble/hashes/pbkdf2";
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2";
 import { getRandomBytes } from "./random";
 
 // Add a verification token to check if decryption was successful

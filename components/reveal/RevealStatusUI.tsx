@@ -23,7 +23,6 @@ interface RevealStatusUIProps {
   onExecuteReveal: (accountId: string) => void;
   onCancelReveal: (accountId: string) => void;
   onClearRevealedValue?: () => void;
-  onSwitchToManage?: () => void; // Callback to switch back to manage mode
 }
 
 export const RevealStatusUI = memo(
@@ -38,15 +37,14 @@ export const RevealStatusUI = memo(
     onExecuteReveal,
     onCancelReveal,
     onClearRevealedValue,
-    onSwitchToManage,
   }: RevealStatusUIProps) => {
     const [waitTimeDisplay, setWaitTimeDisplay] = useState("");
     const [expiryTimeDisplay, setExpiryTimeDisplay] = useState("");
     const [hideCountdown, setHideCountdown] = useState<number>(
       AUTO_HIDE_DELAY_MS / 1000,
     );
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const hideTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Create a safe handler for clearing revealed value
     const handleClearRevealedValue = useCallback(() => {
@@ -152,19 +150,22 @@ export const RevealStatusUI = memo(
     }, [storedValue, handleClearRevealedValue]);
 
     const renderActionButton = useCallback(() => {
+      // If value is currently revealed, don't show the schedule button
+      if (storedValue !== null) {
+        return null;
+      }
+
       // If no reveal is scheduled yet, show the initial schedule button
       if (!revealStatus || !revealStatus.isScheduled) {
         return (
-          <View style={{ alignItems: "center", marginBottom: 20 }}>
-            <ActionButton
-              text={`Schedule Reveal${accountName ? ` for ${accountName}` : ""}`}
-              onPress={handleScheduleReveal}
-              disabled={isLoading || disabled}
-              accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
-              accessibilityHint="Starts the reveal process with a waiting period"
-              style={[styles.button]}
-            />
-          </View>
+          <ActionButton
+            text={`Schedule Reveal`}
+            onPress={handleScheduleReveal}
+            disabled={isLoading || disabled}
+            accessibilityLabel={`Schedule reveal of secured data for ${accountName || "account"}`}
+            accessibilityHint="Starts the reveal process with a waiting period"
+            style={[styles.button]}
+          />
         );
       }
 
@@ -190,7 +191,6 @@ export const RevealStatusUI = memo(
       isLoading,
       disabled,
       handleScheduleReveal,
-      onSwitchToManage,
       accountName,
     ]);
 

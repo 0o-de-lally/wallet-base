@@ -6,18 +6,19 @@ import {
   appConfig,
 } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
+import { AccountAddress } from "open-libra-sdk";
 
 /**
  * Creates a new account in the specified profile
  *
  * @param profileName Name of the profile to add the account to
- * @param accountAddress Address of the account
+ * @param accountAddress Address of the account (AccountAddress instance)
  * @param nickname Optional nickname for the account
  * @returns Object containing success status, error message (if any), and created account (if successful)
  */
 export async function createAccount(
   profileName: string,
-  accountAddress: string,
+  accountAddress: AccountAddress,
   nickname: string,
 ): Promise<{
   success: boolean;
@@ -26,7 +27,7 @@ export async function createAccount(
 }> {
   try {
     // Validate inputs
-    if (!accountAddress.trim()) {
+    if (!accountAddress) {
       return {
         success: false,
         error: "Account address is required",
@@ -44,12 +45,14 @@ export async function createAccount(
     const randomBytes = getRandomBytes(16); // 16 bytes = 128 bits
     const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
+    // Get string representation for nickname fallback
+    const addressString = accountAddress.toStringLong();
+
     // Create account state
     const account: AccountState = {
       id: accountId,
-      account_address: accountAddress.trim(),
-      nickname:
-        nickname.trim() || accountAddress.trim().substring(0, 8) + "...",
+      account_address: accountAddress,
+      nickname: nickname.trim() || addressString.substring(0, 8) + "...",
       is_key_stored: false,
       balance_locked: 0,
       balance_unlocked: 0,

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
+import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import {
   appConfig,
@@ -18,7 +19,7 @@ import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 
-const ProfileManagement: React.FC = () => {
+const ProfileManagement: React.FC = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
     null,
   );
@@ -84,12 +85,9 @@ const ProfileManagement: React.FC = () => {
   }, []);
 
   const handleAccountsUpdated = useCallback(() => {
-    // Force a UI refresh by updating the selected profile
-    if (selectedProfileName) {
-      // This will trigger a re-render with the updated accounts
-      setSelectedProfileName(selectedProfileName);
-    }
-  }, [selectedProfileName]);
+    // No need to force re-render since this component is now an observer
+    // The component will automatically re-render when appConfig state changes
+  }, []);
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
@@ -97,13 +95,8 @@ const ProfileManagement: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.profileItem,
-            activeProfileName === profileName && {
-              borderColor: "#94c2f3",
-              borderWidth: 2,
-            },
-            selectedProfileName === profileName && {
-              backgroundColor: "#2c3040",
-            },
+            activeProfileName === profileName && styles.accountItemActive,
+            selectedProfileName === profileName && styles.profileItemSelected,
           ]}
           onPress={() => handleSelectProfile(profileName)}
           activeOpacity={0.7}
@@ -112,47 +105,25 @@ const ProfileManagement: React.FC = () => {
           accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(contains active account)" : ""}`}
           accessibilityState={{ expanded: expandedProfile === profileName }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 10,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.profileContentRow}>
+            <View style={styles.profileTitleContainer}>
               <Text style={styles.profileName}>{profileName}</Text>
               {activeProfileName === profileName && (
-                <View
-                  style={{
-                    marginLeft: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    backgroundColor: "rgba(148, 194, 243, 0.3)",
-                    borderRadius: 4,
-                  }}
-                >
-                  <Text style={{ color: "#94c2f3", fontSize: 10 }}>
+                <View style={styles.activeProfileBadge}>
+                  <Text style={styles.activeProfileBadgeText}>
                     Contains Active Account
                   </Text>
                 </View>
               )}
             </View>
 
-            <Text style={{ color: "#fff", fontSize: 12 }}>
+            <Text style={styles.profileAccountCountText}>
               {profile.accounts.length} account(s)
               {expandedProfile === profileName ? " ▲" : " ▼"}
             </Text>
           </View>
 
-          <Text
-            style={{
-              color: "#ddd",
-              fontSize: 12,
-              marginLeft: 10,
-              marginBottom: 10,
-            }}
-          >
+          <Text style={styles.profileNetworkText}>
             Network: {profile.network.network_name} (
             {profile.network.network_type})
           </Text>
@@ -257,7 +228,7 @@ const ProfileManagement: React.FC = () => {
       />
     </ScrollView>
   );
-};
+});
 
 ProfileManagement.displayName = "ProfileManagement";
 

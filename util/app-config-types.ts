@@ -1,3 +1,5 @@
+import { AccountAddress } from "open-libra-sdk";
+
 /**
  * Network types available for selection
  */
@@ -18,16 +20,26 @@ export type NetworkType = {
 };
 
 /**
+ * Reveal schedule for secure data access
+ */
+export type RevealSchedule = {
+  scheduledAt: number;
+  availableAt: number;
+  expiresAt: number;
+};
+
+/**
  * Account state represents a single blockchain account within a profile
  */
 export type AccountState = {
   id: string; // Unique identifier for the account (e.g., UUID or random ID)
-  account_address: string;
+  account_address: AccountAddress;
   nickname: string; // User-friendly name for the account
   is_key_stored: boolean;
   balance_locked: number;
   balance_unlocked: number;
   last_update: number; // timestamp
+  reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
 };
 
 /**

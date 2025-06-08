@@ -34,8 +34,8 @@ const AccountList = memo(
     );
 
     // Account deletion handling
-    const handleDeleteAccount = useCallback((accountAddress: string) => {
-      setAccountToDelete(accountAddress);
+    const handleDeleteAccount = useCallback((accountId: string) => {
+      setAccountToDelete(accountId);
       setIsDeleteModalVisible(true);
     }, []);
 
@@ -44,7 +44,7 @@ const AccountList = memo(
 
       try {
         const updatedAccounts = accounts.filter(
-          (acc) => acc.account_address !== accountToDelete,
+          (acc) => acc.id !== accountToDelete,
         );
 
         appConfig.profiles[profileName].accounts.set(updatedAccounts);
@@ -79,7 +79,6 @@ const AccountList = memo(
               showAddForm={false}
               onToggleAddForm={() => navigateToCreateAccount()}
               onAccountAdded={() => {}}
-              formRef={React.createRef()}
             />
           </View>
         );
@@ -97,7 +96,7 @@ const AccountList = memo(
       <View>
         {accounts.map((account) => (
           <AccountItem
-            key={account.id || account.account_address}
+            key={account.id}
             account={account}
             onToggleExpand={toggleAccountExpand}
             onDelete={handleDeleteAccount}

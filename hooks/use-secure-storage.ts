@@ -1,15 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  saveValue,
-  getValue,
-  deleteValue,
-  clearAllSecureStorage,
-} from "../util/secure-store";
+import { saveValue, getValue, deleteValue } from "../util/secure-store";
 import {
   scheduleReveal,
   checkRevealStatus,
   cancelReveal,
-  clearAllScheduledReveals,
   REVEAL_CONFIG,
 } from "../util/reveal-controller";
 import { useModal } from "../context/ModalContext";
@@ -19,23 +13,32 @@ import {
   secureEncryptWithPin,
   secureDecryptWithPin,
 } from "../util/pin-security";
+import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
 
-export function useSecureStorage() {
+export function useSecureStorage(initialAccountId?: string) {
   const { showAlert } = useModal();
   const [value, setValue] = useState("");
   const [storedValue, setStoredValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<
-    "save" | "schedule_reveal" | "execute_reveal" | "delete" | null
+    | "save"
+    | "schedule_reveal"
+    | "execute_reveal"
+    | "delete"
+    | "clear_all"
+    | null
   >(null);
-  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(
+    initialAccountId || null,
+  );
 
   // Add timer ref for auto-hiding the value
-  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Cross environment issues with TimeoutTypes
+  const autoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // State for reveal scheduling
   const [revealStatus, setRevealStatus] = useState<{
@@ -51,6 +54,21 @@ export function useSecureStorage() {
     return `account_${accountId}`;
   }, []);
 
+  // Function to check if an account has stored data
+  const checkHasStoredData = useCallback(
+    async (accountId: string): Promise<boolean> => {
+      try {
+        const key = getStorageKey(accountId);
+        const storedData = await getValue(key);
+        return storedData !== null;
+      } catch (error) {
+        console.error("Error checking stored data:", error);
+        return false;
+      }
+    },
+    [getStorageKey],
+  );
+
   // Clear the auto-hide timer when component unmounts
   useEffect(() => {
     return () => {
@@ -60,14 +78,19 @@ export function useSecureStorage() {
     };
   }, []);
 
+  // Update current account ID when initial account ID changes
+  useEffect(() => {
+    if (initialAccountId && initialAccountId !== currentAccountId) {
+      setCurrentAccountId(initialAccountId);
+    }
+  }, [initialAccountId, currentAccountId]);
+
   // Check reveal status periodically for the current account
   useEffect(() => {
     if (!currentAccountId) return;
 
-    const key = getStorageKey(currentAccountId);
-
     const checkStatus = () => {
-      const status = checkRevealStatus(key);
+      const status = checkRevealStatus(currentAccountId);
       if (status) {
         setRevealStatus({
           isScheduled: status.scheduled,
@@ -89,7 +112,7 @@ export function useSecureStorage() {
 
     // Cleanup
     return () => clearInterval(intervalId);
-  }, [currentAccountId, getStorageKey]);
+  }, [currentAccountId]);
 
   // Monitor storedValue and set up auto-hide timer when it changes
   useEffect(() => {
@@ -114,7 +137,12 @@ export function useSecureStorage() {
   }, [storedValue]);
 
   const requestPinForAction = (
-    action: "save" | "schedule_reveal" | "execute_reveal" | "delete",
+    action:
+      | "save"
+      | "schedule_reveal"
+      | "execute_reveal"
+      | "delete"
+      | "clear_all",
     accountId: string,
   ) => {
     console.log(
@@ -128,11 +156,13 @@ export function useSecureStorage() {
   const saveSecurelyWithPin = async (pin: string) => {
     if (!value.trim()) {
       showAlert("Error", "Please enter a value to store");
+      setPinModalVisible(false);
       return;
     }
 
     if (!currentAccountId) {
       showAlert("Error", "No account selected");
+      setPinModalVisible(false);
       return;
     }
 
@@ -143,6 +173,7 @@ export function useSecureStorage() {
       const isValid = await verifyStoredPin(pin);
       if (!isValid) {
         showAlert("Error", "Invalid PIN");
+        setPinModalVisible(false); // Close PIN modal on failure
         return;
       }
 
@@ -156,15 +187,22 @@ export function useSecureStorage() {
       const key = getStorageKey(currentAccountId);
       await saveValue(key, encryptedBase64);
 
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, true);
+
       showAlert("Success", "Value saved securely and encrypted");
       setValue("");
 
       // Cancel any active reveals when saving a new value
-      cancelReveal(key);
+      cancelReveal(currentAccountId);
       setRevealStatus(null);
+
+      // Close PIN modal on success
+      setPinModalVisible(false);
     } catch (error) {
       showAlert("Error", "Failed to save encrypted value");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
     } finally {
       setIsLoading(false);
     }
@@ -186,10 +224,8 @@ export function useSecureStorage() {
         return; // Important: Return early to prevent scheduling with invalid PIN
       }
 
-      const key = getStorageKey(currentAccountId);
-
-      // Schedule a reveal for the current key
-      const result = scheduleReveal(key);
+      // Schedule a reveal for the current account
+      const result = scheduleReveal(currentAccountId);
 
       // Update the reveal status
       setRevealStatus({
@@ -213,6 +249,7 @@ export function useSecureStorage() {
     } catch (error) {
       showAlert("Error", "Failed to schedule reveal");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
     } finally {
       setIsLoading(false);
     }
@@ -226,10 +263,8 @@ export function useSecureStorage() {
         throw new Error("No account selected");
       }
 
-      const key = getStorageKey(currentAccountId);
-
       // Check if reveal is available
-      const status = checkRevealStatus(key);
+      const status = checkRevealStatus(currentAccountId);
       if (!status || !status.available || status.expired) {
         showAlert(
           "Error",
@@ -237,14 +272,17 @@ export function useSecureStorage() {
             ? "Reveal window has expired. Please schedule again."
             : "No reveal scheduled or still in waiting period.",
         );
+        setPinModalVisible(false); // Close PIN modal on status error
         return;
       }
 
+      const key = getStorageKey(currentAccountId);
       const encryptedBase64 = await getValue(key);
 
       if (encryptedBase64 === null) {
         setStoredValue(null);
         showAlert("Error", "No value found");
+        setPinModalVisible(false); // Close PIN modal on data error
         return;
       }
 
@@ -273,7 +311,7 @@ export function useSecureStorage() {
       setStoredValue(decryptResult.value);
 
       // After successful reveal, cancel the scheduling (it's been used)
-      cancelReveal(key);
+      cancelReveal(currentAccountId);
       setPinModalVisible(false);
     } catch (error) {
       // Safely handle any uncaught errors
@@ -301,14 +339,61 @@ export function useSecureStorage() {
       await deleteValue(key);
       setStoredValue(null);
 
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, false);
+
       // Also cancel any scheduled reveals
-      cancelReveal(key);
+      cancelReveal(currentAccountId);
       setRevealStatus(null);
 
       showAlert("Success", "Value deleted");
+      setPinModalVisible(false); // Close PIN modal on success
     } catch (error) {
       showAlert("Error", "Failed to delete value");
       console.error(error);
+      setPinModalVisible(false); // Close PIN modal on error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearAccountDataWithPin = async (pin: string) => {
+    try {
+      setIsLoading(true);
+
+      if (!currentAccountId) {
+        throw new Error("No account selected");
+      }
+
+      // First verify this is really the user's PIN
+      const isValid = await verifyStoredPin(pin);
+      if (!isValid) {
+        showAlert("Error", "Invalid PIN");
+        setPinModalVisible(false);
+        return;
+      }
+
+      // Clear the specific account's data
+      const key = getStorageKey(currentAccountId);
+      await deleteValue(key);
+
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(currentAccountId, false);
+
+      // Also cancel any scheduled reveals for this account
+      cancelReveal(currentAccountId);
+
+      // Clear UI state
+      setStoredValue(null);
+      setValue("");
+      setRevealStatus(null);
+
+      setPinModalVisible(false);
+      showAlert("Success", "Account data cleared successfully");
+    } catch (error) {
+      showAlert("Error", "Failed to clear account data");
+      console.error(error);
+      setPinModalVisible(false);
     } finally {
       setIsLoading(false);
     }
@@ -319,6 +404,8 @@ export function useSecureStorage() {
       console.log(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
         showAlert("Error", "PIN is required");
+        setPinModalVisible(false); // Close modal on validation error
+        setCurrentAction(null); // Reset action to prevent re-opening
         return;
       }
 
@@ -332,12 +419,22 @@ export function useSecureStorage() {
           await scheduleRevealWithPin(pin);
         } else if (currentAction === "execute_reveal") {
           await executeRevealWithPin(pin);
+        } else if (currentAction === "clear_all") {
+          await clearAccountDataWithPin(pin);
         } else {
           console.error(`Unknown pin action: ${currentAction}`);
+          showAlert("Error", "Unknown action requested");
+          setPinModalVisible(false); // Close modal on unknown action
+          setCurrentAction(null); // Reset action to prevent re-opening
         }
+
+        // Reset action after successful completion
+        setCurrentAction(null);
       } catch (error) {
         console.error(`Error in handlePinAction:`, error);
         showAlert("Error", "Failed to process your request");
+        setPinModalVisible(false); // Close modal on unexpected error
+        setCurrentAction(null); // Reset action to prevent re-opening
       }
     },
     [currentAction, showAlert, value],
@@ -383,28 +480,22 @@ export function useSecureStorage() {
     [value, showAlert],
   );
 
-  const handleClearAll = async (accountId: string) => {
-    try {
-      setIsLoading(true);
-      // Use the account ID to clear specific account data
-      const key = getStorageKey(accountId);
-      await deleteValue(key);
-      // Also clear all secure storage and scheduled reveals
-      await clearAllSecureStorage();
-      clearAllScheduledReveals();
+  const handleSaveWithValue = useCallback(
+    (accountId: string, valueToSave: string) => {
+      if (!valueToSave.trim()) {
+        showAlert("Error", "Please enter a value to store");
+        return;
+      }
+      // Set the value first, then request PIN
+      setValue(valueToSave);
+      requestPinForAction("save", accountId);
+    },
+    [showAlert],
+  );
 
-      // Clear UI state
-      setStoredValue(null);
-      setValue("");
-      setRevealStatus(null);
-      showAlert("Success", "All secure storage data has been cleared");
-    } catch (error) {
-      showAlert("Error", "Failed to clear secure storage");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleClearAll = useCallback((accountId: string) => {
+    requestPinForAction("clear_all", accountId);
+  }, []);
 
   const clearRevealedValue = () => {
     // Clear the value
@@ -417,12 +508,19 @@ export function useSecureStorage() {
     }
   };
 
+  // Add a proper onClose handler that resets the action
+  const handlePinModalClose = useCallback(() => {
+    setPinModalVisible(false);
+    setCurrentAction(null); // Reset action to prevent re-opening
+  }, []);
+
   return {
     value,
     setValue,
     storedValue,
     isLoading,
     handleSave,
+    handleSaveWithValue,
     handleScheduleReveal,
     handleExecuteReveal,
     handleCancelReveal,
@@ -430,9 +528,11 @@ export function useSecureStorage() {
     handleClearAll,
     pinModalVisible,
     setPinModalVisible,
+    handlePinModalClose, // Export the proper close handler
     handlePinAction,
     currentAction,
     revealStatus,
     clearRevealedValue,
+    checkHasStoredData,
   };
 }
