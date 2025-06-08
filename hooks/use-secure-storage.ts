@@ -37,7 +37,8 @@ export function useSecureStorage(initialAccountId?: string) {
   );
 
   // Add timer ref for auto-hiding the value
-  const autoHideTimerRef = useRef<number | null>(null);
+  // Cross environment issues with TimeoutTypes
+  const autoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // State for reveal scheduling
   const [revealStatus, setRevealStatus] = useState<{
