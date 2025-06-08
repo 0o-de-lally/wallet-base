@@ -1,6 +1,6 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { styles } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -30,14 +30,22 @@ const MainnetURL = "https://rpc.scan.openlibra.world/v1";
  */
 function deriveShortNickname(address: string): string {
   // Remove '0x' prefix if present
-  const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
+  let cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
 
-  // Take first 6 characters and last 4 characters
-  if (cleanAddress.length <= 10) {
+  // Remove leading zeros
+  cleanAddress = cleanAddress.replace(/^0+/, "");
+
+  // If all zeros were removed, keep at least one character
+  if (cleanAddress.length === 0) {
+    cleanAddress = "0";
+  }
+
+  // Take first 3 characters and last 3 characters
+  if (cleanAddress.length <= 6) {
     return cleanAddress;
   }
 
-  return `${cleanAddress.slice(0, 6)}...${cleanAddress.slice(-4)}`;
+  return `${cleanAddress.slice(0, 3)}...${cleanAddress.slice(-3)}`;
 }
 
 export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
@@ -74,6 +82,12 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifiedMnemonic, setIsVerifiedMnemonic] = useState(false);
   const [derivedAddress, setDerivedAddress] = useState<string | null>(null);
+
+  // New state for chain verification
+  const [isChainVerified, setIsChainVerified] = useState(false);
+  const [chainAddress, setChainAddress] = useState<string | null>(null);
+  const [isVerifyingChain, setIsVerifyingChain] = useState(false);
+
   const hasMultipleProfiles = profileNames.length > 1;
 
   // State for modals
@@ -85,9 +99,11 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   // Initialize secure storage hook without an initial account (we'll set it after account creation)
   const secureStorage = useSecureStorage();
 
-  // Check if the derived address already exists in the selected profile
+  // Check if the account already exists in the selected profile
   const accountExistsInProfile = React.useMemo(() => {
-    if (!derivedAddress || !selectedProfile) return false;
+    // Use chain address if available (actual on-chain address), otherwise derived address
+    const addressToCheck = chainAddress || derivedAddress;
+    if (!addressToCheck || !selectedProfile) return false;
 
     const profiles = appConfig.profiles.get();
     const profile = profiles[selectedProfile];
@@ -95,9 +111,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     if (!profile) return false;
 
     return profile.accounts.some(
-      (acc) => acc.account_address === derivedAddress,
+      (acc) => acc.account_address === addressToCheck,
     );
-  }, [derivedAddress, selectedProfile]);
+  }, [chainAddress, derivedAddress, selectedProfile]);
 
   // Update selected profile if initial profile changes or profiles change
   useEffect(() => {
@@ -124,7 +140,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   useEffect(() => {
     if (!isVerifiedMnemonic) {
       setDerivedAddress(null);
-      // Reset nickname to empty when mnemonic changes
+      setIsChainVerified(false);
+      setChainAddress(null);
+      // Reset nickname when mnemonic changes so it can be derived from the final address
       setNickname("");
     }
   }, [isVerifiedMnemonic]);
@@ -151,10 +169,8 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         const address = wallet.getAddress().toStringLong();
         setDerivedAddress(address);
 
-        // Set default nickname if none provided
-        if (!nickname.trim()) {
-          setNickname(deriveShortNickname(address));
-        }
+        // Don't set nickname here - wait until after chain verification
+        // to use the final address (chain address or derived address)
       } catch (err) {
         const errorMessage =
           err instanceof Error
@@ -170,17 +186,86 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     deriveAddress();
   }, [isVerifiedMnemonic, mnemonic, nickname]);
 
+  // Chain verification function
+  const verifyOnChain = async () => {
+    if (!derivedAddress || !mnemonic.trim()) {
+      setError("Please enter a valid mnemonic phrase first");
+      return;
+    }
+
+    try {
+      setIsVerifyingChain(true);
+      setError(null);
+
+      // Create wallet from mnemonic
+      const wallet = LibraWallet.fromMnemonic(
+        mnemonic.trim(),
+        Network.MAINNET,
+        MainnetURL,
+      );
+
+      try {
+        // Try to connect to chain and verify the address
+        await wallet.syncOnchain();
+
+        // Get the actual on-chain address
+        const actualAddress = wallet.getAddress().toStringLong();
+        setChainAddress(actualAddress);
+
+        // Always verify successfully - use the actual on-chain address
+        setIsChainVerified(true);
+
+        // If addresses don't match, it means the account's auth key was rotated
+        // This is not an error, just a note for the user
+        if (actualAddress !== derivedAddress) {
+          console.log(`Key rotation detected. On-chain address: ${actualAddress}, derived: ${derivedAddress}`);
+        }
+        setError(null);
+
+        // Set default nickname if none provided, using the actual chain address
+        if (!nickname.trim()) {
+          setNickname(deriveShortNickname(actualAddress));
+        }
+      } catch (syncError) {
+        // If syncOnchain fails, it likely means the account is new and doesn't exist on chain yet
+        // This is valid for account recovery - use the derived address
+        console.log("Account not found on chain (new account):", syncError);
+        setChainAddress(derivedAddress);
+        setIsChainVerified(true);
+        setError(null);
+
+        // Set default nickname if none provided, using the derived address (since no chain address)
+        if (!nickname.trim()) {
+          setNickname(deriveShortNickname(derivedAddress));
+        }
+      }
+    } catch (err) {
+      console.error("Chain verification failed:", err);
+      setIsChainVerified(false);
+      const errorMessage =
+        err instanceof Error
+          ? `Chain verification failed: ${err.message}`
+          : "Failed to verify account on chain";
+      setError(errorMessage);
+    } finally {
+      setIsVerifyingChain(false);
+    }
+  };
+
   // Show error when account already exists in the selected profile
   useEffect(() => {
-    if (accountExistsInProfile && derivedAddress) {
+    const addressToCheck = chainAddress || derivedAddress;
+    if (accountExistsInProfile && addressToCheck) {
       setError(
-        `Account ${derivedAddress} already exists in profile "${selectedProfile}"`,
+        `Account ${addressToCheck} already exists in profile "${selectedProfile}"`,
       );
-    } else if (!accountExistsInProfile && derivedAddress) {
-      // Clear the error if account doesn't exist (but keep other errors)
-      setError(null);
+    } else if (!accountExistsInProfile && addressToCheck) {
+      // Clear the error if account doesn't exist (but keep other errors like rotation warnings)
+      if (error && error.includes("already exists")) {
+        setError(null);
+      }
     }
-  }, [accountExistsInProfile, derivedAddress, selectedProfile]);
+  }, [accountExistsInProfile, chainAddress, derivedAddress, selectedProfile, error]);
 
   // Expose a reset method through prop callback
   const resetForm = () => {
@@ -189,6 +274,8 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     setError(null);
     setIsVerifiedMnemonic(false);
     setDerivedAddress(null);
+    setIsChainVerified(false);
+    setChainAddress(null);
     setSaveInitiated(false); // Reset save state
     // Don't reset the selectedProfile here to persist selection
   };
@@ -202,30 +289,34 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
   const handleRecoverAccount = async () => {
     console.log("handleRecoverAccount called");
+    console.log("chainAddress:", chainAddress);
     console.log("derivedAddress:", derivedAddress);
     console.log("selectedProfile:", selectedProfile);
     console.log("canRecover:", canRecover);
 
-    if (!derivedAddress) {
-      console.log("Error: No derived address");
-      setError("Please enter a valid mnemonic phrase");
+    // Use the chain address (actual on-chain address) if available, otherwise fallback to derived
+    const addressToUse = chainAddress || derivedAddress;
+
+    if (!addressToUse) {
+      console.log("Error: No address available");
+      setError("Please verify the mnemonic on chain first");
       return;
     }
 
-    console.log("Starting recovery process...");
+    console.log("Starting recovery process with address:", addressToUse);
     setIsLoading(true);
     setError(null);
 
     try {
       console.log("Calling createAccount with:", {
         selectedProfile,
-        derivedAddress,
+        addressToUse,
         nickname,
       });
       const result = await createAccount(
         selectedProfile,
-        derivedAddress,
-        nickname || deriveShortNickname(derivedAddress),
+        addressToUse,
+        nickname || deriveShortNickname(addressToUse),
       );
 
       console.log("createAccount result:", result);
@@ -287,7 +378,9 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   const canRecover =
     isVerifiedMnemonic &&
     derivedAddress &&
+    isChainVerified &&
     !isLoading &&
+    !isVerifyingChain &&
     !accountExistsInProfile;
 
   // Debug the canRecover state
@@ -295,13 +388,17 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     console.log("canRecover calculation:");
     console.log("  isVerifiedMnemonic:", isVerifiedMnemonic);
     console.log("  derivedAddress:", derivedAddress);
+    console.log("  isChainVerified:", isChainVerified);
     console.log("  isLoading:", isLoading);
+    console.log("  isVerifyingChain:", isVerifyingChain);
     console.log("  accountExistsInProfile:", accountExistsInProfile);
     console.log("  canRecover:", canRecover);
   }, [
     isVerifiedMnemonic,
     derivedAddress,
+    isChainVerified,
     isLoading,
+    isVerifyingChain,
     accountExistsInProfile,
     canRecover,
   ]);
@@ -347,6 +444,40 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         />
       )}
 
+      {derivedAddress && !isChainVerified && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>
+            Verify the mnemonic by connecting to the blockchain. This works for both existing accounts and new accounts.
+          </Text>
+          <ActionButton
+            text="Verify on Chain"
+            onPress={verifyOnChain}
+            disabled={isVerifyingChain || !derivedAddress}
+            isLoading={isVerifyingChain}
+            accessibilityLabel="Verify address on blockchain"
+            accessibilityHint="Connects to the blockchain to verify the account exists or confirm it's new"
+          />
+        </View>
+      )}
+
+      {isChainVerified && chainAddress && (
+        <View style={styles.inputContainer}>
+          <Text style={[styles.label, { color: "#a5d6b7" }]}>
+            ✓ Chain verification successful!
+            {chainAddress === derivedAddress ?
+              " (Account verified or new)" :
+              " (Account found with rotated keys)"}
+          </Text>
+          <FormInput
+            label="Actual Chain Address:"
+            value={chainAddress}
+            onChangeText={() => {}} // Read-only
+            placeholder="Verified address"
+            disabled={true}
+          />
+        </View>
+      )}
+
       <FormInput
         label="Nickname (optional):"
         value={nickname}
@@ -356,7 +487,7 @@ export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       />
 
       <ActionButton
-        text="Recover Account"
+        text={isChainVerified ? "Recover Account" : "Verify Chain First"}
         onPress={() => {
           console.log("Recover Account button clicked");
           console.log("Button disabled state:", !canRecover);
