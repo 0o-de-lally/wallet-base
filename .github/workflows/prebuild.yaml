@@ -23,3 +23,5 @@ jobs:
 
     - name: prebuild android
       run: bunx expo prebuild -p android --clean --no-install
+    - name: export in dev mode
+      run: bun expo export:embed --eager --platform android --dev

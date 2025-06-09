@@ -4,7 +4,11 @@ import {
   fixAccountAddresses,
 } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
-import * as LocalAuthentication from "expo-local-authentication";
+import {
+  hasHardwareAsync,
+  isEnrolledAsync,
+  supportedAuthenticationTypesAsync,
+} from "expo-local-authentication";
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
@@ -13,17 +17,17 @@ import * as LocalAuthentication from "expo-local-authentication";
 export async function initializeApp() {
   try {
     // Check if biometric authentication is available
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const hasHardware = await hasHardwareAsync();
     console.log("Biometric hardware available:", hasHardware);
 
     // Prepare local authentication if available
     if (hasHardware) {
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const isEnrolled = await isEnrolledAsync();
       console.log("Biometrics enrolled:", isEnrolled);
 
       if (isEnrolled) {
         // Pre-warm the biometric subsystem
-        LocalAuthentication.supportedAuthenticationTypesAsync();
+        supportedAuthenticationTypesAsync();
       }
     }
 

@@ -1,5 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
-import * as LocalAuthentication from "expo-local-authentication";
+import {
+  hasHardwareAsync,
+  isEnrolledAsync,
+  supportedAuthenticationTypesAsync,
+  authenticateAsync,
+} from "expo-local-authentication";
 import { Platform } from "react-native";
 import { useModal } from "../context/ModalContext";
 
@@ -12,8 +17,8 @@ export function useLocalAuth() {
   // Check if device has biometric authentication available
   const checkAuthAvailability = useCallback(async () => {
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const hasHardware = await hasHardwareAsync();
+      const isEnrolled = await isEnrolledAsync();
       setAuthAvailable(hasHardware && isEnrolled);
       return hasHardware && isEnrolled;
     } catch (error) {
@@ -41,14 +46,14 @@ export function useLocalAuth() {
         return true;
       }
 
-      await LocalAuthentication.supportedAuthenticationTypesAsync();
+      await supportedAuthenticationTypesAsync();
       const promptMessage = Platform.select({
         ios: "Authenticate to access your wallet",
         android: "Authenticate to access your wallet",
         default: "Authenticate to access your wallet",
       });
 
-      const result = await LocalAuthentication.authenticateAsync({
+      const result = await authenticateAsync({
         promptMessage,
         fallbackLabel: "Use passcode",
         cancelLabel: "Cancel",
