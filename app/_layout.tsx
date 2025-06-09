@@ -8,7 +8,11 @@ import { initializeApp } from "../util/initialize-app";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { enableScreens } from "react-native-screens";
 
-import * as LocalAuthentication from "expo-local-authentication";
+import {
+  hasHardwareAsync,
+  isEnrolledAsync,
+  authenticateAsync,
+} from "expo-local-authentication";
 import { View, Text, StatusBar } from "react-native";
 import { ActionButton } from "../components/common/ActionButton";
 import { InitializationError } from "@/components/InitializationError";
@@ -45,8 +49,8 @@ const RootLayout = observer(() => {
   // Function to authenticate the user
   const authenticate = async () => {
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const hasHardware = await hasHardwareAsync();
+      const isEnrolled = await isEnrolledAsync();
 
       // If device doesn't support biometrics or has no enrollments, default to allowing access
       if (!hasHardware || !isEnrolled) {
@@ -54,7 +58,7 @@ const RootLayout = observer(() => {
         return;
       }
 
-      const result = await LocalAuthentication.authenticateAsync({
+      const result = await authenticateAsync({
         promptMessage: "Authenticate to access your wallet",
         fallbackLabel: "Use passcode",
       });

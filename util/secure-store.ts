@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
 
 /**
  * Saves a key-value pair to secure storage.
@@ -10,7 +10,7 @@ import * as SecureStore from "expo-secure-store";
  */
 export async function saveValue(key: string, value: string): Promise<void> {
   try {
-    await SecureStore.setItemAsync(key, value);
+    await setItemAsync(key, value);
   } catch (error) {
     console.error("Error saving to secure store:", error);
     throw error;
@@ -26,7 +26,7 @@ export async function saveValue(key: string, value: string): Promise<void> {
  */
 export async function getValue(key: string): Promise<string | null> {
   try {
-    const result = await SecureStore.getItemAsync(key);
+    const result = await getItemAsync(key);
     return result;
   } catch (error) {
     console.error("Error retrieving from secure store:", error);
@@ -43,7 +43,7 @@ export async function getValue(key: string): Promise<string | null> {
  */
 export async function deleteValue(key: string): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync(key);
+    await deleteItemAsync(key);
   } catch (error) {
     console.error("Error deleting from secure store:", error);
     throw error;
@@ -91,7 +91,7 @@ export async function clearAllSecureStorage(): Promise<void> {
 export async function getAllKeys(): Promise<string[]> {
   try {
     // We need to maintain a list of all keys ourselves since SecureStore doesn't provide this functionality
-    const keysListJson = await SecureStore.getItemAsync("all_storage_keys");
+    const keysListJson = await getItemAsync("all_storage_keys");
     return keysListJson ? JSON.parse(keysListJson) : [];
   } catch (error) {
     console.error("Error getting all keys:", error);
