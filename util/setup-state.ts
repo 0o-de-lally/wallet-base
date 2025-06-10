@@ -2,7 +2,11 @@ import { observable } from "@legendapp/state";
 import { hasCompletedBasicSetup, hasAccounts } from "./user-state";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 
-export type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
+export type SetupStatus =
+  | "loading"
+  | "needs-pin"
+  | "needs-account"
+  | "complete";
 
 interface SetupState {
   status: SetupStatus;
@@ -42,10 +46,15 @@ export async function updateSetupStatus(): Promise<void> {
         // Give appConfig.profiles a chance to be defined
         const profiles = appConfig.profiles?.get();
         if (!profiles || Object.keys(profiles).length === 0) {
-          console.log("No profiles found during setup status check, initializing default profile");
+          console.log(
+            "No profiles found during setup status check, initializing default profile",
+          );
           maybeInitializeDefaultProfile();
         } else {
-          console.log("Found existing profiles during setup status check:", Object.keys(profiles));
+          console.log(
+            "Found existing profiles during setup status check:",
+            Object.keys(profiles),
+          );
         }
       } else {
         console.log("AppConfig not yet available during setup status check");

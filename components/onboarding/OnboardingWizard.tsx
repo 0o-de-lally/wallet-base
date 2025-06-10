@@ -9,14 +9,13 @@ import { useModal } from "../../context/ModalContext";
 import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
 import { hasCompletedBasicSetup, hasAccounts } from "../../util/user-state";
-import { maybeInitializeDefaultProfile, appConfig } from "../../util/app-config-store";
+import {
+  maybeInitializeDefaultProfile,
+  appConfig,
+} from "../../util/app-config-store";
 import { resetAppToFirstTimeUser } from "../../util/dev-utils";
 
-type WizardStep =
-  | "welcome"
-  | "account-choice"
-  | "account-setup"
-  | "complete";
+type WizardStep = "welcome" | "account-choice" | "account-setup" | "complete";
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -37,7 +36,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
     const { showAlert, showConfirmation } = useModal();
 
-    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible, isCheckingPinStatus });
+    console.log("OnboardingWizard render:", {
+      currentStep,
+      pinCreationVisible,
+      isCheckingPinStatus,
+    });
 
     // Check if PIN and accounts already exist on mount
     useEffect(() => {
@@ -52,29 +55,42 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             if (appConfig) {
               const profiles = appConfig.profiles?.get();
               if (!profiles || Object.keys(profiles).length === 0) {
-                console.log("OnboardingWizard: No profiles found, initializing default profile");
+                console.log(
+                  "OnboardingWizard: No profiles found, initializing default profile",
+                );
                 maybeInitializeDefaultProfile();
 
                 // Wait a bit for the profile to be created
                 await new Promise((resolve) => setTimeout(resolve, 50));
               } else {
-                console.log("OnboardingWizard: Found existing profiles:", Object.keys(profiles));
+                console.log(
+                  "OnboardingWizard: Found existing profiles:",
+                  Object.keys(profiles),
+                );
               }
             } else {
-              console.log("OnboardingWizard: AppConfig not yet available, initializing default profile");
+              console.log(
+                "OnboardingWizard: AppConfig not yet available, initializing default profile",
+              );
               maybeInitializeDefaultProfile();
 
               // Wait a bit for the profile to be created
               await new Promise((resolve) => setTimeout(resolve, 50));
             }
           } catch (profileError) {
-            console.log("OnboardingWizard: Error checking/initializing profiles:", profileError);
+            console.log(
+              "OnboardingWizard: Error checking/initializing profiles:",
+              profileError,
+            );
             // Try to initialize anyway
             try {
               maybeInitializeDefaultProfile();
               await new Promise((resolve) => setTimeout(resolve, 50));
             } catch (initError) {
-              console.error("OnboardingWizard: Failed to initialize default profile:", initError);
+              console.error(
+                "OnboardingWizard: Failed to initialize default profile:",
+                initError,
+              );
             }
           }
 
@@ -84,16 +100,20 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
           console.log("OnboardingWizard: Setup status check:", {
             hasPin,
             hasUserAccounts,
-            currentStep
+            currentStep,
           });
 
           if (currentStep === "welcome") {
             if (hasPin && hasUserAccounts) {
-              console.log("OnboardingWizard: PIN and accounts exist, user shouldn't be in onboarding");
+              console.log(
+                "OnboardingWizard: PIN and accounts exist, user shouldn't be in onboarding",
+              );
               // This shouldn't happen in normal flow, but if it does, complete onboarding
               onComplete();
             } else if (hasPin && !hasUserAccounts) {
-              console.log("OnboardingWizard: PIN exists but no accounts, skipping to account-choice");
+              console.log(
+                "OnboardingWizard: PIN exists but no accounts, skipping to account-choice",
+              );
               setCurrentStep("account-choice");
             } else {
               console.log("OnboardingWizard: No PIN, staying on welcome step");
@@ -101,7 +121,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             }
           }
         } catch (error) {
-          console.error("OnboardingWizard: Error checking setup status:", error);
+          console.error(
+            "OnboardingWizard: Error checking setup status:",
+            error,
+          );
         } finally {
           setIsCheckingPinStatus(false);
         }
@@ -120,20 +143,20 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       setPinCreationVisible(true);
     }, []);
 
-    const handlePinCreationComplete = useCallback(
-      (success: boolean) => {
-        console.log("OnboardingWizard: PIN creation completed with success:", success);
-        setPinCreationVisible(false);
+    const handlePinCreationComplete = useCallback((success: boolean) => {
+      console.log(
+        "OnboardingWizard: PIN creation completed with success:",
+        success,
+      );
+      setPinCreationVisible(false);
 
-        if (success) {
-          setCurrentStep("account-choice");
-        } else {
-          // On failure, go back to welcome step
-          setCurrentStep("welcome");
-        }
-      },
-      [],
-    );
+      if (success) {
+        setCurrentStep("account-choice");
+      } else {
+        // On failure, go back to welcome step
+        setCurrentStep("welcome");
+      }
+    }, []);
 
     const handlePinCreationCancel = useCallback(() => {
       setPinCreationVisible(false);
@@ -146,7 +169,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     }, []);
 
     const handleAccountSetupComplete = useCallback(() => {
-      console.log("OnboardingWizard: Account setup completed, advancing to complete step");
+      console.log(
+        "OnboardingWizard: Account setup completed, advancing to complete step",
+      );
       setCurrentStep("complete");
     }, []);
 
@@ -157,7 +182,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     // Auto-advance from complete step after showing success message
     useEffect(() => {
       if (currentStep === "complete") {
-        console.log("OnboardingWizard: On complete step, will auto-advance in 3 seconds");
+        console.log(
+          "OnboardingWizard: On complete step, will auto-advance in 3 seconds",
+        );
         const timer = setTimeout(() => {
           console.log("OnboardingWizard: Auto-advancing from complete step");
           handleFinishWizard();
@@ -190,14 +217,20 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
               setAccountChoice(null);
               setIsCheckingPinStatus(false);
 
-              showAlert("Data Cleared", "All app data has been reset. You can now start fresh.");
+              showAlert(
+                "Data Cleared",
+                "All app data has been reset. You can now start fresh.",
+              );
             } catch (error) {
               console.error("OnboardingWizard: Error resetting app:", error);
-              showAlert("Reset Failed", "Failed to reset app data. Please try again.");
+              showAlert(
+                "Reset Failed",
+                "Failed to reset app data. Please try again.",
+              );
             }
           },
           "Reset Everything",
-          true // isDestructive
+          true, // isDestructive
         );
       } catch (error) {
         console.error("OnboardingWizard: Error in handleResetApp:", error);
@@ -238,7 +271,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
               <Text
                 style={[
                   styles.resultValue,
-                  { marginTop: 30, fontSize: 12, fontStyle: "italic", textAlign: "center" },
+                  {
+                    marginTop: 30,
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    textAlign: "center",
+                  },
                 ]}
               >
                 Need to start over?
@@ -249,10 +287,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                 onPress={handleResetApp}
                 style={{
                   marginTop: 5,
-                  backgroundColor: '#ff4444',
-                  borderColor: '#ff4444',
+                  backgroundColor: "#ff4444",
+                  borderColor: "#ff4444",
                 }}
-                textStyle={{ color: 'white' }}
+                textStyle={{ color: "white" }}
                 size="small"
                 accessibilityLabel="Reset all app data and start fresh"
               />
@@ -293,7 +331,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
               <Text
                 style={[
                   styles.resultValue,
-                  { marginTop: 20, fontSize: 12, fontStyle: "italic", textAlign: "center" },
+                  {
+                    marginTop: 20,
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    textAlign: "center",
+                  },
                 ]}
               >
                 Need to start completely over?
@@ -304,10 +347,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                 onPress={handleResetApp}
                 style={{
                   marginTop: 5,
-                  backgroundColor: '#ff4444',
-                  borderColor: '#ff4444',
+                  backgroundColor: "#ff4444",
+                  borderColor: "#ff4444",
                 }}
-                textStyle={{ color: 'white' }}
+                textStyle={{ color: "white" }}
                 size="small"
                 accessibilityLabel="Reset all app data and start fresh"
               />
@@ -369,7 +412,17 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                 • Access all wallet features from the menu
               </Text>
 
-              <Text style={[styles.resultValue, { marginTop: 15, fontSize: 12, fontStyle: "italic", textAlign: "center" }]}>
+              <Text
+                style={[
+                  styles.resultValue,
+                  {
+                    marginTop: 15,
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    textAlign: "center",
+                  },
+                ]}
+              >
                 You'll be automatically taken to your wallet in a few seconds...
               </Text>
 
@@ -385,7 +438,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         default:
           return null;
       }
-    };    return (
+    };
+    return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
@@ -404,7 +458,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             {/* Progress indicator */}
             <View style={{ marginBottom: 20 }}>
               <Text
-                style={[styles.resultValue, { textAlign: "center", fontSize: 12 }]}
+                style={[
+                  styles.resultValue,
+                  { textAlign: "center", fontSize: 12 },
+                ]}
               >
                 Step{" "}
                 {currentStep === "welcome"

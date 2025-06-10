@@ -1,5 +1,10 @@
 import { useEffect } from "react";
-import { setupState, updateSetupStatus, refreshSetupStatus, SetupStatus } from "../util/setup-state";
+import {
+  setupState,
+  updateSetupStatus,
+  refreshSetupStatus,
+  SetupStatus,
+} from "../util/setup-state";
 import { appConfig } from "../util/app-config-store";
 
 interface SetupGuardResult {

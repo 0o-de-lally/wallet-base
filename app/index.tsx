@@ -74,7 +74,10 @@ const AppContent = observer(() => {
   return (
     <SetupGuard requiresPin={true} requiresAccount={true}>
       {showMenu ? (
-        <Menu onProfileChange={handleMenuProfileChange} onExit={handleMenuExit} />
+        <Menu
+          onProfileChange={handleMenuProfileChange}
+          onExit={handleMenuExit}
+        />
       ) : (
         <SmartAccountList onShowMenu={() => setShowMenu(true)} />
       )}

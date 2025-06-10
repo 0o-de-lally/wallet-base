@@ -129,11 +129,14 @@ const EnterPinScreen = memo(() => {
               // handle re-encryption differently or store the new PIN temporarily
               showAlert(
                 "Success",
-                "PIN updated successfully. Please note that existing encrypted data may need to be re-encrypted manually."
+                "PIN updated successfully. Please note that existing encrypted data may need to be re-encrypted manually.",
               );
             }
           } catch (error) {
-            showAlert("Warning", "PIN updated but there was an issue with data re-encryption");
+            showAlert(
+              "Warning",
+              "PIN updated but there was an issue with data re-encryption",
+            );
             console.error(error);
           }
         }

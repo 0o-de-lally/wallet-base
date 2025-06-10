@@ -25,7 +25,8 @@ export async function isFirstTimeUser(): Promise<boolean> {
         const profiles = appConfig.profiles.get();
         if (profiles && typeof profiles === "object") {
           hasAccountsInAnyProfile = Object.values(profiles).some(
-            (profile) => profile && profile.accounts && profile.accounts.length > 0,
+            (profile) =>
+              profile && profile.accounts && profile.accounts.length > 0,
           );
         }
       }
@@ -83,7 +84,7 @@ export function hasAccounts(): boolean {
 
     console.log("hasAccounts check:", {
       profileCount: Object.keys(profiles).length,
-      hasAccounts: hasAccountsResult
+      hasAccounts: hasAccountsResult,
     });
 
     return hasAccountsResult;

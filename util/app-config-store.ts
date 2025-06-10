@@ -253,8 +253,10 @@ export function maybeInitializeDefaultProfile() {
           }
         } else {
           console.log("Profiles already exist, skipping initialization", {
-            profileCount: currentProfiles ? Object.keys(currentProfiles).length : 0,
-            activeAccountId: appConfig.activeAccountId?.get()
+            profileCount: currentProfiles
+              ? Object.keys(currentProfiles).length
+              : 0,
+            activeAccountId: appConfig.activeAccountId?.get(),
           });
         }
       } catch (innerError) {

@@ -72,7 +72,15 @@ export const PinInputModal = memo(
           }, 2000);
         }
       },
-      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible, autoCloseOnSuccess],
+      [
+        onPinAction,
+        onClose,
+        purpose,
+        actionTitle,
+        actionSubtitle,
+        visible,
+        autoCloseOnSuccess,
+      ],
     );
 
     // Use a transient pin state - we'll clear it immediately after use
