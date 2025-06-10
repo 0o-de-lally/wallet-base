@@ -4,9 +4,7 @@ import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
-import { PinInputModal } from "../pin-input/PinInputModal";
-import { hashPin, validatePin } from "../../util/pin-security";
-import { saveValue } from "../../util/secure-store";
+import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
 import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
@@ -14,7 +12,6 @@ import RecoverAccountForm from "../profile/RecoverAccountForm";
 type WizardStep =
   | "welcome"
   | "pin-setup"
-  | "pin-confirm"
   | "account-choice"
   | "account-setup"
   | "complete";
@@ -30,8 +27,7 @@ interface OnboardingWizardProps {
 export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
   ({ onComplete }) => {
     const [currentStep, setCurrentStep] = useState<WizardStep>("welcome");
-    const [pinModalVisible, setPinModalVisible] = useState(false);
-    const [tempPin, setTempPin] = useState<string | null>(null);
+    const [pinCreationVisible, setPinCreationVisible] = useState(false);
     const [accountChoice, setAccountChoice] = useState<
       "create" | "recover" | null
     >(null);
@@ -45,58 +41,27 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
     const handleStartSetup = useCallback(() => {
       setCurrentStep("pin-setup");
-      setPinModalVisible(true);
+      setPinCreationVisible(true);
     }, []);
 
-    const handlePinSetup = useCallback(
-      async (pin: string) => {
-        if (!validatePin(pin)) {
-          showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-          return;
-        }
+    const handlePinCreationComplete = useCallback(
+      (success: boolean) => {
+        setPinCreationVisible(false);
 
-        setTempPin(pin);
-        setPinModalVisible(false);
-        setCurrentStep("pin-confirm");
-        // Small delay to ensure modal closes before opening the next one
-        setTimeout(() => setPinModalVisible(true), 100);
-      },
-      [showAlert],
-    );
-
-    const handlePinConfirm = useCallback(
-      async (confirmPin: string) => {
-        if (!tempPin) {
-          showAlert("Error", "No PIN to confirm");
-          return;
-        }
-
-        if (confirmPin !== tempPin) {
-          showAlert("PIN Mismatch", "PINs do not match. Please try again.");
-          setCurrentStep("pin-setup");
-          setTempPin(null);
-          return;
-        }
-
-        try {
-          // Hash and save the PIN
-          const hashedPin = await hashPin(confirmPin);
-          await saveValue("user_pin", JSON.stringify(hashedPin));
-
-          setPinModalVisible(false);
-          setTempPin(null);
+        if (success) {
           setCurrentStep("account-choice");
-
-          showAlert("Success", "PIN created successfully!");
-        } catch (error) {
-          showAlert("Error", "Failed to save PIN. Please try again.");
-          console.error("PIN save error:", error);
-          setCurrentStep("pin-setup");
-          setTempPin(null);
+        } else {
+          // On failure, go back to welcome step
+          setCurrentStep("welcome");
         }
       },
-      [tempPin, showAlert],
+      [],
     );
+
+    const handlePinCreationCancel = useCallback(() => {
+      setPinCreationVisible(false);
+      setCurrentStep("welcome");
+    }, []);
 
     const handleAccountChoice = useCallback((choice: "create" | "recover") => {
       setAccountChoice(choice);
@@ -265,7 +230,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             Step{" "}
             {currentStep === "welcome"
               ? "1"
-              : currentStep === "pin-setup" || currentStep === "pin-confirm"
+              : currentStep === "pin-setup"
                 ? "2"
                 : currentStep === "account-choice" ||
                     currentStep === "account-setup"
@@ -277,31 +242,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
         {renderStep()}
 
-        {/* PIN Setup Modals */}
-        <PinInputModal
-          visible={
-            pinModalVisible &&
-            (currentStep === "pin-setup" || currentStep === "pin-confirm")
-          }
-          onClose={() => {
-            setPinModalVisible(false);
-            if (currentStep === "pin-setup" || currentStep === "pin-confirm") {
-              setCurrentStep("welcome");
-              setTempPin(null);
-            }
-          }}
-          onPinAction={
-            currentStep === "pin-setup" ? handlePinSetup : handlePinConfirm
-          }
-          purpose="save"
-          actionTitle={
-            currentStep === "pin-setup" ? "Create Your PIN" : "Confirm Your PIN"
-          }
-          actionSubtitle={
-            currentStep === "pin-setup"
-              ? "Choose a 6-digit PIN to secure your wallet"
-              : "Enter your PIN again to confirm"
-          }
+        {/* PIN Creation Flow */}
+        <PinCreationFlow
+          visible={pinCreationVisible}
+          onComplete={handlePinCreationComplete}
+          onCancel={handlePinCreationCancel}
+          showSuccessAlert={true}
         />
       </ScrollView>
     );
