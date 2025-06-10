@@ -11,7 +11,6 @@ import RecoverAccountForm from "../profile/RecoverAccountForm";
 
 type WizardStep =
   | "welcome"
-  | "pin-setup"
   | "account-choice"
   | "account-setup"
   | "complete";
@@ -34,18 +33,21 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
     const { showAlert } = useModal();
 
+    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible });
+
     // Reset form callback for account forms
     const resetAccountForm = useCallback(() => {
       // This will be called by the account forms when they need to reset
     }, []);
 
-    const handleStartSetup = useCallback(() => {
-      setCurrentStep("pin-setup");
+    const handleStartPinCreation = useCallback(() => {
+      console.log("OnboardingWizard: Starting PIN creation");
       setPinCreationVisible(true);
     }, []);
 
     const handlePinCreationComplete = useCallback(
       (success: boolean) => {
+        console.log("OnboardingWizard: PIN creation completed with success:", success);
         setPinCreationVisible(false);
 
         if (success) {
@@ -105,10 +107,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
               </Text>
 
               <ActionButton
-                text="Get Started"
-                onPress={handleStartSetup}
+                text="Create PIN"
+                onPress={handleStartPinCreation}
                 style={{ marginTop: 20 }}
-                accessibilityLabel="Start wallet setup wizard"
+                accessibilityLabel="Start PIN creation for wallet setup"
               />
             </SectionContainer>
           );
@@ -230,13 +232,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             Step{" "}
             {currentStep === "welcome"
               ? "1"
-              : currentStep === "pin-setup"
-                ? "2"
-                : currentStep === "account-choice" ||
+              : currentStep === "account-choice" ||
                     currentStep === "account-setup"
-                  ? "3"
-                  : "4"}{" "}
-            of 4
+                  ? "2"
+                  : "3"}{" "}
+            of 3
           </Text>
         </View>
 

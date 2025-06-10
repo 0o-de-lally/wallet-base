@@ -40,7 +40,7 @@ export const PinCreationFlow = memo(({
   const handleNewPin = useCallback(
     async (pin: string): Promise<void> => {
       console.log("PinCreationFlow: handleNewPin called with pin length:", pin.length);
-      
+
       if (!validatePin(pin)) {
         console.log("PinCreationFlow: PIN validation failed");
         showAlert("Invalid PIN", "PIN must be exactly 6 digits");
