@@ -14,15 +14,9 @@ export const CompleteStep: React.FC<CompleteStepProps> = ({ onFinish }) => {
       <Text style={styles.resultValue}>
         🎉 Congratulations! Your wallet is now set up and ready to use.
       </Text>
-      <Text style={[styles.resultValue, { marginTop: 10 }]}>
-        You can now:
-      </Text>
-      <Text style={styles.resultValue}>
-        • View and manage your accounts
-      </Text>
-      <Text style={styles.resultValue}>
-        • Add more accounts or profiles
-      </Text>
+      <Text style={[styles.resultValue, { marginTop: 10 }]}>You can now:</Text>
+      <Text style={styles.resultValue}>• View and manage your accounts</Text>
+      <Text style={styles.resultValue}>• Add more accounts or profiles</Text>
       <Text style={styles.resultValue}>
         • Access all wallet features from the menu
       </Text>

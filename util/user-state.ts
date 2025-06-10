@@ -24,7 +24,7 @@ function getProfiles(): Record<string, any> | null {
 /**
  * Checks if the user has completed the basic setup (has PIN)
  */
-export async function hasCompletedBasicSetup(): Promise<boolean> {
+export async function hasPINSetup(): Promise<boolean> {
   try {
     const savedPin = await getValue("user_pin");
     return savedPin !== null;
@@ -41,6 +41,26 @@ export function hasAccounts(): boolean {
   try {
     const profiles = getProfiles();
     if (!profiles) {
+      return false;
+    }
+
+    return Object.values(profiles).some(
+      (profile) => profile && profile.accounts && profile.accounts.length > 0,
+    );
+  } catch (error) {
+    console.error("Error checking accounts status:", error);
+    return false;
+  }
+}
+
+/**
+ * Checks if the user has any accounts configured with detailed logging
+ * Use this for debugging purposes
+ */
+export function hasAccountsWithLogging(): boolean {
+  try {
+    const profiles = getProfiles();
+    if (!profiles) {
       console.log("No profiles found, no accounts available");
       return false;
     }
@@ -52,10 +72,14 @@ export function hasAccounts(): boolean {
     console.log("hasAccounts check:", {
       profileCount: Object.keys(profiles).length,
       profileNames: Object.keys(profiles),
-      profileDetails: Object.keys(profiles).map(name => ({
+      profileDetails: Object.keys(profiles).map((name) => ({
         name,
         accountCount: profiles[name]?.accounts?.length || 0,
-        accounts: profiles[name]?.accounts?.map((acc: any) => ({ id: acc.id, nickname: acc.nickname })) || []
+        accounts:
+          profiles[name]?.accounts?.map((acc: any) => ({
+            id: acc.id,
+            nickname: acc.nickname,
+          })) || [],
       })),
       hasAccounts: hasAccountsResult,
     });
@@ -75,9 +99,9 @@ export function hasAccounts(): boolean {
  */
 export async function isFirstTimeUser(): Promise<boolean> {
   try {
-    const hasPIN = await hasCompletedBasicSetup();
+    const hasPIN = await hasPINSetup();
     const hasUserAccounts = hasAccounts();
-    
+
     // User needs onboarding if they don't have PIN OR don't have accounts
     // This covers:
     // - Completely new users (no PIN, no accounts)

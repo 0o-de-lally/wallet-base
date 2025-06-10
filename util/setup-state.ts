@@ -102,10 +102,10 @@ export async function updateSetupStatus(): Promise<void> {
  */
 export function refreshSetupStatus(): void {
   console.log("Forcing setup status refresh");
-  
+
   // Immediate update
   updateSetupStatus();
-  
+
   // Also schedule a delayed update to catch any state propagation delays
   setTimeout(() => {
     console.log("Delayed setup status refresh");

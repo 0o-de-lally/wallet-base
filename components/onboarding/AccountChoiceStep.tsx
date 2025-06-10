@@ -6,13 +6,11 @@ import { ActionButton } from "../common/ActionButton";
 
 interface AccountChoiceStepProps {
   onAccountChoice: (choice: "create" | "recover") => void;
-  onSkipToMainApp: () => void;
   onResetApp: () => void;
 }
 
 export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
   onAccountChoice,
-  onSkipToMainApp,
   onResetApp,
 }) => {
   return (
@@ -48,34 +46,7 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
         style={[
           styles.resultValue,
           {
-            marginTop: 20,
-            fontSize: 12,
-            fontStyle: "italic",
-            textAlign: "center",
-          },
-        ]}
-      >
-        Already have accounts set up?
-      </Text>
-
-      <ActionButton
-        text="Skip to Main App"
-        onPress={onSkipToMainApp}
-        style={{
-          marginTop: 5,
-          backgroundColor: "#4CAF50",
-          borderColor: "#4CAF50",
-        }}
-        textStyle={{ color: "white" }}
-        size="small"
-        accessibilityLabel="Skip to main app if setup is already complete"
-      />
-
-      <Text
-        style={[
-          styles.resultValue,
-          {
-            marginTop: 15,
+            marginTop: 30,
             fontSize: 12,
             fontStyle: "italic",
             textAlign: "center",

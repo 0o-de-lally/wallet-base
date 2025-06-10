@@ -97,7 +97,10 @@ export function addAccountToProfile(
     return false; // Profile doesn't exist
   }
 
-  console.log("addAccountToProfile: Profile exists, current account count:", profile.accounts.length);
+  console.log(
+    "addAccountToProfile: Profile exists, current account count:",
+    profile.accounts.length,
+  );
 
   // Check if account already exists in the profile
   const accountExists = profile.accounts.some(
@@ -116,7 +119,10 @@ export function addAccountToProfile(
   // Add account to profile
   appConfig.profiles[profileName].accounts.push(account);
 
-  console.log("addAccountToProfile: Account added, new count:", appConfig.profiles[profileName].accounts.get().length);
+  console.log(
+    "addAccountToProfile: Account added, new count:",
+    appConfig.profiles[profileName].accounts.get().length,
+  );
 
   // If this is the first account added to any profile, set it as active
   if (appConfig.activeAccountId.get() === null) {

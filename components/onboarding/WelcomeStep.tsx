@@ -21,14 +21,9 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({
       <Text style={[styles.resultValue, { marginTop: 10 }]}>
         • Creating a secure PIN for your wallet
       </Text>
-      <Text style={styles.resultValue}>
-        • Setting up your first account
-      </Text>
+      <Text style={styles.resultValue}>• Setting up your first account</Text>
       <Text
-        style={[
-          styles.resultValue,
-          { marginTop: 15, fontStyle: "italic" },
-        ]}
+        style={[styles.resultValue, { marginTop: 15, fontStyle: "italic" }]}
       >
         This should only take a few minutes.
       </Text>
