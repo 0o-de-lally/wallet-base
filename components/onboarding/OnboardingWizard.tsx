@@ -9,6 +9,7 @@ import { useModal } from "../../context/ModalContext";
 import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
 import { hasCompletedBasicSetup, hasAccounts } from "../../util/user-state";
+import { maybeInitializeDefaultProfile, appConfig } from "../../util/app-config-store";
 
 type WizardStep =
   | "welcome"
@@ -35,10 +36,47 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
     const { showAlert } = useModal();
 
-    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible, isCheckingPinStatus });    // Check if PIN and accounts already exist on mount
+    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible, isCheckingPinStatus });
+
+    // Check if PIN and accounts already exist on mount
     useEffect(() => {
       const checkSetupStatus = async () => {
         try {
+          // Wait a bit for potential app config hydration
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Ensure we have a default profile before checking setup status
+          try {
+            // More robust check for appConfig availability
+            if (appConfig) {
+              const profiles = appConfig.profiles?.get();
+              if (!profiles || Object.keys(profiles).length === 0) {
+                console.log("OnboardingWizard: No profiles found, initializing default profile");
+                maybeInitializeDefaultProfile();
+
+                // Wait a bit for the profile to be created
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              } else {
+                console.log("OnboardingWizard: Found existing profiles:", Object.keys(profiles));
+              }
+            } else {
+              console.log("OnboardingWizard: AppConfig not yet available, initializing default profile");
+              maybeInitializeDefaultProfile();
+
+              // Wait a bit for the profile to be created
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+          } catch (profileError) {
+            console.log("OnboardingWizard: Error checking/initializing profiles:", profileError);
+            // Try to initialize anyway
+            try {
+              maybeInitializeDefaultProfile();
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            } catch (initError) {
+              console.error("OnboardingWizard: Failed to initialize default profile:", initError);
+            }
+          }
+
           const hasPin = await hasCompletedBasicSetup();
           const hasUserAccounts = hasAccounts();
 

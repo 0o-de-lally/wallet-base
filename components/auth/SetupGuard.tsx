@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
+import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { useSetupGuard } from "../../hooks/use-setup-guard";
 import { OnboardingWizard } from "../onboarding/OnboardingWizard";
@@ -14,9 +15,9 @@ interface SetupGuardProps {
 
 /**
  * Guard component that ensures users have completed necessary setup steps
- * before accessing protected screens.
+ * before accessing protected screens. This component is reactive to state changes.
  */
-export const SetupGuard: React.FC<SetupGuardProps> = ({
+export const SetupGuard: React.FC<SetupGuardProps> = observer(({
   children,
   requiresPin = true,
   requiresAccount = true,
@@ -25,16 +26,30 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
   const { setupStatus, checkSetupStatus } = useSetupGuard();
   const router = useRouter();
 
-  const handleOnboardingComplete = () => {
-    console.log("SetupGuard: Onboarding completed");
+  // Add debugging to track setup status changes
+  useEffect(() => {
+    console.log("SetupGuard: Setup status changed:", {
+      setupStatus,
+      requiresPin,
+      requiresAccount,
+      redirectOnComplete,
+      timestamp: new Date().toISOString()
+    });
+  }, [setupStatus, requiresPin, requiresAccount, redirectOnComplete]);
+
+  const handleOnboardingComplete = async () => {
+    console.log("SetupGuard: Onboarding completed, rechecking status");
 
     // Recheck setup status after onboarding
-    checkSetupStatus();
+    await checkSetupStatus();
 
-    // Optionally redirect to home after onboarding
-    if (redirectOnComplete) {
-      router.replace("/");
-    }
+    // Small delay to ensure state has updated
+    setTimeout(() => {
+      // Optionally redirect to home after onboarding
+      if (redirectOnComplete) {
+        router.replace("/");
+      }
+    }, 100);
   };
 
   // Show loading while checking setup status
@@ -64,4 +79,4 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
   // User has completed required setup, show the protected content
   console.log("SetupGuard: Setup complete, showing protected content");
   return <>{children}</>;
-};
+});

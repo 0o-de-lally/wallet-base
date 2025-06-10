@@ -2,6 +2,7 @@ import React, { useState, useCallback, memo, useEffect } from "react";
 import { saveValue } from "../../util/secure-store";
 import { hashPin, validatePin } from "../../util/pin-security";
 import { useModal } from "../../context/ModalContext";
+import { refreshSetupStatus } from "../../util/setup-state";
 import { PinInputModal } from "./PinInputModal";
 
 interface PinCreationFlowProps {
@@ -98,6 +99,9 @@ export const PinCreationFlow = memo(({
         // Reset state
         setStep("create");
         setTempPin(null);
+
+        // Refresh setup status to trigger reactive updates
+        refreshSetupStatus();
 
         if (showSuccessAlert) {
           showAlert("Success", "PIN created successfully!");

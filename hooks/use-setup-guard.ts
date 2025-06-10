@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { hasCompletedBasicSetup, hasAccounts } from "../util/user-state";
-
-export type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
+import { useEffect } from "react";
+import { setupState, updateSetupStatus, refreshSetupStatus, SetupStatus } from "../util/setup-state";
+import { appConfig } from "../util/app-config-store";
 
 interface SetupGuardResult {
   setupStatus: SetupStatus;
@@ -11,50 +10,37 @@ interface SetupGuardResult {
 }
 
 /**
- * Hook that checks if the user has completed the necessary setup steps
- * and provides the current setup status for routing decisions.
+ * Hook that provides reactive access to the user's setup status.
+ * This hook automatically updates when setup state changes.
  */
 export function useSetupGuard(): SetupGuardResult {
-  const [setupStatus, setSetupStatus] = useState<SetupStatus>("loading");
-  const [hasPin, setHasPin] = useState(false);
-  const [hasUserAccounts, setHasUserAccounts] = useState(false);
+  // Get reactive values from setup state - use .get() since we'll wrap component with observer
+  const setupStatus = setupState.status.get();
+  const hasPin = setupState.hasPin.get();
+  const hasUserAccounts = setupState.hasUserAccounts.get();
 
-  const checkSetupStatus = useCallback(async () => {
-    try {
-      setSetupStatus("loading");
+  // Watch for changes in app config to trigger status updates
+  const profiles = appConfig.profiles.get();
 
-      const pinExists = await hasCompletedBasicSetup();
-      const accountsExist = hasAccounts();
-
-      setHasPin(pinExists);
-      setHasUserAccounts(accountsExist);
-
-      console.log("Setup guard check:", { pinExists, accountsExist });
-
-      if (!pinExists) {
-        setSetupStatus("needs-pin");
-      } else if (!accountsExist) {
-        setSetupStatus("needs-account");
-      } else {
-        setSetupStatus("complete");
-      }
-    } catch (error) {
-      console.error("Error checking setup status:", error);
-      // On error, assume user needs PIN for safety
-      setSetupStatus("needs-pin");
-      setHasPin(false);
-      setHasUserAccounts(false);
-    }
+  // Initial setup status check
+  useEffect(() => {
+    console.log("Setup guard: Initial setup status check");
+    updateSetupStatus();
   }, []);
 
+  // Reactive check when profiles change (accounts added/removed)
   useEffect(() => {
-    checkSetupStatus();
-  }, [checkSetupStatus]);
+    console.log("Setup guard: Profiles changed, refreshing status", {
+      profileCount: Object.keys(profiles).length,
+      totalAccounts: Object.values(profiles).reduce((sum, profile) => sum + profile.accounts.length, 0)
+    });
+    refreshSetupStatus();
+  }, [profiles]);
 
   return {
     setupStatus,
     hasPin,
     hasUserAccounts,
-    checkSetupStatus,
+    checkSetupStatus: updateSetupStatus,
   };
 }

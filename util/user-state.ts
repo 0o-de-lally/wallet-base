@@ -18,10 +18,22 @@ export async function isFirstTimeUser(): Promise<boolean> {
     const hasPIN = savedPin !== null;
 
     // Check if there are any profiles with accounts
-    const profiles = appConfig.profiles.get();
-    const hasAccountsInAnyProfile = Object.values(profiles).some(
-      (profile) => profile.accounts.length > 0,
-    );
+    // Add robust error handling for appConfig availability
+    let hasAccountsInAnyProfile = false;
+    try {
+      if (appConfig && appConfig.profiles) {
+        const profiles = appConfig.profiles.get();
+        if (profiles && typeof profiles === "object") {
+          hasAccountsInAnyProfile = Object.values(profiles).some(
+            (profile) => profile && profile.accounts && profile.accounts.length > 0,
+          );
+        }
+      }
+    } catch (profileError) {
+      console.log("Error checking profiles in isFirstTimeUser:", profileError);
+      // If we can't check profiles, assume no accounts exist
+      hasAccountsInAnyProfile = false;
+    }
 
     // User needs onboarding if they don't have PIN OR don't have accounts
     // This covers:
@@ -53,13 +65,28 @@ export async function hasCompletedBasicSetup(): Promise<boolean> {
  */
 export function hasAccounts(): boolean {
   try {
-    const profiles = appConfig.profiles.get();
-    if (!profiles || typeof profiles !== "object") {
+    // Ensure appConfig is initialized
+    if (!appConfig || !appConfig.profiles) {
+      console.log("AppConfig not initialized yet, no accounts available");
       return false;
     }
-    return Object.values(profiles).some(
+
+    const profiles = appConfig.profiles.get();
+    if (!profiles || typeof profiles !== "object") {
+      console.log("No profiles object found, no accounts available");
+      return false;
+    }
+
+    const hasAccountsResult = Object.values(profiles).some(
       (profile) => profile && profile.accounts && profile.accounts.length > 0,
     );
+
+    console.log("hasAccounts check:", {
+      profileCount: Object.keys(profiles).length,
+      hasAccounts: hasAccountsResult
+    });
+
+    return hasAccountsResult;
   } catch (error) {
     console.error("Error checking accounts status:", error);
     return false;
@@ -71,8 +98,15 @@ export function hasAccounts(): boolean {
  */
 export function getProfileCount(): number {
   try {
+    // Ensure appConfig is initialized
+    if (!appConfig || !appConfig.profiles) {
+      console.log("AppConfig not initialized yet, profile count is 0");
+      return 0;
+    }
+
     const profiles = appConfig.profiles.get();
     if (!profiles || typeof profiles !== "object") {
+      console.log("No profiles object found, profile count is 0");
       return 0;
     }
     return Object.keys(profiles).length;

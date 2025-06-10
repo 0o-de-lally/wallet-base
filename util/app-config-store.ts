@@ -15,6 +15,7 @@ import {
   RevealSchedule,
   defaultConfig,
 } from "./app-config-types";
+import { refreshSetupStatus } from "./setup-state";
 
 // Global configuration
 configureObservablePersistence({
@@ -107,6 +108,9 @@ export function addAccountToProfile(
   if (appConfig.activeAccountId.get() === null) {
     appConfig.activeAccountId.set(account.id);
   }
+
+  // Refresh setup status to trigger reactive updates
+  refreshSetupStatus();
 
   return true;
 }
@@ -224,21 +228,58 @@ export function deleteProfile(profileName: string): boolean {
  * This should only run if there are no profiles in the persisted state.
  */
 export function maybeInitializeDefaultProfile() {
-  // Get current profiles and ensure we only initialize if truly empty
-  const currentProfiles = appConfig.profiles.get();
+  try {
+    // Wait a moment for persistence to fully load
+    setTimeout(() => {
+      try {
+        // Get current profiles and ensure we only initialize if truly empty
+        const currentProfiles = appConfig.profiles?.get();
 
-  // Only create default profile if there are no profiles AND no active account
-  if (
-    Object.keys(currentProfiles).length === 0 &&
-    !appConfig.activeAccountId.get()
-  ) {
-    console.log("No profiles found, initializing default profile");
-    createProfile("mainnet", {
-      network_name: "Mainnet",
-      network_type: NetworkTypeEnum.MAINNET,
-    });
-  } else {
-    console.log("Profiles already exist, skipping initialization");
+        // Only create default profile if there are no profiles AND no active account
+        if (
+          (!currentProfiles || Object.keys(currentProfiles).length === 0) &&
+          !appConfig.activeAccountId?.get()
+        ) {
+          console.log("No profiles found, initializing default profile");
+          const success = createProfile("mainnet", {
+            network_name: "Mainnet",
+            network_type: NetworkTypeEnum.MAINNET,
+          });
+
+          if (success) {
+            console.log("Default profile 'mainnet' created successfully");
+          } else {
+            console.log("Failed to create default profile");
+          }
+        } else {
+          console.log("Profiles already exist, skipping initialization", {
+            profileCount: currentProfiles ? Object.keys(currentProfiles).length : 0,
+            activeAccountId: appConfig.activeAccountId?.get()
+          });
+        }
+      } catch (innerError) {
+        console.error("Error in delayed profile initialization:", innerError);
+      }
+    }, 10); // Very short delay to allow persistence to settle
+  } catch (error) {
+    console.error("Error setting up delayed profile initialization:", error);
+
+    // Fallback to immediate initialization if delayed fails
+    try {
+      const currentProfiles = appConfig.profiles?.get();
+      if (
+        (!currentProfiles || Object.keys(currentProfiles).length === 0) &&
+        !appConfig.activeAccountId?.get()
+      ) {
+        console.log("Fallback: Creating default profile immediately");
+        createProfile("mainnet", {
+          network_name: "Mainnet",
+          network_type: NetworkTypeEnum.MAINNET,
+        });
+      }
+    } catch (fallbackError) {
+      console.error("Error in fallback profile initialization:", fallbackError);
+    }
   }
 }
 

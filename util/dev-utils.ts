@@ -1,5 +1,6 @@
 import { appConfig } from "./app-config-store";
 import { deleteValue } from "./secure-store";
+import { refreshSetupStatus } from "./setup-state";
 
 /**
  * Development utility to reset the app to first-time user state
@@ -28,6 +29,9 @@ export async function resetAppToFirstTimeUser(): Promise<void> {
     }
 
     console.log("App reset complete - now in first-time user state");
+
+    // Refresh setup status to trigger reactive updates
+    refreshSetupStatus();
   } catch (error) {
     console.error("Error resetting app:", error);
     throw error;
