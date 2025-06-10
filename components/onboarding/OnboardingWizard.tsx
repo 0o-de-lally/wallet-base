@@ -10,6 +10,7 @@ import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
 import { hasCompletedBasicSetup, hasAccounts } from "../../util/user-state";
 import { maybeInitializeDefaultProfile, appConfig } from "../../util/app-config-store";
+import { resetAppToFirstTimeUser } from "../../util/dev-utils";
 
 type WizardStep =
   | "welcome"
@@ -34,7 +35,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     >(null);
     const [isCheckingPinStatus, setIsCheckingPinStatus] = useState(true);
 
-    const { showAlert } = useModal();
+    const { showAlert, showConfirmation } = useModal();
 
     console.log("OnboardingWizard render:", { currentStep, pinCreationVisible, isCheckingPinStatus });
 
@@ -145,6 +146,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     }, []);
 
     const handleAccountSetupComplete = useCallback(() => {
+      console.log("OnboardingWizard: Account setup completed, advancing to complete step");
       setCurrentStep("complete");
     }, []);
 
@@ -152,10 +154,56 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       onComplete();
     }, [onComplete]);
 
+    // Auto-advance from complete step after showing success message
+    useEffect(() => {
+      if (currentStep === "complete") {
+        console.log("OnboardingWizard: On complete step, will auto-advance in 3 seconds");
+        const timer = setTimeout(() => {
+          console.log("OnboardingWizard: Auto-advancing from complete step");
+          handleFinishWizard();
+        }, 3000); // 3 second delay to show success message
+
+        return () => clearTimeout(timer);
+      }
+    }, [currentStep, handleFinishWizard]);
+
     const handleBackToChoice = useCallback(() => {
       setAccountChoice(null);
       setCurrentStep("account-choice");
     }, []);
+
+    const handleResetApp = useCallback(async () => {
+      try {
+        console.log("OnboardingWizard: Starting app reset");
+
+        // Show confirmation first
+        showConfirmation(
+          "Reset All Data?",
+          "This will permanently delete all your PINs, accounts, and data. This action cannot be undone.",
+          async () => {
+            try {
+              await resetAppToFirstTimeUser();
+
+              // Reset the wizard state
+              setCurrentStep("welcome");
+              setPinCreationVisible(false);
+              setAccountChoice(null);
+              setIsCheckingPinStatus(false);
+
+              showAlert("Data Cleared", "All app data has been reset. You can now start fresh.");
+            } catch (error) {
+              console.error("OnboardingWizard: Error resetting app:", error);
+              showAlert("Reset Failed", "Failed to reset app data. Please try again.");
+            }
+          },
+          "Reset Everything",
+          true // isDestructive
+        );
+      } catch (error) {
+        console.error("OnboardingWizard: Error in handleResetApp:", error);
+        showAlert("Error", "Failed to reset app data. Please try again.");
+      }
+    }, [showAlert, showConfirmation]);
 
     const renderStep = () => {
       switch (currentStep) {
@@ -185,6 +233,28 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                 onPress={handleStartPinCreation}
                 style={{ marginTop: 20 }}
                 accessibilityLabel="Start PIN creation for wallet setup"
+              />
+
+              <Text
+                style={[
+                  styles.resultValue,
+                  { marginTop: 30, fontSize: 12, fontStyle: "italic", textAlign: "center" },
+                ]}
+              >
+                Need to start over?
+              </Text>
+
+              <ActionButton
+                text="Reset All Data"
+                onPress={handleResetApp}
+                style={{
+                  marginTop: 5,
+                  backgroundColor: '#ff4444',
+                  borderColor: '#ff4444',
+                }}
+                textStyle={{ color: 'white' }}
+                size="small"
+                accessibilityLabel="Reset all app data and start fresh"
               />
             </SectionContainer>
           );
@@ -219,6 +289,28 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
               >
                 You can always add more accounts later from the main menu.
               </Text>
+
+              <Text
+                style={[
+                  styles.resultValue,
+                  { marginTop: 20, fontSize: 12, fontStyle: "italic", textAlign: "center" },
+                ]}
+              >
+                Need to start completely over?
+              </Text>
+
+              <ActionButton
+                text="Reset All Data"
+                onPress={handleResetApp}
+                style={{
+                  marginTop: 5,
+                  backgroundColor: '#ff4444',
+                  borderColor: '#ff4444',
+                }}
+                textStyle={{ color: 'white' }}
+                size="small"
+                accessibilityLabel="Reset all app data and start fresh"
+              />
             </SectionContainer>
           );
 
@@ -277,11 +369,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                 • Access all wallet features from the menu
               </Text>
 
+              <Text style={[styles.resultValue, { marginTop: 15, fontSize: 12, fontStyle: "italic", textAlign: "center" }]}>
+                You'll be automatically taken to your wallet in a few seconds...
+              </Text>
+
               <ActionButton
-                text="Enter Wallet"
+                text="Enter Wallet Now"
                 onPress={handleFinishWizard}
                 style={{ marginTop: 20 }}
-                accessibilityLabel="Complete setup and enter wallet"
+                accessibilityLabel="Complete setup and enter wallet immediately"
               />
             </SectionContainer>
           );

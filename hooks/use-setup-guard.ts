@@ -19,23 +19,11 @@ export function useSetupGuard(): SetupGuardResult {
   const hasPin = setupState.hasPin.get();
   const hasUserAccounts = setupState.hasUserAccounts.get();
 
-  // Watch for changes in app config to trigger status updates
-  const profiles = appConfig.profiles.get();
-
-  // Initial setup status check
+  // Initial setup status check only
   useEffect(() => {
     console.log("Setup guard: Initial setup status check");
     updateSetupStatus();
   }, []);
-
-  // Reactive check when profiles change (accounts added/removed)
-  useEffect(() => {
-    console.log("Setup guard: Profiles changed, refreshing status", {
-      profileCount: Object.keys(profiles).length,
-      totalAccounts: Object.values(profiles).reduce((sum, profile) => sum + profile.accounts.length, 0)
-    });
-    refreshSetupStatus();
-  }, [profiles]);
 
   return {
     setupStatus,
