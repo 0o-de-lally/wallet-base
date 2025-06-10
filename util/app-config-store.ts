@@ -84,11 +84,20 @@ export function addAccountToProfile(
   profileName: string,
   account: AccountState,
 ): boolean {
+  console.log("addAccountToProfile called:", {
+    profileName,
+    accountId: account.id,
+    accountNickname: account.nickname,
+  });
+
   const profile = appConfig.profiles[profileName].get();
 
   if (!profile) {
+    console.log("addAccountToProfile: Profile not found:", profileName);
     return false; // Profile doesn't exist
   }
+
+  console.log("addAccountToProfile: Profile exists, current account count:", profile.accounts.length);
 
   // Check if account already exists in the profile
   const accountExists = profile.accounts.some(
@@ -98,20 +107,28 @@ export function addAccountToProfile(
   );
 
   if (accountExists) {
+    console.log("addAccountToProfile: Account already exists in profile");
     return false; // Account already exists in this profile
   }
+
+  console.log("addAccountToProfile: Adding account to profile");
 
   // Add account to profile
   appConfig.profiles[profileName].accounts.push(account);
 
+  console.log("addAccountToProfile: Account added, new count:", appConfig.profiles[profileName].accounts.get().length);
+
   // If this is the first account added to any profile, set it as active
   if (appConfig.activeAccountId.get() === null) {
+    console.log("addAccountToProfile: Setting as active account:", account.id);
     appConfig.activeAccountId.set(account.id);
   }
 
   // Refresh setup status to trigger reactive updates
+  console.log("addAccountToProfile: Calling refreshSetupStatus");
   refreshSetupStatus();
 
+  console.log("addAccountToProfile: Success");
   return true;
 }
 

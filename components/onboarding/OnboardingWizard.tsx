@@ -1,13 +1,10 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
-import { ActionButton } from "../common/ActionButton";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
-import AddAccountForm from "../profile/AddAccountForm";
-import RecoverAccountForm from "../profile/RecoverAccountForm";
 import { hasCompletedBasicSetup, hasAccounts } from "../../util/user-state";
 import {
   maybeInitializeDefaultProfile,
@@ -15,6 +12,10 @@ import {
 } from "../../util/app-config-store";
 import { resetAppToFirstTimeUser } from "../../util/dev-utils";
 import { refreshSetupStatus } from "../../util/setup-state";
+import { WelcomeStep } from "./WelcomeStep";
+import { AccountChoiceStep } from "./AccountChoiceStep";
+import { AccountSetupStep } from "./AccountSetupStep";
+import { CompleteStep } from "./CompleteStep";
 
 type WizardStep = "welcome" | "account-choice" | "account-setup" | "complete";
 
@@ -36,6 +37,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     const [isCheckingPinStatus, setIsCheckingPinStatus] = useState(true);
 
     const { showAlert, showConfirmation } = useModal();
+
+    // Track if onboarding has completed to prevent duplicate completion calls
+    const hasCompletedRef = useRef(false);
 
     console.log("OnboardingWizard render:", {
       currentStep,
@@ -109,6 +113,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             console.log(
               "OnboardingWizard: Setup is already complete, finishing onboarding immediately",
             );
+            hasCompletedRef.current = true;
             onComplete();
             return;
           }
@@ -138,59 +143,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       checkSetupStatus();
     }, [onComplete]); // Remove currentStep dependency to avoid infinite loops
 
-    // Polling mechanism to reactively check setup status changes
-    useEffect(() => {
-      let pollInterval: ReturnType<typeof setInterval>;
-
-      const pollSetupStatus = async () => {
-        try {
-          // Only poll if we're not on the complete step (to avoid unnecessary checks)
-          if (currentStep !== "complete") {
-            console.log("OnboardingWizard: Polling setup status...");
-
-            // Refresh the setup status to ensure it's current
-            refreshSetupStatus();
-
-            // Check current setup state
-            const hasPin = await hasCompletedBasicSetup();
-            const hasUserAccounts = hasAccounts();
-
-            console.log("OnboardingWizard: Poll result:", {
-              hasPin,
-              hasUserAccounts,
-              currentStep,
-              timestamp: new Date().toISOString(),
-            });
-
-            // If setup is now complete, finish onboarding
-            if (hasPin && hasUserAccounts) {
-              console.log("OnboardingWizard: Setup completed during polling, finishing onboarding");
-              onComplete();
-              return;
-            }
-
-            // If we have PIN but no accounts and we're still on welcome, advance to account choice
-            if (hasPin && !hasUserAccounts && currentStep === "welcome") {
-              console.log("OnboardingWizard: PIN detected during polling, advancing to account-choice");
-              setCurrentStep("account-choice");
-            }
-          }
-        } catch (error) {
-          console.error("OnboardingWizard: Error during polling:", error);
-        }
-      };
-
-      // Start polling every 2 seconds
-      pollInterval = setInterval(pollSetupStatus, 2000);
-
-      // Cleanup on unmount or when step changes to complete
-      return () => {
-        if (pollInterval) {
-          clearInterval(pollInterval);
-        }
-      };
-    }, [currentStep, onComplete]);
-
     // Reset form callback for account forms
     const resetAccountForm = useCallback(() => {
       // This will be called by the account forms when they need to reset
@@ -202,6 +154,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     }, []);
 
     const handlePinCreationComplete = useCallback(async (success: boolean) => {
+      // Prevent duplicate completion calls
+      if (hasCompletedRef.current) return;
+
       console.log(
         "OnboardingWizard: PIN creation completed with success:",
         success,
@@ -226,6 +181,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
 
           if (hasPin && hasUserAccounts) {
             console.log("OnboardingWizard: Setup fully complete after PIN creation, finishing onboarding");
+            hasCompletedRef.current = true;
             onComplete();
           } else if (hasPin && !hasUserAccounts) {
             console.log("OnboardingWizard: PIN created, advancing to account choice");
@@ -255,6 +211,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     }, []);
 
     const handleAccountSetupComplete = useCallback(async () => {
+      // Prevent duplicate completion calls
+      if (hasCompletedRef.current) return;
+
       console.log(
         "OnboardingWizard: Account setup completed, checking if setup is fully complete",
       );
@@ -265,7 +224,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       // Check if setup is now fully complete
       try {
         // Small delay to allow for state propagation
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 300)); // Increased from 100ms
 
         const hasPin = await hasCompletedBasicSetup();
         const hasUserAccounts = hasAccounts();
@@ -273,6 +232,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         console.log("OnboardingWizard: Post-account-setup status:", {
           hasPin,
           hasUserAccounts,
+          delay: "300ms",
         });
 
         if (hasPin && hasUserAccounts) {
@@ -281,7 +241,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         } else {
           console.log("OnboardingWizard: Setup not fully complete yet, staying on current step");
           // This might happen if there was an error or the account creation failed
-          // The polling mechanism will catch this and handle it appropriately
         }
       } catch (error) {
         console.error("OnboardingWizard: Error checking setup completion after account setup:", error);
@@ -291,6 +250,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     }, []);
 
     const handleFinishWizard = useCallback(() => {
+      hasCompletedRef.current = true;
       onComplete();
     }, [onComplete]);
 
@@ -331,6 +291,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       const isComplete = await checkIfSetupComplete();
       if (isComplete) {
         console.log("OnboardingWizard: Setup verified as complete, skipping to main app");
+        hasCompletedRef.current = true;
         onComplete();
       } else {
         showAlert("Setup Incomplete", "Please complete the setup process first.");
@@ -380,225 +341,33 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       switch (currentStep) {
         case "welcome":
           return (
-            <SectionContainer title="Welcome to Your Wallet">
-              <Text style={styles.resultValue}>
-                Let&apos;s get you set up! This wizard will guide you through:
-              </Text>
-              <Text style={[styles.resultValue, { marginTop: 10 }]}>
-                • Creating a secure PIN for your wallet
-              </Text>
-              <Text style={styles.resultValue}>
-                • Setting up your first account
-              </Text>
-              <Text
-                style={[
-                  styles.resultValue,
-                  { marginTop: 15, fontStyle: "italic" },
-                ]}
-              >
-                This should only take a few minutes.
-              </Text>
-
-              <ActionButton
-                text="Create PIN"
-                onPress={handleStartPinCreation}
-                style={{ marginTop: 20 }}
-                accessibilityLabel="Start PIN creation for wallet setup"
-              />
-
-              <Text
-                style={[
-                  styles.resultValue,
-                  {
-                    marginTop: 30,
-                    fontSize: 12,
-                    fontStyle: "italic",
-                    textAlign: "center",
-                  },
-                ]}
-              >
-                Need to start over?
-              </Text>
-
-              <ActionButton
-                text="Reset All Data"
-                onPress={handleResetApp}
-                style={{
-                  marginTop: 5,
-                  backgroundColor: "#ff4444",
-                  borderColor: "#ff4444",
-                }}
-                textStyle={{ color: "white" }}
-                size="small"
-                accessibilityLabel="Reset all app data and start fresh"
-              />
-            </SectionContainer>
+            <WelcomeStep
+              onStartPinCreation={handleStartPinCreation}
+              onResetApp={handleResetApp}
+            />
           );
 
         case "account-choice":
           return (
-            <SectionContainer title="Account Setup">
-              <Text style={styles.resultValue}>
-                Great! Your PIN is set up. Now let&apos;s add your first
-                account:
-              </Text>
-
-              <ActionButton
-                text="Create New Account"
-                onPress={() => handleAccountChoice("create")}
-                style={{ marginTop: 20 }}
-                accessibilityLabel="Create a new account"
-              />
-
-              <ActionButton
-                text="Recover Existing Account"
-                onPress={() => handleAccountChoice("recover")}
-                style={{ marginTop: 10 }}
-                accessibilityLabel="Recover an existing account"
-              />
-
-              <Text
-                style={[
-                  styles.resultValue,
-                  { marginTop: 15, fontSize: 12, fontStyle: "italic" },
-                ]}
-              >
-                You can always add more accounts later from the main menu.
-              </Text>
-
-              <Text
-                style={[
-                  styles.resultValue,
-                  {
-                    marginTop: 20,
-                    fontSize: 12,
-                    fontStyle: "italic",
-                    textAlign: "center",
-                  },
-                ]}
-              >
-                Already have accounts set up?
-              </Text>
-
-              <ActionButton
-                text="Skip to Main App"
-                onPress={handleSkipToMainApp}
-                style={{
-                  marginTop: 5,
-                  backgroundColor: '#4CAF50',
-                  borderColor: '#4CAF50',
-                }}
-                textStyle={{ color: 'white' }}
-                size="small"
-                accessibilityLabel="Skip to main app if setup is already complete"
-              />
-
-              <Text
-                style={[
-                  styles.resultValue,
-                  {
-                    marginTop: 15,
-                    fontSize: 12,
-                    fontStyle: "italic",
-                    textAlign: "center",
-                  },
-                ]}
-              >
-                Need to start completely over?
-              </Text>
-
-              <ActionButton
-                text="Reset All Data"
-                onPress={handleResetApp}
-                style={{
-                  marginTop: 5,
-                  backgroundColor: "#ff4444",
-                  borderColor: "#ff4444",
-                }}
-                textStyle={{ color: "white" }}
-                size="small"
-                accessibilityLabel="Reset all app data and start fresh"
-              />
-            </SectionContainer>
+            <AccountChoiceStep
+              onAccountChoice={handleAccountChoice}
+              onSkipToMainApp={handleSkipToMainApp}
+              onResetApp={handleResetApp}
+            />
           );
 
         case "account-setup":
           return (
-            <View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <ActionButton
-                  text="← Back"
-                  onPress={handleBackToChoice}
-                  size="small"
-                  accessibilityLabel="Go back to account choice"
-                />
-              </View>
-
-              {accountChoice === "create" && (
-                <AddAccountForm
-                  profileName="mainnet" // Use the default profile
-                  onComplete={handleAccountSetupComplete}
-                  onResetForm={resetAccountForm}
-                />
-              )}
-
-              {accountChoice === "recover" && (
-                <RecoverAccountForm
-                  profileName="mainnet" // Use the default profile
-                  onComplete={handleAccountSetupComplete}
-                  onResetForm={resetAccountForm}
-                />
-              )}
-            </View>
+            <AccountSetupStep
+              accountChoice={accountChoice}
+              onBackToChoice={handleBackToChoice}
+              onComplete={handleAccountSetupComplete}
+              onResetForm={resetAccountForm}
+            />
           );
 
         case "complete":
-          return (
-            <SectionContainer title="Setup Complete!">
-              <Text style={styles.resultValue}>
-                🎉 Congratulations! Your wallet is now set up and ready to use.
-              </Text>
-              <Text style={[styles.resultValue, { marginTop: 10 }]}>
-                You can now:
-              </Text>
-              <Text style={styles.resultValue}>
-                • View and manage your accounts
-              </Text>
-              <Text style={styles.resultValue}>
-                • Add more accounts or profiles
-              </Text>
-              <Text style={styles.resultValue}>
-                • Access all wallet features from the menu
-              </Text>
-
-              <Text
-                style={[
-                  styles.resultValue,
-                  {
-                    marginTop: 15,
-                    fontSize: 12,
-                    fontStyle: "italic",
-                    textAlign: "center",
-                  },
-                ]}
-              >
-                You'll be automatically taken to your wallet in a few seconds...
-              </Text>
-
-              <ActionButton
-                text="Enter Wallet Now"
-                onPress={handleFinishWizard}
-                style={{ marginTop: 20 }}
-                accessibilityLabel="Complete setup and enter wallet immediately"
-              />
-            </SectionContainer>
-          );
+          return <CompleteStep onFinish={handleFinishWizard} />;
 
         default:
           return null;

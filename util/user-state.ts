@@ -6,45 +6,18 @@ import { getValue } from "./secure-store";
  */
 
 /**
- * Checks if this is a first-time user
- * A first-time user needs to go through onboarding, which includes:
- * - Creating a PIN (if they don't have one)
- * - Setting up their first account (if they don't have any)
+ * Helper function to safely get profiles from appConfig
  */
-export async function isFirstTimeUser(): Promise<boolean> {
+function getProfiles(): Record<string, any> | null {
   try {
-    // Check if PIN exists
-    const savedPin = await getValue("user_pin");
-    const hasPIN = savedPin !== null;
-
-    // Check if there are any profiles with accounts
-    // Add robust error handling for appConfig availability
-    let hasAccountsInAnyProfile = false;
-    try {
-      if (appConfig && appConfig.profiles) {
-        const profiles = appConfig.profiles.get();
-        if (profiles && typeof profiles === "object") {
-          hasAccountsInAnyProfile = Object.values(profiles).some(
-            (profile) =>
-              profile && profile.accounts && profile.accounts.length > 0,
-          );
-        }
-      }
-    } catch (profileError) {
-      console.log("Error checking profiles in isFirstTimeUser:", profileError);
-      // If we can't check profiles, assume no accounts exist
-      hasAccountsInAnyProfile = false;
+    if (!appConfig || !appConfig.profiles) {
+      return null;
     }
-
-    // User needs onboarding if they don't have PIN OR don't have accounts
-    // This covers:
-    // - Completely new users (no PIN, no accounts)
-    // - Users who created PIN but didn't finish account setup (has PIN, no accounts)
-    return !hasPIN || !hasAccountsInAnyProfile;
+    const profiles = appConfig.profiles.get();
+    return profiles && typeof profiles === "object" ? profiles : null;
   } catch (error) {
-    console.error("Error checking first-time user status:", error);
-    // If we can't determine, assume first-time for safety
-    return true;
+    console.error("Error getting profiles:", error);
+    return null;
   }
 }
 
@@ -66,15 +39,9 @@ export async function hasCompletedBasicSetup(): Promise<boolean> {
  */
 export function hasAccounts(): boolean {
   try {
-    // Ensure appConfig is initialized
-    if (!appConfig || !appConfig.profiles) {
-      console.log("AppConfig not initialized yet, no accounts available");
-      return false;
-    }
-
-    const profiles = appConfig.profiles.get();
-    if (!profiles || typeof profiles !== "object") {
-      console.log("No profiles object found, no accounts available");
+    const profiles = getProfiles();
+    if (!profiles) {
+      console.log("No profiles found, no accounts available");
       return false;
     }
 
@@ -84,6 +51,12 @@ export function hasAccounts(): boolean {
 
     console.log("hasAccounts check:", {
       profileCount: Object.keys(profiles).length,
+      profileNames: Object.keys(profiles),
+      profileDetails: Object.keys(profiles).map(name => ({
+        name,
+        accountCount: profiles[name]?.accounts?.length || 0,
+        accounts: profiles[name]?.accounts?.map((acc: any) => ({ id: acc.id, nickname: acc.nickname })) || []
+      })),
       hasAccounts: hasAccountsResult,
     });
 
@@ -95,19 +68,36 @@ export function hasAccounts(): boolean {
 }
 
 /**
+ * Checks if this is a first-time user
+ * A first-time user needs to go through onboarding, which includes:
+ * - Creating a PIN (if they don't have one)
+ * - Setting up their first account (if they don't have any)
+ */
+export async function isFirstTimeUser(): Promise<boolean> {
+  try {
+    const hasPIN = await hasCompletedBasicSetup();
+    const hasUserAccounts = hasAccounts();
+    
+    // User needs onboarding if they don't have PIN OR don't have accounts
+    // This covers:
+    // - Completely new users (no PIN, no accounts)
+    // - Users who created PIN but didn't finish account setup (has PIN, no accounts)
+    return !hasPIN || !hasUserAccounts;
+  } catch (error) {
+    console.error("Error checking first-time user status:", error);
+    // If we can't determine, assume first-time for safety
+    return true;
+  }
+}
+
+/**
  * Gets the number of profiles the user has
  */
 export function getProfileCount(): number {
   try {
-    // Ensure appConfig is initialized
-    if (!appConfig || !appConfig.profiles) {
-      console.log("AppConfig not initialized yet, profile count is 0");
-      return 0;
-    }
-
-    const profiles = appConfig.profiles.get();
-    if (!profiles || typeof profiles !== "object") {
-      console.log("No profiles object found, profile count is 0");
+    const profiles = getProfiles();
+    if (!profiles) {
+      console.log("No profiles found, profile count is 0");
       return 0;
     }
     return Object.keys(profiles).length;
