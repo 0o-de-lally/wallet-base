@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 import { saveValue } from "../../util/secure-store";
 import { hashPin, validatePin } from "../../util/pin-security";
 import { useModal } from "../../context/ModalContext";
@@ -34,6 +34,16 @@ export const PinCreationFlow = memo(({
   // Debug logging
   console.log("PinCreationFlow render:", { visible, step, hasTempPin: !!tempPin });
 
+  // Reset state when component becomes invisible
+  useEffect(() => {
+    if (!visible) {
+      console.log("PinCreationFlow: Component became invisible, resetting state");
+      setStep("create");
+      setTempPin(null);
+      setIsLoading(false);
+    }
+  }, [visible]);
+
   /**
    * Handles new PIN creation during the first step
    */
@@ -51,6 +61,9 @@ export const PinCreationFlow = memo(({
       // Store the new PIN temporarily and move to confirmation step
       setTempPin(pin);
       setStep("confirm");
+
+      // Don't close the modal - we need to show the confirmation step
+      // The PinInputModal will try to close, but we'll prevent it by not calling onCancel
     },
     [showAlert],
   );
@@ -119,16 +132,27 @@ export const PinCreationFlow = memo(({
     onCancel();
   }, [onCancel]);
 
+  /**
+   * Handles close for the create step - only close if step is still "create"
+   * This prevents the modal from closing when transitioning to confirm step
+   */
+  const handleCreateStepClose = useCallback(() => {
+    if (step === "create") {
+      handleClose();
+    }
+  }, [step, handleClose]);
+
   return (
     <>
       {/* Create PIN Modal */}
       <PinInputModal
         visible={visible && step === "create"}
-        onClose={handleClose}
+        onClose={handleCreateStepClose}
         onPinAction={handleNewPin}
         purpose="save"
         actionTitle="Create Your PIN"
         actionSubtitle="Choose a 6-digit PIN to secure your wallet"
+        autoCloseOnSuccess={false}
       />
 
       {/* Confirm PIN Modal */}
@@ -139,6 +163,7 @@ export const PinCreationFlow = memo(({
         purpose="save"
         actionTitle="Confirm Your PIN"
         actionSubtitle="Enter your PIN again to confirm"
+        autoCloseOnSuccess={true}
       />
     </>
   );

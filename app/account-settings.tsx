@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Stack } from "expo-router";
 import { AccountSettings } from "../components/profile/AccountSettings";
+import { SetupGuard } from "../components/auth/SetupGuard";
 import { styles } from "../styles/styles";
 
 /**
@@ -20,9 +21,11 @@ export default function AccountSettingsScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <View style={styles.root}>
-        <AccountSettingsContent />
-      </View>
+      <SetupGuard requiresPin={true} requiresAccount={true}>
+        <View style={styles.root}>
+          <AccountSettingsContent />
+        </View>
+      </SetupGuard>
     </>
   );
 }

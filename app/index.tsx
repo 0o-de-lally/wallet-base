@@ -4,8 +4,7 @@ import { observer } from "@legendapp/state/react";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
-import { isFirstTimeUser, hasAccounts } from "@/util/user-state";
-import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { SetupGuard } from "@/components/auth/SetupGuard";
 import { Menu } from "@/components/menu/Menu";
 import AccountList from "@/components/profile/AccountList";
 import { appConfig, getProfileForAccount } from "@/util/app-config-store";
@@ -28,25 +27,13 @@ export default function App() {
 // Content component with observer for reactive updates
 const AppContent = observer(() => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isFirstTime, setIsFirstTime] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  // Initialize app and determine user state
+  // Initialize app
   useEffect(() => {
     const initialize = async () => {
       try {
         await initializeApp();
-
-        // Check if this is a first-time user
-        const firstTime = await isFirstTimeUser();
-        setIsFirstTime(firstTime);
-
-        // If not first time, check if we should show menu or account list
-        if (!firstTime) {
-          const hasUserAccounts = hasAccounts();
-          setShowMenu(!hasUserAccounts);
-        }
-
         setIsInitialized(true);
       } catch (error) {
         console.error("Failed to initialize app:", error);
@@ -57,31 +44,13 @@ const AppContent = observer(() => {
     initialize();
   }, []);
 
-  const handleOnboardingComplete = useCallback(async () => {
-    // Re-check user state after onboarding
-    const firstTime = await isFirstTimeUser();
-    setIsFirstTime(firstTime);
-
-    // After onboarding, show account list if user has accounts
-    const hasUserAccounts = hasAccounts();
-    setShowMenu(!hasUserAccounts);
-  }, []);
-
   const handleMenuProfileChange = useCallback(() => {
     // Force re-render when profile changes
-    const hasUserAccounts = hasAccounts();
-    // Only close menu if user now has accounts and menu was opened manually
-    if (hasUserAccounts) {
-      setShowMenu(false);
-    }
+    setShowMenu(false);
   }, []);
 
   const handleMenuExit = useCallback(() => {
-    // Only allow exiting if user has accounts to show
-    const hasUserAccounts = hasAccounts();
-    if (hasUserAccounts) {
-      setShowMenu(false);
-    }
+    setShowMenu(false);
   }, []);
 
   // Show loading state while initializing
@@ -101,20 +70,16 @@ const AppContent = observer(() => {
     );
   }
 
-  // Show onboarding wizard for first-time users
-  if (isFirstTime) {
-    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
-  }
-
-  // Show menu if user has no accounts or wants to access menu
-  if (showMenu) {
-    return (
-      <Menu onProfileChange={handleMenuProfileChange} onExit={handleMenuExit} />
-    );
-  }
-
-  // Show account list for users with accounts
-  return <SmartAccountList onShowMenu={() => setShowMenu(true)} />;
+  // Use SetupGuard to ensure proper setup before showing main content
+  return (
+    <SetupGuard requiresPin={true} requiresAccount={true}>
+      {showMenu ? (
+        <Menu onProfileChange={handleMenuProfileChange} onExit={handleMenuExit} />
+      ) : (
+        <SmartAccountList onShowMenu={() => setShowMenu(true)} />
+      )}
+    </SetupGuard>
+  );
 });
 
 // Smart Account List component that shows accounts for the active profile

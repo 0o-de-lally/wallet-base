@@ -7,7 +7,9 @@ import { getValue } from "./secure-store";
 
 /**
  * Checks if this is a first-time user
- * A first-time user has no PIN and no profiles with accounts
+ * A first-time user needs to go through onboarding, which includes:
+ * - Creating a PIN (if they don't have one)
+ * - Setting up their first account (if they don't have any)
  */
 export async function isFirstTimeUser(): Promise<boolean> {
   try {
@@ -21,8 +23,11 @@ export async function isFirstTimeUser(): Promise<boolean> {
       (profile) => profile.accounts.length > 0,
     );
 
-    // First-time user has no PIN and no accounts
-    return !hasPIN && !hasAccountsInAnyProfile;
+    // User needs onboarding if they don't have PIN OR don't have accounts
+    // This covers:
+    // - Completely new users (no PIN, no accounts)
+    // - Users who created PIN but didn't finish account setup (has PIN, no accounts)
+    return !hasPIN || !hasAccountsInAnyProfile;
   } catch (error) {
     console.error("Error checking first-time user status:", error);
     // If we can't determine, assume first-time for safety

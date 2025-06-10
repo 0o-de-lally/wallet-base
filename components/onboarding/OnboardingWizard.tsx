@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
@@ -8,6 +8,7 @@ import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
 import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
+import { hasCompletedBasicSetup, hasAccounts } from "../../util/user-state";
 
 type WizardStep =
   | "welcome"
@@ -30,10 +31,45 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     const [accountChoice, setAccountChoice] = useState<
       "create" | "recover" | null
     >(null);
+    const [isCheckingPinStatus, setIsCheckingPinStatus] = useState(true);
 
     const { showAlert } = useModal();
 
-    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible });
+    console.log("OnboardingWizard render:", { currentStep, pinCreationVisible, isCheckingPinStatus });    // Check if PIN and accounts already exist on mount
+    useEffect(() => {
+      const checkSetupStatus = async () => {
+        try {
+          const hasPin = await hasCompletedBasicSetup();
+          const hasUserAccounts = hasAccounts();
+
+          console.log("OnboardingWizard: Setup status check:", {
+            hasPin,
+            hasUserAccounts,
+            currentStep
+          });
+
+          if (currentStep === "welcome") {
+            if (hasPin && hasUserAccounts) {
+              console.log("OnboardingWizard: PIN and accounts exist, user shouldn't be in onboarding");
+              // This shouldn't happen in normal flow, but if it does, complete onboarding
+              onComplete();
+            } else if (hasPin && !hasUserAccounts) {
+              console.log("OnboardingWizard: PIN exists but no accounts, skipping to account-choice");
+              setCurrentStep("account-choice");
+            } else {
+              console.log("OnboardingWizard: No PIN, staying on welcome step");
+              // Stay on welcome step - user needs to create PIN first
+            }
+          }
+        } catch (error) {
+          console.error("OnboardingWizard: Error checking setup status:", error);
+        } finally {
+          setIsCheckingPinStatus(false);
+        }
+      };
+
+      checkSetupStatus();
+    }, [currentStep, onComplete]);
 
     // Reset form callback for account forms
     const resetAccountForm = useCallback(() => {
@@ -215,32 +251,41 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         default:
           return null;
       }
-    };
-
-    return (
+    };    return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
       >
         <Text style={styles.title}>Wallet Setup</Text>
 
-        {/* Progress indicator */}
-        <View style={{ marginBottom: 20 }}>
-          <Text
-            style={[styles.resultValue, { textAlign: "center", fontSize: 12 }]}
-          >
-            Step{" "}
-            {currentStep === "welcome"
-              ? "1"
-              : currentStep === "account-choice" ||
-                    currentStep === "account-setup"
-                  ? "2"
-                  : "3"}{" "}
-            of 3
-          </Text>
-        </View>
+        {/* Show loading while checking setup status */}
+        {isCheckingPinStatus ? (
+          <SectionContainer title="Checking Setup Status">
+            <Text style={styles.resultValue}>
+              Checking your PIN and account status...
+            </Text>
+          </SectionContainer>
+        ) : (
+          <>
+            {/* Progress indicator */}
+            <View style={{ marginBottom: 20 }}>
+              <Text
+                style={[styles.resultValue, { textAlign: "center", fontSize: 12 }]}
+              >
+                Step{" "}
+                {currentStep === "welcome"
+                  ? "1"
+                  : currentStep === "account-choice" ||
+                      currentStep === "account-setup"
+                    ? "2"
+                    : "3"}{" "}
+                of 3
+              </Text>
+            </View>
 
-        {renderStep()}
+            {renderStep()}
+          </>
+        )}
 
         {/* PIN Creation Flow */}
         <PinCreationFlow

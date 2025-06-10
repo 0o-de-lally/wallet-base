@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import ProfileManagement from "../components/profile/ProfileManagement";
+import { SetupGuard } from "../components/auth/SetupGuard";
 import { initializeApp } from "../util/initialize-app";
 import { Stack } from "expo-router";
 
@@ -32,7 +33,7 @@ const ProfilesScreen = observer(() => {
   }
 
   return (
-    <>
+    <SetupGuard requiresPin={true} requiresAccount={false}>
       <Stack.Screen
         options={{
           title: "Profile Management",
@@ -42,7 +43,7 @@ const ProfilesScreen = observer(() => {
       <View style={styles.root}>
         <ProfileManagement />
       </View>
-    </>
+    </SetupGuard>
   );
 });
 

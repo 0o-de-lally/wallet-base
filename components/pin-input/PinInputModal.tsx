@@ -22,6 +22,7 @@ interface PinInputModalProps {
   onPinAction: PinActionCallback;
   actionTitle?: string;
   actionSubtitle?: string;
+  autoCloseOnSuccess?: boolean; // New prop to control auto-close behavior
 }
 
 export const PinInputModal = memo(
@@ -32,6 +33,7 @@ export const PinInputModal = memo(
     onPinAction,
     actionTitle,
     actionSubtitle,
+    autoCloseOnSuccess = true, // Default to true for backward compatibility
   }: PinInputModalProps) => {
     // Ensure onPinAction is always a function even if undefined is passed
     const safeOnPinAction = useCallback(
@@ -70,7 +72,7 @@ export const PinInputModal = memo(
           }, 2000);
         }
       },
-      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible],
+      [onPinAction, onClose, purpose, actionTitle, actionSubtitle, visible, autoCloseOnSuccess],
     );
 
     // Use a transient pin state - we'll clear it immediately after use
@@ -104,8 +106,10 @@ export const PinInputModal = memo(
         // Use the safe version that checks for function existence
         await safeOnPinAction(currentPin);
 
-        // Close the modal after successful action
-        onClose();
+        // Close the modal after successful action only if autoCloseOnSuccess is true
+        if (autoCloseOnSuccess) {
+          onClose();
+        }
       } catch (error) {
         console.error("Error processing PIN:", error);
         setError("Error processing your request");
