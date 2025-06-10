@@ -14,6 +14,7 @@ import {
   appConfig,
 } from "../../util/app-config-store";
 import { resetAppToFirstTimeUser } from "../../util/dev-utils";
+import { refreshSetupStatus } from "../../util/setup-state";
 
 type WizardStep = "welcome" | "account-choice" | "account-setup" | "complete";
 
@@ -103,14 +104,18 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
             currentStep,
           });
 
+          // Always check if setup is complete regardless of current step
+          if (hasPin && hasUserAccounts) {
+            console.log(
+              "OnboardingWizard: Setup is already complete, finishing onboarding immediately",
+            );
+            onComplete();
+            return;
+          }
+
+          // Only adjust step if we're still on the initial welcome step
           if (currentStep === "welcome") {
-            if (hasPin && hasUserAccounts) {
-              console.log(
-                "OnboardingWizard: PIN and accounts exist, user shouldn't be in onboarding",
-              );
-              // This shouldn't happen in normal flow, but if it does, complete onboarding
-              onComplete();
-            } else if (hasPin && !hasUserAccounts) {
+            if (hasPin && !hasUserAccounts) {
               console.log(
                 "OnboardingWizard: PIN exists but no accounts, skipping to account-choice",
               );
@@ -131,6 +136,59 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       };
 
       checkSetupStatus();
+    }, [onComplete]); // Remove currentStep dependency to avoid infinite loops
+
+    // Polling mechanism to reactively check setup status changes
+    useEffect(() => {
+      let pollInterval: ReturnType<typeof setInterval>;
+
+      const pollSetupStatus = async () => {
+        try {
+          // Only poll if we're not on the complete step (to avoid unnecessary checks)
+          if (currentStep !== "complete") {
+            console.log("OnboardingWizard: Polling setup status...");
+
+            // Refresh the setup status to ensure it's current
+            refreshSetupStatus();
+
+            // Check current setup state
+            const hasPin = await hasCompletedBasicSetup();
+            const hasUserAccounts = hasAccounts();
+
+            console.log("OnboardingWizard: Poll result:", {
+              hasPin,
+              hasUserAccounts,
+              currentStep,
+              timestamp: new Date().toISOString(),
+            });
+
+            // If setup is now complete, finish onboarding
+            if (hasPin && hasUserAccounts) {
+              console.log("OnboardingWizard: Setup completed during polling, finishing onboarding");
+              onComplete();
+              return;
+            }
+
+            // If we have PIN but no accounts and we're still on welcome, advance to account choice
+            if (hasPin && !hasUserAccounts && currentStep === "welcome") {
+              console.log("OnboardingWizard: PIN detected during polling, advancing to account-choice");
+              setCurrentStep("account-choice");
+            }
+          }
+        } catch (error) {
+          console.error("OnboardingWizard: Error during polling:", error);
+        }
+      };
+
+      // Start polling every 2 seconds
+      pollInterval = setInterval(pollSetupStatus, 2000);
+
+      // Cleanup on unmount or when step changes to complete
+      return () => {
+        if (pollInterval) {
+          clearInterval(pollInterval);
+        }
+      };
     }, [currentStep, onComplete]);
 
     // Reset form callback for account forms
@@ -143,7 +201,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       setPinCreationVisible(true);
     }, []);
 
-    const handlePinCreationComplete = useCallback((success: boolean) => {
+    const handlePinCreationComplete = useCallback(async (success: boolean) => {
       console.log(
         "OnboardingWizard: PIN creation completed with success:",
         success,
@@ -151,12 +209,40 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       setPinCreationVisible(false);
 
       if (success) {
-        setCurrentStep("account-choice");
+        // Force immediate refresh of setup status
+        refreshSetupStatus();
+
+        // Check current status after PIN creation
+        try {
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          const hasPin = await hasCompletedBasicSetup();
+          const hasUserAccounts = hasAccounts();
+
+          console.log("OnboardingWizard: Post-PIN-creation status:", {
+            hasPin,
+            hasUserAccounts,
+          });
+
+          if (hasPin && hasUserAccounts) {
+            console.log("OnboardingWizard: Setup fully complete after PIN creation, finishing onboarding");
+            onComplete();
+          } else if (hasPin && !hasUserAccounts) {
+            console.log("OnboardingWizard: PIN created, advancing to account choice");
+            setCurrentStep("account-choice");
+          } else {
+            console.log("OnboardingWizard: PIN creation verification failed, staying on welcome");
+            setCurrentStep("welcome");
+          }
+        } catch (error) {
+          console.error("OnboardingWizard: Error checking status after PIN creation:", error);
+          setCurrentStep("account-choice"); // Fallback
+        }
       } else {
         // On failure, go back to welcome step
         setCurrentStep("welcome");
       }
-    }, []);
+    }, [onComplete]);
 
     const handlePinCreationCancel = useCallback(() => {
       setPinCreationVisible(false);
@@ -168,11 +254,40 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       setCurrentStep("account-setup");
     }, []);
 
-    const handleAccountSetupComplete = useCallback(() => {
+    const handleAccountSetupComplete = useCallback(async () => {
       console.log(
-        "OnboardingWizard: Account setup completed, advancing to complete step",
+        "OnboardingWizard: Account setup completed, checking if setup is fully complete",
       );
-      setCurrentStep("complete");
+
+      // Force immediate refresh of setup status
+      refreshSetupStatus();
+
+      // Check if setup is now fully complete
+      try {
+        // Small delay to allow for state propagation
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const hasPin = await hasCompletedBasicSetup();
+        const hasUserAccounts = hasAccounts();
+
+        console.log("OnboardingWizard: Post-account-setup status:", {
+          hasPin,
+          hasUserAccounts,
+        });
+
+        if (hasPin && hasUserAccounts) {
+          console.log("OnboardingWizard: Setup is fully complete, advancing to complete step");
+          setCurrentStep("complete");
+        } else {
+          console.log("OnboardingWizard: Setup not fully complete yet, staying on current step");
+          // This might happen if there was an error or the account creation failed
+          // The polling mechanism will catch this and handle it appropriately
+        }
+      } catch (error) {
+        console.error("OnboardingWizard: Error checking setup completion after account setup:", error);
+        // Fallback to complete step
+        setCurrentStep("complete");
+      }
     }, []);
 
     const handleFinishWizard = useCallback(() => {
@@ -198,6 +313,29 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       setAccountChoice(null);
       setCurrentStep("account-choice");
     }, []);
+
+    // Helper function to check if setup is actually complete
+    const checkIfSetupComplete = useCallback(async () => {
+      try {
+        const hasPin = await hasCompletedBasicSetup();
+        const hasUserAccounts = hasAccounts();
+        return hasPin && hasUserAccounts;
+      } catch (error) {
+        console.error("Error checking setup completion:", error);
+        return false;
+      }
+    }, []);
+
+    // Handler to skip to main app if setup is complete
+    const handleSkipToMainApp = useCallback(async () => {
+      const isComplete = await checkIfSetupComplete();
+      if (isComplete) {
+        console.log("OnboardingWizard: Setup verified as complete, skipping to main app");
+        onComplete();
+      } else {
+        showAlert("Setup Incomplete", "Please complete the setup process first.");
+      }
+    }, [checkIfSetupComplete, onComplete, showAlert]);
 
     const handleResetApp = useCallback(async () => {
       try {
@@ -333,6 +471,33 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
                   styles.resultValue,
                   {
                     marginTop: 20,
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    textAlign: "center",
+                  },
+                ]}
+              >
+                Already have accounts set up?
+              </Text>
+
+              <ActionButton
+                text="Skip to Main App"
+                onPress={handleSkipToMainApp}
+                style={{
+                  marginTop: 5,
+                  backgroundColor: '#4CAF50',
+                  borderColor: '#4CAF50',
+                }}
+                textStyle={{ color: 'white' }}
+                size="small"
+                accessibilityLabel="Skip to main app if setup is already complete"
+              />
+
+              <Text
+                style={[
+                  styles.resultValue,
+                  {
+                    marginTop: 15,
                     fontSize: 12,
                     fontStyle: "italic",
                     textAlign: "center",
