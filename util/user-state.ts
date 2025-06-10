@@ -5,10 +5,20 @@ import { getValue } from "./secure-store";
  * Utility functions to determine user state and onboarding status
  */
 
+interface Account {
+  id: string;
+  nickname: string;
+}
+
+interface Profile {
+  accounts?: Account[];
+  [key: string]: unknown;
+}
+
 /**
  * Helper function to safely get profiles from appConfig
  */
-function getProfiles(): Record<string, any> | null {
+function getProfiles(): Record<string, Profile> | null {
   try {
     if (!appConfig || !appConfig.profiles) {
       return null;
@@ -76,7 +86,7 @@ export function hasAccountsWithLogging(): boolean {
         name,
         accountCount: profiles[name]?.accounts?.length || 0,
         accounts:
-          profiles[name]?.accounts?.map((acc: any) => ({
+          profiles[name]?.accounts?.map((acc: Account) => ({
             id: acc.id,
             nickname: acc.nickname,
           })) || [],

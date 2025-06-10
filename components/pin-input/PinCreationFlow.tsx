@@ -29,7 +29,6 @@ export const PinCreationFlow = memo(
   }: PinCreationFlowProps) => {
     const [step, setStep] = useState<"create" | "confirm">("create");
     const [tempPin, setTempPin] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
 
     const { showAlert } = useModal();
 
@@ -48,7 +47,6 @@ export const PinCreationFlow = memo(
         );
         setStep("create");
         setTempPin(null);
-        setIsLoading(false);
       }
     }, [visible]);
 
@@ -86,12 +84,9 @@ export const PinCreationFlow = memo(
      */
     const handleConfirmPin = useCallback(
       async (confirmPin: string): Promise<void> => {
-        setIsLoading(true);
-
         try {
           if (!validatePin(confirmPin)) {
             showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-            setIsLoading(false);
             return;
           }
 
@@ -100,7 +95,6 @@ export const PinCreationFlow = memo(
             // Reset to first step
             setStep("create");
             setTempPin(null);
-            setIsLoading(false);
             return;
           }
 
@@ -131,8 +125,6 @@ export const PinCreationFlow = memo(
 
           // Notify parent of failure
           onComplete(false);
-        } finally {
-          setIsLoading(false);
         }
       },
       [tempPin, showAlert, showSuccessAlert, onComplete],
@@ -144,7 +136,6 @@ export const PinCreationFlow = memo(
     const handleClose = useCallback(() => {
       setStep("create");
       setTempPin(null);
-      setIsLoading(false);
       onCancel();
     }, [onCancel]);
 

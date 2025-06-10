@@ -32,7 +32,7 @@ export const CompleteStep: React.FC<CompleteStepProps> = ({ onFinish }) => {
           },
         ]}
       >
-        You'll be automatically taken to your wallet in a few seconds...
+        You&apos;ll be automatically taken to your wallet in a few seconds...
       </Text>
 
       <ActionButton
