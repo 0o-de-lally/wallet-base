@@ -59,7 +59,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     // Initial status check
     useEffect(() => {
       checkStatus();
-    }, [checkStatus]);
+    }, []);
 
     // Determine which view to show
     const getCurrentView = () => {
@@ -72,6 +72,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       async (success: boolean) => {
         setPinCreationVisible(false);
         if (success) {
+          // Small delay to ensure PIN is fully stored before checking status
+          await new Promise((resolve) => setTimeout(resolve, 200));
           await checkStatus(); // Re-check status after PIN creation
         }
       },
@@ -105,7 +107,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         "Reset Everything",
         true,
       );
-    }, [showAlert, showConfirmation, checkStatus]);
+    }, [showAlert, showConfirmation]);
 
     const renderCurrentView = () => {
       const currentView = getCurrentView();
@@ -165,6 +167,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         contentContainerStyle={styles.scrollContent}
       >
         <Text style={styles.title}>Wallet Setup</Text>
+        {/* <Text>{hasUserAccounts.valueOf()}</Text>
+        <Text>{hasPin.valueOf()}</Text> */}
 
         {renderCurrentView()}
 

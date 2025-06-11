@@ -15,7 +15,6 @@ import {
   RevealSchedule,
   defaultConfig,
 } from "./app-config-types";
-import { refreshSetupStatus } from "./setup-state";
 
 // Global configuration
 configureObservablePersistence({
@@ -129,10 +128,6 @@ export function addAccountToProfile(
     console.log("addAccountToProfile: Setting as active account:", account.id);
     appConfig.activeAccountId.set(account.id);
   }
-
-  // Refresh setup status to trigger reactive updates
-  console.log("addAccountToProfile: Calling refreshSetupStatus");
-  refreshSetupStatus();
 
   console.log("addAccountToProfile: Success");
   return true;

@@ -53,7 +53,7 @@ function deriveShortNickname(address: AccountAddress): string {
   return `${cleanAddress.slice(0, 3)}...${cleanAddress.slice(-3)}`;
 }
 
-export const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
+const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   profileName,
   onComplete,
   onResetForm,

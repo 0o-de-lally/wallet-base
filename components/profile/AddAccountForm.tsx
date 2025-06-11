@@ -17,7 +17,7 @@ interface AddAccountFormProps {
   onResetForm?: () => void;
 }
 
-export const AddAccountForm: React.FC<AddAccountFormProps> = ({
+const AddAccountForm: React.FC<AddAccountFormProps> = ({
   profileName,
   onComplete,
   onResetForm,

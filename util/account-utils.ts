@@ -7,6 +7,7 @@ import {
 } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
 import { AccountAddress } from "open-libra-sdk";
+import { refreshSetupStatus } from "./setup-state";
 
 /**
  * Creates a new account in the specified profile
@@ -67,6 +68,9 @@ export async function createAccount(
       if (appConfig.activeAccountId.get() === null) {
         setActiveAccount(account.id);
       }
+
+      // Refresh setup status to trigger reactive updates
+      refreshSetupStatus();
 
       return {
         success: true,

@@ -1,9 +1,12 @@
-import React, { useState, useCallback, memo, useEffect } from "react";
-import { saveValue } from "../../util/secure-store";
+import React, { memo, useState, useCallback } from "react";
+import { Modal, View, Text } from "react-native";
+import { styles } from "../../styles/styles";
+import { ActionButton } from "../common/ActionButton";
+import { PinInputField } from "./PinInputField";
 import { hashPin, validatePin } from "../../util/pin-security";
+import { saveValue } from "../../util/secure-store";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
-import { PinInputModal } from "./PinInputModal";
 
 interface PinCreationFlowProps {
   visible: boolean;
@@ -12,169 +15,183 @@ interface PinCreationFlowProps {
   showSuccessAlert?: boolean;
 }
 
-/**
- * Reusable PIN creation flow component that handles the two-step process:
- * 1. Create new PIN
- * 2. Confirm PIN
- *
- * This component can be used in onboarding, PIN management, and anywhere else
- * PIN creation is needed.
- */
-export const PinCreationFlow = memo(
-  ({
-    visible,
-    onComplete,
-    onCancel,
-    showSuccessAlert = true,
-  }: PinCreationFlowProps) => {
+export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
+  ({ visible, onComplete, onCancel, showSuccessAlert = true }) => {
     const [step, setStep] = useState<"create" | "confirm">("create");
-    const [tempPin, setTempPin] = useState<string | null>(null);
-
+    const [pin, setPin] = useState("");
+    const [confirmPin, setConfirmPin] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
+    
     const { showAlert } = useModal();
 
-    // Debug logging
-    console.log("PinCreationFlow render:", {
-      visible,
-      step,
-      hasTempPin: !!tempPin,
-    });
-
-    // Reset state when component becomes invisible
-    useEffect(() => {
-      if (!visible) {
-        console.log(
-          "PinCreationFlow: Component became invisible, resetting state",
-        );
-        setStep("create");
-        setTempPin(null);
-      }
-    }, [visible]);
-
-    /**
-     * Handles new PIN creation during the first step
-     */
-    const handleNewPin = useCallback(
-      async (pin: string): Promise<void> => {
-        console.log(
-          "PinCreationFlow: handleNewPin called with pin length:",
-          pin.length,
-        );
-
-        if (!validatePin(pin)) {
-          console.log("PinCreationFlow: PIN validation failed");
-          showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-          return;
-        }
-
-        console.log(
-          "PinCreationFlow: PIN validated, setting temp PIN and moving to confirm step",
-        );
-        // Store the new PIN temporarily and move to confirmation step
-        setTempPin(pin);
-        setStep("confirm");
-
-        // Don't close the modal - we need to show the confirmation step
-        // The PinInputModal will try to close, but we'll prevent it by not calling onCancel
-      },
-      [showAlert],
-    );
-
-    /**
-     * Handles PIN confirmation during the second step
-     */
-    const handleConfirmPin = useCallback(
-      async (confirmPin: string): Promise<void> => {
-        try {
-          if (!validatePin(confirmPin)) {
-            showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-            return;
-          }
-
-          if (confirmPin !== tempPin) {
-            showAlert("PIN Mismatch", "PINs do not match. Please try again.");
-            // Reset to first step
-            setStep("create");
-            setTempPin(null);
-            return;
-          }
-
-          // Hash and save the new PIN
-          const hashedPin = await hashPin(confirmPin);
-          await saveValue("user_pin", JSON.stringify(hashedPin));
-
-          // Reset state
-          setStep("create");
-          setTempPin(null);
-
-          // Refresh setup status to trigger reactive updates
-          refreshSetupStatus();
-
-          if (showSuccessAlert) {
-            showAlert("Success", "PIN created successfully!");
-          }
-
-          // Notify parent of successful completion
-          onComplete(true);
-        } catch (error) {
-          showAlert("Error", "Failed to save PIN. Please try again.");
-          console.error("PIN save error:", error);
-
-          // Reset to first step on error
-          setStep("create");
-          setTempPin(null);
-
-          // Notify parent of failure
-          onComplete(false);
-        }
-      },
-      [tempPin, showAlert, showSuccessAlert, onComplete],
-    );
-
-    /**
-     * Handles modal close - resets state and calls onCancel
-     */
-    const handleClose = useCallback(() => {
+    // Reset state when modal closes
+    const resetState = useCallback(() => {
       setStep("create");
-      setTempPin(null);
+      setPin("");
+      setConfirmPin("");
+      setError(null);
+      setIsCreating(false);
+    }, []);
+
+    const handleCancel = useCallback(() => {
+      resetState();
       onCancel();
-    }, [onCancel]);
+    }, [resetState, onCancel]);
 
-    /**
-     * Handles close for the create step - only close if step is still "create"
-     * This prevents the modal from closing when transitioning to confirm step
-     */
-    const handleCreateStepClose = useCallback(() => {
-      if (step === "create") {
-        handleClose();
+    const handlePinChange = useCallback((text: string) => {
+      setPin(text);
+      setError(null);
+    }, []);
+
+    const handleConfirmPinChange = useCallback((text: string) => {
+      setConfirmPin(text);
+      setError(null);
+    }, []);
+
+    const validateAndProceed = useCallback(() => {
+      if (!validatePin(pin)) {
+        setError("PIN must be exactly 6 digits");
+        return;
       }
-    }, [step, handleClose]);
 
-    return (
+      setStep("confirm");
+    }, [pin]);
+
+    const createPin = useCallback(async () => {
+      if (pin !== confirmPin) {
+        setError("PINs do not match. Please try again.");
+        return;
+      }
+
+      try {
+        setIsCreating(true);
+        setError(null);
+
+        // Hash the PIN and store it
+        const hashedPin = await hashPin(pin);
+        await saveValue("user_pin_hash", JSON.stringify(hashedPin));
+
+        // Clear PIN from memory
+        setPin("");
+        setConfirmPin("");
+
+        // Refresh setup status to trigger UI updates
+        refreshSetupStatus();
+
+        if (showSuccessAlert) {
+          showAlert("PIN Created", "Your PIN has been created successfully.");
+        }
+
+        resetState();
+        onComplete(true);
+      } catch (error) {
+        console.error("Error creating PIN:", error);
+        setError("Failed to create PIN. Please try again.");
+        setIsCreating(false);
+      }
+    }, [pin, confirmPin, showSuccessAlert, showAlert, resetState, onComplete]);
+
+    const handleBackToCreate = useCallback(() => {
+      setStep("create");
+      setConfirmPin("");
+      setError(null);
+    }, []);
+
+    const renderCreateStep = () => (
       <>
-        {/* Create PIN Modal */}
-        <PinInputModal
-          visible={visible && step === "create"}
-          onClose={handleCreateStepClose}
-          onPinAction={handleNewPin}
-          purpose="save"
-          actionTitle="Create Your PIN"
-          actionSubtitle="Choose a 6-digit PIN to secure your wallet"
-          autoCloseOnSuccess={false}
+        <Text style={styles.modalTitle}>Create Your PIN</Text>
+        <Text style={styles.modalSubtitle}>
+          Choose a 6-digit PIN to secure your wallet. You'll need this PIN to access your accounts and sensitive operations.
+        </Text>
+
+        <PinInputField
+          label="Enter 6-digit PIN:"
+          value={pin}
+          onChangeText={handlePinChange}
+          placeholder="******"
+          error={error || undefined}
+          autoFocus={true}
+          maxLength={6}
         />
 
-        {/* Confirm PIN Modal */}
-        <PinInputModal
-          visible={visible && step === "confirm"}
-          onClose={handleClose}
-          onPinAction={handleConfirmPin}
-          purpose="save"
-          actionTitle="Confirm Your PIN"
-          actionSubtitle="Enter your PIN again to confirm"
-          autoCloseOnSuccess={true}
-        />
+        <View style={styles.modalButtons}>
+          <ActionButton
+            text="Cancel"
+            onPress={handleCancel}
+            style={styles.cancelButton}
+            textStyle={styles.cancelButtonText}
+            accessibilityLabel="Cancel PIN creation"
+          />
+
+          <ActionButton
+            text="Next"
+            onPress={validateAndProceed}
+            disabled={pin.length !== 6}
+            style={styles.confirmButton}
+            accessibilityLabel="Proceed to confirm PIN"
+          />
+        </View>
       </>
     );
-  },
+
+    const renderConfirmStep = () => (
+      <>
+        <Text style={styles.modalTitle}>Confirm Your PIN</Text>
+        <Text style={styles.modalSubtitle}>
+          Please enter your PIN again to confirm it.
+        </Text>
+
+        <PinInputField
+          label="Confirm 6-digit PIN:"
+          value={confirmPin}
+          onChangeText={handleConfirmPinChange}
+          placeholder="******"
+          error={error || undefined}
+          autoFocus={true}
+          maxLength={6}
+        />
+
+        <View style={styles.modalButtons}>
+          <ActionButton
+            text="Back"
+            onPress={handleBackToCreate}
+            disabled={isCreating}
+            style={styles.cancelButton}
+            textStyle={styles.cancelButtonText}
+            accessibilityLabel="Go back to PIN entry"
+          />
+
+          <ActionButton
+            text="Create PIN"
+            onPress={createPin}
+            disabled={confirmPin.length !== 6}
+            isLoading={isCreating}
+            style={styles.confirmButton}
+            accessibilityLabel="Create PIN"
+          />
+        </View>
+      </>
+    );
+
+    return (
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCancel}
+        accessible={true}
+        accessibilityViewIsModal={true}
+        accessibilityLabel="PIN Creation Flow"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {step === "create" ? renderCreateStep() : renderConfirmStep()}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 );
 
 PinCreationFlow.displayName = "PinCreationFlow";
