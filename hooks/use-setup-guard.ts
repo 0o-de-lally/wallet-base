@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { hasPINSetup, hasAccounts } from "../util/user-state";
 
-export type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
+export type SetupStatus =
+  | "loading"
+  | "needs-pin"
+  | "needs-account"
+  | "complete";
 
 /**
  * Simple hook that checks current setup status
@@ -31,7 +35,7 @@ export function useSetupGuard() {
       const result = await checkSetupStatus();
       setHasPin(result.hasPin);
       setHasUserAccounts(result.hasUserAccounts);
-      
+
       if (!result.hasPin) {
         setSetupStatus("needs-pin");
       } else if (!result.hasUserAccounts) {

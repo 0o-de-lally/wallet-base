@@ -103,7 +103,8 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
       <>
         <Text style={styles.modalTitle}>Create Your PIN</Text>
         <Text style={styles.modalSubtitle}>
-          Choose a 6-digit PIN to secure your wallet. You&apos;ll need this PIN to access your accounts and sensitive operations.
+          Choose a 6-digit PIN to secure your wallet. You&apos;ll need this PIN
+          to access your accounts and sensitive operations.
         </Text>
 
         <PinInputField
@@ -192,7 +193,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         </View>
       </Modal>
     );
-  }
+  },
 );
 
 PinCreationFlow.displayName = "PinCreationFlow";
