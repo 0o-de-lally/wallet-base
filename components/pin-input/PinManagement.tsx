@@ -119,8 +119,6 @@ const EnterPinScreen = memo(() => {
             // Get the newly created PIN to re-encrypt data
             const savedPin = await getValue("user_pin");
             if (savedPin) {
-              // Note: We don't actually have the plain PIN here, so we'll need to
-              // handle re-encryption differently or store the new PIN temporarily
               showAlert(
                 "Success",
                 "PIN updated successfully. Please note that existing encrypted data may need to be re-encrypted manually.",
