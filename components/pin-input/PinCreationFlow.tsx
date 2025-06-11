@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { memo, useState, useCallback } from "react";
 import { Modal, View, Text } from "react-native";
 import { styles } from "../../styles/styles";
@@ -22,7 +23,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
     const [confirmPin, setConfirmPin] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
-    
+
     const { showAlert } = useModal();
 
     // Reset state when modal closes
@@ -70,7 +71,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
 
         // Hash the PIN and store it
         const hashedPin = await hashPin(pin);
-        await saveValue("user_pin_hash", JSON.stringify(hashedPin));
+        await saveValue("user_pin", JSON.stringify(hashedPin));
 
         // Clear PIN from memory
         setPin("");
@@ -102,7 +103,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
       <>
         <Text style={styles.modalTitle}>Create Your PIN</Text>
         <Text style={styles.modalSubtitle}>
-          Choose a 6-digit PIN to secure your wallet. You'll need this PIN to access your accounts and sensitive operations.
+          Choose a 6-digit PIN to secure your wallet. You&apos;ll need this PIN to access your accounts and sensitive operations.
         </Text>
 
         <PinInputField

@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
-import { AddAccountForm } from "../components/profile/AddAccountForm";
+import AddAccountForm from "../components/profile/AddAccountForm";
 import { SetupGuard } from "../components/auth/SetupGuard";
 import { router } from "expo-router";
 

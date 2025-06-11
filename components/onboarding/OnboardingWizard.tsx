@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
+import { useRouter } from "expo-router";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
@@ -12,16 +13,11 @@ import { WelcomeStep } from "./WelcomeStep";
 import { AccountChoiceStep } from "./AccountChoiceStep";
 import { AccountSetupStep } from "./AccountSetupStep";
 
-interface OnboardingWizardProps {
-  onComplete: () => void;
-}
-
 /**
  * Onboarding wizard for first-time users
  * Simplified to only determine view based on PIN and account status
  */
-export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
-  ({ onComplete }) => {
+export const OnboardingWizard: React.FC = observer(() => {
     const [pinCreationVisible, setPinCreationVisible] = useState(false);
     const [accountChoice, setAccountChoice] = useState<
       "create" | "recover" | null
@@ -31,6 +27,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
     const [hasUserAccounts, setHasUserAccounts] = useState(false);
 
     const { showAlert, showConfirmation } = useModal();
+    const router = useRouter();
 
     // Check current status
     const checkStatus = useCallback(async () => {
@@ -44,9 +41,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         setHasPin(pinExists);
         setHasUserAccounts(accountsExist);
 
-        // If setup is complete, finish immediately
+        // If setup is complete, navigate to main screen
         if (pinExists && accountsExist) {
-          onComplete();
+          router.replace("/");
           return;
         }
       } catch (error) {
@@ -54,7 +51,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
       } finally {
         setIsLoading(false);
       }
-    }, [onComplete]);
+    }, [router]);
 
     // Initial status check
     useEffect(() => {
@@ -180,7 +177,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = observer(
         />
       </ScrollView>
     );
-  },
-);
+  });
 
 OnboardingWizard.displayName = "OnboardingWizard";

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
 import { checkSetupStatus } from "../../hooks/use-setup-guard";
 import { OnboardingWizard } from "../onboarding/OnboardingWizard";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
@@ -10,7 +9,6 @@ interface SetupGuardProps {
   children: React.ReactNode;
   requiresPin?: boolean;
   requiresAccount?: boolean;
-  redirectOnComplete?: boolean;
 }
 
 /**
@@ -21,11 +19,9 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
   children,
   requiresPin = true,
   requiresAccount = true,
-  redirectOnComplete = true,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
-  const router = useRouter();
 
   const checkStatus = async () => {
     try {
@@ -55,14 +51,6 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
     checkStatus();
   }, []);
 
-  const handleOnboardingComplete = async () => {
-    if (redirectOnComplete) {
-      router.replace("/");
-    } else {
-      await checkStatus(); // Re-check status
-    }
-  };
-
   if (isLoading) {
     return (
       <View
@@ -80,7 +68,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
   }
 
   if (needsOnboarding) {
-    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+    return <OnboardingWizard />;
   }
 
   return <>{children}</>;
