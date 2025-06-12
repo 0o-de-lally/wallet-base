@@ -1,5 +1,4 @@
-import { LibraClient } from "open-libra-sdk";
-import type { AccountAddress } from "open-libra-sdk";
+import { LibraClient, LibraViews, AccountAddress } from "open-libra-sdk";
 import type { NetworkType } from "./app-config-types";
 
 /**
@@ -46,17 +45,45 @@ export async function queryAccountBalance(
   try {
     console.log("Querying balance for address:", address.toStringLong());
     
-    // TODO: The LibraClient currently only supports getLedgerInfo()
-    // Once the SDK provides account-specific query methods, this should be updated
-    // For now, we'll return a placeholder indicating the feature is not yet available
+    // Craft the view payload using LibraViews
+    const payload = LibraViews.olAccount_balance(address.toStringLong());
+    console.log("Balance view payload:", payload);
+
+    // Call the view function
+    const result = await client.viewJson(payload);
+    console.log("Balance query result:", result);
     
-    console.log("Balance querying not yet implemented - SDK limitations");
+    // Parse the result based on the expected structure
+    // The actual structure will depend on the LibraViews response format
+    if (result && Array.isArray(result) && result.length >= 2) {
+      const unlocked = parseInt(String(result[0])) || 0;
+      const locked = parseInt(String(result[1])) || 0;
+      return {
+        unlocked,
+        locked,
+        total: unlocked + locked,
+      };
+    }
     
-    // Return zeros for now - accounts will show 0 balance until SDK provides the API
+    // If result structure is different, try to extract balance info
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+      const resultObj = result as Record<string, unknown>;
+      const unlocked = (typeof resultObj.unlocked === 'number' ? resultObj.unlocked : 
+                       typeof resultObj.available === 'number' ? resultObj.available : 0);
+      const locked = (typeof resultObj.locked === 'number' ? resultObj.locked : 
+                     typeof resultObj.staked === 'number' ? resultObj.staked : 0);
+      return {
+        unlocked,
+        locked,
+        total: unlocked + locked,
+      };
+    }
+    
+    console.warn("Unexpected balance result format:", result);
     return {
       locked: 0,
       unlocked: 0,
-      total: 0
+      total: 0,
     };
 
   } catch (error) {

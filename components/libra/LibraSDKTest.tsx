@@ -4,7 +4,6 @@ import { View, Text, ScrollView, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import { SectionContainer } from "../common/SectionContainer";
 import { styles } from "../../styles/styles";
-import { LibraClient } from "open-libra-sdk";
 import type { LedgerInfo } from "open-libra-sdk";
 import MnemonicGenerator from "./MnemonicGenerator";
 import { useLibraClient } from "../../context/LibraClientContext";

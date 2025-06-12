@@ -95,9 +95,6 @@ export const LibraClientProvider = observer(({ children }: LibraClientProviderPr
           
           console.log("Initializing LibraClient for network:", networkToUse);
           
-          // Get the appropriate URL for the network
-          const networkUrl = getNetworkUrl(networkToUse);
-          
           // Create the client - LibraClient() constructor doesn't take parameters
           // The URL configuration might be handled differently in the SDK
           const newClient = new LibraClient();
