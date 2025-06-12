@@ -21,31 +21,6 @@ export const useLibraClient = () => {
   return context;
 };
 
-/**
- * Gets the appropriate URL for a network configuration
- */
-function getNetworkUrl(network: NetworkType): string {
-  // If custom URL is provided, use it
-  if (network.rpc_url && network.rpc_url.trim()) {
-    return network.rpc_url.trim();
-  }
-
-  // Otherwise use predefined URLs based on network type
-  switch (network.network_type) {
-    case "Mainnet":
-      return "https://rpc.scan.openlibra.world/v1";
-    case "Testnet":
-      return "https://testnet-rpc.scan.openlibra.world/v1"; // Assuming testnet URL
-    case "Testing":
-      return "https://testing-rpc.scan.openlibra.world/v1"; // Assuming testing URL
-    case "Custom":
-      // For custom networks without URL, default to mainnet
-      return "https://rpc.scan.openlibra.world/v1";
-    default:
-      return "https://rpc.scan.openlibra.world/v1";
-  }
-}
-
 interface LibraClientProviderProps {
   children: ReactNode;
 }
