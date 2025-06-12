@@ -56,7 +56,9 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       // Step 3: Create wallet from mnemonic with network connectivity
       const walletStart = performance.now();
       console.log("Creating wallet from mnemonic with network connectivity...");
-      const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
+      const networkUrl = currentNetwork
+        ? getNetworkUrl(currentNetwork)
+        : "https://rpc.scan.openlibra.world/v1";
       const wallet = LibraWallet.fromMnemonic(
         newMnemonic,
         Network.MAINNET,

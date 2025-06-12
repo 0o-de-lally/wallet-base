@@ -170,7 +170,9 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         setError(null);
 
         // Create wallet from mnemonic using current network
-        const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
+        const networkUrl = currentNetwork
+          ? getNetworkUrl(currentNetwork)
+          : "https://rpc.scan.openlibra.world/v1";
         const wallet = LibraWallet.fromMnemonic(
           mnemonic.trim(),
           Network.MAINNET,
@@ -210,7 +212,9 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       setError(null);
 
       // Create wallet from mnemonic using current network
-      const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
+      const networkUrl = currentNetwork
+        ? getNetworkUrl(currentNetwork)
+        : "https://rpc.scan.openlibra.world/v1";
       const wallet = LibraWallet.fromMnemonic(
         mnemonic.trim(),
         Network.MAINNET,

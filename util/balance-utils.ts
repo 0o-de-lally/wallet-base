@@ -40,11 +40,11 @@ export interface AccountBalance {
  */
 export async function queryAccountBalance(
   client: LibraClient,
-  address: AccountAddress
+  address: AccountAddress,
 ): Promise<AccountBalance | null> {
   try {
     console.log("Querying balance for address:", address.toStringLong());
-    
+
     // Craft the view payload using LibraViews
     const payload = LibraViews.olAccount_balance(address.toStringLong());
     console.log("Balance view payload:", payload);
@@ -52,7 +52,7 @@ export async function queryAccountBalance(
     // Call the view function
     const result = await client.viewJson(payload);
     console.log("Balance query result:", result);
-    
+
     // Parse the result based on the expected structure
     // The actual structure will depend on the LibraViews response format
     if (result && Array.isArray(result) && result.length >= 2) {
@@ -64,28 +64,35 @@ export async function queryAccountBalance(
         total: unlocked + locked,
       };
     }
-    
+
     // If result structure is different, try to extract balance info
-    if (result && typeof result === 'object' && !Array.isArray(result)) {
+    if (result && typeof result === "object" && !Array.isArray(result)) {
       const resultObj = result as Record<string, unknown>;
-      const unlocked = (typeof resultObj.unlocked === 'number' ? resultObj.unlocked : 
-                       typeof resultObj.available === 'number' ? resultObj.available : 0);
-      const locked = (typeof resultObj.locked === 'number' ? resultObj.locked : 
-                     typeof resultObj.staked === 'number' ? resultObj.staked : 0);
+      const unlocked =
+        typeof resultObj.unlocked === "number"
+          ? resultObj.unlocked
+          : typeof resultObj.available === "number"
+            ? resultObj.available
+            : 0;
+      const locked =
+        typeof resultObj.locked === "number"
+          ? resultObj.locked
+          : typeof resultObj.staked === "number"
+            ? resultObj.staked
+            : 0;
       return {
         unlocked,
         locked,
         total: unlocked + locked,
       };
     }
-    
+
     console.warn("Unexpected balance result format:", result);
     return {
       locked: 0,
       unlocked: 0,
       total: 0,
     };
-
   } catch (error) {
     console.error("Failed to query account balance:", error);
     return null;
@@ -98,13 +105,15 @@ export async function queryAccountBalance(
 export function updateAccountBalance(
   accountId: string,
   locked: number,
-  unlocked: number
+  unlocked: number,
 ): boolean {
   try {
     // This would update the account's balance in the app config
     // Implementation would be similar to other account update functions
-    console.log(`Updating balance for account ${accountId}: locked=${locked}, unlocked=${unlocked}`);
-    
+    console.log(
+      `Updating balance for account ${accountId}: locked=${locked}, unlocked=${unlocked}`,
+    );
+
     // Placeholder - actual implementation would update appConfig
     return true;
   } catch (error) {

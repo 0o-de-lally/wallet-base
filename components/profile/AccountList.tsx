@@ -36,28 +36,43 @@ const AccountList = memo(
     const [errorMessage, setErrorMessage] = useState("");
     const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
       null,
-    );    // Balance refresh functionality
+    ); // Balance refresh functionality
     const refreshBalances = useCallback(async () => {
       if (!client || !accounts.length) return;
 
       console.log("Refreshing balances for accounts...");
-      
+
       for (const account of accounts) {
         try {
-          const balanceResult = await queryAccountBalance(client, account.account_address);
+          const balanceResult = await queryAccountBalance(
+            client,
+            account.account_address,
+          );
           if (balanceResult) {
             // Find and update the account in the observable state
-            const accountsArray = appConfig.profiles[profileName].accounts.get();
-            const accountIndex = accountsArray.findIndex(acc => acc.id === account.id);
-            
+            const accountsArray =
+              appConfig.profiles[profileName].accounts.get();
+            const accountIndex = accountsArray.findIndex(
+              (acc) => acc.id === account.id,
+            );
+
             if (accountIndex !== -1) {
-              appConfig.profiles[profileName].accounts[accountIndex].balance_locked.set(balanceResult.locked);
-              appConfig.profiles[profileName].accounts[accountIndex].balance_unlocked.set(balanceResult.unlocked);
-              appConfig.profiles[profileName].accounts[accountIndex].last_update.set(Date.now());
+              appConfig.profiles[profileName].accounts[
+                accountIndex
+              ].balance_locked.set(balanceResult.locked);
+              appConfig.profiles[profileName].accounts[
+                accountIndex
+              ].balance_unlocked.set(balanceResult.unlocked);
+              appConfig.profiles[profileName].accounts[
+                accountIndex
+              ].last_update.set(Date.now());
             }
           }
         } catch (error) {
-          console.error(`Failed to refresh balance for account ${account.nickname}:`, error);
+          console.error(
+            `Failed to refresh balance for account ${account.nickname}:`,
+            error,
+          );
         }
       }
     }, [client, accounts, profileName]);

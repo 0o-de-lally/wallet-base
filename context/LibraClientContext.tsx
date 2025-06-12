@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { LibraClient } from "open-libra-sdk";
 import { appConfig, getProfileForAccount } from "../util/app-config-store";
 import type { NetworkType, NetworkTypeEnum } from "../util/app-config-types";
@@ -11,7 +17,9 @@ interface LibraClientContextType {
   error: string | null;
 }
 
-const LibraClientContext = createContext<LibraClientContextType | undefined>(undefined);
+const LibraClientContext = createContext<LibraClientContextType | undefined>(
+  undefined,
+);
 
 export const useLibraClient = () => {
   const context = useContext(LibraClientContext);
@@ -25,84 +33,94 @@ interface LibraClientProviderProps {
   children: ReactNode;
 }
 
-export const LibraClientProvider = observer(({ children }: LibraClientProviderProps) => {
-  const [client, setClient] = useState<LibraClient | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [currentNetwork, setCurrentNetwork] = useState<NetworkType | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export const LibraClientProvider = observer(
+  ({ children }: LibraClientProviderProps) => {
+    const [client, setClient] = useState<LibraClient | null>(null);
+    const [isInitializing, setIsInitializing] = useState(true);
+    const [currentNetwork, setCurrentNetwork] = useState<NetworkType | null>(
+      null,
+    );
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const initializeClient = async () => {
-      try {
-        setIsInitializing(true);
-        setError(null);
+    useEffect(() => {
+      const initializeClient = async () => {
+        try {
+          setIsInitializing(true);
+          setError(null);
 
-        // Get current app state
-        const activeAccountId = appConfig.activeAccountId.get();
-        const profiles = appConfig.profiles.get();
+          // Get current app state
+          const activeAccountId = appConfig.activeAccountId.get();
+          const profiles = appConfig.profiles.get();
 
-        let networkToUse: NetworkType;
+          let networkToUse: NetworkType;
 
-        if (activeAccountId) {
-          // Get the profile for the active account
-          const profileName = getProfileForAccount(activeAccountId);
-          if (profileName && profiles[profileName]) {
-            networkToUse = profiles[profileName].network;
+          if (activeAccountId) {
+            // Get the profile for the active account
+            const profileName = getProfileForAccount(activeAccountId);
+            if (profileName && profiles[profileName]) {
+              networkToUse = profiles[profileName].network;
+            } else {
+              // Fallback to mainnet if profile not found
+              networkToUse = {
+                network_name: "Mainnet",
+                network_type: "Mainnet" as NetworkTypeEnum,
+              };
+            }
           } else {
-            // Fallback to mainnet if profile not found
+            // No active account, use mainnet as default
             networkToUse = {
               network_name: "Mainnet",
               network_type: "Mainnet" as NetworkTypeEnum,
             };
           }
-        } else {
-          // No active account, use mainnet as default
-          networkToUse = {
-            network_name: "Mainnet",
-            network_type: "Mainnet" as NetworkTypeEnum,
-          };
-        }
 
-        // Only create a new client if the network has changed
-        if (!currentNetwork || 
+          // Only create a new client if the network has changed
+          if (
+            !currentNetwork ||
             currentNetwork.network_type !== networkToUse.network_type ||
-            currentNetwork.network_name !== networkToUse.network_name) {
-          
-          console.log("Initializing LibraClient for network:", networkToUse);
-          
-          // Create the client - LibraClient() constructor doesn't take parameters
-          // The URL configuration might be handled differently in the SDK
-          const newClient = new LibraClient();
-          
-          setClient(newClient);
-          setCurrentNetwork(networkToUse);
-          
-          console.log("LibraClient initialized for network:", networkToUse.network_name);
+            currentNetwork.network_name !== networkToUse.network_name
+          ) {
+            console.log("Initializing LibraClient for network:", networkToUse);
+
+            // Create the client - LibraClient() constructor doesn't take parameters
+            // The URL configuration might be handled differently in the SDK
+            const newClient = new LibraClient();
+
+            setClient(newClient);
+            setCurrentNetwork(networkToUse);
+
+            console.log(
+              "LibraClient initialized for network:",
+              networkToUse.network_name,
+            );
+          }
+        } catch (err) {
+          console.error("Failed to initialize LibraClient:", err);
+          setError(
+            err instanceof Error ? err.message : "Failed to initialize client",
+          );
+          setClient(null);
+        } finally {
+          setIsInitializing(false);
         }
-      } catch (err) {
-        console.error("Failed to initialize LibraClient:", err);
-        setError(err instanceof Error ? err.message : "Failed to initialize client");
-        setClient(null);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
+      };
 
-    initializeClient();
-  }, [appConfig.activeAccountId.get(), appConfig.profiles.get()]);
+      initializeClient();
+    }, [appConfig.activeAccountId.get(), appConfig.profiles.get()]);
 
-  return (
-    <LibraClientContext.Provider 
-      value={{ 
-        client, 
-        isInitializing, 
-        currentNetwork,
-        error 
-      }}
-    >
-      {children}
-    </LibraClientContext.Provider>
-  );
-});
+    return (
+      <LibraClientContext.Provider
+        value={{
+          client,
+          isInitializing,
+          currentNetwork,
+          error,
+        }}
+      >
+        {children}
+      </LibraClientContext.Provider>
+    );
+  },
+);
 
 LibraClientProvider.displayName = "LibraClientProvider";

@@ -11,7 +11,7 @@ import { useLibraClient } from "../../context/LibraClientContext";
 const LibraSDKTest = memo(() => {
   // Get LibraClient from context
   const { client, currentNetwork, isInitializing } = useLibraClient();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [ledgerInfo, setLedgerInfo] = useState<LedgerInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,9 +66,7 @@ const LibraSDKTest = memo(() => {
     return (
       <SectionContainer title="Open-Libra SDK Test">
         <View>
-          <Text style={styles.description}>
-            Initializing LibraClient...
-          </Text>
+          <Text style={styles.description}>Initializing LibraClient...</Text>
         </View>
       </SectionContainer>
     );
@@ -80,7 +78,8 @@ const LibraSDKTest = memo(() => {
       <SectionContainer title="Open-Libra SDK Test">
         <View>
           <Text style={styles.errorText}>
-            LibraClient is not available. Please check your network configuration.
+            LibraClient is not available. Please check your network
+            configuration.
           </Text>
         </View>
       </SectionContainer>
@@ -94,10 +93,13 @@ const LibraSDKTest = memo(() => {
           Test the Open-Libra SDK by fetching basic ledger information from the
           blockchain and generating wallet mnemonics.
         </Text>
-        
+
         {currentNetwork && (
-          <Text style={[styles.description, { marginTop: 10, fontStyle: 'italic' }]}>
-            Current Network: {currentNetwork.network_name} ({currentNetwork.network_type})
+          <Text
+            style={[styles.description, { marginTop: 10, fontStyle: "italic" }]}
+          >
+            Current Network: {currentNetwork.network_name} (
+            {currentNetwork.network_type})
           </Text>
         )}
 
