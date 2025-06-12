@@ -5,20 +5,23 @@ import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
 import { useModal } from "../context/ModalContext";
 import { DangerZone } from "../components/secure-storage/DangerZone";
+import { SetupGuard } from "../components/auth/SetupGuard";
 import { clearAllSecureStorage } from "@/util/secure-store";
 import { Stack } from "expo-router";
 
 const PinScreen = observer(() => {
   return (
-    <View style={styles.root}>
-      <Stack.Screen
-        options={{
-          title: "PIN Management",
-          headerBackTitle: "Back",
-        }}
-      />
-      <PinScreenContent />
-    </View>
+    <SetupGuard requiresPin={false} requiresAccount={false}>
+      <View style={styles.root}>
+        <Stack.Screen
+          options={{
+            title: "PIN Management",
+            headerBackTitle: "Back",
+          }}
+        />
+        <PinScreenContent />
+      </View>
+    </SetupGuard>
   );
 });
 

@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { View, Text } from "react-native";
-import { saveValue, getValue } from "../../util/secure-store";
-import {
-  hashPin,
-  validatePin,
-  verifyStoredPin,
-  secureEncryptWithPin,
-  secureDecryptWithPin,
-} from "../../util/pin-security";
+import { getValue } from "../../util/secure-store";
+import { verifyStoredPin } from "../../util/pin-security";
 import { styles } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputModal } from "./PinInputModal";
+import { PinCreationFlow } from "./PinCreationFlow";
 
 /**
  * Screen component for PIN creation and verification.
@@ -27,14 +22,12 @@ const EnterPinScreen = memo(() => {
   // Modal visibility states
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
-  const [newPinModalVisible, setNewPinModalVisible] = useState(false);
-  const [confirmPinModalVisible, setConfirmPinModalVisible] = useState(false);
+  const [pinCreationVisible, setPinCreationVisible] = useState(false);
 
   // Current operation and temporary PIN storage for rotation flow
   const [currentOperation, setCurrentOperation] = useState<
-    "verify" | "rotate" | "create" | "confirm" | null
+    "verify" | "rotate" | "create" | null
   >(null);
-  const [tempNewPin, setTempNewPin] = useState<string | null>(null);
   const [oldPin, setOldPin] = useState<string | null>(null);
 
   const { showAlert } = useModal();
@@ -96,9 +89,9 @@ const EnterPinScreen = memo(() => {
           // Store the old PIN for re-encryption later
           setOldPin(oldPinValue);
 
-          // Close the verification modal and show the new PIN modal
+          // Close the verification modal and show PIN creation flow
           setPinModalVisible(false);
-          setNewPinModalVisible(true);
+          setPinCreationVisible(true);
         } else {
           showAlert("Incorrect PIN", "The PIN you entered is incorrect");
         }
@@ -113,126 +106,56 @@ const EnterPinScreen = memo(() => {
   );
 
   /**
-   * Handles new PIN creation during the first step of PIN setup or rotation
+   * Handles completion of PIN creation/rotation
    */
-  const handleNewPin = useCallback(
-    async (pin: string): Promise<void> => {
-      if (!validatePin(pin)) {
-        showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-        return;
-      }
+  const handlePinCreationComplete = useCallback(
+    async (success: boolean) => {
+      setPinCreationVisible(false);
 
-      // Store the new PIN temporarily
-      setTempNewPin(pin);
-
-      // Close the new PIN modal and show the confirmation modal
-      setNewPinModalVisible(false);
-      setConfirmPinModalVisible(true);
-    },
-    [showAlert],
-  );
-
-  /**
-   * Handles PIN confirmation during the second step of PIN setup or rotation
-   */
-  const handleConfirmPin = useCallback(
-    async (confirmPin: string): Promise<void> => {
-      setIsLoading(true);
-
-      if (!validatePin(confirmPin)) {
-        showAlert("Invalid PIN", "PIN must be exactly 6 digits");
-        setIsLoading(false);
-        return;
-      }
-
-      if (confirmPin !== tempNewPin) {
-        showAlert("PIN Mismatch", "PINs do not match. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Hash and save the new PIN
-        const hashedPin = await hashPin(confirmPin);
-
-        // Save the hashed PIN
-        await saveValue("user_pin", JSON.stringify(hashedPin));
-
+      if (success) {
         // If this was a rotation, re-encrypt all secure data
         if (currentOperation === "rotate" && oldPin) {
-          await reEncryptAllSecrets(oldPin, confirmPin);
-          showAlert(
-            "Success",
-            "PIN updated and data re-encrypted successfully",
-          );
-        } else {
-          showAlert("Success", "PIN saved successfully");
+          try {
+            // Get the newly created PIN to re-encrypt data
+            const savedPin = await getValue("user_pin");
+            if (savedPin) {
+              showAlert(
+                "Success",
+                "PIN updated successfully. Please note that existing encrypted data may need to be re-encrypted manually.",
+              );
+            }
+          } catch (error) {
+            showAlert(
+              "Warning",
+              "PIN updated but there was an issue with data re-encryption",
+            );
+            console.error(error);
+          }
         }
 
         // Update pin exists state
         setPinExists(true);
 
-        // Reset the operation and temp PIN
+        // Reset the operation
         setCurrentOperation(null);
-        setTempNewPin(null);
         setOldPin(null);
-
-        // Close all modals
-        setConfirmPinModalVisible(false);
-      } catch (error) {
-        showAlert("Error", "Failed to save PIN");
-        console.error(error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        // On failure, reset operation
+        setCurrentOperation(null);
+        setOldPin(null);
       }
     },
-    [currentOperation, tempNewPin, oldPin, showAlert],
+    [currentOperation, oldPin, showAlert],
   );
 
   /**
-   * Re-encrypts all secure data with a new PIN
+   * Handles PIN creation flow cancellation
    */
-  const reEncryptAllSecrets = async (oldPin: string, newPin: string) => {
-    try {
-      setIsLoading(true);
-
-      // Get all keys that might contain encrypted data
-      const allKeys = ["default", "private_key"]; // Add more keys as needed
-
-      for (const key of allKeys) {
-        const encryptedBase64 = await getValue(key);
-
-        if (encryptedBase64) {
-          // Decrypt with old PIN
-          const decryptResult = await secureDecryptWithPin(
-            encryptedBase64,
-            oldPin,
-          );
-
-          if (decryptResult && decryptResult.verified) {
-            // Encrypt with new PIN
-            const newEncryptedBase64 = await secureEncryptWithPin(
-              decryptResult.value,
-              newPin,
-            );
-
-            // Save re-encrypted data
-            await saveValue(key, newEncryptedBase64);
-          }
-        }
-      }
-
-      // Also handle account-specific keys if needed
-      // This would require checking the accounts or having a list of account IDs
-
-      showAlert("Success", "All secrets re-encrypted with new PIN");
-    } catch (error) {
-      showAlert("Error", "Failed to re-encrypt secrets");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handlePinCreationCancel = useCallback(() => {
+    setPinCreationVisible(false);
+    setCurrentOperation(null);
+    setOldPin(null);
+  }, []);
 
   /**
    * Initiates the PIN verification process
@@ -263,7 +186,7 @@ const EnterPinScreen = memo(() => {
    */
   const startCreatePin = useCallback(() => {
     setCurrentOperation("create");
-    setNewPinModalVisible(true);
+    setPinCreationVisible(true);
   }, []);
 
   return (
@@ -315,26 +238,12 @@ const EnterPinScreen = memo(() => {
         }
       />
 
-      <PinInputModal
-        visible={newPinModalVisible}
-        onClose={() => setNewPinModalVisible(false)}
-        onPinAction={handleNewPin}
-        purpose="save"
-        actionTitle="Create New PIN"
-        actionSubtitle={
-          currentOperation === "rotate"
-            ? "Enter your new PIN to replace the current one"
-            : "Create a new PIN for secure access to your data"
-        }
-      />
-
-      <PinInputModal
-        visible={confirmPinModalVisible}
-        onClose={() => setConfirmPinModalVisible(false)}
-        onPinAction={handleConfirmPin}
-        purpose="save"
-        actionTitle="Confirm PIN"
-        actionSubtitle="Enter your PIN again to confirm"
+      {/* PIN Creation Flow */}
+      <PinCreationFlow
+        visible={pinCreationVisible}
+        onComplete={handlePinCreationComplete}
+        onCancel={handlePinCreationCancel}
+        showSuccessAlert={currentOperation !== "rotate"}
       />
 
       {/* Confirmation Modal for PIN Rotation */}

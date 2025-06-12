@@ -3,6 +3,7 @@ import { View, StatusBar, Text, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import RecoverAccountForm from "../components/profile/RecoverAccountForm";
+import { SetupGuard } from "../components/auth/SetupGuard";
 import { router } from "expo-router";
 
 /**
@@ -13,16 +14,18 @@ import { router } from "expo-router";
  */
 export default function RecoverAccountScreen() {
   return (
-    <View style={styles.root}>
-      <Stack.Screen
-        options={{
-          title: "Recover Account",
-          headerBackTitle: "Back",
-        }}
-      />
-      <StatusBar backgroundColor={styles.root.backgroundColor} />
-      <RecoverAccountContent />
-    </View>
+    <SetupGuard requiresPin={true} requiresAccount={false}>
+      <View style={styles.root}>
+        <Stack.Screen
+          options={{
+            title: "Recover Account",
+            headerBackTitle: "Back",
+          }}
+        />
+        <StatusBar backgroundColor={styles.root.backgroundColor} />
+        <RecoverAccountContent />
+      </View>
+    </SetupGuard>
   );
 }
 
