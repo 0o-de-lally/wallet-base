@@ -9,8 +9,7 @@ import {
   addressFromString,
   Network,
 } from "open-libra-sdk";
-
-const MainnetURL = "https://rpc.scan.openlibra.world/v1";
+import { getLibraClientUrl } from "../../util/libra-client";
 
 interface MnemonicGeneratorProps {
   onClear?: () => void;
@@ -56,7 +55,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       const wallet = LibraWallet.fromMnemonic(
         newMnemonic,
         Network.MAINNET,
-        MainnetURL,
+        getLibraClientUrl(),
       );
       const walletEnd = performance.now();
       console.log(
