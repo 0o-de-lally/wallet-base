@@ -442,33 +442,67 @@ export function cleanupExpiredRevealSchedules(): void {
  */
 export function fixAccountAddresses(): void {
   try {
+    console.log("fixAccountAddresses: Starting to fix AccountAddress objects");
     const profiles = appConfig.profiles.get();
+    console.log("fixAccountAddresses: Raw profiles data:", JSON.stringify(profiles, null, 2));
 
     if (!profiles || typeof profiles !== "object") {
+      console.log("fixAccountAddresses: No profiles found or invalid profiles object");
       return;
     }
 
     let hasChanges = false;
 
     Object.entries(profiles).forEach(([profileName, profile]) => {
+      console.log(`fixAccountAddresses: Processing profile ${profileName}:`, profile);
       if (profile?.accounts) {
         profile.accounts.forEach((account, index) => {
+          console.log(`fixAccountAddresses: Processing account ${index} (${account?.id}):`, {
+            account_address: account?.account_address,
+            account_address_type: typeof account?.account_address,
+            account_address_constructor: account?.account_address?.constructor?.name
+          });
+          
           if (
             account?.account_address &&
             typeof account.account_address === "string"
           ) {
             try {
+              console.log(`fixAccountAddresses: Converting string address: ${account.account_address}`);
               // Convert string back to AccountAddress object
               const fixedAddress = AccountAddress.from(account.account_address);
+              console.log(`fixAccountAddresses: Successfully created AccountAddress:`, fixedAddress);
               appConfig.profiles[profileName].accounts[
                 index
               ].account_address.set(fixedAddress);
               hasChanges = true;
+              console.log(`fixAccountAddresses: Updated account ${account.id} with fixed address`);
             } catch (error) {
               console.error(
                 `Failed to fix AccountAddress for account ${account.id}:`,
                 error,
               );
+            }
+          } else if (account?.account_address && typeof account.account_address === "object") {
+            // Check if it's already an AccountAddress or a plain object that needs conversion
+            if (account.account_address.constructor?.name !== "AccountAddress") {
+              try {
+                console.log(`fixAccountAddresses: Converting object address:`, account.account_address);
+                const fixedAddress = AccountAddress.from(account.account_address);
+                console.log(`fixAccountAddresses: Successfully created AccountAddress from object:`, fixedAddress);
+                appConfig.profiles[profileName].accounts[
+                  index
+                ].account_address.set(fixedAddress);
+                hasChanges = true;
+                console.log(`fixAccountAddresses: Updated account ${account.id} with fixed address from object`);
+              } catch (error) {
+                console.error(
+                  `Failed to fix AccountAddress object for account ${account.id}:`,
+                  error,
+                );
+              }
+            } else {
+              console.log(`fixAccountAddresses: Account ${account.id} already has proper AccountAddress`);
             }
           }
         });
@@ -477,6 +511,8 @@ export function fixAccountAddresses(): void {
 
     if (hasChanges) {
       console.log("Fixed AccountAddress objects after loading from storage");
+    } else {
+      console.log("No AccountAddress objects needed fixing");
     }
   } catch (error) {
     console.error("Error fixing AccountAddress objects:", error);
