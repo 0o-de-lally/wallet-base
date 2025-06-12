@@ -9,14 +9,17 @@ import {
   addressFromString,
   Network,
 } from "open-libra-sdk";
-
-const MainnetURL = "https://rpc.scan.openlibra.world/v1";
+import { useLibraClient } from "../../context/LibraClientContext";
+import { getNetworkUrl } from "../../util/balance-utils";
 
 interface MnemonicGeneratorProps {
   onClear?: () => void;
 }
 
 const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
+  // Get LibraClient context and current network
+  const { currentNetwork } = useLibraClient();
+
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -50,13 +53,14 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
 
       setMnemonic(newMnemonic);
 
-      // Step 3: Create wallet from mnemonic with mainnet connectivity
+      // Step 3: Create wallet from mnemonic with network connectivity
       const walletStart = performance.now();
-      console.log("Creating wallet from mnemonic with mainnet connectivity...");
+      console.log("Creating wallet from mnemonic with network connectivity...");
+      const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
       const wallet = LibraWallet.fromMnemonic(
         newMnemonic,
         Network.MAINNET,
-        MainnetURL,
+        networkUrl,
       );
       const walletEnd = performance.now();
       console.log(

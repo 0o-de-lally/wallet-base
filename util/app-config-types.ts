@@ -16,7 +16,7 @@ export enum NetworkTypeEnum {
 export type NetworkType = {
   network_name: string;
   network_type: NetworkTypeEnum;
-  // Additional network properties can be added here
+  rpc_url?: string; // Optional custom RPC URL for custom networks
 };
 
 /**

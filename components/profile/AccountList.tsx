@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 import { View } from "react-native";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
@@ -6,6 +6,8 @@ import { AccountItem } from "./AccountItem";
 import { AccountListModals } from "./AccountListModals";
 import { router } from "expo-router";
 import { AccountEmptyState } from "./AccountEmptyState";
+import { useLibraClient } from "../../context/LibraClientContext";
+import { queryAccountBalance } from "../../util/balance-utils";
 
 interface AccountListProps {
   profileName: string;
@@ -23,6 +25,9 @@ const AccountList = memo(
     activeAccountId,
     onSetActiveAccount,
   }: AccountListProps) => {
+    // Get LibraClient from context
+    const { client, currentNetwork } = useLibraClient();
+
     // State management
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
@@ -31,7 +36,38 @@ const AccountList = memo(
     const [errorMessage, setErrorMessage] = useState("");
     const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
       null,
-    );
+    );    // Balance refresh functionality
+    const refreshBalances = useCallback(async () => {
+      if (!client || !accounts.length) return;
+
+      console.log("Refreshing balances for accounts...");
+      
+      for (const account of accounts) {
+        try {
+          const balanceResult = await queryAccountBalance(client, account.account_address);
+          if (balanceResult) {
+            // Find and update the account in the observable state
+            const accountsArray = appConfig.profiles[profileName].accounts.get();
+            const accountIndex = accountsArray.findIndex(acc => acc.id === account.id);
+            
+            if (accountIndex !== -1) {
+              appConfig.profiles[profileName].accounts[accountIndex].balance_locked.set(balanceResult.locked);
+              appConfig.profiles[profileName].accounts[accountIndex].balance_unlocked.set(balanceResult.unlocked);
+              appConfig.profiles[profileName].accounts[accountIndex].last_update.set(Date.now());
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to refresh balance for account ${account.nickname}:`, error);
+        }
+      }
+    }, [client, accounts, profileName]);
+
+    // Auto-refresh balances when client or network changes
+    useEffect(() => {
+      if (client && currentNetwork && accounts.length > 0) {
+        refreshBalances();
+      }
+    }, [client, currentNetwork, refreshBalances]);
 
     // Account deletion handling
     const handleDeleteAccount = useCallback((accountId: string) => {

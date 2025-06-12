@@ -14,14 +14,14 @@ import { createAccount } from "../../util/account-utils";
 import { AccountAddress, LibraWallet, Network } from "open-libra-sdk";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
+import { useLibraClient } from "../../context/LibraClientContext";
+import { getNetworkUrl } from "../../util/balance-utils";
 
 interface RecoverAccountFormProps {
   profileName?: string;
   onComplete: () => void;
   onResetForm?: () => void;
 }
-
-const MainnetURL = "https://rpc.scan.openlibra.world/v1";
 
 /**
  * Derives a short nickname from an account address
@@ -58,6 +58,9 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   onComplete,
   onResetForm,
 }) => {
+  // Get LibraClient context and current network
+  const { currentNetwork } = useLibraClient();
+
   // Get all available profiles
   const profileNames = Object.keys(appConfig.profiles.get());
   const activeAccountId = appConfig.activeAccountId.get();
@@ -166,11 +169,12 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         setIsLoading(true);
         setError(null);
 
-        // Create wallet from mnemonic
+        // Create wallet from mnemonic using current network
+        const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
         const wallet = LibraWallet.fromMnemonic(
           mnemonic.trim(),
           Network.MAINNET,
-          MainnetURL,
+          networkUrl,
         );
 
         // Get the account address
@@ -205,11 +209,12 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       setIsVerifyingChain(true);
       setError(null);
 
-      // Create wallet from mnemonic
+      // Create wallet from mnemonic using current network
+      const networkUrl = currentNetwork ? getNetworkUrl(currentNetwork) : "https://rpc.scan.openlibra.world/v1";
       const wallet = LibraWallet.fromMnemonic(
         mnemonic.trim(),
         Network.MAINNET,
-        MainnetURL,
+        networkUrl,
       );
 
       try {
