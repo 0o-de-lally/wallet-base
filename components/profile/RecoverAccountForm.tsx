@@ -30,7 +30,8 @@ const MainnetURL = "https://rpc.scan.openlibra.world/v1";
  */
 function deriveShortNickname(address: AccountAddress | string): string {
   // Get the string representation
-  const addressString = typeof address === 'string' ? address : address.toStringLong();
+  const addressString =
+    typeof address === "string" ? address : address.toStringLong();
 
   // Remove '0x' prefix if present
   let cleanAddress = addressString.startsWith("0x")

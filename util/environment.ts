@@ -32,4 +32,5 @@ export const IS_DEBUG = __DEV__ || process.env.NODE_ENV === "development";
  * When set to "true", the app will wipe all stored data and act like a clean installation.
  * This is useful for development and testing purposes.
  */
-export const SHOULD_RESET_APP_DATA = process.env.EXPO_PUBLIC_RESET_APP_DATA === "true";
+export const SHOULD_RESET_APP_DATA =
+  process.env.EXPO_PUBLIC_RESET_APP_DATA === "true";

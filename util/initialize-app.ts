@@ -20,7 +20,9 @@ export async function initializeApp() {
   try {
     // Check if we should reset app data based on environment variable
     if (SHOULD_RESET_APP_DATA) {
-      console.log("EXPO_PUBLIC_RESET_APP_DATA is set - resetting app to clean state");
+      console.log(
+        "EXPO_PUBLIC_RESET_APP_DATA is set - resetting app to clean state",
+      );
       await resetAppToCleanState();
       console.log("App reset completed - continuing with initialization");
     }

@@ -442,58 +442,89 @@ export function fixAccountAddresses(): void {
   try {
     console.log("fixAccountAddresses: Starting to fix AccountAddress objects");
     const profiles = appConfig.profiles.get();
-    console.log("fixAccountAddresses: Raw profiles data:", JSON.stringify(profiles, null, 2));
+    console.log(
+      "fixAccountAddresses: Raw profiles data:",
+      JSON.stringify(profiles, null, 2),
+    );
 
     if (!profiles || typeof profiles !== "object") {
-      console.log("fixAccountAddresses: No profiles found or invalid profiles object");
+      console.log(
+        "fixAccountAddresses: No profiles found or invalid profiles object",
+      );
       return;
     }
 
     let hasChanges = false;
 
     Object.entries(profiles).forEach(([profileName, profile]) => {
-      console.log(`fixAccountAddresses: Processing profile ${profileName}:`, profile);
+      console.log(
+        `fixAccountAddresses: Processing profile ${profileName}:`,
+        profile,
+      );
       if (profile?.accounts) {
         profile.accounts.forEach((account, index) => {
-          console.log(`fixAccountAddresses: Processing account ${index} (${account?.id}):`, {
-            account_address: account?.account_address,
-            account_address_type: typeof account?.account_address,
-            account_address_constructor: account?.account_address?.constructor?.name
-          });
+          console.log(
+            `fixAccountAddresses: Processing account ${index} (${account?.id}):`,
+            {
+              account_address: account?.account_address,
+              account_address_type: typeof account?.account_address,
+              account_address_constructor:
+                account?.account_address?.constructor?.name,
+            },
+          );
 
           if (
             account?.account_address &&
             typeof account.account_address === "object" &&
-            (account.account_address as AccountAddress).constructor?.name === "AccountAddress"
+            (account.account_address as AccountAddress).constructor?.name ===
+              "AccountAddress"
           ) {
             try {
-              console.log(`fixAccountAddresses: Converting AccountAddress object to string`);
+              console.log(
+                `fixAccountAddresses: Converting AccountAddress object to string`,
+              );
               // Convert AccountAddress object to string
-              const stringAddress = (account.account_address as AccountAddress).toStringLong();
-              console.log(`fixAccountAddresses: Successfully converted to string: ${stringAddress}`);
+              const stringAddress = (
+                account.account_address as AccountAddress
+              ).toStringLong();
+              console.log(
+                `fixAccountAddresses: Successfully converted to string: ${stringAddress}`,
+              );
               appConfig.profiles[profileName].accounts[
                 index
               ].account_address.set(stringAddress);
               hasChanges = true;
-              console.log(`fixAccountAddresses: Updated account ${account.id} with string address`);
+              console.log(
+                `fixAccountAddresses: Updated account ${account.id} with string address`,
+              );
             } catch (error) {
               console.error(
                 `Failed to convert AccountAddress to string for account ${account.id}:`,
                 error,
               );
             }
-          } else if (account?.account_address && typeof account.account_address === "object") {
+          } else if (
+            account?.account_address &&
+            typeof account.account_address === "object"
+          ) {
             // Check if it's a plain object that needs conversion
             try {
-              console.log(`fixAccountAddresses: Converting object address:`, account.account_address);
+              console.log(
+                `fixAccountAddresses: Converting object address:`,
+                account.account_address,
+              );
               const fixedAddress = AccountAddress.from(account.account_address);
               const stringAddress = fixedAddress.toStringLong();
-              console.log(`fixAccountAddresses: Successfully created string from object: ${stringAddress}`);
+              console.log(
+                `fixAccountAddresses: Successfully created string from object: ${stringAddress}`,
+              );
               appConfig.profiles[profileName].accounts[
                 index
               ].account_address.set(stringAddress);
               hasChanges = true;
-              console.log(`fixAccountAddresses: Updated account ${account.id} with string address from object`);
+              console.log(
+                `fixAccountAddresses: Updated account ${account.id} with string address from object`,
+              );
             } catch (error) {
               console.error(
                 `Failed to fix AccountAddress object for account ${account.id}:`,
@@ -501,7 +532,9 @@ export function fixAccountAddresses(): void {
               );
             }
           } else {
-            console.log(`fixAccountAddresses: Account ${account.id} already has string address or is invalid`);
+            console.log(
+              `fixAccountAddresses: Account ${account.id} already has string address or is invalid`,
+            );
           }
         });
       }
