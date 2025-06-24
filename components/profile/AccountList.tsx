@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
 import { AccountItem } from "./AccountItem";
@@ -110,7 +110,7 @@ const AccountList = memo(
 
         {expandedAccountId && (
           <View style={{ paddingHorizontal: 10, paddingVertical: 5 }}>
-            <View>Managing account: {expandedAccountId}</View>
+            <Text>Managing account: {expandedAccountId}</Text>
           </View>
         )}
 
