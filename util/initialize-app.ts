@@ -1,7 +1,6 @@
 import {
   appConfig,
   maybeInitializeDefaultProfile,
-  fixAccountAddresses,
 } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
 import { resetAppToCleanState } from "./clear-storage-controller";
@@ -44,9 +43,6 @@ export async function initializeApp() {
 
     // Wait for persistence to load (allow some time for hydration)
     await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Fix AccountAddress objects that may have been deserialized as strings
-    fixAccountAddresses();
 
     // Check if we have any profiles after persistence has loaded
     const profiles = appConfig.profiles.get();

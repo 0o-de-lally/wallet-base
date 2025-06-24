@@ -4,7 +4,6 @@ import { persistObservable } from "@legendapp/state/persist";
 import { configureObservablePersistence } from "@legendapp/state/persist";
 import { ObservablePersistAsyncStorage } from "@legendapp/state/persist-plugins/async-storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AccountAddress } from "open-libra-sdk";
 
 import {
   AppConfig,
