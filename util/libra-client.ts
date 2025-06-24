@@ -1,6 +1,6 @@
 /**
  * Global LibraClient Instance Manager
- * 
+ *
  * Provides a single instance of LibraClient that can be configured
  * and shared across the entire application to prevent multiple instances.
  */
@@ -28,13 +28,13 @@ let currentConfig = {
 /**
  * Initialize the global LibraClient instance
  * This should be called during app initialization
- * 
+ *
  * @param url Optional URL to use for the client. Defaults to mainnet URL
  * @param network Network type identifier for logging/debugging
  */
 export function initializeLibraClient(
   url: string = DEFAULT_MAINNET_URL,
-  network: "mainnet" | "testnet" | "custom" = "mainnet"
+  network: "mainnet" | "testnet" | "custom" = "mainnet",
 ): LibraClient {
   try {
     // Create new client instance - LibraClient uses default mainnet if no params
@@ -57,12 +57,14 @@ export function initializeLibraClient(
 /**
  * Get the global LibraClient instance
  * If not initialized, initializes with default mainnet configuration
- * 
+ *
  * @returns The global LibraClient instance
  */
 export function getLibraClient(): LibraClient {
   if (!globalLibraClient) {
-    console.warn("LibraClient not initialized, creating with default configuration");
+    console.warn(
+      "LibraClient not initialized, creating with default configuration",
+    );
     return initializeLibraClient();
   }
 
@@ -72,13 +74,13 @@ export function getLibraClient(): LibraClient {
 /**
  * Reconfigure the global LibraClient with a new URL
  * This will create a new client instance with the new configuration
- * 
+ *
  * @param url New URL to use for the client
  * @param network Network type identifier for logging/debugging
  */
 export function setLibraClientUrl(
   url: string,
-  network: "mainnet" | "testnet" | "custom" = "custom"
+  network: "mainnet" | "testnet" | "custom" = "custom",
 ): LibraClient {
   if (IS_DEVELOPMENT) {
     console.log(`Reconfiguring LibraClient to ${network} network: ${url}`);
@@ -89,7 +91,7 @@ export function setLibraClientUrl(
 
 /**
  * Get the current configuration of the global LibraClient
- * 
+ *
  * @returns Current configuration object with URL and network type
  */
 export function getLibraClientConfig() {
@@ -98,7 +100,7 @@ export function getLibraClientConfig() {
 
 /**
  * Reset the global LibraClient to mainnet defaults
- * 
+ *
  * @returns The reset LibraClient instance
  */
 export function resetToMainnet(): LibraClient {
@@ -107,7 +109,7 @@ export function resetToMainnet(): LibraClient {
 
 /**
  * Reset the global LibraClient to testnet
- * 
+ *
  * @returns The testnet LibraClient instance
  */
 export function resetToTestnet(): LibraClient {
@@ -116,7 +118,7 @@ export function resetToTestnet(): LibraClient {
 
 /**
  * Check if the LibraClient is initialized
- * 
+ *
  * @returns true if initialized, false otherwise
  */
 export function isLibraClientInitialized(): boolean {
@@ -126,7 +128,7 @@ export function isLibraClientInitialized(): boolean {
 /**
  * Get the current URL being used by the global LibraClient
  * This is useful for creating LibraWallet instances with the same configuration
- * 
+ *
  * @returns The current URL being used by the LibraClient
  */
 export function getLibraClientUrl(): string {

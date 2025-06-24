@@ -46,22 +46,28 @@ export const AccountItem = memo(
         return;
       }
 
-      setBalanceData(prev => ({ ...prev, isLoading: true, error: null }));      try {
+      setBalanceData((prev) => ({ ...prev, isLoading: true, error: null }));
+      try {
         // Create the view payload using the sugar function
         const payload = LibraViews.olAccount_balance(account.account_address);
-        
+
         // Call the view function
         const result = await client.viewJson(payload);
-        
-        console.log('Balance API response for', account.account_address, ':', result);
-        
+
+        console.log(
+          "Balance API response for",
+          account.account_address,
+          ":",
+          result,
+        );
+
         // Handle different possible response formats
         let locked = 0;
         let unlocked = 0;
-        
-        if (result && typeof result === 'object') {
+
+        if (result && typeof result === "object") {
           // Try different possible response structures
-          if ('locked' in result && 'unlocked' in result) {
+          if ("locked" in result && "unlocked" in result) {
             locked = Number(result.locked) || 0;
             unlocked = Number(result.unlocked) || 0;
           } else if (Array.isArray(result) && result.length >= 2) {
@@ -71,18 +77,28 @@ export const AccountItem = memo(
           } else if (Array.isArray(result) && result.length === 1) {
             // Response might be an array with single balance object
             const balanceObj = result[0];
-            if (balanceObj && typeof balanceObj === 'object' && 'locked' in balanceObj && 'unlocked' in balanceObj) {
+            if (
+              balanceObj &&
+              typeof balanceObj === "object" &&
+              "locked" in balanceObj &&
+              "unlocked" in balanceObj
+            ) {
               locked = Number(balanceObj.locked) || 0;
               unlocked = Number(balanceObj.unlocked) || 0;
             }
           } else {
             // Log the actual structure for debugging
-            console.log('Unexpected balance response structure:', JSON.stringify(result, null, 2));
-            throw new Error(`Unexpected balance response format: ${JSON.stringify(result).substring(0, 100)}...`);
+            console.log(
+              "Unexpected balance response structure:",
+              JSON.stringify(result, null, 2),
+            );
+            throw new Error(
+              `Unexpected balance response format: ${JSON.stringify(result).substring(0, 100)}...`,
+            );
           }
-          
+
           const now = Date.now();
-          
+
           setBalanceData({
             locked,
             unlocked,
@@ -91,14 +107,21 @@ export const AccountItem = memo(
             lastUpdated: now,
           });
         } else {
-          throw new Error(`Invalid balance response: ${typeof result} - ${JSON.stringify(result)}`);
+          throw new Error(
+            `Invalid balance response: ${typeof result} - ${JSON.stringify(result)}`,
+          );
         }
       } catch (error) {
-        console.error('Failed to fetch balance for account:', account.account_address, error);
-        setBalanceData(prev => ({
+        console.error(
+          "Failed to fetch balance for account:",
+          account.account_address,
+          error,
+        );
+        setBalanceData((prev) => ({
           ...prev,
           isLoading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch balance',
+          error:
+            error instanceof Error ? error.message : "Failed to fetch balance",
         }));
       }
     }, [client, account.account_address]);

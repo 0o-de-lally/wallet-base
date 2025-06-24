@@ -10,7 +10,10 @@ import { hasMultipleProfiles } from "../../util/user-state";
 import Dropdown from "../common/Dropdown";
 import { resetAppToFirstTimeUser, logAppState } from "../../util/dev-utils";
 import { useModal } from "../../context/ModalContext";
-import { getLibraClientConfig, isLibraClientInitialized } from "../../util/libra-client";
+import {
+  getLibraClientConfig,
+  isLibraClientInitialized,
+} from "../../util/libra-client";
 
 interface MenuProps {
   onProfileChange?: () => void;
