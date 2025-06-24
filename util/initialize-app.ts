@@ -1,15 +1,32 @@
-import {
-  appConfig,
-  maybeInitializeDefaultProfile,
-  fixAccountAddresses,
-} from "./app-config-store";
+import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
 import { initializeLibraClient } from "./libra-client";
+import { resetAppToCleanState } from "./clear-storage-controller";
+import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
   hasHardwareAsync,
   isEnrolledAsync,
   supportedAuthenticationTypesAsync,
 } from "expo-local-authentication";
+
+// Session-level flag to track if reset has already been performed
+let hasResetInThisSession = false;
+
+/**
+ * Resets the session flag to allow another reset in the current session.
+ * This is primarily for testing/debugging purposes.
+ */
+export function resetSessionFlag(): void {
+  hasResetInThisSession = false;
+  console.log("Session reset flag cleared - reset can be performed again");
+}
+
+/**
+ * Returns whether a reset has been performed in the current session.
+ */
+export function hasPerformedResetInSession(): boolean {
+  return hasResetInThisSession;
+}
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.
@@ -17,6 +34,21 @@ import {
  */
 export async function initializeApp() {
   try {
+    // Check if we should reset app data based on environment variable
+    // Only reset once per session to avoid infinite loops
+    if (SHOULD_RESET_APP_DATA && !hasResetInThisSession) {
+      console.log(
+        "EXPO_PUBLIC_RESET_APP_DATA is set - resetting app to clean state (once per session)",
+      );
+      await resetAppToCleanState();
+      hasResetInThisSession = true;
+      console.log("App reset completed - continuing with initialization");
+    } else if (SHOULD_RESET_APP_DATA && hasResetInThisSession) {
+      console.log(
+        "Reset already performed in this session - skipping duplicate reset",
+      );
+    }
+
     // Check if biometric authentication is available
     const hasHardware = await hasHardwareAsync();
     console.log("Biometric hardware available:", hasHardware);
@@ -34,9 +66,6 @@ export async function initializeApp() {
 
     // Wait for persistence to load (allow some time for hydration)
     await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Fix AccountAddress objects that may have been deserialized as strings
-    fixAccountAddresses();
 
     // Check if we have any profiles after persistence has loaded
     const profiles = appConfig.profiles.get();

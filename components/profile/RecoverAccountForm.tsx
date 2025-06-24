@@ -24,12 +24,13 @@ interface RecoverAccountFormProps {
 
 /**
  * Derives a short nickname from an account address
- * @param address The AccountAddress instance
+ * @param address The AccountAddress instance or string representation
  * @returns A shortened version suitable for display
  */
-function deriveShortNickname(address: AccountAddress): string {
+function deriveShortNickname(address: AccountAddress | string): string {
   // Get the string representation
-  const addressString = address.toStringLong();
+  const addressString =
+    typeof address === "string" ? address : address.toStringLong();
 
   // Remove '0x' prefix if present
   let cleanAddress = addressString.startsWith("0x")
@@ -118,7 +119,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
     const addressToCheckString = addressToCheck.toStringLong();
     return profile.accounts.some(
-      (acc) => acc.account_address.toStringLong() === addressToCheckString,
+      (acc) => acc.account_address === addressToCheckString,
     );
   }, [chainAddress, derivedAddress, selectedProfile]);
 
