@@ -460,7 +460,7 @@ export function fixAccountAddresses(): void {
             account_address_type: typeof account?.account_address,
             account_address_constructor: account?.account_address?.constructor?.name
           });
-          
+
           if (
             account?.account_address &&
             typeof account.account_address === "object" &&
