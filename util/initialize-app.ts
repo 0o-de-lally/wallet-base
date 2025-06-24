@@ -4,6 +4,8 @@ import {
   fixAccountAddresses,
 } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
+import { resetAppToCleanState } from "./clear-storage-controller";
+import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
   hasHardwareAsync,
   isEnrolledAsync,
@@ -16,6 +18,13 @@ import {
  */
 export async function initializeApp() {
   try {
+    // Check if we should reset app data based on environment variable
+    if (SHOULD_RESET_APP_DATA) {
+      console.log("EXPO_PUBLIC_RESET_APP_DATA is set - resetting app to clean state");
+      await resetAppToCleanState();
+      console.log("App reset completed - continuing with initialization");
+    }
+
     // Check if biometric authentication is available
     const hasHardware = await hasHardwareAsync();
     console.log("Biometric hardware available:", hasHardware);
