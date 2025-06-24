@@ -1,5 +1,3 @@
-import { AccountAddress } from "open-libra-sdk";
-
 /**
  * Network types available for selection
  */
@@ -30,10 +28,12 @@ export type RevealSchedule = {
 
 /**
  * Account state represents a single blockchain account within a profile
+ * Note: AccountState is stored in Mobile storage as a simple JSON
+ * so deserializing complex types like AccountAddress is not possible.
  */
 export type AccountState = {
   id: string; // Unique identifier for the account (e.g., UUID or random ID)
-  account_address: AccountAddress;
+  account_address: string; // String representation of the account address
   nickname: string; // User-friendly name for the account
   is_key_stored: boolean;
   balance_locked: number;

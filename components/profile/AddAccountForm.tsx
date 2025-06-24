@@ -9,7 +9,7 @@ import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
 import { createAccount } from "../../util/account-utils";
-import { AccountAddress } from "open-libra-sdk";
+import { addressFromString } from "open-libra-sdk";
 
 interface AddAccountFormProps {
   profileName?: string;
@@ -92,7 +92,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
   const handleAddAccount = async () => {
     try {
       // Convert string address to AccountAddress
-      const address = AccountAddress.fromString(accountAddress.trim());
+      const address = addressFromString(accountAddress.trim());
 
       const result = await createAccount(selectedProfile, address, nickname);
 

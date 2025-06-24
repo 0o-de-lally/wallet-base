@@ -1,4 +1,5 @@
 import { clearAllSecureStorage, getAllKeys } from "./secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // Remove unused imports
 import { clearAllScheduledReveals } from "./reveal-controller";
 
@@ -33,6 +34,35 @@ export async function clearAllStorage(): Promise<void> {
       error instanceof Error ? error.message : String(error),
     );
     throw error;
+  }
+}
+
+/**
+ * Completely resets the application by clearing all storage including AsyncStorage.
+ * This makes the app behave like a fresh installation.
+ *
+ * @returns Promise resolving when all clearing operations are complete
+ * @throws Error if any clearing operations fail
+ */
+export async function resetAppToCleanState(): Promise<void> {
+  try {
+    console.log("Starting complete app data reset...");
+
+    // Clear all secure storage (expo-secure-store)
+    await clearAllStorage();
+
+    // Clear all AsyncStorage (includes Legend State persistence)
+    await AsyncStorage.clear();
+
+    console.log("App data reset completed - app is now in clean state");
+  } catch (error) {
+    console.error(
+      "Error during app reset:",
+      error instanceof Error ? error.message : String(error),
+    );
+    throw new Error(
+      `Failed to reset app data: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

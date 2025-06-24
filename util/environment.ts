@@ -26,3 +26,11 @@ export const IS_DEVELOPMENT = !IS_PRODUCTION;
  * This includes the __DEV__ flag check for React Native development mode.
  */
 export const IS_DEBUG = __DEV__ || process.env.NODE_ENV === "development";
+
+/**
+ * Environment flag to trigger complete app data reset on startup.
+ * When set to "true", the app will wipe all stored data and act like a clean installation.
+ * This is useful for development and testing purposes.
+ */
+export const SHOULD_RESET_APP_DATA =
+  process.env.EXPO_PUBLIC_RESET_APP_DATA === "true";
