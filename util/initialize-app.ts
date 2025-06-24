@@ -1,7 +1,4 @@
-import {
-  appConfig,
-  maybeInitializeDefaultProfile,
-} from "./app-config-store";
+import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
 import { resetAppToCleanState } from "./clear-storage-controller";
 import { SHOULD_RESET_APP_DATA } from "./environment";
