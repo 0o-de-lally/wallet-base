@@ -103,9 +103,7 @@ export function addAccountToProfile(
 
   // Check if account already exists in the profile
   const accountExists = profile.accounts.some(
-    (acc) =>
-      acc.account_address?.toStringLong?.() ===
-      account.account_address?.toStringLong?.(),
+    (acc) => acc.account_address === account.account_address,
   );
 
   if (accountExists) {
@@ -438,7 +436,7 @@ export function cleanupExpiredRevealSchedules(): void {
 
 /**
  * Fixes AccountAddress objects that were deserialized from storage
- * Converts string representations back to proper AccountAddress instances
+ * Converts AccountAddress objects to string representations for consistency
  */
 export function fixAccountAddresses(): void {
   try {
@@ -465,45 +463,45 @@ export function fixAccountAddresses(): void {
           
           if (
             account?.account_address &&
-            typeof account.account_address === "string"
+            typeof account.account_address === "object" &&
+            (account.account_address as AccountAddress).constructor?.name === "AccountAddress"
           ) {
             try {
-              console.log(`fixAccountAddresses: Converting string address: ${account.account_address}`);
-              // Convert string back to AccountAddress object
-              const fixedAddress = AccountAddress.from(account.account_address);
-              console.log(`fixAccountAddresses: Successfully created AccountAddress:`, fixedAddress);
+              console.log(`fixAccountAddresses: Converting AccountAddress object to string`);
+              // Convert AccountAddress object to string
+              const stringAddress = (account.account_address as AccountAddress).toStringLong();
+              console.log(`fixAccountAddresses: Successfully converted to string: ${stringAddress}`);
               appConfig.profiles[profileName].accounts[
                 index
-              ].account_address.set(fixedAddress);
+              ].account_address.set(stringAddress);
               hasChanges = true;
-              console.log(`fixAccountAddresses: Updated account ${account.id} with fixed address`);
+              console.log(`fixAccountAddresses: Updated account ${account.id} with string address`);
             } catch (error) {
               console.error(
-                `Failed to fix AccountAddress for account ${account.id}:`,
+                `Failed to convert AccountAddress to string for account ${account.id}:`,
                 error,
               );
             }
           } else if (account?.account_address && typeof account.account_address === "object") {
-            // Check if it's already an AccountAddress or a plain object that needs conversion
-            if (account.account_address.constructor?.name !== "AccountAddress") {
-              try {
-                console.log(`fixAccountAddresses: Converting object address:`, account.account_address);
-                const fixedAddress = AccountAddress.from(account.account_address);
-                console.log(`fixAccountAddresses: Successfully created AccountAddress from object:`, fixedAddress);
-                appConfig.profiles[profileName].accounts[
-                  index
-                ].account_address.set(fixedAddress);
-                hasChanges = true;
-                console.log(`fixAccountAddresses: Updated account ${account.id} with fixed address from object`);
-              } catch (error) {
-                console.error(
-                  `Failed to fix AccountAddress object for account ${account.id}:`,
-                  error,
-                );
-              }
-            } else {
-              console.log(`fixAccountAddresses: Account ${account.id} already has proper AccountAddress`);
+            // Check if it's a plain object that needs conversion
+            try {
+              console.log(`fixAccountAddresses: Converting object address:`, account.account_address);
+              const fixedAddress = AccountAddress.from(account.account_address);
+              const stringAddress = fixedAddress.toStringLong();
+              console.log(`fixAccountAddresses: Successfully created string from object: ${stringAddress}`);
+              appConfig.profiles[profileName].accounts[
+                index
+              ].account_address.set(stringAddress);
+              hasChanges = true;
+              console.log(`fixAccountAddresses: Updated account ${account.id} with string address from object`);
+            } catch (error) {
+              console.error(
+                `Failed to fix AccountAddress object for account ${account.id}:`,
+                error,
+              );
             }
+          } else {
+            console.log(`fixAccountAddresses: Account ${account.id} already has string address or is invalid`);
           }
         });
       }
