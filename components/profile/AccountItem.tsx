@@ -34,8 +34,8 @@ export const AccountItem = memo(
       error: string | null;
       lastUpdated: number;
     }>({
-      unlocked: account.balance_locked,
-      total: account.balance_unlocked,
+      unlocked: account.balance_unlocked,
+      total: account.balance_total,
       isLoading: false,
       error: null,
       lastUpdated: account.last_update,
@@ -62,18 +62,18 @@ export const AccountItem = memo(
         );
 
         // Handle different possible response formats
-        let locked = 0;
-        let unlocked = 0;
+        let balance_unlocked = 0;
+        let balance_total = 0;
 
         if (result && typeof result === "object") {
           // Try different possible response structures
           if ("locked" in result && "unlocked" in result) {
-            locked = Number(result.locked) || 0;
-            unlocked = Number(result.unlocked) || 0;
+            balance_unlocked = Number(result.unlocked) || 0;
+            balance_total = Number(result.locked) || 0;
           } else if (Array.isArray(result) && result.length >= 2) {
-            // Response might be an array [locked, unlocked]
-            locked = Number(result[0]) || 0;
-            unlocked = Number(result[1]) || 0;
+            // Response is an array [unlocked, total]
+            balance_unlocked = Number(result[0]) || 0;
+            balance_total = Number(result[1]) || 0;
           } else if (Array.isArray(result) && result.length === 1) {
             // Response might be an array with single balance object
             const balanceObj = result[0];
@@ -83,8 +83,8 @@ export const AccountItem = memo(
               "locked" in balanceObj &&
               "unlocked" in balanceObj
             ) {
-              locked = Number(balanceObj.locked) || 0;
-              unlocked = Number(balanceObj.unlocked) || 0;
+              balance_unlocked = Number(balanceObj.unlocked) || 0;
+              balance_total = Number(balanceObj.locked) || 0;
             }
           } else {
             // Log the actual structure for debugging
@@ -99,13 +99,41 @@ export const AccountItem = memo(
 
           const now = Date.now();
 
-          setBalanceData({
-            unlocked: locked,
-            total: unlocked,
-            isLoading: false,
-            error: null,
-            lastUpdated: now,
-          });
+          // Update the stored account data with new balances
+          try {
+            const { appConfig } = await import("../../util/app-config-store");
+            const profiles = appConfig.profiles.get();
+
+            // Find and update the account in the profile
+            Object.keys(profiles).forEach(profileKey => {
+              const profile = profiles[profileKey];
+              const accountIndex = profile.accounts.findIndex(acc => acc.id === account.id);
+              if (accountIndex !== -1) {
+                profile.accounts[accountIndex] = {
+                  ...profile.accounts[accountIndex],
+                  balance_unlocked: balance_unlocked,
+                  balance_total: balance_total,
+                  last_update: now,
+                };
+                // Update the profile in storage
+                appConfig.profiles[profileKey].set(profile);
+              }
+            });
+
+            // Clear loading state after successful update
+            setBalanceData((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: null
+            }));
+          } catch (error) {
+            console.error("Failed to update stored account balance:", error);
+            setBalanceData((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: "Failed to update balance data",
+            }));
+          }
         } else {
           throw new Error(
             `Invalid balance response: ${typeof result} - ${JSON.stringify(result)}`,
@@ -132,6 +160,17 @@ export const AccountItem = memo(
         fetchBalance();
       }
     }, [fetchBalance]);
+
+    // Update local state when account prop changes (reflects stored state)
+    useEffect(() => {
+      setBalanceData({
+        unlocked: account.balance_unlocked,
+        total: account.balance_total,
+        isLoading: false,
+        error: null,
+        lastUpdated: account.last_update,
+      });
+    }, [account.balance_unlocked, account.balance_total, account.last_update]);
 
     const navigateToTransactions = () => {
       router.navigate({

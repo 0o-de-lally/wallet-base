@@ -36,8 +36,8 @@ export type AccountState = {
   account_address: string; // String representation of the account address
   nickname: string; // User-friendly name for the account
   is_key_stored: boolean;
-  balance_locked: number;
   balance_unlocked: number;
+  balance_total: number;
   last_update: number; // timestamp
   reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
 };

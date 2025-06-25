@@ -4,9 +4,11 @@ import { appConfig } from "../../util/app-config-store";
 import type { AccountState } from "../../util/app-config-store";
 import { AccountItem } from "./AccountItem";
 import { AccountListModals } from "./AccountListModals";
+import { AccountTotals } from "./AccountTotals";
 import { router } from "expo-router";
 import { AccountEmptyState } from "./AccountEmptyState";
 import type { LibraClient } from "open-libra-sdk";
+import { styles } from "../../styles/styles";
 
 interface AccountListProps {
   profileName: string;
@@ -111,6 +113,8 @@ const AccountList = memo(
           ))}
 
         {accounts.length === 0 && renderAccountActions()}
+
+        <AccountTotals accounts={accounts} />
 
         <AccountListModals
           profileName={profileName}
