@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import { SectionContainer } from "../common/SectionContainer";
 import { styles } from "../../styles/styles";
-import { LibraClient } from "open-libra-sdk";
+import { getLibraClient } from "../../util/libra-client";
 import type { LedgerInfo } from "open-libra-sdk";
 import MnemonicGenerator from "./MnemonicGenerator";
 
@@ -19,8 +19,8 @@ const LibraSDKTest = memo(() => {
     setLedgerInfo(null);
 
     try {
-      // Create client for mainnet (as shown in the documentation)
-      const client = new LibraClient();
+      // Use the global LibraClient instance
+      const client = getLibraClient();
 
       console.log("Fetching ledger info from Libra blockchain...");
 

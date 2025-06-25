@@ -6,6 +6,7 @@ import { AccountItem } from "./AccountItem";
 import { AccountListModals } from "./AccountListModals";
 import { router } from "expo-router";
 import { AccountEmptyState } from "./AccountEmptyState";
+import type { LibraClient } from "open-libra-sdk";
 
 interface AccountListProps {
   profileName: string;
@@ -13,6 +14,7 @@ interface AccountListProps {
   onAccountsUpdated?: (updatedAccounts: AccountState[]) => void;
   activeAccountId: string | null;
   onSetActiveAccount: (accountId: string) => void;
+  client?: LibraClient;
 }
 
 const AccountList = memo(
@@ -22,6 +24,7 @@ const AccountList = memo(
     onAccountsUpdated,
     activeAccountId,
     onSetActiveAccount,
+    client,
   }: AccountListProps) => {
     // State management
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -105,6 +108,7 @@ const AccountList = memo(
               profileName={profileName}
               isActive={account.id === activeAccountId}
               onSetActive={onSetActiveAccount}
+              client={client}
             />
           ))}
 

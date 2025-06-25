@@ -10,6 +10,10 @@ import { hasMultipleProfiles } from "../../util/user-state";
 import Dropdown from "../common/Dropdown";
 import { resetAppToFirstTimeUser, logAppState } from "../../util/dev-utils";
 import { useModal } from "../../context/ModalContext";
+import {
+  getLibraClientConfig,
+  isLibraClientInitialized,
+} from "../../util/libra-client";
 
 interface MenuProps {
   onProfileChange?: () => void;
@@ -214,6 +218,37 @@ export const Menu: React.FC<MenuProps> = observer(
             }}
             style={{ marginTop: 10 }}
             accessibilityLabel="Log current app state to console"
+          />
+          <ActionButton
+            text="LibraClient Config"
+            onPress={() => {
+              const isInitialized = isLibraClientInitialized();
+              if (isInitialized) {
+                const config = getLibraClientConfig();
+                showAlert(
+                  "LibraClient Configuration",
+                  `Network: ${config.network}\nURL: ${config.url}\nStatus: Initialized`,
+                );
+              } else {
+                showAlert(
+                  "LibraClient Configuration",
+                  "Status: Not initialized\nNote: Will be auto-initialized on first use",
+                );
+              }
+            }}
+            style={{ marginTop: 10 }}
+            accessibilityLabel="Show current LibraClient configuration"
+          />
+          <ActionButton
+            text="Change LibraClient URL"
+            onPress={() => {
+              showAlert(
+                "Change LibraClient URL",
+                "This feature would allow you to change the RPC URL. Implementation can be added based on your needs.\n\nCurrent options:\n• Mainnet (default)\n• Custom URL input\n• Network presets",
+              );
+            }}
+            style={{ marginTop: 10 }}
+            accessibilityLabel="Change LibraClient RPC URL"
           />
         </SectionContainer>
 

@@ -1,5 +1,6 @@
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
+import { initializeLibraClient } from "./libra-client";
 import { resetAppToCleanState } from "./clear-storage-controller";
 import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
@@ -103,6 +104,16 @@ export async function initializeApp() {
 
     // Initialize reveal controller and cleanup expired schedules
     initializeRevealController();
+
+    // Initialize global LibraClient instance
+    try {
+      initializeLibraClient();
+      console.log("Global LibraClient initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize LibraClient:", error);
+      // Don't fail app initialization if LibraClient fails
+      // It can be initialized later when needed
+    }
 
     return true;
   } catch (error) {

@@ -14,14 +14,13 @@ import { createAccount } from "../../util/account-utils";
 import { AccountAddress, LibraWallet, Network } from "open-libra-sdk";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
+import { getLibraClientUrl } from "../../util/libra-client";
 
 interface RecoverAccountFormProps {
   profileName?: string;
   onComplete: () => void;
   onResetForm?: () => void;
 }
-
-const MainnetURL = "https://rpc.scan.openlibra.world/v1";
 
 /**
  * Derives a short nickname from an account address
@@ -171,7 +170,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         const wallet = LibraWallet.fromMnemonic(
           mnemonic.trim(),
           Network.MAINNET,
-          MainnetURL,
+          getLibraClientUrl(),
         );
 
         // Get the account address
@@ -210,7 +209,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       const wallet = LibraWallet.fromMnemonic(
         mnemonic.trim(),
         Network.MAINNET,
-        MainnetURL,
+        getLibraClientUrl(),
       );
 
       try {
