@@ -1,8 +1,8 @@
 import React, { memo, useState, useEffect, useCallback } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
-import { ActionButton } from "../common/ActionButton";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { LibraViews, type LibraClient } from "open-libra-sdk";
@@ -11,10 +11,10 @@ export interface AccountItemProps {
   account: AccountState;
   onDelete: (accountId: string) => void;
   profileName: string;
-  onToggleExpand?: (accountId: string) => void;
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
   client?: LibraClient;
+  compact?: boolean;
 }
 
 export const AccountItem = memo(
@@ -22,20 +22,20 @@ export const AccountItem = memo(
     account,
     onDelete,
     profileName,
-    onToggleExpand,
     isActive,
     onSetActive,
     client,
+    compact = false,
   }: AccountItemProps) => {
     const [balanceData, setBalanceData] = useState<{
-      locked: number;
       unlocked: number;
+      total: number;
       isLoading: boolean;
       error: string | null;
       lastUpdated: number;
     }>({
-      locked: account.balance_locked,
-      unlocked: account.balance_unlocked,
+      unlocked: account.balance_locked,
+      total: account.balance_unlocked,
       isLoading: false,
       error: null,
       lastUpdated: account.last_update,
@@ -100,8 +100,8 @@ export const AccountItem = memo(
           const now = Date.now();
 
           setBalanceData({
-            locked,
-            unlocked,
+            unlocked: locked,
+            total: unlocked,
             isLoading: false,
             error: null,
             lastUpdated: now,
@@ -133,6 +133,17 @@ export const AccountItem = memo(
       }
     }, [fetchBalance]);
 
+    const navigateToTransactions = () => {
+      router.navigate({
+        pathname: "./transactions",
+        params: {
+          accountId: account.id,
+          profileName,
+          accountNickname: account.nickname,
+        },
+      });
+    };
+
     const navigateToSettings = () => {
       router.navigate({
         pathname: "./account-settings",
@@ -147,88 +158,127 @@ export const AccountItem = memo(
           styles.resultContainer,
           styles.accountItemContainer,
           isActive && styles.accountItemActive,
+          compact && styles.compactAccountItem,
         ]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}`}
-        onPress={
-          onToggleExpand ? () => onToggleExpand(account.id) : navigateToSettings
-        }
+        onPress={navigateToTransactions}
       >
-        <Text style={styles.resultLabel}>{account.nickname}</Text>
-        <View
-          style={[
-            styles.accessTypeBadge,
-            account.is_key_stored
-              ? styles.accessTypeBadgeHot
-              : styles.accessTypeBadgeView,
-          ]}
-          accessibilityRole="text"
-          accessibilityLabel={account.is_key_stored ? "Hot" : "View"}
-        >
-          <Text style={styles.accessTypeBadgeText}>
-            {account.is_key_stored ? "Full Access" : "View Only"}
-          </Text>
-        </View>
-        <Text
-          style={styles.resultValue}
-          numberOfLines={1}
-          ellipsizeMode="middle"
-          selectable={true}
-        >
-          {account.account_address || "Address not available"}
-        </Text>
-        <View style={styles.balanceRow}>
-          <Text style={[styles.resultValue, styles.balanceText]}>
-            Locked: {formatCurrency(balanceData.locked)}
-            {balanceData.isLoading && " (updating...)"}
-          </Text>
-          <Text style={[styles.resultValue, styles.balanceText]}>
-            Unlocked: {formatCurrency(balanceData.unlocked)}
-            {balanceData.isLoading && " (updating...)"}
-          </Text>
-        </View>
-        {balanceData.error && (
-          <Text style={[styles.errorText, { fontSize: 12, marginTop: 2 }]}>
-            Balance fetch error: {balanceData.error}
-          </Text>
-        )}
-        <Text style={[styles.resultValue, styles.lastUpdatedText]}>
-          Last updated: {formatTimestamp(balanceData.lastUpdated)}
-        </Text>
+        {compact ? (
+          // Compact layout for inactive accounts
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                <Text style={[styles.accountNickname, { fontSize: 14 }]}>{account.nickname}</Text>
+                {!account.is_key_stored && (
+                  <Ionicons
+                    name="eye-outline"
+                    size={14}
+                    color="#c2c2cc"
+                    accessibilityLabel="View only account"
+                  />
+                )}
+              </View>
 
-        <View style={styles.accountActionsRow}>
-          {onSetActive && !isActive && (
-            <ActionButton
-              text="Set Active"
-              onPress={() => onSetActive(account.id)}
-              size="small"
-              style={styles.setActiveButtonStyle}
-              accessibilityLabel={`Set ${account.nickname} as active account`}
-            />
-          )}
+              <View style={styles.compactActions}>
+                {onSetActive && (
+                  <TouchableOpacity
+                    style={[styles.iconButton, { padding: 6 }]}
+                    onPress={() => onSetActive(account.id)}
+                    accessibilityLabel={`Set ${account.nickname} as active account`}
+                  >
+                    <Ionicons name="checkmark-circle-outline" size={16} color="#a5d6b7" />
+                  </TouchableOpacity>
+                )}
 
-          {isActive && (
-            <View style={styles.activeIndicatorBadge}>
-              <Text style={styles.activeIndicatorText}>Active</Text>
+                <TouchableOpacity
+                  style={[styles.iconButton, { padding: 6 }]}
+                  onPress={navigateToSettings}
+                  accessibilityLabel={`Manage account ${account.nickname}`}
+                >
+                  <Ionicons name="settings-outline" size={16} color="#c2c2cc" />
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
 
-          <ActionButton
-            text="Manage Account"
-            onPress={navigateToSettings}
-            size="small"
-            style={styles.manageAccountButtonStyle}
-            accessibilityLabel={`Manage account ${account.nickname}`}
-          />
+            <View style={styles.compactBalanceRow}>
+              <Text style={[styles.balanceText, styles.balancePrimary, { fontSize: 13 }]}>
+                {formatCurrency(balanceData.unlocked)}
+                {balanceData.isLoading && " (updating...)"}
+              </Text>
+              <Text style={[styles.balanceText, { fontSize: 12 }]}>
+                Total: {formatCurrency(balanceData.total)}
+              </Text>
+            </View>
 
-          <ActionButton
-            text="Remove"
-            onPress={() => onDelete(account.id)}
-            isDestructive={true}
-            size="small"
-            accessibilityLabel={`Remove account ${account.nickname}`}
-          />
-        </View>
+            {balanceData.error && (
+              <Text style={[styles.errorText, { fontSize: 11, marginTop: 2 }]}>
+                Balance error: {balanceData.error}
+              </Text>
+            )}
+          </View>
+        ) : (
+          // Full layout for active account
+          <View>
+            <View style={styles.accountHeader}>
+              <View style={styles.accountInfo}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.accountNickname}>{account.nickname}</Text>
+                  {!account.is_key_stored && (
+                    <Ionicons
+                      name="eye-outline"
+                      size={16}
+                      color="#c2c2cc"
+                      accessibilityLabel="View only account"
+                    />
+                  )}
+                </View>
+              </View>
+
+              {isActive && (
+                <View style={styles.activeIndicatorBadge}>
+                  <Text style={styles.activeIndicatorText}>Active</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.balanceRow}>
+              <Text style={[styles.balanceText, styles.balancePrimary]}>
+                Unlocked: {formatCurrency(balanceData.unlocked)}
+                {balanceData.isLoading && " (updating...)"}
+              </Text>
+              <Text style={styles.balanceText}>
+                Total: {formatCurrency(balanceData.total)}
+              </Text>
+            </View>
+
+            {balanceData.error && (
+              <Text style={[styles.errorText, { fontSize: 12, marginTop: 4 }]}>
+                Balance error: {balanceData.error}
+              </Text>
+            )}
+
+            <View style={styles.accountActionsRow}>
+              {onSetActive && !isActive && (
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => onSetActive(account.id)}
+                  accessibilityLabel={`Set ${account.nickname} as active account`}
+                >
+                  <Ionicons name="checkmark-circle-outline" size={20} color="#a5d6b7" />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={navigateToSettings}
+                accessibilityLabel={`Manage account ${account.nickname}`}
+              >
+                <Ionicons name="settings-outline" size={20} color="#c2c2cc" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </TouchableOpacity>
     );
   },

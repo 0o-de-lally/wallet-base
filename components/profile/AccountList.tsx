@@ -32,9 +32,6 @@ const AccountList = memo(
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const [expandedAccountId, setExpandedAccountId] = useState<string | null>(
-      null,
-    );
 
     // Account deletion handling
     const handleDeleteAccount = useCallback((accountId: string) => {
@@ -89,34 +86,29 @@ const AccountList = memo(
       return null;
     };
 
-    // Secret management expansion
-    const toggleAccountExpand = useCallback((accountId: string) => {
-      setExpandedAccountId((prev) => (prev === accountId ? null : accountId));
-    }, []);
-
     // Render with accounts
     return (
       <View>
         {accounts
           .filter((account) => account && account.id && account.account_address)
+          .sort((a, b) => {
+            // Sort active account first, then by creation order or name
+            if (a.id === activeAccountId) return -1;
+            if (b.id === activeAccountId) return 1;
+            return 0;
+          })
           .map((account) => (
             <AccountItem
               key={account.id}
               account={account}
-              onToggleExpand={toggleAccountExpand}
               onDelete={handleDeleteAccount}
               profileName={profileName}
               isActive={account.id === activeAccountId}
               onSetActive={onSetActiveAccount}
               client={client}
+              compact={account.id !== activeAccountId}
             />
           ))}
-
-        {expandedAccountId && (
-          <View style={{ paddingHorizontal: 10, paddingVertical: 5 }}>
-            <Text>Managing account: {expandedAccountId}</Text>
-          </View>
-        )}
 
         {accounts.length === 0 && renderAccountActions()}
 
