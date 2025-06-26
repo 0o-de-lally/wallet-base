@@ -636,7 +636,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16, // Reduced from 20 for closer-to-edge placement
+    paddingHorizontal: 20, // Match containerWithHeader padding for alignment
     paddingTop: 10,
     paddingBottom: 10,
     backgroundColor: colors.background,
