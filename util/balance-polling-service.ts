@@ -10,7 +10,11 @@ import {
   fetchAndUpdateAccountBalance,
 } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
-import { categorizeError, getSafeErrorMessage } from "./error-utils";
+import {
+  categorizeError,
+  getSafeErrorMessage,
+  reportErrorAuto,
+} from "./error-utils";
 
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
@@ -139,20 +143,8 @@ export class BalancePollingService {
 
       console.log("Balance polling completed successfully");
     } catch (error) {
-      // Use the error categorization utility to determine logging level
-      const { shouldLog } = categorizeError(error);
-      const errorMessage = getSafeErrorMessage(error);
-
-      if (shouldLog) {
-        // For unexpected errors, use warn level since polling continues
-        console.warn("Balance polling error:", errorMessage);
-      } else {
-        // For network/timeout errors, use debug level logging to reduce console spam
-        console.debug(
-          "Balance polling encountered network issue:",
-          errorMessage.substring(0, 100),
-        );
-      }
+      // Use the error reporting system
+      reportErrorAuto("balancePolling", error);
 
       // Don't stop the service on error, just log and continue
     }
@@ -194,7 +186,10 @@ export class BalancePollingService {
       }
 
       if (!targetAccount || !targetProfileName) {
-        console.warn(`Account ${accountId} not found for retry`);
+        reportErrorAuto(
+          "retryAccount",
+          new Error(`Account ${accountId} not found for retry`),
+        );
         return;
       }
 
@@ -211,7 +206,7 @@ export class BalancePollingService {
         await fetchAndUpdateAccountBalance(client, targetAccount);
       }
     } catch (error) {
-      console.warn(`Failed to retry account ${accountId}:`, error);
+      reportErrorAuto("retryAccount", error, { accountId });
     }
   }
 }

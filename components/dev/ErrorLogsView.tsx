@@ -75,25 +75,21 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
               Alert.alert("Success", "All error logs have been cleared.");
             },
           },
-        ]
+        ],
       );
     };
 
     const handleClearOldLogs = () => {
-      Alert.alert(
-        "Clear Old Logs",
-        "Clear error logs older than 24 hours?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Clear Old",
-            onPress: () => {
-              clearOldErrorLogs();
-              Alert.alert("Success", "Old error logs have been cleared.");
-            },
+      Alert.alert("Clear Old Logs", "Clear error logs older than 24 hours?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear Old",
+          onPress: () => {
+            clearOldErrorLogs();
+            Alert.alert("Success", "Old error logs have been cleared.");
           },
-        ]
-      );
+        },
+      ]);
     };
 
     const getLevelColor = (level: string) => {
@@ -221,7 +217,8 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
                     <Text
                       style={[
                         styles.filterButtonText,
-                        selectedLevel === level && styles.filterButtonTextActive,
+                        selectedLevel === level &&
+                          styles.filterButtonTextActive,
                       ]}
                     >
                       {level} ({stats.byLevel[level] || 0})
@@ -389,7 +386,7 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
         </ScrollView>
       </View>
     );
-  }
+  },
 );
 
 ErrorLogsView.displayName = "ErrorLogsView";

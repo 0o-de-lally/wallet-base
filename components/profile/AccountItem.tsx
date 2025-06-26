@@ -6,6 +6,7 @@ import { formatCurrency, shortenAddress } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
+import { reportErrorAuto } from "../../util/error-utils";
 
 export interface AccountItemProps {
   account: AccountState;
@@ -49,7 +50,9 @@ export const AccountItem = memo(
         await retryAccountBalance(account.id);
         // Note: UI will update automatically via Legend State reactivity
       } catch (error) {
-        console.warn("Failed to retry balance:", error);
+        reportErrorAuto("AccountItem.handleRetryBalance", error, {
+          accountId: account.id,
+        });
         Alert.alert(
           "Retry Failed",
           "Could not refresh balance data. Please check your connection and try again.",
@@ -63,7 +66,9 @@ export const AccountItem = memo(
         key={account.id}
         style={[
           styles.resultContainer,
-          compact ? styles.accountItemContainerCompact : styles.accountItemContainer,
+          compact
+            ? styles.accountItemContainerCompact
+            : styles.accountItemContainer,
           isActive && styles.accountItemActive,
           compact && styles.compactAccountItem,
         ]}
@@ -92,7 +97,7 @@ export const AccountItem = memo(
               >
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                    <Text style={{ color: '#666' }}>0x</Text>
+                    <Text style={{ color: "#666" }}>0x</Text>
                     {shortenAddress(account.account_address, 4, 4)}
                     {account.nickname && ` - ${account.nickname}`}
                   </Text>
@@ -114,11 +119,7 @@ export const AccountItem = memo(
                     disabled={true}
                     accessibilityLabel="View only account"
                   >
-                    <Ionicons
-                      name="eye-outline"
-                      size={16}
-                      color="#c2c2cc"
-                    />
+                    <Ionicons name="eye-outline" size={16} color="#c2c2cc" />
                   </TouchableOpacity>
                 )}
 
@@ -157,7 +158,7 @@ export const AccountItem = memo(
                 >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.accountNickname}>
-                      <Text style={{ color: '#666' }}>0x</Text>
+                      <Text style={{ color: "#666" }}>0x</Text>
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>
@@ -196,11 +197,7 @@ export const AccountItem = memo(
                   disabled={true}
                   accessibilityLabel="View only account"
                 >
-                  <Ionicons
-                    name="eye-outline"
-                    size={20}
-                    color="#c2c2cc"
-                  />
+                  <Ionicons name="eye-outline" size={20} color="#c2c2cc" />
                 </TouchableOpacity>
               )}
 

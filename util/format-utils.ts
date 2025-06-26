@@ -73,14 +73,14 @@ export function shortenAddress(
   }
 
   // Remove 0x prefix if present
-  let cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
+  let cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
 
   // Remove leading zeros
-  cleanAddress = cleanAddress.replace(/^0+/, '');
+  cleanAddress = cleanAddress.replace(/^0+/, "");
 
   // If all characters were zeros, keep at least one
-  if (cleanAddress === '') {
-    cleanAddress = '0';
+  if (cleanAddress === "") {
+    cleanAddress = "0";
   }
 
   if (cleanAddress.length <= prefixLength + suffixLength) {

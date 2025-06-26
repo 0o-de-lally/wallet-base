@@ -175,7 +175,7 @@ export function reportError(
   level: "error" | "warn" | "debug",
   context: string,
   error: unknown,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): void {
   const message = getSafeErrorMessage(error);
   const stack = error instanceof Error ? error.stack : undefined;
@@ -192,7 +192,7 @@ export function reportError(
 
   // Also log to console based on level
   const logMessage = `[${context}] ${message}`;
-  
+
   switch (level) {
     case "error":
       console.error(logMessage, metadata ? { metadata } : "");
@@ -212,7 +212,7 @@ export function reportError(
 export function reportErrorAuto(
   context: string,
   error: unknown,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): void {
   const { shouldLog } = categorizeError(error);
   const level = shouldLog ? "warn" : "debug";
@@ -236,14 +236,18 @@ export function clearErrorLogs(): void {
 /**
  * Clears error logs older than specified time
  */
-export function clearOldErrorLogs(olderThanMs: number = AUTO_CLEAR_INTERVAL): void {
+export function clearOldErrorLogs(
+  olderThanMs: number = AUTO_CLEAR_INTERVAL,
+): void {
   const cutoffTime = Date.now() - olderThanMs;
   const currentLogs = errorLogs.get();
-  const filteredLogs = currentLogs.filter(log => log.timestamp > cutoffTime);
-  
+  const filteredLogs = currentLogs.filter((log) => log.timestamp > cutoffTime);
+
   if (filteredLogs.length !== currentLogs.length) {
     errorLogs.set(filteredLogs);
-    console.debug(`Cleared ${currentLogs.length - filteredLogs.length} old error logs`);
+    console.debug(
+      `Cleared ${currentLogs.length - filteredLogs.length} old error logs`,
+    );
   }
 }
 
@@ -258,19 +262,19 @@ export function getErrorLogStats(): {
   newestTimestamp: number | null;
 } {
   const logs = errorLogs.get();
-  
+
   const byLevel: Record<string, number> = {};
   const byContext: Record<string, number> = {};
   let oldestTimestamp: number | null = null;
   let newestTimestamp: number | null = null;
 
-  logs.forEach(log => {
+  logs.forEach((log) => {
     // Count by level
     byLevel[log.level] = (byLevel[log.level] || 0) + 1;
-    
+
     // Count by context
     byContext[log.context] = (byContext[log.context] || 0) + 1;
-    
+
     // Track timestamps
     if (oldestTimestamp === null || log.timestamp < oldestTimestamp) {
       oldestTimestamp = log.timestamp;

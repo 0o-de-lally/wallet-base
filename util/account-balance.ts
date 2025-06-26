@@ -83,12 +83,10 @@ export async function fetchAccountBalance(
       error instanceof Error ? error.message : "Failed to fetch balance";
 
     // Use the error reporting system instead of console logging
-    reportError(
-      shouldLog ? "warn" : "debug",
-      "fetchAccountBalance",
-      error,
-      { accountAddress, type }
-    );
+    reportError(shouldLog ? "warn" : "debug", "fetchAccountBalance", error, {
+      accountAddress,
+      type,
+    });
 
     // Return error state instead of throwing
     return {
@@ -155,7 +153,12 @@ export async function fetchAndUpdateAccountBalance(
   account: AccountState,
 ): Promise<void> {
   if (!account.account_address) {
-    reportError("warn", "fetchAndUpdateAccountBalance", new Error("Account has no address"), { accountId: account.id });
+    reportError(
+      "warn",
+      "fetchAndUpdateAccountBalance",
+      new Error("Account has no address"),
+      { accountId: account.id },
+    );
     return;
   }
 
@@ -176,8 +179,10 @@ export async function fetchAndUpdateAccountBalance(
     // This should rarely happen now since fetchAccountBalance returns errors instead of throwing
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch balance";
-    
-    reportError("warn", "fetchAndUpdateAccountBalance", error, { accountId: account.id });
+
+    reportError("warn", "fetchAndUpdateAccountBalance", error, {
+      accountId: account.id,
+    });
 
     // Update account with error state
     await updateAccountBalance(account.id, {
@@ -198,7 +203,12 @@ export async function fetchAndUpdateProfileBalances(
   accounts: AccountState[],
 ): Promise<void> {
   if (!client) {
-    reportError("warn", "fetchAndUpdateProfileBalances", new Error("No client available"), { profileName });
+    reportError(
+      "warn",
+      "fetchAndUpdateProfileBalances",
+      new Error("No client available"),
+      { profileName },
+    );
     return;
   }
 
@@ -221,14 +231,22 @@ export async function fetchAndUpdateAllBalances(
   client: LibraClient,
 ): Promise<void> {
   if (!client) {
-    console.warn("No client available, skipping balance fetch");
+    reportError(
+      "warn",
+      "fetchAndUpdateAllBalances",
+      new Error("No client available"),
+    );
     return;
   }
 
   const profiles = appConfig.profiles.get();
 
   if (!profiles || Object.keys(profiles).length === 0) {
-    console.warn("No profiles found, skipping balance fetch");
+    reportError(
+      "warn",
+      "fetchAndUpdateAllBalances",
+      new Error("No profiles found"),
+    );
     return;
   }
 
@@ -245,10 +263,9 @@ export async function fetchAndUpdateAllBalances(
             profile.accounts,
           );
         } catch (error) {
-          console.error(
-            `Failed to update balances for profile ${profileName}:`,
-            error,
-          );
+          reportError("error", "fetchAndUpdateAllBalances", error, {
+            profileName,
+          });
         }
       }
     },
@@ -268,7 +285,12 @@ export async function fetchAndUpdateProfileBalancesWithBackoff(
   shouldSkipAccount?: (account: AccountState) => boolean,
 ): Promise<void> {
   if (!client) {
-    console.warn("No client available, skipping balance fetch");
+    reportError(
+      "warn",
+      "fetchAndUpdateProfileBalancesWithBackoff",
+      new Error("No client available"),
+      { profileName },
+    );
     return;
   }
 
@@ -321,7 +343,7 @@ export async function clearAccountErrors(accountId: string): Promise<boolean> {
 
     return accountFound;
   } catch (error) {
-    console.error("Failed to clear account errors:", error);
+    reportError("error", "clearAccountErrors", error, { accountId });
     return false;
   }
 }
