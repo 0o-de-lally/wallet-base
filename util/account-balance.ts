@@ -17,10 +17,12 @@ function categorizeError(error: unknown): {
   type: "network" | "api" | "timeout" | "unknown";
   shouldLog: boolean;
 } {
-  const errorMessage = 
+  const errorMessage =
     (error instanceof Error && error.message) ||
     (typeof error === "string" && error) ||
-    (error && typeof error === "object" && "toString" in error ? String(error) : "") ||
+    (error && typeof error === "object" && "toString" in error
+      ? String(error)
+      : "") ||
     "";
 
   // Network timeout or connection errors (common and expected)

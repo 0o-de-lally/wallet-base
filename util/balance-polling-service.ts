@@ -1,4 +1,8 @@
-import { appConfig, getProfileForAccount, type AccountState } from "./app-config-store";
+import {
+  appConfig,
+  getProfileForAccount,
+  type AccountState,
+} from "./app-config-store";
 import { getLibraClient } from "./libra-client";
 import {
   fetchAndUpdateProfileBalancesWithBackoff,
