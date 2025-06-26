@@ -492,6 +492,9 @@ export const styles = StyleSheet.create({
   accountItemContainer: {
     marginBottom: 10,
   },
+  accountItemContainerCompact: {
+    marginBottom: 4,
+  },
   accountItemActive: {
     borderColor: colors.primary,
     borderWidth: 2,
@@ -589,8 +592,9 @@ export const styles = StyleSheet.create({
 
   // Compact mode styles
   compactAccountItem: {
-    paddingVertical: 8,
+    paddingVertical: 4,
     paddingHorizontal: 12,
+    marginTop: 8,
   },
   compactBalanceRow: {
     flexDirection: "row",

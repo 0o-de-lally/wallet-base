@@ -63,7 +63,7 @@ export const AccountItem = memo(
         key={account.id}
         style={[
           styles.resultContainer,
-          styles.accountItemContainer,
+          compact ? styles.accountItemContainerCompact : styles.accountItemContainer,
           isActive && styles.accountItemActive,
           compact && styles.compactAccountItem,
         ]}
@@ -93,14 +93,6 @@ export const AccountItem = memo(
                 <Text style={[styles.accountNickname, { fontSize: 14 }]}>
                   {account.nickname}
                 </Text>
-                {!account.is_key_stored && (
-                  <Ionicons
-                    name="eye-outline"
-                    size={14}
-                    color="#c2c2cc"
-                    accessibilityLabel="View only account"
-                  />
-                )}
                 {account.last_error && (
                   <Ionicons
                     name="warning-outline"
@@ -112,16 +104,16 @@ export const AccountItem = memo(
               </View>
 
               <View style={styles.compactActions}>
-                {onSetActive && (
+                {!account.is_key_stored && (
                   <TouchableOpacity
                     style={[styles.iconButton, { padding: 6 }]}
-                    onPress={() => onSetActive(account.id)}
-                    accessibilityLabel={`Set ${account.nickname} as active account`}
+                    disabled={true}
+                    accessibilityLabel="View only account"
                   >
                     <Ionicons
-                      name="checkmark-circle-outline"
+                      name="eye-outline"
                       size={16}
-                      color="#a5d6b7"
+                      color="#c2c2cc"
                     />
                   </TouchableOpacity>
                 )}
@@ -147,7 +139,7 @@ export const AccountItem = memo(
                 {formatCurrency(account.balance_unlocked)}
               </Text>
               <Text style={[styles.balanceText, { fontSize: 12 }]}>
-                Total: {formatCurrency(account.balance_total)}
+                /  {formatCurrency(account.balance_total)}
               </Text>
             </View>
           </View>
@@ -160,14 +152,6 @@ export const AccountItem = memo(
                   style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
                   <Text style={styles.accountNickname}>{account.nickname}</Text>
-                  {!account.is_key_stored && (
-                    <Ionicons
-                      name="eye-outline"
-                      size={16}
-                      color="#c2c2cc"
-                      accessibilityLabel="View only account"
-                    />
-                  )}
                   {account.last_error && (
                     <Ionicons
                       name="warning-outline"
@@ -188,24 +172,24 @@ export const AccountItem = memo(
 
             <View style={styles.balanceRow}>
               <Text style={[styles.balanceText, styles.balancePrimary]}>
-                Unlocked: {formatCurrency(account.balance_unlocked)}
+                UNLOCKED: {formatCurrency(account.balance_unlocked)}
               </Text>
               <Text style={styles.balanceText}>
-                Total: {formatCurrency(account.balance_total)}
+                BALANCE: {formatCurrency(account.balance_total)}
               </Text>
             </View>
 
             <View style={styles.accountActionsRow}>
-              {onSetActive && !isActive && (
+              {!account.is_key_stored && (
                 <TouchableOpacity
                   style={styles.iconButton}
-                  onPress={() => onSetActive(account.id)}
-                  accessibilityLabel={`Set ${account.nickname} as active account`}
+                  disabled={true}
+                  accessibilityLabel="View only account"
                 >
                   <Ionicons
-                    name="checkmark-circle-outline"
+                    name="eye-outline"
                     size={20}
-                    color="#a5d6b7"
+                    color="#c2c2cc"
                   />
                 </TouchableOpacity>
               )}

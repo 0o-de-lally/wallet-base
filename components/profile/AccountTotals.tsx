@@ -51,10 +51,10 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
   return (
     <View>
       <Text style={[styles.balanceText, styles.balancePrimary]}>
-        Total Unlocked: {formatCurrency(totalUnlocked)}
+        UNLOCKED: {formatCurrency(totalUnlocked)}
       </Text>
       <Text style={styles.balanceText}>
-        Total Balance: {formatCurrency(totalBalance)}
+        TOTAL: {formatCurrency(totalBalance)}
       </Text>
     </View>
   );
