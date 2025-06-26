@@ -2,64 +2,13 @@ import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { appConfig } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
+import { categorizeError } from "./error-utils";
 
 export interface BalanceData {
   balance_unlocked: number;
   balance_total: number;
   error?: string;
   error_type?: "network" | "api" | "timeout" | "unknown";
-}
-
-/**
- * Categorizes error types for better handling
- */
-function categorizeError(error: unknown): {
-  type: "network" | "api" | "timeout" | "unknown";
-  shouldLog: boolean;
-} {
-  const errorMessage =
-    (error instanceof Error && error.message) ||
-    (typeof error === "string" && error) ||
-    (error && typeof error === "object" && "toString" in error
-      ? String(error)
-      : "") ||
-    "";
-
-  // Network timeout or connection errors (common and expected)
-  if (
-    errorMessage.includes("504") ||
-    errorMessage.includes("Gateway Time-out") ||
-    errorMessage.includes("timeout") ||
-    errorMessage.includes("ETIMEDOUT") ||
-    errorMessage.includes("ECONNRESET") ||
-    errorMessage.includes("ECONNREFUSED")
-  ) {
-    return { type: "timeout", shouldLog: false };
-  }
-
-  // Other HTTP errors (5xx server errors, 3xx redirects, etc.)
-  if (
-    errorMessage.includes("502") ||
-    errorMessage.includes("503") ||
-    errorMessage.includes("500") ||
-    errorMessage.includes("Bad Gateway") ||
-    errorMessage.includes("Service Unavailable")
-  ) {
-    return { type: "network", shouldLog: false };
-  }
-
-  // API-specific errors (4xx client errors)
-  if (
-    errorMessage.includes("400") ||
-    errorMessage.includes("401") ||
-    errorMessage.includes("403") ||
-    errorMessage.includes("404")
-  ) {
-    return { type: "api", shouldLog: true };
-  }
-
-  // Unknown errors should be logged for debugging
-  return { type: "unknown", shouldLog: true };
 }
 
 /**

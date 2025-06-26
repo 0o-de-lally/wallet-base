@@ -40,3 +40,62 @@ export function logError(
     console.error(`[${context}] ${message}`);
   }
 }
+
+/**
+ * Error category type for better error handling
+ */
+export type ErrorCategory = {
+  type: "network" | "api" | "timeout" | "unknown";
+  shouldLog: boolean;
+};
+
+/**
+ * Categorizes error types for better handling and logging decisions
+ * @param error The error to categorize
+ * @returns Error category with type and logging recommendation
+ */
+export function categorizeError(error: unknown): ErrorCategory {
+  const errorMessage =
+    (error instanceof Error && error.message) ||
+    (typeof error === "string" && error) ||
+    (error && typeof error === "object" && "toString" in error
+      ? String(error)
+      : "") ||
+    "";
+
+  // Network timeout or connection errors (common and expected)
+  if (
+    errorMessage.includes("504") ||
+    errorMessage.includes("Gateway Time-out") ||
+    errorMessage.includes("timeout") ||
+    errorMessage.includes("ETIMEDOUT") ||
+    errorMessage.includes("ECONNRESET") ||
+    errorMessage.includes("ECONNREFUSED")
+  ) {
+    return { type: "timeout", shouldLog: false };
+  }
+
+  // Other HTTP errors (5xx server errors, 3xx redirects, etc.)
+  if (
+    errorMessage.includes("502") ||
+    errorMessage.includes("503") ||
+    errorMessage.includes("500") ||
+    errorMessage.includes("Bad Gateway") ||
+    errorMessage.includes("Service Unavailable")
+  ) {
+    return { type: "network", shouldLog: false };
+  }
+
+  // API-specific errors (4xx client errors)
+  if (
+    errorMessage.includes("400") ||
+    errorMessage.includes("401") ||
+    errorMessage.includes("403") ||
+    errorMessage.includes("404")
+  ) {
+    return { type: "api", shouldLog: true };
+  }
+
+  // Unknown errors should be logged for debugging
+  return { type: "unknown", shouldLog: true };
+}

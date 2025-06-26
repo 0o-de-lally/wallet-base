@@ -10,6 +10,7 @@ import {
   fetchAndUpdateAccountBalance,
 } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
+import { categorizeError, getSafeErrorMessage } from "./error-utils";
 
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
@@ -138,24 +139,19 @@ export class BalancePollingService {
 
       console.log("Balance polling completed successfully");
     } catch (error) {
-      // Categorize the error to determine logging level
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      // Use the error categorization utility to determine logging level
+      const { shouldLog } = categorizeError(error);
+      const errorMessage = getSafeErrorMessage(error);
 
-      // For network/timeout errors, use debug level logging to reduce console spam
-      if (
-        errorMessage.includes("504") ||
-        errorMessage.includes("timeout") ||
-        errorMessage.includes("Gateway Time-out") ||
-        errorMessage.includes("ECONNRESET")
-      ) {
+      if (shouldLog) {
+        // For unexpected errors, use warn level since polling continues
+        console.warn("Balance polling error:", errorMessage);
+      } else {
+        // For network/timeout errors, use debug level logging to reduce console spam
         console.debug(
           "Balance polling encountered network issue:",
           errorMessage.substring(0, 100),
         );
-      } else {
-        // For other errors, use warn level since polling continues
-        console.warn("Balance polling error:", errorMessage);
       }
 
       // Don't stop the service on error, just log and continue
