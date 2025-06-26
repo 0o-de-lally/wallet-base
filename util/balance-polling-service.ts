@@ -1,11 +1,31 @@
 import { appConfig, getProfileForAccount } from "./app-config-store";
 import { getLibraClient } from "./libra-client";
-import { fetchAndUpdateProfileBalances } from "./account-balance";
+import { fetchAndUpdateProfileBalancesWithBackoff, clearAccountErrors, fetchAndUpdateAccountBalance } from "./account-balance";
 
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private isRunning = false;
   private readonly POLL_INTERVAL = 10000; // 10 seconds
+  private readonly MAX_ERROR_COUNT = 5; // Skip accounts with more than 5 consecutive errors
+
+  /**
+   * Checks if an account should be skipped due to consecutive errors
+   */
+  private shouldSkipAccount(account: any): boolean {
+    if (!account.error_count || account.error_count <= this.MAX_ERROR_COUNT) {
+      return false;
+    }
+    
+    // Implement exponential backoff - skip more frequently as error count increases
+    const backoffFactor = Math.min(Math.pow(2, account.error_count - this.MAX_ERROR_COUNT), 64);
+    const shouldSkip = Math.random() < (backoffFactor - 1) / backoffFactor;
+    
+    if (shouldSkip) {
+      console.debug(`Skipping balance fetch for account ${account.id} (${account.error_count} consecutive errors)`);
+    }
+    
+    return shouldSkip;
+  }
 
   /**
    * Starts the balance polling service
@@ -95,15 +115,27 @@ export class BalancePollingService {
       );
 
       // Fetch and update balances for all accounts in the active profile
-      await fetchAndUpdateProfileBalances(
+      await fetchAndUpdateProfileBalancesWithBackoff(
         client,
         activeProfileName,
         activeProfile.accounts,
+        (account) => this.shouldSkipAccount(account)
       );
 
       console.log("Balance polling completed successfully");
     } catch (error) {
-      console.error("Error during balance polling:", error);
+      // Categorize the error to determine logging level
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // For network/timeout errors, use debug level logging to reduce console spam
+      if (errorMessage.includes('504') || errorMessage.includes('timeout') || 
+          errorMessage.includes('Gateway Time-out') || errorMessage.includes('ECONNRESET')) {
+        console.debug("Balance polling encountered network issue:", errorMessage.substring(0, 100));
+      } else {
+        // For other errors, use warn level since polling continues
+        console.warn("Balance polling error:", errorMessage);
+      }
+      
       // Don't stop the service on error, just log and continue
     }
   }
@@ -123,6 +155,45 @@ export class BalancePollingService {
     this.stop();
     this.start();
   }
+
+  /**
+   * Manually retry balance fetch for a specific account (clears error state)
+   */
+  async retryAccount(accountId: string): Promise<void> {
+    try {
+      const profiles = appConfig.profiles.get();
+      let targetAccount = null;
+      let targetProfileName = null;
+
+      // Find the account
+      for (const [profileName, profile] of Object.entries(profiles)) {
+        const account = profile.accounts.find(acc => acc.id === accountId);
+        if (account) {
+          targetAccount = account;
+          targetProfileName = profileName;
+          break;
+        }
+      }
+
+      if (!targetAccount || !targetProfileName) {
+        console.warn(`Account ${accountId} not found for retry`);
+        return;
+      }
+
+      console.log(`Retrying balance fetch for account ${targetAccount.nickname} (${accountId})`);
+      
+      // Clear error state
+      await clearAccountErrors(accountId);
+      
+      // Fetch balance
+      const client = getLibraClient();
+      if (client) {
+        await fetchAndUpdateAccountBalance(client, targetAccount);
+      }
+    } catch (error) {
+      console.warn(`Failed to retry account ${accountId}:`, error);
+    }
+  }
 }
 
 // Create a singleton instance
@@ -133,4 +204,5 @@ export const startBalancePolling = () => balancePollingService.start();
 export const stopBalancePolling = () => balancePollingService.stop();
 export const restartBalancePolling = () => balancePollingService.restart();
 export const triggerBalancePoll = () => balancePollingService.triggerPoll();
+export const retryAccountBalance = (accountId: string) => balancePollingService.retryAccount(accountId);
 export const isBalancePollingRunning = () => balancePollingService.running;

@@ -39,6 +39,8 @@ export type AccountState = {
   balance_unlocked: number;
   balance_total: number;
   last_update: number; // timestamp
+  last_error?: string; // Last error encountered when fetching balance
+  error_count?: number; // Number of consecutive errors (for exponential backoff)
   reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
 };
 

@@ -1,10 +1,11 @@
 import React, { memo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
 import { formatCurrency } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
+import { retryAccountBalance } from "../../util/balance-polling-service";
 
 export interface AccountItemProps {
   account: AccountState;
@@ -40,6 +41,23 @@ export const AccountItem = memo(
       });
     };
 
+    const handleRetryBalance = async () => {
+      if (!account.last_error) return;
+      
+      try {
+        console.log(`Retrying balance fetch for ${account.nickname}`);
+        await retryAccountBalance(account.id);
+        // Note: UI will update automatically via Legend State reactivity
+      } catch (error) {
+        console.warn("Failed to retry balance:", error);
+        Alert.alert(
+          "Retry Failed", 
+          "Could not refresh balance data. Please check your connection and try again.",
+          [{ text: "OK" }]
+        );
+      }
+    };
+
     return (
       <TouchableOpacity
         key={account.id}
@@ -50,8 +68,9 @@ export const AccountItem = memo(
           compact && styles.compactAccountItem,
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}`}
         onPress={navigateToTransactions}
+        onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
         {compact ? (
           // Compact layout for inactive accounts
@@ -80,6 +99,14 @@ export const AccountItem = memo(
                     size={14}
                     color="#c2c2cc"
                     accessibilityLabel="View only account"
+                  />
+                )}
+                {account.last_error && (
+                  <Ionicons
+                    name="warning-outline"
+                    size={12}
+                    color="#ff9500"
+                    accessibilityLabel="Balance data may be outdated"
                   />
                 )}
               </View>
@@ -139,6 +166,14 @@ export const AccountItem = memo(
                       size={16}
                       color="#c2c2cc"
                       accessibilityLabel="View only account"
+                    />
+                  )}
+                  {account.last_error && (
+                    <Ionicons
+                      name="warning-outline"
+                      size={14}
+                      color="#ff9500"
+                      accessibilityLabel="Balance data may be outdated"
                     />
                   )}
                 </View>
