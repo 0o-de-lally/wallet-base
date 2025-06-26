@@ -9,7 +9,7 @@ import {
 import { useLocalSearchParams, router } from "expo-router";
 import { styles } from "../styles/styles";
 import { ActionButton } from "../components/common/ActionButton";
-import { formatTimestamp, formatCurrency } from "../util/format-utils";
+import { formatTimestamp, formatLibraAmount } from "../util/format-utils";
 import { Ionicons } from "@expo/vector-icons";
 
 // Mock transaction data structure - replace with actual API calls
@@ -126,7 +126,7 @@ export default function TransactionsScreen() {
               style={[styles.resultValue, { fontSize: 18, fontWeight: "600" }]}
             >
               {isIncoming ? "+" : "-"}
-              {formatCurrency(transaction.amount)}
+              {formatLibraAmount(transaction.amount)}
             </Text>
           </View>
           <View

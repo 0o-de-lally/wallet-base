@@ -1,21 +1,26 @@
-import { appConfig, getProfileForAccount } from "./app-config-store";
+import {
+  appConfig,
+  getProfileForAccount,
+  type AccountState,
+} from "./app-config-store";
 import { getLibraClient } from "./libra-client";
 import {
   fetchAndUpdateProfileBalancesWithBackoff,
   clearAccountErrors,
   fetchAndUpdateAccountBalance,
 } from "./account-balance";
+import { BALANCE_POLLING } from "./constants";
 
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private isRunning = false;
-  private readonly POLL_INTERVAL = 30000; // 30 seconds
-  private readonly MAX_ERROR_COUNT = 5; // Skip accounts with more than 5 consecutive errors
+  private readonly POLL_INTERVAL = BALANCE_POLLING.INTERVAL_MS;
+  private readonly MAX_ERROR_COUNT = BALANCE_POLLING.MAX_ERROR_COUNT;
 
   /**
    * Checks if an account should be skipped due to consecutive errors
    */
-  private shouldSkipAccount(account: any): boolean {
+  private shouldSkipAccount(account: AccountState): boolean {
     if (!account.error_count || account.error_count <= this.MAX_ERROR_COUNT) {
       return false;
     }
