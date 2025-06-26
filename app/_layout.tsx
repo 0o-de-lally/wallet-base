@@ -124,10 +124,7 @@ const RootLayout = observer(() => {
   if (authChecking) {
     return (
       <Layout>
-        <AuthenticationView
-          isLoading={true}
-          onAuthenticate={authenticate}
-        />
+        <AuthenticationView isLoading={true} onAuthenticate={authenticate} />
       </Layout>
     );
   }

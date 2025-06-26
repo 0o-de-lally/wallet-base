@@ -27,7 +27,8 @@ export function AuthenticationView({
         <View style={styles.loadingContent}>
           <Text style={styles.loadingText}>Verifying device security...</Text>
           <Text style={styles.subText}>
-            This may take a moment while we check your device&apos;s security settings.
+            This may take a moment while we check your device&apos;s security
+            settings.
           </Text>
         </View>
       </View>
@@ -48,8 +49,8 @@ export function AuthenticationView({
           <Text style={styles.infoText}>
             Your wallet is protected by your device&apos;s security features.
             {"\n\n"}
-            This authentication is separate from your wallet PIN and provides
-            an additional layer of security.
+            This authentication is separate from your wallet PIN and provides an
+            additional layer of security.
           </Text>
         </View>
 
@@ -62,7 +63,8 @@ export function AuthenticationView({
         />
 
         <Text style={styles.footerText}>
-          If authentication fails, please check your device&apos;s security settings.
+          If authentication fails, please check your device&apos;s security
+          settings.
         </Text>
       </View>
     </View>
