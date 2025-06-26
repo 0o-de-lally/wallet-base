@@ -50,10 +50,6 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
 
   return (
     <View style={{ marginTop: 20 }}>
-      <View
-        style={{ height: 1, backgroundColor: "#444455", marginBottom: 12 }}
-      />
-
       {/* Table-like layout for aligned values */}
       <View
         style={{
