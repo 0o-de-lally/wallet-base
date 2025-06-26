@@ -43,7 +43,7 @@ export const AccountItem = memo(
 
     const handleRetryBalance = async () => {
       if (!account.last_error) return;
-      
+
       try {
         console.log(`Retrying balance fetch for ${account.nickname}`);
         await retryAccountBalance(account.id);
@@ -51,7 +51,7 @@ export const AccountItem = memo(
       } catch (error) {
         console.warn("Failed to retry balance:", error);
         Alert.alert(
-          "Retry Failed", 
+          "Retry Failed",
           "Could not refresh balance data. Please check your connection and try again.",
           [{ text: "OK" }]
         );

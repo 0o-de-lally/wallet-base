@@ -14,27 +14,27 @@ export interface BalanceData {
  */
 function categorizeError(error: any): { type: 'network' | 'api' | 'timeout' | 'unknown', shouldLog: boolean } {
   const errorMessage = error?.message || error?.toString() || '';
-  
+
   // Network timeout or connection errors (common and expected)
-  if (errorMessage.includes('504') || errorMessage.includes('Gateway Time-out') || 
+  if (errorMessage.includes('504') || errorMessage.includes('Gateway Time-out') ||
       errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT') ||
       errorMessage.includes('ECONNRESET') || errorMessage.includes('ECONNREFUSED')) {
     return { type: 'timeout', shouldLog: false };
   }
-  
+
   // Other HTTP errors (5xx server errors, 3xx redirects, etc.)
-  if (errorMessage.includes('502') || errorMessage.includes('503') || 
+  if (errorMessage.includes('502') || errorMessage.includes('503') ||
       errorMessage.includes('500') || errorMessage.includes('Bad Gateway') ||
       errorMessage.includes('Service Unavailable')) {
     return { type: 'network', shouldLog: false };
   }
-  
+
   // API-specific errors (4xx client errors)
-  if (errorMessage.includes('400') || errorMessage.includes('401') || 
+  if (errorMessage.includes('400') || errorMessage.includes('401') ||
       errorMessage.includes('403') || errorMessage.includes('404')) {
     return { type: 'api', shouldLog: true };
   }
-  
+
   // Unknown errors should be logged for debugging
   return { type: 'unknown', shouldLog: true };
 }
@@ -107,7 +107,7 @@ export async function fetchAccountBalance(
   } catch (error) {
     const { type, shouldLog } = categorizeError(error);
     const errorMessage = error instanceof Error ? error.message : "Failed to fetch balance";
-    
+
     // Only log unexpected errors to avoid console spam from network issues
     if (shouldLog) {
       console.error(
@@ -121,7 +121,7 @@ export async function fetchAccountBalance(
         `Balance fetch ${type} for account ${accountAddress.substring(0, 8)}...: ${errorMessage.substring(0, 100)}`
       );
     }
-    
+
     // Return error state instead of throwing
     return {
       balance_unlocked: 0,
@@ -152,7 +152,7 @@ export async function updateAccountBalance(
       );
       if (accountIndex !== -1) {
         const currentAccount = profile.accounts[accountIndex];
-        
+
         profile.accounts[accountIndex] = {
           ...currentAccount,
           balance_unlocked: balanceData.balance_unlocked,
@@ -160,8 +160,8 @@ export async function updateAccountBalance(
           last_update: now,
           // Handle error state
           last_error: balanceData.error || undefined,
-          error_count: balanceData.error 
-            ? (currentAccount.error_count || 0) + 1 
+          error_count: balanceData.error
+            ? (currentAccount.error_count || 0) + 1
             : undefined, // Clear error count on successful update
         };
         // Update the profile in storage
@@ -199,7 +199,7 @@ export async function fetchAndUpdateAccountBalance(
       account.account_address,
     );
     await updateAccountBalance(account.id, balanceData);
-    
+
     // Log successful recovery if account previously had errors
     if (account.error_count && account.error_count > 0 && !balanceData.error) {
       console.log(`✓ Balance fetch recovered for account ${account.id} after ${account.error_count} errors`);
@@ -211,7 +211,7 @@ export async function fetchAndUpdateAccountBalance(
       `Unexpected error updating balance for account ${account.id}:`,
       errorMessage,
     );
-    
+
     // Update account with error state
     await updateAccountBalance(account.id, {
       balance_unlocked: account.balance_unlocked,
@@ -305,7 +305,7 @@ export async function fetchAndUpdateProfileBalancesWithBackoff(
     return;
   }
 
-  const accountsToFetch = shouldSkipAccount 
+  const accountsToFetch = shouldSkipAccount
     ? accounts.filter(account => !shouldSkipAccount(account))
     : accounts;
 
@@ -378,15 +378,15 @@ export function getBalancePollingStats(): {
     if (profile?.accounts) {
       profile.accounts.forEach(account => {
         totalAccounts++;
-        
+
         if (account.last_error) {
           accountsWithErrors++;
         }
-        
+
         if (account.error_count && account.error_count > 5) {
           accountsSkipped++;
         }
-        
+
         if (account.last_update && (!lastSuccessfulPoll || account.last_update > lastSuccessfulPoll)) {
           lastSuccessfulPoll = account.last_update;
         }

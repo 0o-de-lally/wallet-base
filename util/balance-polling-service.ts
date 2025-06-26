@@ -5,7 +5,7 @@ import { fetchAndUpdateProfileBalancesWithBackoff, clearAccountErrors, fetchAndU
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private isRunning = false;
-  private readonly POLL_INTERVAL = 10000; // 10 seconds
+  private readonly POLL_INTERVAL = 30000; // 30 seconds
   private readonly MAX_ERROR_COUNT = 5; // Skip accounts with more than 5 consecutive errors
 
   /**
@@ -15,15 +15,15 @@ export class BalancePollingService {
     if (!account.error_count || account.error_count <= this.MAX_ERROR_COUNT) {
       return false;
     }
-    
+
     // Implement exponential backoff - skip more frequently as error count increases
     const backoffFactor = Math.min(Math.pow(2, account.error_count - this.MAX_ERROR_COUNT), 64);
     const shouldSkip = Math.random() < (backoffFactor - 1) / backoffFactor;
-    
+
     if (shouldSkip) {
       console.debug(`Skipping balance fetch for account ${account.id} (${account.error_count} consecutive errors)`);
     }
-    
+
     return shouldSkip;
   }
 
@@ -36,7 +36,7 @@ export class BalancePollingService {
       return;
     }
 
-    console.log("Starting balance polling service (every 10 seconds)");
+    console.log("Starting balance polling service (every 30 seconds)");
     this.isRunning = true;
 
     // Run immediately on start
@@ -126,16 +126,16 @@ export class BalancePollingService {
     } catch (error) {
       // Categorize the error to determine logging level
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       // For network/timeout errors, use debug level logging to reduce console spam
-      if (errorMessage.includes('504') || errorMessage.includes('timeout') || 
+      if (errorMessage.includes('504') || errorMessage.includes('timeout') ||
           errorMessage.includes('Gateway Time-out') || errorMessage.includes('ECONNRESET')) {
         console.debug("Balance polling encountered network issue:", errorMessage.substring(0, 100));
       } else {
         // For other errors, use warn level since polling continues
         console.warn("Balance polling error:", errorMessage);
       }
-      
+
       // Don't stop the service on error, just log and continue
     }
   }
@@ -181,10 +181,10 @@ export class BalancePollingService {
       }
 
       console.log(`Retrying balance fetch for account ${targetAccount.nickname} (${accountId})`);
-      
+
       // Clear error state
       await clearAccountErrors(accountId);
-      
+
       // Fetch balance
       const client = getLibraClient();
       if (client) {
