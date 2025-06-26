@@ -6,37 +6,53 @@ export interface BalanceData {
   balance_unlocked: number;
   balance_total: number;
   error?: string;
-  error_type?: 'network' | 'api' | 'timeout' | 'unknown';
+  error_type?: "network" | "api" | "timeout" | "unknown";
 }
 
 /**
  * Categorizes error types for better handling
  */
-function categorizeError(error: any): { type: 'network' | 'api' | 'timeout' | 'unknown', shouldLog: boolean } {
-  const errorMessage = error?.message || error?.toString() || '';
+function categorizeError(error: any): {
+  type: "network" | "api" | "timeout" | "unknown";
+  shouldLog: boolean;
+} {
+  const errorMessage = error?.message || error?.toString() || "";
 
   // Network timeout or connection errors (common and expected)
-  if (errorMessage.includes('504') || errorMessage.includes('Gateway Time-out') ||
-      errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT') ||
-      errorMessage.includes('ECONNRESET') || errorMessage.includes('ECONNREFUSED')) {
-    return { type: 'timeout', shouldLog: false };
+  if (
+    errorMessage.includes("504") ||
+    errorMessage.includes("Gateway Time-out") ||
+    errorMessage.includes("timeout") ||
+    errorMessage.includes("ETIMEDOUT") ||
+    errorMessage.includes("ECONNRESET") ||
+    errorMessage.includes("ECONNREFUSED")
+  ) {
+    return { type: "timeout", shouldLog: false };
   }
 
   // Other HTTP errors (5xx server errors, 3xx redirects, etc.)
-  if (errorMessage.includes('502') || errorMessage.includes('503') ||
-      errorMessage.includes('500') || errorMessage.includes('Bad Gateway') ||
-      errorMessage.includes('Service Unavailable')) {
-    return { type: 'network', shouldLog: false };
+  if (
+    errorMessage.includes("502") ||
+    errorMessage.includes("503") ||
+    errorMessage.includes("500") ||
+    errorMessage.includes("Bad Gateway") ||
+    errorMessage.includes("Service Unavailable")
+  ) {
+    return { type: "network", shouldLog: false };
   }
 
   // API-specific errors (4xx client errors)
-  if (errorMessage.includes('400') || errorMessage.includes('401') ||
-      errorMessage.includes('403') || errorMessage.includes('404')) {
-    return { type: 'api', shouldLog: true };
+  if (
+    errorMessage.includes("400") ||
+    errorMessage.includes("401") ||
+    errorMessage.includes("403") ||
+    errorMessage.includes("404")
+  ) {
+    return { type: "api", shouldLog: true };
   }
 
   // Unknown errors should be logged for debugging
-  return { type: 'unknown', shouldLog: true };
+  return { type: "unknown", shouldLog: true };
 }
 
 /**
@@ -106,7 +122,8 @@ export async function fetchAccountBalance(
     }
   } catch (error) {
     const { type, shouldLog } = categorizeError(error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to fetch balance";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch balance";
 
     // Only log unexpected errors to avoid console spam from network issues
     if (shouldLog) {
@@ -118,7 +135,7 @@ export async function fetchAccountBalance(
     } else {
       // For network/timeout errors, just log a brief debug message
       console.debug(
-        `Balance fetch ${type} for account ${accountAddress.substring(0, 8)}...: ${errorMessage.substring(0, 100)}`
+        `Balance fetch ${type} for account ${accountAddress.substring(0, 8)}...: ${errorMessage.substring(0, 100)}`,
       );
     }
 
@@ -127,7 +144,7 @@ export async function fetchAccountBalance(
       balance_unlocked: 0,
       balance_total: 0,
       error: errorMessage,
-      error_type: type
+      error_type: type,
     };
   }
 }
@@ -202,11 +219,14 @@ export async function fetchAndUpdateAccountBalance(
 
     // Log successful recovery if account previously had errors
     if (account.error_count && account.error_count > 0 && !balanceData.error) {
-      console.log(`✓ Balance fetch recovered for account ${account.id} after ${account.error_count} errors`);
+      console.log(
+        `✓ Balance fetch recovered for account ${account.id} after ${account.error_count} errors`,
+      );
     }
   } catch (error) {
     // This should rarely happen now since fetchAccountBalance returns errors instead of throwing
-    const errorMessage = error instanceof Error ? error.message : "Failed to fetch balance";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch balance";
     console.warn(
       `Unexpected error updating balance for account ${account.id}:`,
       errorMessage,
@@ -217,7 +237,7 @@ export async function fetchAndUpdateAccountBalance(
       balance_unlocked: account.balance_unlocked,
       balance_total: account.balance_total,
       error: errorMessage,
-      error_type: 'unknown'
+      error_type: "unknown",
     });
   }
 }
@@ -306,12 +326,12 @@ export async function fetchAndUpdateProfileBalancesWithBackoff(
   }
 
   const accountsToFetch = shouldSkipAccount
-    ? accounts.filter(account => !shouldSkipAccount(account))
+    ? accounts.filter((account) => !shouldSkipAccount(account))
     : accounts;
 
   if (accountsToFetch.length !== accounts.length) {
     console.debug(
-      `Fetching balances for ${accountsToFetch.length}/${accounts.length} accounts in profile ${profileName} (${accounts.length - accountsToFetch.length} skipped due to errors)`
+      `Fetching balances for ${accountsToFetch.length}/${accounts.length} accounts in profile ${profileName} (${accounts.length - accountsToFetch.length} skipped due to errors)`,
     );
   } else {
     console.log(
@@ -374,9 +394,9 @@ export function getBalancePollingStats(): {
   let accountsSkipped = 0;
   let lastSuccessfulPoll: number | null = null;
 
-  Object.values(profiles).forEach(profile => {
+  Object.values(profiles).forEach((profile) => {
     if (profile?.accounts) {
-      profile.accounts.forEach(account => {
+      profile.accounts.forEach((account) => {
         totalAccounts++;
 
         if (account.last_error) {
@@ -387,7 +407,10 @@ export function getBalancePollingStats(): {
           accountsSkipped++;
         }
 
-        if (account.last_update && (!lastSuccessfulPoll || account.last_update > lastSuccessfulPoll)) {
+        if (
+          account.last_update &&
+          (!lastSuccessfulPoll || account.last_update > lastSuccessfulPoll)
+        ) {
           lastSuccessfulPoll = account.last_update;
         }
       });
@@ -398,6 +421,6 @@ export function getBalancePollingStats(): {
     totalAccounts,
     accountsWithErrors,
     accountsSkipped,
-    lastSuccessfulPoll
+    lastSuccessfulPoll,
   };
 }

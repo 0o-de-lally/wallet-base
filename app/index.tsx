@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ActivityIndicator, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { observer } from "@legendapp/state/react";
 import { Stack } from "expo-router";
@@ -136,9 +142,18 @@ const SmartAccountList = observer(
     }
 
     return (
-      <SafeAreaView style={styles.safeAreaView} edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        style={styles.safeAreaView}
+        edges={["top", "left", "right"]}
+      >
         <View style={styles.headerRow}>
-          <Text style={styles.title}>{displayProfile.name}</Text>
+          <Text
+            style={styles.profileName}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {displayProfile.name.toUpperCase()}
+          </Text>
           <TouchableOpacity
             style={styles.menuIconButton}
             onPress={onShowMenu}
@@ -150,7 +165,10 @@ const SmartAccountList = observer(
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.containerWithHeader} contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          style={styles.containerWithHeader}
+          contentContainerStyle={styles.scrollContent}
+        >
           <AccountList
             profileName={displayProfile.name}
             accounts={displayProfile.accounts}
@@ -160,7 +178,7 @@ const SmartAccountList = observer(
             }}
           />
         </ScrollView>
-        
+
         {/* Fixed footer with account totals */}
         <View style={styles.bottomTotalsContainer}>
           <AccountTotals profileName={displayProfile.name} />

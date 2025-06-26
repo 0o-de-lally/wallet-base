@@ -92,6 +92,13 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.textPrimary,
   },
+  profileName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.textSecondary,
+    letterSpacing: 0.8,
+    maxWidth: 200, // Limit width to enable truncation
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
@@ -375,11 +382,6 @@ export const styles = StyleSheet.create({
     borderRadius: 1,
     borderWidth: 1,
     borderColor: colors.outlineBold,
-  },
-  profileName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.textPrimary,
   },
   accountCount: {
     fontSize: 13,
