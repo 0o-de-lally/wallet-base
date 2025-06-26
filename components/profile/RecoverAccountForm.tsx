@@ -11,21 +11,23 @@ import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
 import { createAccount } from "../../util/account-utils";
-import { AccountAddress, LibraWallet, Network } from "open-libra-sdk";
+import { AccountAddress, LibraWallet, LibraClient, Network } from "open-libra-sdk";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
-import { getLibraClientUrl } from "../../util/libra-client";
+import { getLibraClientConfig } from "../../util/libra-client";
 
 interface RecoverAccountFormProps {
   profileName?: string;
   onComplete: () => void;
   onResetForm?: () => void;
+  libraClient: LibraClient;
 }
 
 const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   profileName,
   onComplete,
   onResetForm,
+  libraClient,
 }) => {
   // Get all available profiles
   const profileNames = Object.keys(appConfig.profiles.get());
@@ -142,11 +144,12 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         }
         setError(null);
 
-        // Create wallet from mnemonic
+        // Create wallet from mnemonic using the same configuration as the passed client
+        const clientConfig = getLibraClientConfig();
         const wallet = LibraWallet.fromMnemonic(
           mnemonic.trim(),
           Network.MAINNET,
-          getLibraClientUrl(),
+          clientConfig.url, // Use the same URL as the passed client
         );
 
         // Get the account address
@@ -178,11 +181,12 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     }
 
     try {
-      // Create wallet from mnemonic
+      // Create wallet from mnemonic using the same configuration as the passed client
+      const clientConfig = getLibraClientConfig();
       const wallet = LibraWallet.fromMnemonic(
         mnemonic.trim(),
         Network.MAINNET,
-        getLibraClientUrl(),
+        clientConfig.url, // Use the same URL as the passed client
       );
 
       try {
