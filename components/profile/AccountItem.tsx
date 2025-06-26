@@ -58,6 +58,16 @@ export const AccountItem = memo(
       }
     };
 
+    const handlePress = () => {
+      // If account is not active and onSetActive callback is provided, set it as active
+      if (!isActive && onSetActive) {
+        onSetActive(account.id);
+      } else {
+        // If account is already active, navigate to transactions
+        navigateToTransactions();
+      }
+    };
+
     return (
       <TouchableOpacity
         key={account.id}
@@ -69,7 +79,7 @@ export const AccountItem = memo(
         ]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}`}
-        onPress={navigateToTransactions}
+        onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
         {compact ? (

@@ -7,7 +7,7 @@ import { getValue } from "./secure-store";
 
 interface Account {
   id: string;
-  nickname: string;
+  nickname?: string;
 }
 
 interface Profile {
