@@ -2,7 +2,7 @@ import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { appConfig } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
-import { categorizeError } from "./error-utils";
+import { categorizeError, reportError, reportErrorAuto } from "./error-utils";
 
 export interface BalanceData {
   balance_unlocked: number;
@@ -82,19 +82,13 @@ export async function fetchAccountBalance(
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch balance";
 
-    // Only log unexpected errors to avoid console spam from network issues
-    if (shouldLog) {
-      console.error(
-        "Failed to fetch balance for account:",
-        accountAddress,
-        error,
-      );
-    } else {
-      // For network/timeout errors, just log a brief debug message
-      console.debug(
-        `Balance fetch ${type} for account ${accountAddress.substring(0, 8)}...: ${errorMessage.substring(0, 100)}`,
-      );
-    }
+    // Use the error reporting system instead of console logging
+    reportError(
+      shouldLog ? "warn" : "debug",
+      "fetchAccountBalance",
+      error,
+      { accountAddress, type }
+    );
 
     // Return error state instead of throwing
     return {
@@ -148,7 +142,7 @@ export async function updateAccountBalance(
       throw new Error(`Account ${accountId} not found in any profile`);
     }
   } catch (error) {
-    console.error("Failed to update stored account balance:", error);
+    reportError("error", "updateAccountBalance", error, { accountId });
     throw error;
   }
 }
@@ -161,9 +155,7 @@ export async function fetchAndUpdateAccountBalance(
   account: AccountState,
 ): Promise<void> {
   if (!account.account_address) {
-    console.warn(
-      `Account ${account.id} has no address, skipping balance fetch`,
-    );
+    reportError("warn", "fetchAndUpdateAccountBalance", new Error("Account has no address"), { accountId: account.id });
     return;
   }
 
@@ -184,10 +176,8 @@ export async function fetchAndUpdateAccountBalance(
     // This should rarely happen now since fetchAccountBalance returns errors instead of throwing
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch balance";
-    console.warn(
-      `Unexpected error updating balance for account ${account.id}:`,
-      errorMessage,
-    );
+    
+    reportError("warn", "fetchAndUpdateAccountBalance", error, { accountId: account.id });
 
     // Update account with error state
     await updateAccountBalance(account.id, {
@@ -208,7 +198,7 @@ export async function fetchAndUpdateProfileBalances(
   accounts: AccountState[],
 ): Promise<void> {
   if (!client) {
-    console.warn("No client available, skipping balance fetch");
+    reportError("warn", "fetchAndUpdateProfileBalances", new Error("No client available"), { profileName });
     return;
   }
 

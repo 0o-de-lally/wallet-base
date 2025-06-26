@@ -220,6 +220,14 @@ export const Menu: React.FC<MenuProps> = observer(
             accessibilityLabel="Log current app state to console"
           />
           <ActionButton
+            text="Error Logs"
+            onPress={() => {
+              router.navigate("./error-logs");
+            }}
+            style={{ marginTop: 10 }}
+            accessibilityLabel="View application error logs"
+          />
+          <ActionButton
             text="LibraClient Config"
             onPress={() => {
               const isInitialized = isLibraClientInitialized();
