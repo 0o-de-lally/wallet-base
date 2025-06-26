@@ -13,7 +13,7 @@ import {
   isEnrolledAsync,
   authenticateAsync,
 } from "expo-local-authentication";
-import { View, Text, StatusBar } from "react-native";
+import { View, StatusBar } from "react-native";
 import { AuthenticationView } from "../components/auth/AuthenticationView";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
