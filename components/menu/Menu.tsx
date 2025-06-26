@@ -158,7 +158,7 @@ export const Menu: React.FC<MenuProps> = observer(
           {/* Account Management */}
           <SectionContainer title="Account Management">
             <ActionButton
-              text="View Accounts"
+              text="Manage Profiles"
               onPress={() => navigateToScreen("/profiles")}
               accessibilityLabel="View and manage accounts"
             />
@@ -251,17 +251,6 @@ export const Menu: React.FC<MenuProps> = observer(
               }}
               style={{ marginTop: 10 }}
               accessibilityLabel="Show current LibraClient configuration"
-            />
-            <ActionButton
-              text="Change LibraClient URL"
-              onPress={() => {
-                showAlert(
-                  "Change LibraClient URL",
-                  "This feature would allow you to change the RPC URL. Implementation can be added based on your needs.\n\nCurrent options:\n• Mainnet (default)\n• Custom URL input\n• Network presets",
-                );
-              }}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Change LibraClient RPC URL"
             />
           </SectionContainer>
 
