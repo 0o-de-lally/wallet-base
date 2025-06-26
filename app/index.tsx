@@ -8,7 +8,6 @@ import { SetupGuard } from "@/components/auth/SetupGuard";
 import { Menu } from "@/components/menu/Menu";
 import AccountList from "@/components/profile/AccountList";
 import { appConfig, getProfileForAccount } from "@/util/app-config-store";
-import { getLibraClient } from "@/util/libra-client";
 
 // Main App component that combines the functionality
 export default function App() {
@@ -92,9 +91,6 @@ const SmartAccountList = observer(
     const activeAccountId = appConfig.activeAccountId.get();
     const profiles = appConfig.profiles.get();
 
-    // Get the global LibraClient instance
-    const client = getLibraClient();
-
     // Early return if profiles aren't loaded yet
     if (!profiles || Object.keys(profiles).length === 0) {
       return (
@@ -164,7 +160,6 @@ const SmartAccountList = observer(
           onSetActiveAccount={(accountId: string) => {
             appConfig.activeAccountId.set(accountId);
           }}
-          client={client}
         />
       </View>
     );

@@ -2,6 +2,7 @@ import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 import { initializeRevealController } from "./reveal-controller";
 import { initializeLibraClient } from "./libra-client";
 import { resetAppToCleanState } from "./clear-storage-controller";
+import { startBalancePolling } from "./balance-polling-service";
 import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
   hasHardwareAsync,
@@ -113,6 +114,15 @@ export async function initializeApp() {
       console.error("Failed to initialize LibraClient:", error);
       // Don't fail app initialization if LibraClient fails
       // It can be initialized later when needed
+    }
+
+    // Start the background balance polling service
+    try {
+      startBalancePolling();
+      console.log("Balance polling service started successfully");
+    } catch (error) {
+      console.error("Failed to start balance polling service:", error);
+      // Don't fail app initialization if balance polling fails
     }
 
     return true;

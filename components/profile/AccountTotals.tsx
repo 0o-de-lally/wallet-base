@@ -1,14 +1,22 @@
 import React, { memo } from "react";
 import { View, Text } from "react-native";
+import { useSelector } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { formatCurrency } from "../../util/format-utils";
-import type { AccountState } from "../../util/app-config-store";
+import { appConfig } from "../../util/app-config-store";
 
 interface AccountTotalsProps {
-  accounts: AccountState[];
+  profileName: string;
 }
 
-export const AccountTotals = memo(({ accounts }: AccountTotalsProps) => {
+export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
+  // Get accounts from Legend state for the specific profile
+  const accounts = useSelector(() => {
+    const profiles = appConfig.profiles.get();
+    const profile = profiles[profileName];
+    return profile?.accounts || [];
+  });
+
   console.log("AccountTotals received accounts:", accounts.length);
   console.log("Account balances:", accounts.map(acc => ({
     id: acc.id,

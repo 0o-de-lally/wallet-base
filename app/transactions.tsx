@@ -25,7 +25,7 @@ interface Transaction {
 }
 
 export default function TransactionsScreen() {
-  const { accountId, profileName, accountNickname } = useLocalSearchParams<{
+  const { profileName, accountNickname } = useLocalSearchParams<{
     accountId: string;
     profileName: string;
     accountNickname: string;

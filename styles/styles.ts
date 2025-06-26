@@ -418,6 +418,42 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
+  profileItemSelected: {
+    backgroundColor: colors.expandedBg,
+    borderColor: colors.primary,
+  },
+  profileContentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  profileTitleContainer: {
+    flex: 1,
+    marginRight: 10,
+  },
+  activeProfileBadge: {
+    backgroundColor: colors.success,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  activeProfileBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.buttonTextDark,
+  },
+  profileAccountCountText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: "500",
+  },
+  profileNetworkText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
 
   // ACCOUNT ITEM STYLES
   accountItemContainer: {
