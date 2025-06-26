@@ -13,11 +13,15 @@ export interface BalanceData {
 /**
  * Categorizes error types for better handling
  */
-function categorizeError(error: any): {
+function categorizeError(error: unknown): {
   type: "network" | "api" | "timeout" | "unknown";
   shouldLog: boolean;
 } {
-  const errorMessage = error?.message || error?.toString() || "";
+  const errorMessage = 
+    (error instanceof Error && error.message) ||
+    (typeof error === "string" && error) ||
+    (error && typeof error === "object" && "toString" in error ? String(error) : "") ||
+    "";
 
   // Network timeout or connection errors (common and expected)
   if (

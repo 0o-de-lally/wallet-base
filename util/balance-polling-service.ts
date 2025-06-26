@@ -1,4 +1,4 @@
-import { appConfig, getProfileForAccount } from "./app-config-store";
+import { appConfig, getProfileForAccount, type AccountState } from "./app-config-store";
 import { getLibraClient } from "./libra-client";
 import {
   fetchAndUpdateProfileBalancesWithBackoff,
@@ -16,7 +16,7 @@ export class BalancePollingService {
   /**
    * Checks if an account should be skipped due to consecutive errors
    */
-  private shouldSkipAccount(account: any): boolean {
+  private shouldSkipAccount(account: AccountState): boolean {
     if (!account.error_count || account.error_count <= this.MAX_ERROR_COUNT) {
       return false;
     }
