@@ -611,4 +611,17 @@ export const styles = StyleSheet.create({
   buttonSpacingTight: {
     marginTop: 5,
   },
+
+  // Icon button styles
+  menuIconButton: {
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+    // Add subtle visual feedback
+    opacity: 1,
+  },
 });

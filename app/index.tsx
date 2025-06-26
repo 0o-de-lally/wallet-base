@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
 import { SetupGuard } from "@/components/auth/SetupGuard";
@@ -143,13 +144,13 @@ const SmartAccountList = observer(
         >
           <Text style={styles.title}>{displayProfile.name}</Text>
           <TouchableOpacity
-            style={styles.navButton}
+            style={styles.menuIconButton}
             onPress={onShowMenu}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Open menu"
           >
-            <Text style={styles.navButtonText}>Menu</Text>
+            <Ionicons name="menu-outline" size={24} color="#c2c2cc" />
           </TouchableOpacity>
         </View>
 
