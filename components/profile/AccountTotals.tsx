@@ -49,10 +49,7 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
   );
 
   return (
-    <View style={{ marginTop: 20 }}>
-      <View
-        style={{ height: 1, backgroundColor: "#444455", marginBottom: 12 }}
-      />
+    <View>
       <Text style={[styles.balanceText, styles.balancePrimary]}>
         Total Unlocked: {formatCurrency(totalUnlocked)}
       </Text>

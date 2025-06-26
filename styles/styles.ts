@@ -35,6 +35,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     backgroundColor: colors.background,
+    paddingBottom: 20, // Extra space at bottom for better scroll experience
   },
   content: {
     justifyContent: "center",
@@ -614,14 +615,47 @@ export const styles = StyleSheet.create({
 
   // Icon button styles
   menuIconButton: {
-    padding: 12,
+    padding: 8, // Reduced padding for closer edge placement
     borderRadius: 8,
     backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
+    // Remove border for cleaner header look
+    borderWidth: 0,
+    // Ensure adequate touch target (minimum 44px)
+    minWidth: 44,
+    minHeight: 44,
     // Add subtle visual feedback
     opacity: 1,
+  },
+
+  // Header styles for edge-to-edge layout
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16, // Reduced from 20 for closer-to-edge placement
+    paddingTop: 10,
+    paddingBottom: 10,
+    backgroundColor: colors.background,
+  },
+
+  // Container without top padding for edge-to-edge header
+  containerWithHeader: {
+    flex: 1, // Allow this to take remaining space
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    backgroundColor: colors.background,
+  },
+
+  // Fixed footer container for bottom-anchored elements
+  bottomTotalsContainer: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    // Add safe area padding for devices with home indicators
+    paddingBottom: 20, // This will be overridden by safe area if needed
   },
 });

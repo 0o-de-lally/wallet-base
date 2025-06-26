@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { View, ActivityIndicator, Text, TouchableOpacity, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { observer } from "@legendapp/state/react";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +9,7 @@ import { initializeApp } from "@/util/initialize-app";
 import { SetupGuard } from "@/components/auth/SetupGuard";
 import { Menu } from "@/components/menu/Menu";
 import AccountList from "@/components/profile/AccountList";
+import { AccountTotals } from "@/components/profile/AccountTotals";
 import { appConfig, getProfileForAccount } from "@/util/app-config-store";
 
 // Main App component that combines the functionality
@@ -17,6 +19,7 @@ export default function App() {
       <Stack.Screen
         options={{
           title: "",
+          headerShown: false,
           headerBackTitle: "Back",
         }}
       />
@@ -133,15 +136,8 @@ const SmartAccountList = observer(
     }
 
     return (
-      <View style={styles.container}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 20,
-          }}
-        >
+      <SafeAreaView style={styles.safeAreaView} edges={['top', 'left', 'right']}>
+        <View style={styles.headerRow}>
           <Text style={styles.title}>{displayProfile.name}</Text>
           <TouchableOpacity
             style={styles.menuIconButton}
@@ -154,15 +150,22 @@ const SmartAccountList = observer(
           </TouchableOpacity>
         </View>
 
-        <AccountList
-          profileName={displayProfile.name}
-          accounts={displayProfile.accounts}
-          activeAccountId={activeAccountId}
-          onSetActiveAccount={(accountId: string) => {
-            appConfig.activeAccountId.set(accountId);
-          }}
-        />
-      </View>
+        <ScrollView style={styles.containerWithHeader} contentContainerStyle={styles.scrollContent}>
+          <AccountList
+            profileName={displayProfile.name}
+            accounts={displayProfile.accounts}
+            activeAccountId={activeAccountId}
+            onSetActiveAccount={(accountId: string) => {
+              appConfig.activeAccountId.set(accountId);
+            }}
+          />
+        </ScrollView>
+        
+        {/* Fixed footer with account totals */}
+        <View style={styles.bottomTotalsContainer}>
+          <AccountTotals profileName={displayProfile.name} />
+        </View>
+      </SafeAreaView>
     );
   },
 );
