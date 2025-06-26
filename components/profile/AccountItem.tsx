@@ -94,7 +94,7 @@ export const AccountItem = memo(
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
                     <Text style={{ color: '#666' }}>0x</Text>
                     {shortenAddress(account.account_address, 4, 4)}
-                    {account.nickname && ` (${account.nickname})`}
+                    {account.nickname && ` - ${account.nickname}`}
                   </Text>
                 </View>
                 {account.last_error && (

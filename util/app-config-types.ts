@@ -34,7 +34,7 @@ export type RevealSchedule = {
 export type AccountState = {
   id: string; // Unique identifier for the account (e.g., UUID or random ID)
   account_address: string; // String representation of the account address
-  nickname: string; // User-friendly name for the account
+  nickname?: string; // User-friendly name for the account (optional)
   is_key_stored: boolean;
   balance_unlocked: number;
   balance_total: number;

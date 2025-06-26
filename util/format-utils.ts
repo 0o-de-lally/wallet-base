@@ -42,21 +42,21 @@ export function shortenAddress(
   if (!address) {
     return address;
   }
-  
+
   // Remove 0x prefix if present
   let cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
-  
+
   // Remove leading zeros
   cleanAddress = cleanAddress.replace(/^0+/, '');
-  
+
   // If all characters were zeros, keep at least one
   if (cleanAddress === '') {
     cleanAddress = '0';
   }
-  
+
   if (cleanAddress.length <= prefixLength + suffixLength) {
     return cleanAddress;
   }
-  
+
   return `${cleanAddress.slice(0, prefixLength)}...${cleanAddress.slice(-suffixLength)}`;
 }
