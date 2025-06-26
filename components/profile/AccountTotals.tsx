@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { View, Text } from "react-native";
 import { useSelector } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
-import { formatCurrency } from "../../util/format-utils";
+import { formatLibraAmount } from "../../util/format-utils";
 import { appConfig } from "../../util/app-config-store";
 
 interface AccountTotalsProps {
@@ -53,12 +53,25 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
       <View
         style={{ height: 1, backgroundColor: "#444455", marginBottom: 12 }}
       />
-      <Text style={[styles.balanceText, styles.balancePrimary]}>
-        Total Unlocked: {formatCurrency(totalUnlocked)}
-      </Text>
-      <Text style={styles.balanceText}>
-        Total Balance: {formatCurrency(totalBalance)}
-      </Text>
+      
+      {/* Table-like layout for aligned values */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+        <Text style={[styles.balanceText, styles.balancePrimary]}>
+          Total Unlocked:
+        </Text>
+        <Text style={[styles.balanceText, styles.balancePrimary]}>
+          {formatLibraAmount(totalUnlocked)}
+        </Text>
+      </View>
+      
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text style={styles.balanceText}>
+          Total Balance:
+        </Text>
+        <Text style={styles.balanceText}>
+          {formatLibraAmount(totalBalance)}
+        </Text>
+      </View>
     </View>
   );
 });

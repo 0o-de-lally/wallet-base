@@ -144,10 +144,10 @@ export const AccountItem = memo(
                   { fontSize: 13 },
                 ]}
               >
-                {formatCurrency(account.balance_unlocked)}
+                {formatCurrency(account.balance_unlocked, 2)}
               </Text>
               <Text style={[styles.balanceText, { fontSize: 12 }]}>
-                Total: {formatCurrency(account.balance_total)}
+                Total: {formatCurrency(account.balance_total, 2)}
               </Text>
             </View>
           </View>
@@ -188,10 +188,10 @@ export const AccountItem = memo(
 
             <View style={styles.balanceRow}>
               <Text style={[styles.balanceText, styles.balancePrimary]}>
-                Unlocked: {formatCurrency(account.balance_unlocked)}
+                Unlocked: {formatCurrency(account.balance_unlocked, 2)}
               </Text>
               <Text style={styles.balanceText}>
-                Total: {formatCurrency(account.balance_total)}
+                Total: {formatCurrency(account.balance_total, 2)}
               </Text>
             </View>
 

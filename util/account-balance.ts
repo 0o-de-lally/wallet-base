@@ -1,6 +1,7 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { appConfig } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
+import { LIBRA_SCALE_FACTOR } from "./constants";
 
 export interface BalanceData {
   balance_unlocked: number;
@@ -66,12 +67,12 @@ export async function fetchAccountBalance(
     if (result && typeof result === "object") {
       // Try different possible response structures
       if ("locked" in result && "unlocked" in result) {
-        balance_unlocked = Number(result.unlocked) || 0;
-        balance_total = Number(result.locked) || 0;
+        balance_unlocked = (Number(result.unlocked) || 0) / LIBRA_SCALE_FACTOR;
+        balance_total = (Number(result.locked) || 0) / LIBRA_SCALE_FACTOR;
       } else if (Array.isArray(result) && result.length >= 2) {
         // Response is an array [unlocked, total]
-        balance_unlocked = Number(result[0]) || 0;
-        balance_total = Number(result[1]) || 0;
+        balance_unlocked = (Number(result[0]) || 0) / LIBRA_SCALE_FACTOR;
+        balance_total = (Number(result[1]) || 0) / LIBRA_SCALE_FACTOR;
       } else if (Array.isArray(result) && result.length === 1) {
         // Response might be an array with single balance object
         const balanceObj = result[0];
@@ -81,8 +82,8 @@ export async function fetchAccountBalance(
           "locked" in balanceObj &&
           "unlocked" in balanceObj
         ) {
-          balance_unlocked = Number(balanceObj.unlocked) || 0;
-          balance_total = Number(balanceObj.locked) || 0;
+          balance_unlocked = (Number(balanceObj.unlocked) || 0) / LIBRA_SCALE_FACTOR;
+          balance_total = (Number(balanceObj.locked) || 0) / LIBRA_SCALE_FACTOR;
         }
       } else {
         // Log the actual structure for debugging
