@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
-import { formatCurrency } from "../../util/format-utils";
+import { formatCurrency, shortenAddress } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
@@ -58,18 +58,30 @@ export const AccountItem = memo(
       }
     };
 
+    const handlePress = () => {
+      // If account is not active and onSetActive callback is provided, set it as active
+      if (!isActive && onSetActive) {
+        onSetActive(account.id);
+      } else {
+        // If account is already active, navigate to transactions
+        navigateToTransactions();
+      }
+    };
+
     return (
       <TouchableOpacity
         key={account.id}
         style={[
           styles.resultContainer,
-          styles.accountItemContainer,
+          compact
+            ? styles.accountItemContainerCompact
+            : styles.accountItemContainer,
           isActive && styles.accountItemActive,
           compact && styles.compactAccountItem,
         ]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}`}
-        onPress={navigateToTransactions}
+        onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
         {compact ? (
@@ -90,17 +102,13 @@ export const AccountItem = memo(
                   flex: 1,
                 }}
               >
-                <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                  {account.nickname}
-                </Text>
-                {!account.is_key_stored && (
-                  <Ionicons
-                    name="eye-outline"
-                    size={14}
-                    color="#c2c2cc"
-                    accessibilityLabel="View only account"
-                  />
-                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.accountNickname, { fontSize: 14 }]}>
+                    <Text style={{ color: "#666" }}>0x</Text>
+                    {shortenAddress(account.account_address, 4, 4)}
+                    {account.nickname && ` - ${account.nickname}`}
+                  </Text>
+                </View>
                 {account.last_error && (
                   <Ionicons
                     name="warning-outline"
@@ -112,17 +120,13 @@ export const AccountItem = memo(
               </View>
 
               <View style={styles.compactActions}>
-                {onSetActive && (
+                {!account.is_key_stored && (
                   <TouchableOpacity
                     style={[styles.iconButton, { padding: 6 }]}
-                    onPress={() => onSetActive(account.id)}
-                    accessibilityLabel={`Set ${account.nickname} as active account`}
+                    disabled={true}
+                    accessibilityLabel="View only account"
                   >
-                    <Ionicons
-                      name="checkmark-circle-outline"
-                      size={16}
-                      color="#a5d6b7"
-                    />
+                    <Ionicons name="eye-outline" size={16} color="#c2c2cc" />
                   </TouchableOpacity>
                 )}
 
@@ -159,15 +163,13 @@ export const AccountItem = memo(
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
-                  <Text style={styles.accountNickname}>{account.nickname}</Text>
-                  {!account.is_key_stored && (
-                    <Ionicons
-                      name="eye-outline"
-                      size={16}
-                      color="#c2c2cc"
-                      accessibilityLabel="View only account"
-                    />
-                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.accountNickname}>
+                      <Text style={{ color: "#666" }}>0x</Text>
+                      {shortenAddress(account.account_address, 4, 4)}
+                      {account.nickname && ` - ${account.nickname} `}
+                    </Text>
+                  </View>
                   {account.last_error && (
                     <Ionicons
                       name="warning-outline"
@@ -196,17 +198,13 @@ export const AccountItem = memo(
             </View>
 
             <View style={styles.accountActionsRow}>
-              {onSetActive && !isActive && (
+              {!account.is_key_stored && (
                 <TouchableOpacity
                   style={styles.iconButton}
-                  onPress={() => onSetActive(account.id)}
-                  accessibilityLabel={`Set ${account.nickname} as active account`}
+                  disabled={true}
+                  accessibilityLabel="View only account"
                 >
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={20}
-                    color="#a5d6b7"
-                  />
+                  <Ionicons name="eye-outline" size={20} color="#c2c2cc" />
                 </TouchableOpacity>
               )}
 

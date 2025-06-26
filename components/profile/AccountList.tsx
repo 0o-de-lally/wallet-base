@@ -2,7 +2,6 @@ import React, { useCallback, memo } from "react";
 import { View } from "react-native";
 import type { AccountState } from "../../util/app-config-store";
 import { AccountItem } from "./AccountItem";
-import { AccountTotals } from "./AccountTotals";
 import { router } from "expo-router";
 import { AccountEmptyState } from "./AccountEmptyState";
 
@@ -66,8 +65,6 @@ const AccountList = memo(
           ))}
 
         {accounts.length === 0 && renderAccountActions()}
-
-        <AccountTotals profileName={profileName} />
       </View>
     );
   },

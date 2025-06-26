@@ -46,14 +46,11 @@ export async function createAccount(
     const randomBytes = getRandomBytes(16); // 16 bytes = 128 bits
     const accountId = uint8ArrayToBase64(randomBytes).replace(/[/+=]/g, ""); // Create URL-safe ID
 
-    // Get string representation for nickname fallback
-    const addressString = accountAddress?.toStringLong?.() || "Unknown Address";
-
     // Create account state
     const account: AccountState = {
       id: accountId,
       account_address: accountAddress.toStringLong(), // Store as string
-      nickname: nickname.trim() || addressString.substring(0, 8) + "...",
+      nickname: nickname.trim() || undefined,
       is_key_stored: false,
       balance_unlocked: 0,
       balance_total: 0,
