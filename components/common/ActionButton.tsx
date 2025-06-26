@@ -15,6 +15,7 @@ interface ActionButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   isDestructive?: boolean;
+  variant?: "primary" | "secondary" | "auth" | "reset" | "danger";
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -29,6 +30,7 @@ export const ActionButton = memo(
     isLoading = false,
     disabled = false,
     isDestructive = false,
+    variant = "primary",
     style,
     textStyle,
     accessibilityLabel,
@@ -47,11 +49,48 @@ export const ActionButton = memo(
       large: { fontSize: 18 },
     };
 
+    // Get variant styles
+    const getVariantStyles = () => {
+      if (isDestructive || variant === "danger") {
+        return styles.dangerButton;
+      }
+
+      switch (variant) {
+        case "secondary":
+          return styles.secondaryButton;
+        case "auth":
+          return styles.authButton;
+        case "reset":
+          return styles.resetButton;
+        case "primary":
+        default:
+          return styles.primaryButton;
+      }
+    };
+
+    const getVariantTextStyles = () => {
+      if (isDestructive || variant === "danger") {
+        return styles.dangerButtonText;
+      }
+
+      switch (variant) {
+        case "secondary":
+          return styles.secondaryButtonText;
+        case "auth":
+          return styles.authButtonText;
+        case "reset":
+          return styles.resetButtonText;
+        case "primary":
+        default:
+          return styles.buttonText;
+      }
+    };
+
     return (
       <TouchableOpacity
         style={[
           styles.button,
-          isDestructive && styles.dangerButton,
+          getVariantStyles(),
           disabled && styles.disabledButton,
           sizeStyles[size],
           style,
@@ -69,7 +108,7 @@ export const ActionButton = memo(
         ) : (
           <Text
             style={[
-              isDestructive ? styles.dangerButtonText : styles.buttonText,
+              getVariantTextStyles(),
               textSizeStyles[size],
               textStyle,
             ]}

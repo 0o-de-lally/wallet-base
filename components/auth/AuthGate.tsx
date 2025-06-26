@@ -35,8 +35,8 @@ export function AuthGate({ children }: AuthGateProps) {
         </Text>
         <ActionButton
           text="Authenticate"
+          variant="auth"
           onPress={authenticate}
-          style={styles.button}
           accessibilityLabel="Authenticate with device security"
         />
       </View>
@@ -65,9 +65,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     color: "#666",
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: "#5e35b1",
   },
 });

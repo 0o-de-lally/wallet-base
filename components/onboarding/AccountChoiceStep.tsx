@@ -22,14 +22,14 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
       <ActionButton
         text="Create New Account"
         onPress={() => onAccountChoice("create")}
-        style={{ marginTop: 20 }}
+        style={styles.buttonSpacingDefault}
         accessibilityLabel="Create a new account"
       />
 
       <ActionButton
         text="Recover Existing Account"
         onPress={() => onAccountChoice("recover")}
-        style={{ marginTop: 10 }}
+        style={styles.buttonSpacingSmall}
         accessibilityLabel="Recover an existing account"
       />
 
@@ -58,13 +58,9 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
 
       <ActionButton
         text="Reset All Data"
+        variant="reset"
         onPress={onResetApp}
-        style={{
-          marginTop: 5,
-          backgroundColor: "#ff4444",
-          borderColor: "#ff4444",
-        }}
-        textStyle={{ color: "white" }}
+        style={styles.buttonSpacingTight}
         size="small"
         accessibilityLabel="Reset all app data and start fresh"
       />

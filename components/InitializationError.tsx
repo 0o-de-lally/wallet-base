@@ -32,8 +32,8 @@ export const InitializationError: React.FC<InitializationErrorProps> = ({
       </View>
       <ActionButton
         text="Retry"
+        variant="auth"
         onPress={handleRetry}
-        style={styles.button}
         accessibilityLabel="Retry initialization"
       />
     </View>
@@ -69,8 +69,5 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#d32f2f",
-  },
-  button: {
-    backgroundColor: "#5e35b1",
   },
 });

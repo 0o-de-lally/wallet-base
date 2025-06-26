@@ -82,10 +82,6 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
     color: "#666",
   },
-  authButton: {
-    marginTop: 20,
-    backgroundColor: "#5e35b1",
-  },
 
   // TYPOGRAPHY STYLES
   title: {
@@ -195,6 +191,40 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
   },
+  // Button Variants - consistent styles for common button types
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderColor: colors.secondary,
+    borderWidth: 2,
+  },
+  secondaryButtonText: {
+    color: colors.secondary,
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  authButton: {
+    backgroundColor: "#5e35b1",
+    borderColor: "#5e35b1",
+  },
+  authButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  resetButton: {
+    backgroundColor: colors.danger,
+    borderColor: colors.danger,
+  },
+  resetButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  // Legacy button styles (for backward compatibility)
   navButton: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
@@ -569,5 +599,16 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+  },
+
+  // Button spacing variants
+  buttonSpacingDefault: {
+    marginTop: 20,
+  },
+  buttonSpacingSmall: {
+    marginTop: 10,
+  },
+  buttonSpacingTight: {
+    marginTop: 5,
   },
 });

@@ -120,9 +120,8 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         <View style={styles.modalButtons}>
           <ActionButton
             text="Cancel"
+            variant="secondary"
             onPress={handleCancel}
-            style={styles.cancelButton}
-            textStyle={styles.cancelButtonText}
             accessibilityLabel="Cancel PIN creation"
           />
 
@@ -130,7 +129,6 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
             text="Next"
             onPress={validateAndProceed}
             disabled={pin.length !== 6}
-            style={styles.confirmButton}
             accessibilityLabel="Proceed to confirm PIN"
           />
         </View>
@@ -157,10 +155,9 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         <View style={styles.modalButtons}>
           <ActionButton
             text="Back"
+            variant="secondary"
             onPress={handleBackToCreate}
             disabled={isCreating}
-            style={styles.cancelButton}
-            textStyle={styles.cancelButtonText}
             accessibilityLabel="Go back to PIN entry"
           />
 
@@ -169,7 +166,6 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
             onPress={createPin}
             disabled={confirmPin.length !== 6}
             isLoading={isCreating}
-            style={styles.confirmButton}
             accessibilityLabel="Create PIN"
           />
         </View>
