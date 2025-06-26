@@ -32,15 +32,31 @@ export function formatCurrency(value: number): string {
  * @param address The full address
  * @param prefixLength Number of characters to show at the beginning (default: 6)
  * @param suffixLength Number of characters to show at the end (default: 4)
- * @returns Shortened address with ellipsis
+ * @returns Shortened address with ellipsis, without 0x prefix and leading zeros
  */
 export function shortenAddress(
   address: string,
   prefixLength: number = 6,
   suffixLength: number = 4,
 ): string {
-  if (!address || address.length <= prefixLength + suffixLength) {
+  if (!address) {
     return address;
   }
-  return `${address.slice(0, prefixLength)}...${address.slice(-suffixLength)}`;
+  
+  // Remove 0x prefix if present
+  let cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
+  
+  // Remove leading zeros
+  cleanAddress = cleanAddress.replace(/^0+/, '');
+  
+  // If all characters were zeros, keep at least one
+  if (cleanAddress === '') {
+    cleanAddress = '0';
+  }
+  
+  if (cleanAddress.length <= prefixLength + suffixLength) {
+    return cleanAddress;
+  }
+  
+  return `${cleanAddress.slice(0, prefixLength)}...${cleanAddress.slice(-suffixLength)}`;
 }
