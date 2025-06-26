@@ -440,11 +440,16 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       {isDeriving && (
         <View style={styles.inputContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: 8,
+            }}
+          >
             <ActivityIndicator size="small" />
-            <Text style={[styles.label]}>
-              Deriving keys from mnemonic...
-            </Text>
+            <Text style={[styles.label]}>Deriving keys from mnemonic...</Text>
           </View>
         </View>
       )}
