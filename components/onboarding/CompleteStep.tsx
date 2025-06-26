@@ -38,7 +38,7 @@ export const CompleteStep: React.FC<CompleteStepProps> = ({ onFinish }) => {
       <ActionButton
         text="Enter Wallet Now"
         onPress={onFinish}
-        style={{ marginTop: 20 }}
+        style={styles.buttonSpacingDefault}
         accessibilityLabel="Complete setup and enter wallet immediately"
       />
     </SectionContainer>

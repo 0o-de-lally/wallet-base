@@ -134,7 +134,6 @@ const ProfileManagement: React.FC = observer(() => {
             <AccountList
               profileName={profileName}
               accounts={profile.accounts}
-              onAccountsUpdated={handleAccountsUpdated}
               activeAccountId={activeAccountId}
               onSetActiveAccount={handleSetActiveAccount}
             />

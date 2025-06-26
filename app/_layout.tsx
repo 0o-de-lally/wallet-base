@@ -122,8 +122,8 @@ const RootLayout = observer(() => {
           </Text>
           <ActionButton
             text="Authenticate"
+            variant="auth"
             onPress={authenticate}
-            style={styles.authButton}
             accessibilityLabel="Authenticate with device security"
           />
         </View>

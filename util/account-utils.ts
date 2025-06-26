@@ -55,8 +55,8 @@ export async function createAccount(
       account_address: accountAddress.toStringLong(), // Store as string
       nickname: nickname.trim() || addressString.substring(0, 8) + "...",
       is_key_stored: false,
-      balance_locked: 0,
       balance_unlocked: 0,
+      balance_total: 0,
       last_update: Date.now(),
     };
 

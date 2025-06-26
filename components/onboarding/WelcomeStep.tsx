@@ -31,7 +31,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({
       <ActionButton
         text="Create PIN"
         onPress={onStartPinCreation}
-        style={{ marginTop: 20 }}
+        style={styles.buttonSpacingDefault}
         accessibilityLabel="Start PIN creation for wallet setup"
       />
 
@@ -51,13 +51,9 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({
 
       <ActionButton
         text="Reset All Data"
+        variant="reset"
         onPress={onResetApp}
-        style={{
-          marginTop: 5,
-          backgroundColor: "#ff4444",
-          borderColor: "#ff4444",
-        }}
-        textStyle={{ color: "white" }}
+        style={styles.buttonSpacingTight}
         size="small"
         accessibilityLabel="Reset all app data and start fresh"
       />

@@ -82,10 +82,6 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
     color: "#666",
   },
-  authButton: {
-    marginTop: 20,
-    backgroundColor: "#5e35b1",
-  },
 
   // TYPOGRAPHY STYLES
   title: {
@@ -195,6 +191,40 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
   },
+  // Button Variants - consistent styles for common button types
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderColor: colors.secondary,
+    borderWidth: 2,
+  },
+  secondaryButtonText: {
+    color: colors.secondary,
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  authButton: {
+    backgroundColor: "#5e35b1",
+    borderColor: "#5e35b1",
+  },
+  authButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  resetButton: {
+    backgroundColor: colors.danger,
+    borderColor: colors.danger,
+  },
+  resetButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  // Legacy button styles (for backward compatibility)
   navButton: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
@@ -418,6 +448,42 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
+  profileItemSelected: {
+    backgroundColor: colors.expandedBg,
+    borderColor: colors.primary,
+  },
+  profileContentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  profileTitleContainer: {
+    flex: 1,
+    marginRight: 10,
+  },
+  activeProfileBadge: {
+    backgroundColor: colors.success,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  activeProfileBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.buttonTextDark,
+  },
+  profileAccountCountText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: "500",
+  },
+  profileNetworkText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
 
   // ACCOUNT ITEM STYLES
   accountItemContainer: {
@@ -450,12 +516,18 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 5,
+    flexDirection: "column",
+    marginTop: 8,
+    gap: 4,
   },
   balanceText: {
     fontSize: 14,
+    color: colors.textSecondary,
+  },
+  balancePrimary: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.textPrimary,
   },
   lastUpdatedText: {
     fontSize: 12,
@@ -464,64 +536,79 @@ export const styles = StyleSheet.create({
   },
   accountActionsRow: {
     flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 12,
+    gap: 8,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.cardBg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  iconButtonDestructive: {
+    backgroundColor: colors.danger,
+  },
+  accountHeader: {
+    flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  accountInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  accountNickname: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: 4,
   },
   activeIndicatorBadge: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#4a90e2",
-    borderRadius: 4,
-    marginRight: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    alignSelf: "flex-start",
   },
   activeIndicatorText: {
-    color: "#fff",
-    fontSize: 12,
+    color: colors.buttonTextDark,
+    fontSize: 11,
     fontWeight: "600",
-  },
-  setActiveButtonStyle: {
-    backgroundColor: colors.success,
-  },
-  manageAccountButtonStyle: {
-    backgroundColor: "#4a90e2",
+    textTransform: "uppercase",
   },
 
-  // PROFILE MANAGEMENT STYLES
-  profileManagementContainer: {
-    marginBottom: 15,
+  // Compact mode styles
+  compactAccountItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
-  profileItemSelected: {
-    backgroundColor: "#2c3040",
-  },
-  profileContentRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 10,
-  },
-  profileTitleContainer: {
+  compactBalanceRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 4,
+    gap: 12,
   },
-  activeProfileBadge: {
-    marginLeft: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: "rgba(148, 194, 243, 0.3)",
-    borderRadius: 4,
+  compactActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
-  activeProfileBadgeText: {
-    color: "#94c2f3",
-    fontSize: 10,
+
+  // Button spacing variants
+  buttonSpacingDefault: {
+    marginTop: 20,
   },
-  profileAccountCountText: {
-    color: "#fff",
-    fontSize: 12,
+  buttonSpacingSmall: {
+    marginTop: 10,
   },
-  profileNetworkText: {
-    color: "#ddd",
-    fontSize: 12,
-    marginLeft: 10,
-    marginBottom: 10,
+  buttonSpacingTight: {
+    marginTop: 5,
   },
 });
