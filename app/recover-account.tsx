@@ -4,7 +4,6 @@ import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import RecoverAccountForm from "../components/profile/RecoverAccountForm";
 import { SetupGuard } from "../components/auth/SetupGuard";
-import { getLibraClient } from "../util/libra-client";
 import { router } from "expo-router";
 
 /**
@@ -46,10 +45,7 @@ const RecoverAccountContent = () => {
           be added to your wallet and you can assign a nickname to it.
         </Text>
 
-        <RecoverAccountForm 
-          onComplete={handleComplete} 
-          libraClient={getLibraClient()} 
-        />
+        <RecoverAccountForm onComplete={handleComplete} />
       </View>
     </ScrollView>
   );

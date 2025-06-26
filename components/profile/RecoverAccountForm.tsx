@@ -11,23 +11,21 @@ import { ActionButton } from "../common/ActionButton";
 import { appConfig } from "../../util/app-config-store";
 import Dropdown from "../common/Dropdown";
 import { createAccount } from "../../util/account-utils";
-import { AccountAddress, LibraWallet, LibraClient, Network } from "open-libra-sdk";
+import { AccountAddress, LibraWallet, Network } from "open-libra-sdk";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
-import { getLibraClientConfig } from "../../util/libra-client";
+import { getLibraClientUrl } from "../../util/libra-client";
 
 interface RecoverAccountFormProps {
   profileName?: string;
   onComplete: () => void;
   onResetForm?: () => void;
-  libraClient: LibraClient;
 }
 
 const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   profileName,
   onComplete,
   onResetForm,
-  libraClient,
 }) => {
   // Get all available profiles
   const profileNames = Object.keys(appConfig.profiles.get());
@@ -144,12 +142,14 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         }
         setError(null);
 
-        // Create wallet from mnemonic using the same configuration as the passed client
-        const clientConfig = getLibraClientConfig();
+        // Create wallet from mnemonic using the same URL configuration as the passed client
+        // Note: LibraWallet.fromMnemonic creates its own client connection, so we use
+        // getLibraClientUrl() to ensure consistency with the global client configuration
+        const clientUrl = getLibraClientUrl();
         const wallet = LibraWallet.fromMnemonic(
           mnemonic.trim(),
           Network.MAINNET,
-          clientConfig.url, // Use the same URL as the passed client
+          clientUrl, // Use the same URL as the passed client
         );
 
         // Get the account address
@@ -181,12 +181,14 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     }
 
     try {
-      // Create wallet from mnemonic using the same configuration as the passed client
-      const clientConfig = getLibraClientConfig();
+      // Create wallet from mnemonic using the same URL configuration as the passed client
+      // Note: LibraWallet.fromMnemonic creates its own client connection, so we use
+      // getLibraClientUrl() to ensure consistency with the global client configuration
+      const clientUrl = getLibraClientUrl();
       const wallet = LibraWallet.fromMnemonic(
         mnemonic.trim(),
         Network.MAINNET,
-        clientConfig.url, // Use the same URL as the passed client
+        clientUrl, // Use the same URL as the passed client
       );
 
       try {
@@ -212,7 +214,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         setError(null);
 
         // Don't set default nickname - let user provide their own
-      } catch (e) {
+      } catch {
         // If syncOnchain fails, it likely means the account is new and doesn't exist on chain yet
         // This is valid for account recovery - use the derived address
         // console.log("Account not found on chain (new account):", syncError);

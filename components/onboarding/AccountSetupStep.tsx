@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import AddAccountForm from "../profile/AddAccountForm";
 import RecoverAccountForm from "../profile/RecoverAccountForm";
-import { getLibraClient } from "../../util/libra-client";
 
 interface AccountSetupStepProps {
   accountChoice: "create" | "recover" | null;
@@ -48,7 +47,6 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
           profileName="mainnet" // Use the default profile
           onComplete={onComplete}
           onResetForm={onResetForm}
-          libraClient={getLibraClient()}
         />
       )}
     </View>
