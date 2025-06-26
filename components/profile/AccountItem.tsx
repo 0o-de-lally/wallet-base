@@ -24,15 +24,6 @@ export const AccountItem = memo(
     onSetActive,
     compact = false,
   }: AccountItemProps) => {
-    const handlePress = () => {
-      // Set as active account if callback is provided
-      if (onSetActive && !isActive) {
-        onSetActive(account.id);
-      }
-      // Navigate to transactions
-      navigateToTransactions();
-    };
-
     const navigateToTransactions = () => {
       router.navigate({
         pathname: "./transactions",
@@ -67,6 +58,16 @@ export const AccountItem = memo(
           "Could not refresh balance data. Please check your connection and try again.",
           [{ text: "OK" }],
         );
+      }
+    };
+
+    const handlePress = () => {
+      // If account is not active and onSetActive callback is provided, set it as active
+      if (!isActive && onSetActive) {
+        onSetActive(account.id);
+      } else {
+        // If account is already active, navigate to transactions
+        navigateToTransactions();
       }
     };
 

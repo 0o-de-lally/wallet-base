@@ -13,8 +13,8 @@ import {
   isEnrolledAsync,
   authenticateAsync,
 } from "expo-local-authentication";
-import { View, Text, StatusBar } from "react-native";
-import { ActionButton } from "../components/common/ActionButton";
+import { View, StatusBar } from "react-native";
+import { AuthenticationView } from "../components/auth/AuthenticationView";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
 import { styles } from "../styles/styles";
@@ -45,15 +45,20 @@ const RootLayout = observer(() => {
   const [initError, setInitError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Function to authenticate the user
   const authenticate = async () => {
     try {
+      setAuthChecking(true);
+      setAuthError(null);
+
       const hasHardware = await hasHardwareAsync();
       const isEnrolled = await isEnrolledAsync();
 
       // If device doesn't support biometrics or has no enrollments, default to allowing access
       if (!hasHardware || !isEnrolled) {
+        console.log("Biometric authentication not available, allowing access");
         setIsAuthenticated(true);
         return;
       }
@@ -61,11 +66,25 @@ const RootLayout = observer(() => {
       const result = await authenticateAsync({
         promptMessage: "Authenticate to access your wallet",
         fallbackLabel: "Use passcode",
+        cancelLabel: "Cancel",
+        disableDeviceFallback: false,
       });
 
-      setIsAuthenticated(result.success);
+      if (result.success) {
+        setIsAuthenticated(true);
+        setAuthError(null);
+      } else {
+        // User cancelled or authentication failed
+        if (result.error === "user_cancel") {
+          setAuthError("Authentication was cancelled. Please try again.");
+        } else {
+          setAuthError("Authentication failed. Please try again.");
+        }
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error("Authentication error:", error);
+      setAuthError("Authentication error occurred. Please try again.");
       // On error, allow access by default for better user experience
       setIsAuthenticated(true);
     } finally {
@@ -105,9 +124,7 @@ const RootLayout = observer(() => {
   if (authChecking) {
     return (
       <Layout>
-        <View style={styles.authContainer}>
-          <Text style={styles.authText}>Verifying device security...</Text>
-        </View>
+        <AuthenticationView isLoading={true} onAuthenticate={authenticate} />
       </Layout>
     );
   }
@@ -115,18 +132,11 @@ const RootLayout = observer(() => {
   if (!isAuthenticated) {
     return (
       <Layout>
-        <View style={styles.authContainer}>
-          <Text style={styles.authTitle}>Authentication Required</Text>
-          <Text style={styles.authText}>
-            Please authenticate to access your wallet.
-          </Text>
-          <ActionButton
-            text="Authenticate"
-            variant="auth"
-            onPress={authenticate}
-            accessibilityLabel="Authenticate with device security"
-          />
-        </View>
+        <AuthenticationView
+          isLoading={false}
+          onAuthenticate={authenticate}
+          subtitle={authError || "Please authenticate to access your wallet."}
+        />
       </Layout>
     );
   }
