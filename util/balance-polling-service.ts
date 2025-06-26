@@ -10,11 +10,7 @@ import {
   fetchAndUpdateAccountBalance,
 } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
-import {
-  categorizeError,
-  getSafeErrorMessage,
-  reportErrorAuto,
-} from "./error-utils";
+import { reportErrorAuto } from "./error-utils";
 
 export class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;

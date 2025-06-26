@@ -24,6 +24,15 @@ export const AccountItem = memo(
     onSetActive,
     compact = false,
   }: AccountItemProps) => {
+    const handlePress = () => {
+      // Set as active account if callback is provided
+      if (onSetActive && !isActive) {
+        onSetActive(account.id);
+      }
+      // Navigate to transactions
+      navigateToTransactions();
+    };
+
     const navigateToTransactions = () => {
       router.navigate({
         pathname: "./transactions",
@@ -74,7 +83,7 @@ export const AccountItem = memo(
         ]}
         accessible={true}
         accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}`}
-        onPress={navigateToTransactions}
+        onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
         {compact ? (

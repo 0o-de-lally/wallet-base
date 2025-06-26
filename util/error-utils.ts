@@ -14,7 +14,7 @@ export interface ErrorLogEntry {
   context: string;
   message: string;
   stack?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -175,7 +175,7 @@ export function reportError(
   level: "error" | "warn" | "debug",
   context: string,
   error: unknown,
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
 ): void {
   const message = getSafeErrorMessage(error);
   const stack = error instanceof Error ? error.stack : undefined;
@@ -212,7 +212,7 @@ export function reportError(
 export function reportErrorAuto(
   context: string,
   error: unknown,
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
 ): void {
   const { shouldLog } = categorizeError(error);
   const level = shouldLog ? "warn" : "debug";

@@ -14,7 +14,7 @@ import {
   secureDecryptWithPin,
 } from "../util/pin-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
-import { reportErrorAuto, reportError } from "../util/error-utils";
+import { reportErrorAuto } from "../util/error-utils";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds

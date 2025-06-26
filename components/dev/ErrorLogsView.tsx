@@ -17,7 +17,6 @@ import {
   getErrorLogStats,
   clearErrorLogs,
   clearOldErrorLogs,
-  type ErrorLogEntry,
 } from "../../util/error-utils";
 import { formatTimestamp } from "../../util/format-utils";
 
@@ -298,7 +297,12 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
                     }}
                   >
                     <Ionicons
-                      name={getLevelIcon(log.level) as any}
+                      name={
+                        getLevelIcon(log.level) as
+                          | "alert-circle"
+                          | "warning"
+                          | "information-circle"
+                      }
                       size={16}
                       color={getLevelColor(log.level)}
                       style={{ marginRight: 8 }}

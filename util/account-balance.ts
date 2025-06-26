@@ -2,7 +2,7 @@ import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { appConfig } from "./app-config-store";
 import type { AccountState } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
-import { categorizeError, reportError, reportErrorAuto } from "./error-utils";
+import { categorizeError, reportError } from "./error-utils";
 
 export interface BalanceData {
   balance_unlocked: number;
