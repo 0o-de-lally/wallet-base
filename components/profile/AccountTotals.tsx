@@ -53,9 +53,15 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
       <View
         style={{ height: 1, backgroundColor: "#444455", marginBottom: 12 }}
       />
-      
+
       {/* Table-like layout for aligned values */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginBottom: 4,
+        }}
+      >
         <Text style={[styles.balanceText, styles.balancePrimary]}>
           Total Unlocked:
         </Text>
@@ -63,11 +69,9 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
           {formatLibraAmount(totalUnlocked)}
         </Text>
       </View>
-      
+
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={styles.balanceText}>
-          Total Balance:
-        </Text>
+        <Text style={styles.balanceText}>Total Balance:</Text>
         <Text style={styles.balanceText}>
           {formatLibraAmount(totalBalance)}
         </Text>

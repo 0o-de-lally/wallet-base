@@ -27,7 +27,7 @@ export function formatCurrency(value: number, decimals: number = 2): string {
   if (value === 0) {
     return "0";
   }
-  
+
   return new Intl.NumberFormat(undefined, {
     style: "decimal",
     minimumFractionDigits: decimals,
@@ -45,7 +45,7 @@ export function formatLibraAmount(value: number): string {
   if (value === 0) {
     return "0";
   }
-  
+
   // For small amounts, show more decimals
   if (value < 1) {
     return formatCurrency(value, FORMATTING.DECIMAL_PLACES.SMALL_AMOUNT);

@@ -53,7 +53,7 @@ export const AccountItem = memo(
         Alert.alert(
           "Retry Failed",
           "Could not refresh balance data. Please check your connection and try again.",
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
     };

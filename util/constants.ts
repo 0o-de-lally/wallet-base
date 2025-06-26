@@ -32,8 +32,8 @@ export const FORMATTING = {
   ADDRESS_PREFIX_LENGTH: 6,
   ADDRESS_SUFFIX_LENGTH: 4,
   DECIMAL_PLACES: {
-    SMALL_AMOUNT: 6,   // For amounts < 1
-    MEDIUM_AMOUNT: 4,  // For amounts < 100
-    LARGE_AMOUNT: 2,   // For amounts >= 100
+    SMALL_AMOUNT: 6, // For amounts < 1
+    MEDIUM_AMOUNT: 4, // For amounts < 100
+    LARGE_AMOUNT: 2, // For amounts >= 100
   },
 } as const;

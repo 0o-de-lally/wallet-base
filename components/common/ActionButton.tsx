@@ -107,11 +107,7 @@ export const ActionButton = memo(
           <ActivityIndicator color="white" size="small" />
         ) : (
           <Text
-            style={[
-              getVariantTextStyles(),
-              textSizeStyles[size],
-              textStyle,
-            ]}
+            style={[getVariantTextStyles(), textSizeStyles[size], textStyle]}
           >
             {text}
           </Text>
