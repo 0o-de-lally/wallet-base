@@ -1,17 +1,24 @@
-# Setup Guard System
+# Authentication System
 
-The Setup Guard system ensures that users complete the necessary onboarding steps before accessing protected screens in the wallet app.
+The authentication system provides device-level security for the wallet app using biometric authentication (fingerprint, face recognition) or device passcode.
 
 ## Components
 
-### `useSetupGuard()` Hook
-A React hook that checks the user's setup status and provides the current state.
+### `AuthenticationView` Component
+A single, consistent authentication UI component used throughout the app when device authentication is required.
 
-**Returns:**
-- `setupStatus`: `"loading"` | `"needs-pin"` | `"needs-account"` | `"complete"`
-- `hasPin`: boolean indicating if user has created a PIN
-- `hasUserAccounts`: boolean indicating if user has any accounts
-- `checkSetupStatus()`: function to manually recheck setup status
+**Props:**
+- `isLoading`: boolean (default: false) - shows loading state while checking authentication
+- `onAuthenticate`: function - callback when user taps authenticate button
+- `title`: string (default: "Authentication Required") - main title text
+- `subtitle`: string (default: "Please authenticate...") - subtitle/error message
+- `buttonText`: string (default: "Authenticate") - authentication button text
+
+**Features:**
+- Designed to be visible even when device authentication modals are overlaid
+- Consistent styling and messaging across the app
+- Handles both loading and error states
+- Provides clear user guidance and context
 
 ### `SetupGuard` Component
 A wrapper component that protects screens and redirects users to onboarding if needed.
@@ -19,11 +26,37 @@ A wrapper component that protects screens and redirects users to onboarding if n
 **Props:**
 - `requiresPin`: boolean (default: true) - whether the screen requires a PIN
 - `requiresAccount`: boolean (default: true) - whether the screen requires an account
-- `redirectOnComplete`: boolean (default: true) - whether to redirect after onboarding completion
 
-## Usage
+## Authentication Flow
 
-### Protecting a Screen
+1. **App Initialization**: Root layout checks if app is initialized
+2. **Device Authentication**: If biometric/passcode is available, user must authenticate
+3. **Setup Verification**: SetupGuard ensures user has completed PIN and account setup
+4. **App Access**: User gains access to protected content
+
+## Implementation
+
+### Root Level Authentication
+Device authentication is handled in the app's root layout (`app/_layout.tsx`):
+
+```tsx
+// Authentication is automatic on app start
+// Uses AuthenticationView for consistent UI
+if (!isAuthenticated) {
+  return (
+    <Layout>
+      <AuthenticationView
+        isLoading={false}
+        onAuthenticate={authenticate}
+      />
+    </Layout>
+  );
+}
+```
+
+### Screen Level Protection
+Individual screens use SetupGuard for onboarding protection:
+
 ```tsx
 import { SetupGuard } from '../components/auth/SetupGuard';
 
@@ -38,40 +71,17 @@ export default function MyProtectedScreen() {
 }
 ```
 
-### Different Protection Levels
+## Security Features
 
-1. **PIN Required Only** (e.g., account creation screens):
-```tsx
-<SetupGuard requiresPin={true} requiresAccount={false}>
-```
+- **Device-level Security**: Uses native biometric authentication APIs
+- **Fallback Support**: Automatically falls back to device passcode
+- **Graceful Degradation**: Works on devices without biometric support
+- **Error Handling**: Provides clear feedback for authentication failures
+- **Visual Consistency**: Single authentication view prevents UI conflicts
 
-2. **No Protection** (e.g., PIN management screen):
-```tsx
-<SetupGuard requiresPin={false} requiresAccount={false}>
-```
+## User Experience
 
-3. **Full Protection** (default - e.g., account settings, transactions):
-```tsx
-<SetupGuard requiresPin={true} requiresAccount={true}>
-```
-
-## User Flow
-
-1. **New User (no PIN, no accounts)**:
-   - Any protected screen → Onboarding wizard (PIN setup → Account setup)
-
-2. **Partial Setup (has PIN, no accounts)**:
-   - Screens requiring accounts → Onboarding wizard (Account setup only)
-   - Screens requiring only PIN → Allowed access
-
-3. **Complete Setup (has PIN, has accounts)**:
-   - All screens → Allowed access
-
-## Implementation Details
-
-The system integrates with the existing user state utilities:
-- `hasCompletedBasicSetup()` - checks if PIN exists
-- `hasAccounts()` - checks if any accounts exist
-- `isFirstTimeUser()` - determines if onboarding is needed
-
-The `OnboardingWizard` component automatically detects the user's current state and starts from the appropriate step.
+- **Always Visible**: Authentication view remains visible even when device modals appear
+- **Clear Messaging**: Users understand why authentication is required
+- **Retry Support**: Easy retry mechanism for failed authentication
+- **Context Awareness**: Different messages for different authentication scenarios
