@@ -1,6 +1,6 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
-import { Text, View } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
 import { styles } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -440,9 +440,17 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       {isDeriving && (
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: "#ffb74d" }]}>
-            🔄 Deriving wallet address from mnemonic...
-          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: 8,
+            }}
+          >
+            <ActivityIndicator size="small" />
+            <Text style={[styles.label]}>Deriving keys from mnemonic...</Text>
+          </View>
         </View>
       )}
 

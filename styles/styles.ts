@@ -664,4 +664,27 @@ export const styles = StyleSheet.create({
     // Add safe area padding for devices with home indicators
     paddingBottom: 20, // This will be overridden by safe area if needed
   },
+
+  // Filter button styles for dev views
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardBg,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterButtonText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  filterButtonTextActive: {
+    color: colors.buttonTextDark,
+    fontWeight: "600",
+  },
 });

@@ -3,6 +3,7 @@ import { initializeRevealController } from "./reveal-controller";
 import { initializeLibraClient } from "./libra-client";
 import { resetAppToCleanState } from "./clear-storage-controller";
 import { startBalancePolling } from "./balance-polling-service";
+import { initializeErrorLogging } from "./error-utils";
 import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
   hasHardwareAsync,
@@ -35,6 +36,9 @@ export function hasPerformedResetInSession(): boolean {
  */
 export async function initializeApp() {
   try {
+    // Initialize error logging system first
+    initializeErrorLogging();
+
     // Check if we should reset app data based on environment variable
     // Only reset once per session to avoid infinite loops
     if (SHOULD_RESET_APP_DATA && !hasResetInThisSession) {

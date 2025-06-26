@@ -9,7 +9,7 @@ interface AccountListProps {
   profileName: string;
   accounts: AccountState[];
   activeAccountId: string | null;
-  onSetActiveAccount: (accountId: string) => void;
+  onSetActiveAccount?: (accountId: string) => void;
 }
 
 const AccountList = memo(

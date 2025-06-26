@@ -6,6 +6,7 @@ import { formatCurrency, shortenAddress } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
+import { reportErrorAuto } from "../../util/error-utils";
 
 export interface AccountItemProps {
   account: AccountState;
@@ -49,7 +50,9 @@ export const AccountItem = memo(
         await retryAccountBalance(account.id);
         // Note: UI will update automatically via Legend State reactivity
       } catch (error) {
-        console.warn("Failed to retry balance:", error);
+        reportErrorAuto("AccountItem.handleRetryBalance", error, {
+          accountId: account.id,
+        });
         Alert.alert(
           "Retry Failed",
           "Could not refresh balance data. Please check your connection and try again.",
