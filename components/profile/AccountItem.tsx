@@ -22,7 +22,6 @@ export const AccountItem = memo(
     onSetActive,
     compact = false,
   }: AccountItemProps) => {
-
     const navigateToTransactions = () => {
       router.navigate({
         pathname: "./transactions",
@@ -57,9 +56,24 @@ export const AccountItem = memo(
         {compact ? (
           // Compact layout for inactive accounts
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                <Text style={[styles.accountNickname, { fontSize: 14 }]}>{account.nickname}</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                  flex: 1,
+                }}
+              >
+                <Text style={[styles.accountNickname, { fontSize: 14 }]}>
+                  {account.nickname}
+                </Text>
                 {!account.is_key_stored && (
                   <Ionicons
                     name="eye-outline"
@@ -77,7 +91,11 @@ export const AccountItem = memo(
                     onPress={() => onSetActive(account.id)}
                     accessibilityLabel={`Set ${account.nickname} as active account`}
                   >
-                    <Ionicons name="checkmark-circle-outline" size={16} color="#a5d6b7" />
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={16}
+                      color="#a5d6b7"
+                    />
                   </TouchableOpacity>
                 )}
 
@@ -92,7 +110,13 @@ export const AccountItem = memo(
             </View>
 
             <View style={styles.compactBalanceRow}>
-              <Text style={[styles.balanceText, styles.balancePrimary, { fontSize: 13 }]}>
+              <Text
+                style={[
+                  styles.balanceText,
+                  styles.balancePrimary,
+                  { fontSize: 13 },
+                ]}
+              >
                 {formatCurrency(account.balance_unlocked)}
               </Text>
               <Text style={[styles.balanceText, { fontSize: 12 }]}>
@@ -105,7 +129,9 @@ export const AccountItem = memo(
           <View>
             <View style={styles.accountHeader}>
               <View style={styles.accountInfo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
                   <Text style={styles.accountNickname}>{account.nickname}</Text>
                   {!account.is_key_stored && (
                     <Ionicons
@@ -141,7 +167,11 @@ export const AccountItem = memo(
                   onPress={() => onSetActive(account.id)}
                   accessibilityLabel={`Set ${account.nickname} as active account`}
                 >
-                  <Ionicons name="checkmark-circle-outline" size={20} color="#a5d6b7" />
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={20}
+                    color="#a5d6b7"
+                  />
                 </TouchableOpacity>
               )}
 

@@ -18,11 +18,14 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
   });
 
   console.log("AccountTotals received accounts:", accounts.length);
-  console.log("Account balances:", accounts.map(acc => ({
-    id: acc.id,
-    unlocked: acc.balance_unlocked,
-    total: acc.balance_total
-  })));
+  console.log(
+    "Account balances:",
+    accounts.map((acc) => ({
+      id: acc.id,
+      unlocked: acc.balance_unlocked,
+      total: acc.balance_total,
+    })),
+  );
 
   if (accounts.length === 0) {
     return null;
@@ -30,19 +33,26 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
 
   const totalUnlocked = accounts.reduce(
     (sum, account) => sum + (account.balance_unlocked || 0),
-    0
+    0,
   );
 
   const totalBalance = accounts.reduce(
     (sum, account) => sum + (account.balance_total || 0),
-    0
+    0,
   );
 
-  console.log("Calculated totals - Unlocked:", totalUnlocked, "Total:", totalBalance);
+  console.log(
+    "Calculated totals - Unlocked:",
+    totalUnlocked,
+    "Total:",
+    totalBalance,
+  );
 
   return (
     <View style={{ marginTop: 20 }}>
-      <View style={{ height: 1, backgroundColor: '#444455', marginBottom: 12 }} />
+      <View
+        style={{ height: 1, backgroundColor: "#444455", marginBottom: 12 }}
+      />
       <Text style={[styles.balanceText, styles.balancePrimary]}>
         Total Unlocked: {formatCurrency(totalUnlocked)}
       </Text>

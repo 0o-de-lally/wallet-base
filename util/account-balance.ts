@@ -13,7 +13,7 @@ export interface BalanceData {
  */
 export async function fetchAccountBalance(
   client: LibraClient,
-  accountAddress: string
+  accountAddress: string,
 ): Promise<BalanceData> {
   if (!client || !accountAddress) {
     throw new Error("Client and account address are required");
@@ -26,12 +26,7 @@ export async function fetchAccountBalance(
     // Call the view function
     const result = await client.viewJson(payload);
 
-    console.log(
-      "Balance API response for",
-      accountAddress,
-      ":",
-      result,
-    );
+    console.log("Balance API response for", accountAddress, ":", result);
 
     // Handle different possible response formats
     let balance_unlocked = 0;
@@ -93,7 +88,7 @@ export async function fetchAccountBalance(
  */
 export async function updateAccountBalance(
   accountId: string,
-  balanceData: BalanceData
+  balanceData: BalanceData,
 ): Promise<void> {
   try {
     const profiles = appConfig.profiles.get();
@@ -101,9 +96,11 @@ export async function updateAccountBalance(
     let accountUpdated = false;
 
     // Find and update the account in the profile
-    Object.keys(profiles).forEach(profileKey => {
+    Object.keys(profiles).forEach((profileKey) => {
       const profile = profiles[profileKey];
-      const accountIndex = profile.accounts.findIndex(acc => acc.id === accountId);
+      const accountIndex = profile.accounts.findIndex(
+        (acc) => acc.id === accountId,
+      );
       if (accountIndex !== -1) {
         profile.accounts[accountIndex] = {
           ...profile.accounts[accountIndex],
@@ -131,18 +128,26 @@ export async function updateAccountBalance(
  */
 export async function fetchAndUpdateAccountBalance(
   client: LibraClient,
-  account: AccountState
+  account: AccountState,
 ): Promise<void> {
   if (!account.account_address) {
-    console.warn(`Account ${account.id} has no address, skipping balance fetch`);
+    console.warn(
+      `Account ${account.id} has no address, skipping balance fetch`,
+    );
     return;
   }
 
   try {
-    const balanceData = await fetchAccountBalance(client, account.account_address);
+    const balanceData = await fetchAccountBalance(
+      client,
+      account.account_address,
+    );
     await updateAccountBalance(account.id, balanceData);
   } catch (error) {
-    console.error(`Failed to fetch and update balance for account ${account.id}:`, error);
+    console.error(
+      `Failed to fetch and update balance for account ${account.id}:`,
+      error,
+    );
     // Update account with error state
     await updateAccountBalance(account.id, {
       balance_unlocked: account.balance_unlocked,
@@ -159,14 +164,16 @@ export async function fetchAndUpdateAccountBalance(
 export async function fetchAndUpdateProfileBalances(
   client: LibraClient,
   profileName: string,
-  accounts: AccountState[]
+  accounts: AccountState[],
 ): Promise<void> {
   if (!client) {
     console.warn("No client available, skipping balance fetch");
     return;
   }
 
-  console.log(`Fetching balances for ${accounts.length} accounts in profile ${profileName}`);
+  console.log(
+    `Fetching balances for ${accounts.length} accounts in profile ${profileName}`,
+  );
 
   // Fetch balances for all accounts in parallel
   const balancePromises = accounts.map(async (account) => {
@@ -174,7 +181,10 @@ export async function fetchAndUpdateProfileBalances(
       await fetchAndUpdateAccountBalance(client, account);
     } catch (error) {
       // Log error but don't fail the entire batch
-      console.error(`Failed to update balance for account ${account.id}:`, error);
+      console.error(
+        `Failed to update balance for account ${account.id}:`,
+        error,
+      );
     }
   });
 
@@ -184,7 +194,9 @@ export async function fetchAndUpdateProfileBalances(
 /**
  * Fetches and updates balances for all accounts across all profiles
  */
-export async function fetchAndUpdateAllBalances(client: LibraClient): Promise<void> {
+export async function fetchAndUpdateAllBalances(
+  client: LibraClient,
+): Promise<void> {
   if (!client) {
     console.warn("No client available, skipping balance fetch");
     return;
@@ -200,15 +212,24 @@ export async function fetchAndUpdateAllBalances(client: LibraClient): Promise<vo
   console.log("Fetching balances for all accounts across all profiles");
 
   // Fetch balances for all profiles in parallel
-  const profilePromises = Object.entries(profiles).map(async ([profileName, profile]) => {
-    if (profile?.accounts?.length > 0) {
-      try {
-        await fetchAndUpdateProfileBalances(client, profileName, profile.accounts);
-      } catch (error) {
-        console.error(`Failed to update balances for profile ${profileName}:`, error);
+  const profilePromises = Object.entries(profiles).map(
+    async ([profileName, profile]) => {
+      if (profile?.accounts?.length > 0) {
+        try {
+          await fetchAndUpdateProfileBalances(
+            client,
+            profileName,
+            profile.accounts,
+          );
+        } catch (error) {
+          console.error(
+            `Failed to update balances for profile ${profileName}:`,
+            error,
+          );
+        }
       }
-    }
-  });
+    },
+  );
 
   await Promise.allSettled(profilePromises);
 }

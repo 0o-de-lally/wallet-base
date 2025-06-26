@@ -21,7 +21,7 @@ export function formatTimestamp(timestamp: number): string {
  */
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat(undefined, {
-    style: 'decimal',
+    style: "decimal",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(Math.round(value));
@@ -34,7 +34,11 @@ export function formatCurrency(value: number): string {
  * @param suffixLength Number of characters to show at the end (default: 4)
  * @returns Shortened address with ellipsis
  */
-export function shortenAddress(address: string, prefixLength: number = 6, suffixLength: number = 4): string {
+export function shortenAddress(
+  address: string,
+  prefixLength: number = 6,
+  suffixLength: number = 4,
+): string {
   if (!address || address.length <= prefixLength + suffixLength) {
     return address;
   }

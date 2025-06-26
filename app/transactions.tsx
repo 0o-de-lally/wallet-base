@@ -49,7 +49,7 @@ export default function TransactionsScreen() {
         {
           id: "1",
           type: "received",
-          amount: 100.50,
+          amount: 100.5,
           timestamp: Date.now() - 3600000, // 1 hour ago
           status: "confirmed",
           from: "0x1234...5678",
@@ -67,7 +67,7 @@ export default function TransactionsScreen() {
         {
           id: "3",
           type: "sent",
-          amount: 50.00,
+          amount: 50.0,
           timestamp: Date.now() - 172800000, // 2 days ago
           status: "pending",
           to: "0xqrst...uvwx",
@@ -101,8 +101,17 @@ export default function TransactionsScreen() {
     }[transaction.status];
 
     return (
-      <View key={transaction.id} style={[styles.resultContainer, { marginBottom: 12 }]}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+      <View
+        key={transaction.id}
+        style={[styles.resultContainer, { marginBottom: 12 }]}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
           <Ionicons
             name={isIncoming ? "arrow-down-circle" : "arrow-up-circle"}
             size={24}
@@ -113,8 +122,11 @@ export default function TransactionsScreen() {
             <Text style={styles.resultLabel}>
               {isIncoming ? "Received" : "Sent"}
             </Text>
-            <Text style={[styles.resultValue, { fontSize: 18, fontWeight: "600" }]}>
-              {isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)}
+            <Text
+              style={[styles.resultValue, { fontSize: 18, fontWeight: "600" }]}
+            >
+              {isIncoming ? "+" : "-"}
+              {formatCurrency(transaction.amount)}
             </Text>
           </View>
           <View
@@ -132,7 +144,8 @@ export default function TransactionsScreen() {
         </View>
 
         <Text style={styles.resultValue}>
-          {isIncoming ? "From" : "To"}: {isIncoming ? transaction.from : transaction.to}
+          {isIncoming ? "From" : "To"}:{" "}
+          {isIncoming ? transaction.from : transaction.to}
         </Text>
 
         {transaction.hash && (
@@ -157,7 +170,13 @@ export default function TransactionsScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
+        >
           <ActionButton
             text="← Back"
             onPress={() => router.back()}
@@ -185,14 +204,18 @@ export default function TransactionsScreen() {
             <Text style={[styles.title, { marginTop: 16, fontSize: 18 }]}>
               No Transactions
             </Text>
-            <Text style={[styles.resultValue, { textAlign: "center", marginTop: 8 }]}>
-              Your transaction history will appear here once you start sending or receiving funds.
+            <Text
+              style={[
+                styles.resultValue,
+                { textAlign: "center", marginTop: 8 },
+              ]}
+            >
+              Your transaction history will appear here once you start sending
+              or receiving funds.
             </Text>
           </View>
         ) : (
-          <View>
-            {transactions.map(renderTransaction)}
-          </View>
+          <View>{transactions.map(renderTransaction)}</View>
         )}
       </ScrollView>
     </View>

@@ -81,15 +81,25 @@ export class BalancePollingService {
       const profiles = appConfig.profiles.get();
       const activeProfile = profiles[activeProfileName];
 
-      if (!activeProfile || !activeProfile.accounts || activeProfile.accounts.length === 0) {
+      if (
+        !activeProfile ||
+        !activeProfile.accounts ||
+        activeProfile.accounts.length === 0
+      ) {
         console.log("No accounts in active profile, skipping balance poll");
         return;
       }
 
-      console.log(`Polling balances for ${activeProfile.accounts.length} accounts in profile: ${activeProfileName}`);
+      console.log(
+        `Polling balances for ${activeProfile.accounts.length} accounts in profile: ${activeProfileName}`,
+      );
 
       // Fetch and update balances for all accounts in the active profile
-      await fetchAndUpdateProfileBalances(client, activeProfileName, activeProfile.accounts);
+      await fetchAndUpdateProfileBalances(
+        client,
+        activeProfileName,
+        activeProfile.accounts,
+      );
 
       console.log("Balance polling completed successfully");
     } catch (error) {
