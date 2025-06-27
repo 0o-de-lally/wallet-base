@@ -6,12 +6,12 @@ import { useModal } from "../../context/ModalContext";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
-import { 
-  AccountHeader, 
-  TransferForm, 
-  AdminTransactions, 
+import {
+  AccountHeader,
+  TransferForm,
+  AdminTransactions,
   PinModalHandler,
-  useTransactionExecutor 
+  useTransactionExecutor,
 } from "./components";
 
 interface TransactionHubProps {
@@ -28,14 +28,17 @@ export const TransactionHub = memo(
   ({ accountId, profileName }: TransactionHubProps) => {
     const [account, setAccount] = useState<AccountState | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(false);
-    
+
     // Operation state
-    const [currentOperation, setCurrentOperation] = useState<"transfer" | "v8_rejoin" | null>(null);
-    const [pendingTransferData, setPendingTransferData] = useState<TransferData | null>(null);
+    const [currentOperation, setCurrentOperation] = useState<
+      "transfer" | "v8_rejoin" | null
+    >(null);
+    const [pendingTransferData, setPendingTransferData] =
+      useState<TransferData | null>(null);
 
     const { showAlert } = useModal();
     const {
@@ -58,7 +61,7 @@ export const TransactionHub = memo(
       }, []),
       onAdminTransactionComplete: useCallback(() => {
         setCurrentOperation(null);
-      }, [])
+      }, []),
     });
 
     // Load account data
@@ -67,17 +70,21 @@ export const TransactionHub = memo(
         try {
           const profiles = appConfig.profiles.get();
           const profile = profiles[profileName];
-          
+
           if (!profile) {
             console.error(`Profile '${profileName}' not found`);
             return;
           }
 
-          const foundAccount = profile.accounts.find(acc => acc.id === accountId);
+          const foundAccount = profile.accounts.find(
+            (acc) => acc.id === accountId,
+          );
           if (foundAccount) {
             setAccount(foundAccount);
           } else {
-            console.error(`Account with ID '${accountId}' not found in profile '${profileName}'`);
+            console.error(
+              `Account with ID '${accountId}' not found in profile '${profileName}'`,
+            );
           }
         } catch (error) {
           console.error("Error loading account:", error);
@@ -90,25 +97,40 @@ export const TransactionHub = memo(
     }, [accountId, profileName]);
 
     // Handle mnemonic requests from components
-    const handleRequestMnemonic = useCallback((
-      operation: "transfer" | "v8_rejoin", 
-      data?: TransferData
-    ) => {
-      setCurrentOperation(operation);
-      if (operation === "transfer" && data) {
-        setPendingTransferData(data);
-      }
-      handleExecuteReveal(accountId);
-    }, [accountId, handleExecuteReveal]);
+    const handleRequestMnemonic = useCallback(
+      (operation: "transfer" | "v8_rejoin", data?: TransferData) => {
+        setCurrentOperation(operation);
+        if (operation === "transfer" && data) {
+          setPendingTransferData(data);
+        }
+        handleExecuteReveal(accountId);
+      },
+      [accountId, handleExecuteReveal],
+    );
 
     // Handle when mnemonic is revealed
     useEffect(() => {
-      if (mnemonicValue && currentOperation === "transfer" && pendingTransferData) {
-        executeTransfer(mnemonicValue, pendingTransferData, setIsTransferLoading, () => {});
+      if (
+        mnemonicValue &&
+        currentOperation === "transfer" &&
+        pendingTransferData
+      ) {
+        executeTransfer(
+          mnemonicValue,
+          pendingTransferData,
+          setIsTransferLoading,
+          () => {},
+        );
       } else if (mnemonicValue && currentOperation === "v8_rejoin") {
         executeV8Rejoin(mnemonicValue, setIsAdminLoading, () => {});
       }
-    }, [mnemonicValue, currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin]);
+    }, [
+      mnemonicValue,
+      currentOperation,
+      pendingTransferData,
+      executeTransfer,
+      executeV8Rejoin,
+    ]);
 
     // Clear all operations
     const handleClearAll = useCallback(() => {
@@ -118,7 +140,7 @@ export const TransactionHub = memo(
 
     if (isLoading || !account) {
       return (
-        <ScrollView 
+        <ScrollView
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
         >
@@ -128,7 +150,7 @@ export const TransactionHub = memo(
     }
 
     return (
-      <ScrollView 
+      <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
       >
@@ -160,7 +182,7 @@ export const TransactionHub = memo(
         />
       </ScrollView>
     );
-  }
+  },
 );
 
 TransactionHub.displayName = "TransactionHub";

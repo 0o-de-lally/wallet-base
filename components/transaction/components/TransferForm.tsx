@@ -6,10 +6,7 @@ import { styles } from "../../../styles/styles";
 import { SectionContainer } from "../../common/SectionContainer";
 import { ActionButton } from "../../common/ActionButton";
 import { FormInput } from "../../common/FormInput";
-import {
-  addressFromString,
-  type AccountAddress,
-} from "open-libra-sdk";
+import { addressFromString, type AccountAddress } from "open-libra-sdk";
 import { formatLibraAmount } from "../../../util/format-utils";
 import { reportErrorAuto } from "../../../util/error-utils";
 import type { AccountState } from "../../../util/app-config-store";
