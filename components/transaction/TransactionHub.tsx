@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, memo } from "react";
 import { ScrollView, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
-import { useSecureStorage } from "../../hooks/use-secure-storage";
+import { useTransactionPin } from "../../hooks/use-transaction-pin";
 import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
 import {
@@ -41,14 +41,6 @@ export const TransactionHub = memo(
       useState<TransferData | null>(null);
 
     const { showAlert } = useModal();
-    const {
-      storedValue: mnemonicValue,
-      handleExecuteReveal,
-      pinModalVisible: secureStoragePinVisible,
-      handlePinModalClose: handleSecureStoragePinClose,
-      handlePinAction: handleSecureStoragePinAction,
-      currentAction: secureStorageAction,
-    } = useSecureStorage(accountId);
 
     // Transaction executor
     const { executeTransfer, executeV8Rejoin } = useTransactionExecutor({
@@ -62,6 +54,26 @@ export const TransactionHub = memo(
       onAdminTransactionComplete: useCallback(() => {
         setCurrentOperation(null);
       }, []),
+    });
+
+    // Handle mnemonic retrieval for transactions
+    const handleMnemonicRetrieved = useCallback((mnemonic: string) => {
+      if (currentOperation === "transfer" && pendingTransferData) {
+        executeTransfer(mnemonic, pendingTransferData, setIsTransferLoading, () => {});
+      } else if (currentOperation === "v8_rejoin") {
+        executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
+      }
+    }, [currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin]);
+
+    const {
+      pinModalVisible,
+      isLoading: isPinLoading,
+      requestMnemonicWithPin,
+      handlePinSubmit,
+      closePinModal
+    } = useTransactionPin({
+      accountId,
+      onMnemonicRetrieved: handleMnemonicRetrieved
     });
 
     // Load account data
@@ -103,34 +115,10 @@ export const TransactionHub = memo(
         if (operation === "transfer" && data) {
           setPendingTransferData(data);
         }
-        handleExecuteReveal(accountId);
+        requestMnemonicWithPin();
       },
-      [accountId, handleExecuteReveal],
+      [requestMnemonicWithPin],
     );
-
-    // Handle when mnemonic is revealed
-    useEffect(() => {
-      if (
-        mnemonicValue &&
-        currentOperation === "transfer" &&
-        pendingTransferData
-      ) {
-        executeTransfer(
-          mnemonicValue,
-          pendingTransferData,
-          setIsTransferLoading,
-          () => {},
-        );
-      } else if (mnemonicValue && currentOperation === "v8_rejoin") {
-        executeV8Rejoin(mnemonicValue, setIsAdminLoading, () => {});
-      }
-    }, [
-      mnemonicValue,
-      currentOperation,
-      pendingTransferData,
-      executeTransfer,
-      executeV8Rejoin,
-    ]);
 
     // Clear all operations
     const handleClearAll = useCallback(() => {
@@ -174,10 +162,10 @@ export const TransactionHub = memo(
         />
 
         <PinModalHandler
-          visible={secureStoragePinVisible}
-          onClose={handleSecureStoragePinClose}
-          onPinAction={handleSecureStoragePinAction}
-          currentAction={secureStorageAction}
+          visible={pinModalVisible}
+          onClose={closePinModal}
+          onPinAction={handlePinSubmit}
+          currentAction="execute_reveal"
           operationType={currentOperation}
         />
       </ScrollView>
