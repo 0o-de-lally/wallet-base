@@ -10,7 +10,7 @@ import {
   AccountHeader,
   TransferForm,
   AdminTransactions,
-  PinModalHandler,
+  TransactionPinModal,
   useTransactionExecutor,
 } from "./components";
 
@@ -161,11 +161,11 @@ export const TransactionHub = memo(
           isLoading={isAdminLoading}
         />
 
-        <PinModalHandler
+        <TransactionPinModal
           visible={pinModalVisible}
           onClose={closePinModal}
-          onPinAction={handlePinSubmit}
-          currentAction="execute_reveal"
+          onPinSubmit={handlePinSubmit}
+          isLoading={isPinLoading}
           operationType={currentOperation}
         />
       </ScrollView>
