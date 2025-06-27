@@ -32,8 +32,6 @@ export const TransactionHub = memo(
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(false);
-    const [transferError, setTransferError] = useState<string | null>(null);
-    const [adminError, setAdminError] = useState<string | null>(null);
     
     // Operation state
     const [currentOperation, setCurrentOperation] = useState<"transfer" | "v8_rejoin" | null>(null);
@@ -57,11 +55,9 @@ export const TransactionHub = memo(
       onTransferComplete: useCallback(() => {
         setPendingTransferData(null);
         setCurrentOperation(null);
-        setTransferError(null);
       }, []),
       onAdminTransactionComplete: useCallback(() => {
         setCurrentOperation(null);
-        setAdminError(null);
       }, [])
     });
 
@@ -108,9 +104,9 @@ export const TransactionHub = memo(
     // Handle when mnemonic is revealed
     useEffect(() => {
       if (mnemonicValue && currentOperation === "transfer" && pendingTransferData) {
-        executeTransfer(mnemonicValue, pendingTransferData, setIsTransferLoading, setTransferError);
+        executeTransfer(mnemonicValue, pendingTransferData, setIsTransferLoading, () => {});
       } else if (mnemonicValue && currentOperation === "v8_rejoin") {
-        executeV8Rejoin(mnemonicValue, setIsAdminLoading, setAdminError);
+        executeV8Rejoin(mnemonicValue, setIsAdminLoading, () => {});
       }
     }, [mnemonicValue, currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin]);
 
@@ -118,8 +114,6 @@ export const TransactionHub = memo(
     const handleClearAll = useCallback(() => {
       setPendingTransferData(null);
       setCurrentOperation(null);
-      setTransferError(null);
-      setAdminError(null);
     }, []);
 
     if (isLoading || !account) {

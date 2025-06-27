@@ -7,13 +7,10 @@ import { SectionContainer } from "../../common/SectionContainer";
 import { ActionButton } from "../../common/ActionButton";
 import { FormInput } from "../../common/FormInput";
 import {
-  LibraWallet,
-  Network,
   addressFromString,
   type AccountAddress,
 } from "open-libra-sdk";
-import { getLibraClientUrl } from "../../../util/libra-client";
-import { formatLibraAmount, shortenAddress } from "../../../util/format-utils";
+import { formatLibraAmount } from "../../../util/format-utils";
 import { reportErrorAuto } from "../../../util/error-utils";
 import type { AccountState } from "../../../util/app-config-store";
 
