@@ -44,11 +44,13 @@ export default function TransactionHubScreen() {
       <View style={styles.root}>
         <Stack.Screen
           options={{
-            title: accountNickname ? `${accountNickname} - Transactions` : "Transaction Hub",
+            title: accountNickname
+              ? `${accountNickname} - Transactions`
+              : "Transaction Hub",
             headerBackTitle: "Back",
           }}
         />
-        
+
         <View
           style={{
             flexDirection: "row",
@@ -66,10 +68,7 @@ export default function TransactionHubScreen() {
           />
         </View>
 
-        <TransactionHub 
-          accountId={accountId}
-          profileName={profileName}
-        />
+        <TransactionHub accountId={accountId} profileName={profileName} />
       </View>
     </SetupGuard>
   );
