@@ -36,8 +36,12 @@ export const TransactionHub = memo(
     const [isTransactionLoading, setIsTransactionLoading] = useState(false);
     const [transactionError, setTransactionError] = useState<string | null>(null);
     
+    // Admin transaction state
+    const [isAdminTransactionLoading, setIsAdminTransactionLoading] = useState(false);
+    const [adminTransactionError, setAdminTransactionError] = useState<string | null>(null);
+    
     // PIN and secure storage for accessing private keys
-    const [currentOperation, setCurrentOperation] = useState<"transfer" | null>(null);
+    const [currentOperation, setCurrentOperation] = useState<"transfer" | "v8_rejoin" | null>(null);
     const [pendingTransferData, setPendingTransferData] = useState<{
       to: AccountAddress;
       amount: number;
@@ -230,18 +234,105 @@ export const TransactionHub = memo(
       }
     }, [pendingTransferData, account, accountId, showAlert]);
 
+    // Handle V8 RE-JOIN transaction initiation
+    const handleV8Rejoin = useCallback(async () => {
+      if (!account) {
+        return;
+      }
+
+      setAdminTransactionError(null);
+
+      try {
+        // Check if account has stored keys
+        if (!account.is_key_stored) {
+          showAlert(
+            "No Private Key", 
+            "This account doesn&apos;t have a stored private key. Admin transactions require access to private keys."
+          );
+          return;
+        }
+
+        // Request mnemonic reveal to get private key for admin transaction
+        setCurrentOperation("v8_rejoin");
+        handleExecuteReveal(accountId);
+
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        setAdminTransactionError(errorMessage);
+        reportErrorAuto("TransactionHub.handleV8Rejoin", error, { accountId });
+      }
+    }, [account, accountId, handleExecuteReveal, showAlert]);
+
+    // Execute V8 RE-JOIN transaction after PIN verification and mnemonic retrieval
+    const executeV8Rejoin = useCallback(async (mnemonic: string) => {
+      if (!account) {
+        return;
+      }
+
+      setIsAdminTransactionLoading(true);
+      setAdminTransactionError(null);
+
+      try {
+        // Create wallet from mnemonic
+        const clientUrl = getLibraClientUrl();
+        const wallet = LibraWallet.fromMnemonic(
+          mnemonic.trim(),
+          Network.MAINNET,
+          clientUrl
+        );
+
+        // Sync wallet state with blockchain
+        await wallet.syncOnchain();
+
+        // Build V8 RE-JOIN transaction using the entry function
+        // 0x1::filo_migration::maybe_migrate takes no arguments
+        const tx = await wallet.buildTransaction(
+          "0x1::filo_migration::maybe_migrate",
+          [] // No arguments required for this function
+        );
+
+        // Sign and submit transaction
+        const result = await wallet.signSubmitWait(tx);
+
+        if (result.success) {
+          showAlert(
+            "V8 RE-JOIN Successful",
+            `V8 RE-JOIN transaction completed successfully!\n\nTransaction Hash: ${result.hash?.substring(0, 20)}...`
+          );
+          
+          setCurrentOperation(null);
+        } else {
+          const errorMsg = result.vm_status || "Transaction failed";
+          setAdminTransactionError(`V8 RE-JOIN failed: ${errorMsg}`);
+          showAlert("V8 RE-JOIN Failed", `Transaction failed: ${errorMsg}`);
+        }
+
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        setAdminTransactionError(`V8 RE-JOIN failed: ${errorMessage}`);
+        showAlert("V8 RE-JOIN Failed", `Transaction failed: ${errorMessage}`);
+        reportErrorAuto("TransactionHub.executeV8Rejoin", error, { accountId });
+      } finally {
+        setIsAdminTransactionLoading(false);
+        setCurrentOperation(null);
+      }
+    }, [account, accountId, showAlert]);
+
     // Handle when mnemonic is revealed
     useEffect(() => {
       if (mnemonicValue && currentOperation === "transfer") {
         executeTransfer(mnemonicValue);
+      } else if (mnemonicValue && currentOperation === "v8_rejoin") {
+        executeV8Rejoin(mnemonicValue);
       }
-    }, [mnemonicValue, currentOperation, executeTransfer]);
+    }, [mnemonicValue, currentOperation, executeTransfer, executeV8Rejoin]);
 
     // Clear form handler
     const clearForm = useCallback(() => {
       setRecipientAddress("");
       setAmount("");
       setTransactionError(null);
+      setAdminTransactionError(null);
       setPendingTransferData(null);
       setCurrentOperation(null);
     }, []);
@@ -341,19 +432,58 @@ export const TransactionHub = memo(
           )}
         </SectionContainer>
 
-        {/* Future: Admin Transactions Section */}
+        {/* Admin Transactions Section */}
         <SectionContainer title="Admin Transactions">
           <Text style={styles.description}>
-            Administrative blockchain transactions will be available here in future updates.
+            Administrative blockchain transactions for account management and network migration.
           </Text>
           
-          <ActionButton
-            text="Coming Soon"
-            onPress={() => showAlert("Coming Soon", "Admin transaction features will be available in a future update.")}
-            disabled={true}
-            variant="secondary"
-            accessibilityLabel="Admin transactions coming soon"
-          />
+          <Text style={[styles.label, { marginTop: 16, marginBottom: 8 }]}>
+            V8 Network RE-JOIN
+          </Text>
+          <Text style={styles.description}>
+            Execute the V8 network migration transaction (0x1::filo_migration::maybe_migrate). 
+            This will attempt to migrate your account to the V8 network if eligible.
+          </Text>
+
+          {adminTransactionError && (
+            <View style={[styles.inputContainer, { marginTop: 10 }]}>
+              <Text style={styles.errorText}>{adminTransactionError}</Text>
+            </View>
+          )}
+
+          <View style={styles.buttonContainer}>
+            <ActionButton
+              text="Execute V8 RE-JOIN"
+              onPress={handleV8Rejoin}
+              isLoading={isAdminTransactionLoading}
+              disabled={isAdminTransactionLoading || !account.is_key_stored}
+              accessibilityLabel="Execute V8 network migration transaction"
+            />
+
+            <ActionButton
+              text="Clear Errors"
+              onPress={() => setAdminTransactionError(null)}
+              variant="secondary"
+              disabled={isAdminTransactionLoading || !adminTransactionError}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Clear admin transaction errors"
+            />
+          </View>
+
+          {!account.is_key_stored && (
+            <View style={[styles.inputContainer, { marginTop: 16 }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <Ionicons name="eye-outline" size={20} color="#ff9500" />
+                <Text style={[styles.label, { marginLeft: 8, color: "#ff9500" }]}>
+                  View-Only Account
+                </Text>
+              </View>
+              <Text style={styles.description}>
+                Admin transactions require access to private keys. This view-only account cannot execute transactions.
+              </Text>
+            </View>
+          )}
         </SectionContainer>
 
         {/* PIN Modals */}
