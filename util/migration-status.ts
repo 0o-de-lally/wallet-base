@@ -24,7 +24,7 @@ export async function fetchAccountMigrationStatus(
       payload: {
         function: "0x1::activity::is_initialized" as const,
         type_arguments: [],
-        arguments: [accountAddress],
+        arguments: [accountAddress.toString()],
       },
     };
 

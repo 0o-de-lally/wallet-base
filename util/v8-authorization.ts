@@ -24,7 +24,7 @@ export async function fetchAccountV8Authorization(
       payload: {
         function: "0x1::reauthorization::is_v8_authorized" as const,
         type_arguments: [],
-        arguments: [accountAddress],
+        arguments: [accountAddress.toString()],
       },
     };
 
