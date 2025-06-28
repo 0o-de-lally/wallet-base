@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, RefreshControl } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
@@ -28,7 +23,9 @@ export default function AccountDetailsScreen() {
         const profiles = appConfig.profiles.get();
         const profile = profiles[profileName];
         if (profile) {
-          const foundAccount = profile.accounts.find((acc) => acc.id === accountId);
+          const foundAccount = profile.accounts.find(
+            (acc) => acc.id === accountId,
+          );
           setAccount(foundAccount || null);
         }
       };
@@ -37,7 +34,8 @@ export default function AccountDetailsScreen() {
       updateAccount();
 
       // Subscribe to profile changes to get real-time updates
-      const unsubscribe = appConfig.profiles[profileName].onChange(updateAccount);
+      const unsubscribe =
+        appConfig.profiles[profileName].onChange(updateAccount);
 
       return unsubscribe;
     }

@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
 import { formatTimestamp, formatLibraAmount } from "../../util/format-utils";
@@ -172,13 +168,10 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
             No Transactions
           </Text>
           <Text
-            style={[
-              styles.resultValue,
-              { textAlign: "center", marginTop: 8 },
-            ]}
+            style={[styles.resultValue, { textAlign: "center", marginTop: 8 }]}
           >
-            Your transaction history will appear here once you start sending
-            or receiving funds.
+            Your transaction history will appear here once you start sending or
+            receiving funds.
           </Text>
         </View>
       ) : (

@@ -13,22 +13,46 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
 }) => {
   const getV8AuthStatus = () => {
     if (account.is_v8_authorized === undefined) {
-      return { text: "V8 Authorization: Checking...", color: "#888", icon: "time-outline" as const };
+      return {
+        text: "V8 Authorization: Checking...",
+        color: "#888",
+        icon: "time-outline" as const,
+      };
     }
     if (account.is_v8_authorized === false) {
-      return { text: "V8 Authorization: Not Authorized", color: "#ff3b30", icon: "shield-outline" as const };
+      return {
+        text: "V8 Authorization: Not Authorized",
+        color: "#ff3b30",
+        icon: "shield-outline" as const,
+      };
     }
-    return { text: "V8 Authorization: Authorized", color: "#4cd964", icon: "shield-checkmark-outline" as const };
+    return {
+      text: "V8 Authorization: Authorized",
+      color: "#4cd964",
+      icon: "shield-checkmark-outline" as const,
+    };
   };
 
   const getMigrationStatus = () => {
     if (account.v8_migrated === undefined) {
-      return { text: "Migration Status: Checking...", color: "#888", icon: "time-outline" as const };
+      return {
+        text: "Migration Status: Checking...",
+        color: "#888",
+        icon: "time-outline" as const,
+      };
     }
     if (account.v8_migrated === false) {
-      return { text: "Migration Status: Not Migrated", color: "#ff9500", icon: "swap-horizontal-outline" as const };
+      return {
+        text: "Migration Status: Not Migrated",
+        color: "#ff9500",
+        icon: "swap-horizontal-outline" as const,
+      };
     }
-    return { text: "Migration Status: Migrated", color: "#4cd964", icon: "checkmark-circle-outline" as const };
+    return {
+      text: "Migration Status: Migrated",
+      color: "#4cd964",
+      icon: "checkmark-circle-outline" as const,
+    };
   };
 
   const v8AuthStatus = getV8AuthStatus();
@@ -89,7 +113,8 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
       </View>
 
       {/* Warning messages for issues */}
-      {(account.is_v8_authorized === false || account.v8_migrated === false) && (
+      {(account.is_v8_authorized === false ||
+        account.v8_migrated === false) && (
         <View
           style={{
             marginTop: 12,
@@ -100,12 +125,14 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
             borderLeftColor: "#ff9500",
           }}
         >
-          <Text style={[styles.resultValue, { color: "#856404", fontSize: 12 }]}>
+          <Text
+            style={[styles.resultValue, { color: "#856404", fontSize: 12 }]}
+          >
             {account.is_v8_authorized === false && account.v8_migrated === false
               ? "⚠️ This account requires both V8 authorization and migration to access all features."
               : account.is_v8_authorized === false
-              ? "⚠️ This account requires V8 authorization to access all features."
-              : "⚠️ This account requires migration to access all features."}
+                ? "⚠️ This account requires V8 authorization to access all features."
+                : "⚠️ This account requires migration to access all features."}
           </Text>
         </View>
       )}
