@@ -11,21 +11,26 @@ import { styles } from "../styles/styles";
 import { ActionButton } from "../components/common/ActionButton";
 import { formatTimestamp, formatLibraAmount } from "../util/format-utils";
 import { Ionicons } from "@expo/vector-icons";
+import { getLibraClient } from "../util/libra-client";
+import { appConfig, type AccountState } from "../util/app-config-store";
+import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
-// Mock transaction data structure - replace with actual API calls
+// Real transaction data structure from blockchain
 interface Transaction {
   id: string;
-  type: "sent" | "received";
-  amount: number;
+  type: "sent" | "received" | "other";
+  amount?: number;
   timestamp: number;
   status: "confirmed" | "pending" | "failed";
-  hash?: string;
+  hash: string;
   to?: string;
   from?: string;
+  version: string;
+  txType: string;
 }
 
 export default function TransactionsScreen() {
-  const { profileName, accountNickname } = useLocalSearchParams<{
+  const { profileName, accountNickname, accountId } = useLocalSearchParams<{
     accountId: string;
     profileName: string;
     accountNickname: string;
@@ -34,50 +39,79 @@ export default function TransactionsScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [account, setAccount] = useState<AccountState | null>(null);
 
-  // Mock data - replace with actual API calls
+  // Get account data
+  useEffect(() => {
+    if (accountId && profileName) {
+      const profiles = appConfig.profiles.get();
+      const profile = profiles[profileName];
+      if (profile) {
+        const foundAccount = profile.accounts.find(
+          (acc) => acc.id === accountId,
+        );
+        setAccount(foundAccount || null);
+      }
+    }
+  }, [accountId, profileName]);
+
+  // Fetch real transaction data from blockchain
   const loadTransactions = async (refresh = false) => {
+    if (!account?.account_address) return;
+    
     if (refresh) setIsRefreshing(true);
     else setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Fetching transactions for account:", account.account_address);
+      const client = getLibraClient();
 
-      // Mock transaction data
-      const mockTransactions: Transaction[] = [
-        {
-          id: "1",
-          type: "received",
-          amount: 100.5,
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          status: "confirmed",
-          from: "0x1234...5678",
-          hash: "0xabcd...efgh",
-        },
-        {
-          id: "2",
-          type: "sent",
-          amount: 25.75,
-          timestamp: Date.now() - 86400000, // 1 day ago
-          status: "confirmed",
-          to: "0x9876...5432",
-          hash: "0xijkl...mnop",
-        },
-        {
-          id: "3",
-          type: "sent",
-          amount: 50.0,
-          timestamp: Date.now() - 172800000, // 2 days ago
-          status: "pending",
-          to: "0xqrst...uvwx",
-          hash: "0xyzab...cdef",
-        },
-      ];
+      // Query transactions for this account (increased limit to show more)
+      const response = await client.getAccountTransactions({
+        accountAddress: account.account_address,
+        options: {
+          limit: 50, // Show more transactions in the dedicated screen
+          offset: 0
+        }
+      });
 
-      setTransactions(mockTransactions);
+      console.log("Raw transaction response:", response);
+
+      // Transform blockchain data to UI format
+      const transformedTransactions: Transaction[] = response.map((tx: TransactionResponse, index: number) => {
+        let version = 'N/A';
+        let timestamp = Date.now();
+        let success = true;
+
+        // Extract data from transaction response
+        if ('version' in tx && tx.version !== undefined) {
+          version = tx.version.toString();
+        }
+        
+        if ('timestamp' in tx && tx.timestamp !== undefined) {
+          timestamp = parseInt(tx.timestamp) / 1000; // Convert to milliseconds
+        }
+        
+        if ('success' in tx && tx.success !== undefined) {
+          success = tx.success;
+        }
+
+        return {
+          id: tx.hash || `tx-${index}`,
+          type: "other", // We'll improve this detection later
+          timestamp,
+          status: success ? "confirmed" : "failed",
+          hash: tx.hash,
+          version,
+          txType: tx.type || 'unknown'
+        };
+      });
+
+      console.log("Transformed transactions:", transformedTransactions);
+      setTransactions(transformedTransactions);
     } catch (error) {
       console.error("Failed to load transactions:", error);
+      setTransactions([]); // Clear transactions on error
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -85,8 +119,10 @@ export default function TransactionsScreen() {
   };
 
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (account) {
+      loadTransactions();
+    }
+  }, [account]);
 
   const onRefresh = () => {
     loadTransactions(true);
@@ -99,6 +135,10 @@ export default function TransactionsScreen() {
       pending: "#f5d76e",
       failed: "#f5a9a9",
     }[transaction.status];
+
+    // For blockchain transactions, we may not have amount data easily accessible
+    // We'll show the transaction type and hash instead
+    const displayAmount = transaction.amount ? formatLibraAmount(transaction.amount) : "N/A";
 
     return (
       <View
@@ -113,20 +153,40 @@ export default function TransactionsScreen() {
           }}
         >
           <Ionicons
-            name={isIncoming ? "arrow-down-circle" : "arrow-up-circle"}
+            name={
+              transaction.type === "received" 
+                ? "arrow-down-circle" 
+                : transaction.type === "sent"
+                ? "arrow-up-circle"
+                : "swap-horizontal"
+            }
             size={24}
-            color={isIncoming ? "#a5d6b7" : "#f5a9a9"}
+            color={
+              transaction.type === "received" 
+                ? "#a5d6b7" 
+                : transaction.type === "sent"
+                ? "#f5a9a9"
+                : "#888"
+            }
             style={{ marginRight: 12 }}
           />
           <View style={{ flex: 1 }}>
             <Text style={styles.resultLabel}>
-              {isIncoming ? "Received" : "Sent"}
+              {transaction.type === "received" 
+                ? "Received" 
+                : transaction.type === "sent"
+                ? "Sent"
+                : transaction.txType || "Transaction"
+              }
             </Text>
             <Text
               style={[styles.resultValue, { fontSize: 18, fontWeight: "600" }]}
             >
-              {isIncoming ? "+" : "-"}
-              {formatLibraAmount(transaction.amount)}
+              {transaction.amount ? (
+                `${isIncoming ? "+" : "-"}${displayAmount}`
+              ) : (
+                `Version ${transaction.version}`
+              )}
             </Text>
           </View>
           <View
@@ -143,16 +203,16 @@ export default function TransactionsScreen() {
           </View>
         </View>
 
-        <Text style={styles.resultValue}>
-          {isIncoming ? "From" : "To"}:{" "}
-          {isIncoming ? transaction.from : transaction.to}
-        </Text>
-
-        {transaction.hash && (
-          <Text style={[styles.resultValue, { fontSize: 12, color: "#888" }]}>
-            Hash: {transaction.hash}
+        {(transaction.from || transaction.to) && (
+          <Text style={styles.resultValue}>
+            {isIncoming ? "From" : "To"}:{" "}
+            {isIncoming ? transaction.from : transaction.to}
           </Text>
         )}
+
+        <Text style={[styles.resultValue, { fontSize: 12, color: "#888" }]}>
+          Hash: {transaction.hash}
+        </Text>
 
         <Text style={styles.lastUpdatedText}>
           {formatTimestamp(transaction.timestamp)}

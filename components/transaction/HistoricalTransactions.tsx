@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, ActivityIndicator, Alert } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { styles } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 interface HistoricalTransactionsProps {
-  accountId: string;
   accountAddress: string;
 }
 
@@ -19,7 +18,6 @@ interface TransactionItem {
 }
 
 export function HistoricalTransactions({
-  accountId,
   accountAddress
 }: HistoricalTransactionsProps) {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
@@ -31,9 +29,11 @@ export function HistoricalTransactions({
       setLoading(true);
       setError(null);
 
+      console.log("Fetching transactions for account:", accountAddress);
       const client = getLibraClient();
 
       // Query the last 10 transactions for this account
+      // Since LibraClient extends Aptos, we can call getAccountTransactions directly
       const response = await client.getAccountTransactions({
         accountAddress: accountAddress,
         options: {
@@ -42,12 +42,27 @@ export function HistoricalTransactions({
         }
       });
 
+      console.log("Raw transaction response:", response);
+
       // Transform the response to our display format
       const transformedTransactions: TransactionItem[] = response.map((tx: TransactionResponse) => {
-        // Handle different transaction types
-        const version = 'version' in tx ? tx.version.toString() : 'N/A';
-        const timestamp = 'timestamp' in tx ? tx.timestamp : 'N/A';
-        const success = 'success' in tx ? tx.success : false;
+        // Handle different transaction types - be more careful with type checking
+        let version = 'N/A';
+        let timestamp = 'N/A';
+        let success = false;
+
+        // Check if this is a committed transaction
+        if ('version' in tx && tx.version !== undefined) {
+          version = tx.version.toString();
+        }
+        
+        if ('timestamp' in tx && tx.timestamp !== undefined) {
+          timestamp = new Date(parseInt(tx.timestamp) / 1000).toLocaleString();
+        }
+        
+        if ('success' in tx && tx.success !== undefined) {
+          success = tx.success;
+        }
 
         return {
           hash: tx.hash,
@@ -58,6 +73,7 @@ export function HistoricalTransactions({
         };
       });
 
+      console.log("Transformed transactions:", transformedTransactions);
       setTransactions(transformedTransactions);
     } catch (err) {
       console.error("Error fetching transactions:", err);
