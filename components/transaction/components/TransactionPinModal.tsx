@@ -12,117 +12,120 @@ interface TransactionPinModalProps {
   operationType?: "transfer" | "v8_rejoin" | null;
 }
 
-export const TransactionPinModal = memo(({
-  visible,
-  onClose,
-  onPinSubmit,
-  isLoading = false,
-  operationType
-}: TransactionPinModalProps) => {
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState<string | null>(null);
+export const TransactionPinModal = memo(
+  ({
+    visible,
+    onClose,
+    onPinSubmit,
+    isLoading = false,
+    operationType,
+  }: TransactionPinModalProps) => {
+    const [pin, setPin] = useState("");
+    const [pinError, setPinError] = useState<string | null>(null);
 
-  const getModalTitle = () => {
-    switch (operationType) {
-      case "transfer":
-        return "Authorize Transfer";
-      case "v8_rejoin":
-        return "Authorize V8 RE-JOIN";
-      default:
-        return "Verify PIN";
-    }
-  };
+    const getModalTitle = () => {
+      switch (operationType) {
+        case "transfer":
+          return "Authorize Transfer";
+        case "v8_rejoin":
+          return "Authorize V8 RE-JOIN";
+        default:
+          return "Verify PIN";
+      }
+    };
 
-  const getModalSubtitle = () => {
-    switch (operationType) {
-      case "transfer":
-        return "Enter your PIN to access private key for transfer signing";
-      case "v8_rejoin":
-        return "Enter your PIN to access private key for V8 migration transaction";
-      default:
-        return "Enter your PIN to access private key for transaction signing";
-    }
-  };
+    const getModalSubtitle = () => {
+      switch (operationType) {
+        case "transfer":
+          return "Enter your PIN to access private key for transfer signing";
+        case "v8_rejoin":
+          return "Enter your PIN to access private key for V8 migration transaction";
+        default:
+          return "Enter your PIN to access private key for transaction signing";
+      }
+    };
 
-  const handleSubmit = useCallback(async () => {
-    if (!pin.trim()) {
-      setPinError("Please enter your PIN");
-      return;
-    }
+    const handleSubmit = useCallback(async () => {
+      if (!pin.trim()) {
+        setPinError("Please enter your PIN");
+        return;
+      }
 
-    setPinError(null);
-    
-    try {
-      await onPinSubmit(pin);
-      setPin(""); // Clear PIN on success
-    } catch (error) {
-      console.error("PIN submission error:", error);
-      setPinError("Failed to verify PIN. Please try again.");
-    }
-  }, [pin, onPinSubmit]);
+      setPinError(null);
 
-  const handleClose = useCallback(() => {
-    setPin("");
-    setPinError(null);
-    onClose();
-  }, [onClose]);
+      try {
+        await onPinSubmit(pin);
+        setPin(""); // Clear PIN on success
+      } catch (error) {
+        console.error("PIN submission error:", error);
+        setPinError("Failed to verify PIN. Please try again.");
+      }
+    }, [pin, onPinSubmit]);
 
-  const handlePinChange = useCallback((newPin: string) => {
-    setPin(newPin);
-    if (pinError) {
-      setPinError(null); // Clear error when user starts typing
-    }
-  }, [pinError]);
+    const handleClose = useCallback(() => {
+      setPin("");
+      setPinError(null);
+      onClose();
+    }, [onClose]);
 
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>{getModalTitle()}</Text>
-          
-          <Text style={styles.modalSubtitle}>
-            {getModalSubtitle()}
-          </Text>
+    const handlePinChange = useCallback(
+      (newPin: string) => {
+        setPin(newPin);
+        if (pinError) {
+          setPinError(null); // Clear error when user starts typing
+        }
+      },
+      [pinError],
+    );
 
-          <View style={{ marginVertical: 20 }}>
-            <PinInputField
-              label="PIN"
-              value={pin}
-              onChangeText={handlePinChange}
-              editable={!isLoading}
-              autoFocus={true}
-              error={pinError || undefined}
-              onSubmit={handleSubmit}
-            />
-          </View>
+    return (
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleClose}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{getModalTitle()}</Text>
 
-          <View style={styles.buttonContainer}>
-            <ActionButton
-              text="Verify PIN"
-              onPress={handleSubmit}
-              isLoading={isLoading}
-              disabled={isLoading || !pin.trim()}
-              accessibilityLabel="Verify PIN for transaction"
-            />
+            <Text style={styles.modalSubtitle}>{getModalSubtitle()}</Text>
 
-            <ActionButton
-              text="Cancel"
-              onPress={handleClose}
-              variant="secondary"
-              disabled={isLoading}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Cancel PIN verification"
-            />
+            <View style={{ marginVertical: 20 }}>
+              <PinInputField
+                label="PIN"
+                value={pin}
+                onChangeText={handlePinChange}
+                editable={!isLoading}
+                autoFocus={true}
+                error={pinError || undefined}
+                onSubmit={handleSubmit}
+              />
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <ActionButton
+                text="Verify PIN"
+                onPress={handleSubmit}
+                isLoading={isLoading}
+                disabled={isLoading || !pin.trim()}
+                accessibilityLabel="Verify PIN for transaction"
+              />
+
+              <ActionButton
+                text="Cancel"
+                onPress={handleClose}
+                variant="secondary"
+                disabled={isLoading}
+                style={{ marginTop: 10 }}
+                accessibilityLabel="Cancel PIN verification"
+              />
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
-  );
-});
+      </Modal>
+    );
+  },
+);
 
 TransactionPinModal.displayName = "TransactionPinModal";

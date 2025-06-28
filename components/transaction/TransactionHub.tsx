@@ -57,23 +57,31 @@ export const TransactionHub = memo(
     });
 
     // Handle mnemonic retrieval for transactions
-    const handleMnemonicRetrieved = useCallback((mnemonic: string) => {
-      if (currentOperation === "transfer" && pendingTransferData) {
-        executeTransfer(mnemonic, pendingTransferData, setIsTransferLoading, () => {});
-      } else if (currentOperation === "v8_rejoin") {
-        executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
-      }
-    }, [currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin]);
+    const handleMnemonicRetrieved = useCallback(
+      (mnemonic: string) => {
+        if (currentOperation === "transfer" && pendingTransferData) {
+          executeTransfer(
+            mnemonic,
+            pendingTransferData,
+            setIsTransferLoading,
+            () => {},
+          );
+        } else if (currentOperation === "v8_rejoin") {
+          executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
+        }
+      },
+      [currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin],
+    );
 
     const {
       pinModalVisible,
       isLoading: isPinLoading,
       requestMnemonicWithPin,
       handlePinSubmit,
-      closePinModal
+      closePinModal,
     } = useTransactionPin({
       accountId,
-      onMnemonicRetrieved: handleMnemonicRetrieved
+      onMnemonicRetrieved: handleMnemonicRetrieved,
     });
 
     // Load account data
