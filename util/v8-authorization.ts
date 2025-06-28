@@ -22,9 +22,7 @@ export async function fetchAccountV8Authorization(
     // Create the view payload for the reauthorization function
     const payload = LibraViews.reauthorization_isV8Authorized(accountAddress);
 
-    console.log(
-      "Fetching v8 authorization for account:",
-      payload);
+    console.log("Fetching v8 authorization for account:", payload);
 
     // Call the view function
     const result = await client.viewJson(payload);

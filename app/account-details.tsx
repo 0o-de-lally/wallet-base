@@ -59,7 +59,10 @@ export default function AccountDetailsScreen() {
       >
         <View>
           <Text style={styles.sectionTitle}>
-            {profileName} • {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
+            {profileName} •{" "}
+            {account
+              ? shortenAddress(account.account_address, 4, 4)
+              : "Loading..."}
             {account?.nickname && ` • ${account.nickname}`}
           </Text>
         </View>
