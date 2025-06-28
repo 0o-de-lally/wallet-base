@@ -57,8 +57,7 @@ export default function AccountDetailsScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={{ marginBottom: 24 }}>
-          <Text style={styles.title}>Account Details</Text>
+        <View>
           <Text style={styles.sectionTitle}>
             {profileName} • {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
             {account?.nickname && ` • ${account.nickname}`}
