@@ -104,6 +104,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.textPrimary,
     marginBottom: 8,
+    textTransform: "uppercase",
   },
   label: {
     fontSize: 15,
@@ -114,7 +115,7 @@ export const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     marginBottom: 24,
-    textAlign: "center",
+    textAlign: "left",
     color: colors.textSecondary,
     lineHeight: 20,
   },
@@ -686,5 +687,19 @@ export const styles = StyleSheet.create({
   filterButtonTextActive: {
     color: colors.buttonTextDark,
     fontWeight: "600",
+  },
+
+  // View-only account warning styles
+  viewOnlyContainer: {
+    marginTop: 16,
+  },
+  viewOnlyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  viewOnlyIcon: {
+    marginLeft: 8,
+    color: "#ff9500",
   },
 });

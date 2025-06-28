@@ -35,6 +35,17 @@ export const AccountItem = memo(
       });
     };
 
+    const navigateToTransactionHub = () => {
+      router.navigate({
+        pathname: "./transaction-hub",
+        params: {
+          accountId: account.id,
+          profileName,
+          accountNickname: account.nickname,
+        },
+      });
+    };
+
     const navigateToSettings = () => {
       router.navigate({
         pathname: "./account-settings",
@@ -135,6 +146,14 @@ export const AccountItem = memo(
 
                 <TouchableOpacity
                   style={[styles.iconButton, { padding: 6 }]}
+                  onPress={navigateToTransactionHub}
+                  accessibilityLabel={`Transaction hub for ${account.nickname}`}
+                >
+                  <Ionicons name="send-outline" size={16} color="#c2c2cc" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.iconButton, { padding: 6 }]}
                   onPress={navigateToSettings}
                   accessibilityLabel={`Manage account ${account.nickname}`}
                 >
@@ -210,6 +229,14 @@ export const AccountItem = memo(
                   <Ionicons name="eye-outline" size={20} color="#c2c2cc" />
                 </TouchableOpacity>
               )}
+
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={navigateToTransactionHub}
+                accessibilityLabel={`Transaction hub for ${account.nickname}`}
+              >
+                <Ionicons name="send-outline" size={20} color="#c2c2cc" />
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.iconButton}

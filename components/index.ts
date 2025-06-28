@@ -12,3 +12,6 @@ export {
   AccountSetupStep,
   CompleteStep,
 } from "./onboarding";
+
+// Transaction exports
+export { TransactionHub } from "./transaction/TransactionHub";

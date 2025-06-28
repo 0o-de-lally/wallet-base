@@ -29,7 +29,7 @@ export const NETWORK = {
  * UI formatting constants
  */
 export const FORMATTING = {
-  ADDRESS_PREFIX_LENGTH: 6,
+  ADDRESS_PREFIX_LENGTH: 4,
   ADDRESS_SUFFIX_LENGTH: 4,
   DECIMAL_PLACES: {
     SMALL_AMOUNT: 6, // For amounts < 1
