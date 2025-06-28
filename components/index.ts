@@ -13,5 +13,9 @@ export {
   CompleteStep,
 } from "./onboarding";
 
+// Transaction components
+export { HistoricalTransactions } from "./transaction/HistoricalTransactions";
+// Profile components
+export { AccountStateStatus } from "./profile/AccountStateStatus";
 // Transaction exports
 export { TransactionHub } from "./transaction/TransactionHub";

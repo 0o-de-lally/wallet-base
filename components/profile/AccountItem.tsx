@@ -24,9 +24,9 @@ export const AccountItem = memo(
     onSetActive,
     compact = false,
   }: AccountItemProps) => {
-    const navigateToTransactions = () => {
+    const navigateToAccountDetails = () => {
       router.navigate({
-        pathname: "./transactions",
+        pathname: "./account-details",
         params: {
           accountId: account.id,
           profileName,
@@ -77,8 +77,8 @@ export const AccountItem = memo(
       if (!isActive && onSetActive) {
         onSetActive(account.id);
       } else {
-        // If account is already active, navigate to transactions
-        navigateToTransactions();
+        // If account is already active, navigate to account details
+        navigateToAccountDetails();
       }
     };
 
@@ -94,7 +94,7 @@ export const AccountItem = memo(
           compact && styles.compactAccountItem,
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
         onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
@@ -129,6 +129,22 @@ export const AccountItem = memo(
                     size={12}
                     color="#ff9500"
                     accessibilityLabel="Balance data may be outdated"
+                  />
+                )}
+                {account.is_v8_authorized === false && (
+                  <Ionicons
+                    name="shield-outline"
+                    size={12}
+                    color="#ff3b30"
+                    accessibilityLabel="Account not v8 authorized"
+                  />
+                )}
+                {account.v8_migrated === false && (
+                  <Ionicons
+                    name="swap-horizontal-outline"
+                    size={12}
+                    color="#ff9500"
+                    accessibilityLabel="Account not migrated"
                   />
                 )}
               </View>
@@ -198,6 +214,22 @@ export const AccountItem = memo(
                       size={14}
                       color="#ff9500"
                       accessibilityLabel="Balance data may be outdated"
+                    />
+                  )}
+                  {account.is_v8_authorized === false && (
+                    <Ionicons
+                      name="shield-outline"
+                      size={14}
+                      color="#ff3b30"
+                      accessibilityLabel="Account not v8 authorized"
+                    />
+                  )}
+                  {account.v8_migrated === false && (
+                    <Ionicons
+                      name="swap-horizontal-outline"
+                      size={14}
+                      color="#ff9500"
+                      accessibilityLabel="Account not migrated"
                     />
                   )}
                 </View>
