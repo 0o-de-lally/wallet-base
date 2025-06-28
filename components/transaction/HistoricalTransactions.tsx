@@ -73,8 +73,16 @@ export function HistoricalTransactions({
         };
       });
 
-      console.log("Transformed transactions:", transformedTransactions);
-      setTransactions(transformedTransactions);
+      // Sort transactions in reverse chronological order (newest first)
+      const sortedTransactions = transformedTransactions.sort((a, b) => {
+        // Convert timestamp strings back to numbers for comparison
+        const timestampA = new Date(a.timestamp).getTime();
+        const timestampB = new Date(b.timestamp).getTime();
+        return timestampB - timestampA; // Newest first
+      });
+
+      console.log("Transformed and sorted transactions:", sortedTransactions);
+      setTransactions(sortedTransactions);
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch transactions");

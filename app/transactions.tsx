@@ -107,8 +107,13 @@ export default function TransactionsScreen() {
         };
       });
 
-      console.log("Transformed transactions:", transformedTransactions);
-      setTransactions(transformedTransactions);
+      // Sort transactions in reverse chronological order (newest first)
+      const sortedTransactions = transformedTransactions.sort((a, b) => {
+        return b.timestamp - a.timestamp; // Newest first
+      });
+
+      console.log("Transformed and sorted transactions:", sortedTransactions);
+      setTransactions(sortedTransactions);
     } catch (error) {
       console.error("Failed to load transactions:", error);
       setTransactions([]); // Clear transactions on error
