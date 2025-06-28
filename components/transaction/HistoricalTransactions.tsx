@@ -55,11 +55,11 @@ export function HistoricalTransactions({
         if ('version' in tx && tx.version !== undefined) {
           version = tx.version.toString();
         }
-        
+
         if ('timestamp' in tx && tx.timestamp !== undefined) {
           timestamp = new Date(parseInt(tx.timestamp) / 1000).toLocaleString();
         }
-        
+
         if ('success' in tx && tx.success !== undefined) {
           success = tx.success;
         }
