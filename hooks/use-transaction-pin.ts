@@ -14,7 +14,7 @@ export function useTransactionPin({ accountId, onMnemonicRetrieved }: UseTransac
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getStorageKey = useCallback((id: string) => `mnemonic_${id}`, []);
+  const getStorageKey = useCallback((id: string) => `account_${id}`, []);
 
   const requestMnemonicWithPin = useCallback(() => {
     setPinModalVisible(true);
