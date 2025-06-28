@@ -1,4 +1,4 @@
-import { type LibraClient } from "open-libra-sdk";
+import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
 export interface V8AuthData {
@@ -20,13 +20,11 @@ export async function fetchAccountV8Authorization(
 
   try {
     // Create the view payload for the reauthorization function
-    const payload = {
-      payload: {
-        function: "0x1::reauthorization::is_v8_authorized" as const,
-        type_arguments: [],
-        arguments: [accountAddress.toString()],
-      },
-    };
+    const payload = LibraViews.reauthorization_isV8Authorized(accountAddress);
+
+    console.log(
+      "Fetching v8 authorization for account:",
+      payload);
 
     // Call the view function
     const result = await client.viewJson(payload);

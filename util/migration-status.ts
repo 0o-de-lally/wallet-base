@@ -1,4 +1,4 @@
-import { type LibraClient } from "open-libra-sdk";
+import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
 export interface MigrationData {
@@ -20,13 +20,8 @@ export async function fetchAccountMigrationStatus(
 
   try {
     // Create the view payload for the activity function
-    const payload = {
-      payload: {
-        function: "0x1::activity::is_initialized" as const,
-        type_arguments: [],
-        arguments: [accountAddress.toString()],
-      },
-    };
+
+    const payload = LibraViews.activity_isInitialized(accountAddress);
 
     // Call the view function
     const result = await client.viewJson(payload);
