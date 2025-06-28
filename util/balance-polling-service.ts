@@ -6,7 +6,6 @@ import {
 import { getLibraClient } from "./libra-client";
 import {
   fetchAndUpdateProfilePollingData,
-  getActiveProfileAccounts,
 } from "./account-polling";
 import { clearAccountErrors } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
