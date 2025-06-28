@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ActivityIndicator,
-  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
@@ -24,13 +23,11 @@ interface Transaction {
 export interface HistoricalTransactionsProps {
   accountId: string;
   accountAddress: string;
-  refreshControl?: React.ReactElement;
 }
 
 export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
   accountId,
   accountAddress,
-  refreshControl,
 }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);

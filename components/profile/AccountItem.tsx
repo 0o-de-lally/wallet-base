@@ -24,9 +24,9 @@ export const AccountItem = memo(
     onSetActive,
     compact = false,
   }: AccountItemProps) => {
-    const navigateToTransactions = () => {
+    const navigateToAccountDetails = () => {
       router.navigate({
-        pathname: "./transactions",
+        pathname: "./account-details",
         params: {
           accountId: account.id,
           profileName,
@@ -66,8 +66,8 @@ export const AccountItem = memo(
       if (!isActive && onSetActive) {
         onSetActive(account.id);
       } else {
-        // If account is already active, navigate to transactions
-        navigateToTransactions();
+        // If account is already active, navigate to account details
+        navigateToAccountDetails();
       }
     };
 
