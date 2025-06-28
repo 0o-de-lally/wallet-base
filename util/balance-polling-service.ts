@@ -4,9 +4,7 @@ import {
   type AccountState,
 } from "./app-config-store";
 import { getLibraClient } from "./libra-client";
-import {
-  fetchAndUpdateProfilePollingData,
-} from "./account-polling";
+import { fetchAndUpdateProfilePollingData } from "./account-polling";
 import { clearAccountErrors } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
 import { reportErrorAuto } from "./error-utils";
@@ -198,7 +196,9 @@ export class BalancePollingService {
       // Fetch polling data
       const client = getLibraClient();
       if (client) {
-        const { fetchAndUpdateAccountPollingData } = await import("./account-polling");
+        const { fetchAndUpdateAccountPollingData } = await import(
+          "./account-polling"
+        );
         await fetchAndUpdateAccountPollingData(client, targetAccount);
       }
     } catch (error) {

@@ -1,15 +1,15 @@
 import { type LibraClient } from "open-libra-sdk";
 import { appConfig, type AccountState } from "./app-config-store";
 import { reportError } from "./error-utils";
-import { 
-  fetchAccountBalance, 
+import {
+  fetchAccountBalance,
   updateAccountBalance,
-  type BalanceData 
+  type BalanceData,
 } from "./account-balance";
-import { 
-  fetchAccountV8Authorization, 
+import {
+  fetchAccountV8Authorization,
   updateAccountV8Authorization,
-  type V8AuthData 
+  type V8AuthData,
 } from "./v8-authorization";
 
 export interface AccountPollingData {
@@ -52,7 +52,7 @@ export async function updateAccountPollingData(
 ): Promise<void> {
   // Update balance data
   await updateAccountBalance(accountId, pollingData.balance);
-  
+
   // Update v8 authorization data
   await updateAccountV8Authorization(accountId, pollingData.v8Auth);
 }
@@ -78,13 +78,22 @@ export async function fetchAndUpdateAccountPollingData(
   }
 
   try {
-    console.log(`Fetching polling data for account ${account.nickname || account.id}`);
-    
-    const pollingData = await fetchAccountPollingData(client, account.account_address);
+    console.log(
+      `Fetching polling data for account ${account.nickname || account.id}`,
+    );
+
+    const pollingData = await fetchAccountPollingData(
+      client,
+      account.account_address,
+    );
     await updateAccountPollingData(account.id, pollingData);
 
     // Log successful recovery if account previously had errors
-    if (account.error_count && account.error_count > 0 && !pollingData.balance.error) {
+    if (
+      account.error_count &&
+      account.error_count > 0 &&
+      !pollingData.balance.error
+    ) {
       console.log(
         `✓ Polling data fetch recovered for account ${account.id} after ${account.error_count} errors`,
       );
@@ -151,7 +160,7 @@ export async function fetchAndUpdateProfilePollingData(
   });
 
   const results = await Promise.allSettled(pollingPromises);
-  
+
   return results.map((result, index) => {
     if (result.status === "fulfilled") {
       return result.value;
@@ -179,7 +188,7 @@ export function getActiveProfileAccounts(): {
   }
 
   const profiles = appConfig.profiles.get();
-  
+
   // Find the profile containing the active account
   for (const [profileName, profile] of Object.entries(profiles)) {
     if (profile.accounts.some((acc) => acc.id === activeAccountId)) {

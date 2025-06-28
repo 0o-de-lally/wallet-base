@@ -58,13 +58,20 @@ export async function fetchAccountV8Authorization(
   } catch (error) {
     const { type, shouldLog } = categorizeError(error);
     const errorMessage =
-      error instanceof Error ? error.message : "Failed to fetch v8 authorization";
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch v8 authorization";
 
     // Use the error reporting system
-    reportError(shouldLog ? "warn" : "debug", "fetchAccountV8Authorization", error, {
-      accountAddress,
-      type,
-    });
+    reportError(
+      shouldLog ? "warn" : "debug",
+      "fetchAccountV8Authorization",
+      error,
+      {
+        accountAddress,
+        type,
+      },
+    );
 
     // Return error state instead of throwing
     return {
@@ -83,7 +90,7 @@ export async function updateAccountV8Authorization(
   v8AuthData: V8AuthData,
 ): Promise<void> {
   const { appConfig } = await import("./app-config-store");
-  
+
   try {
     const profiles = appConfig.profiles.get();
     let accountUpdated = false;
@@ -125,7 +132,10 @@ export async function fetchAndUpdateAccountV8Authorization(
   accountAddress: string,
 ): Promise<void> {
   try {
-    const v8AuthData = await fetchAccountV8Authorization(client, accountAddress);
+    const v8AuthData = await fetchAccountV8Authorization(
+      client,
+      accountAddress,
+    );
     await updateAccountV8Authorization(accountId, v8AuthData);
   } catch (error) {
     reportError("warn", "fetchAndUpdateAccountV8Authorization", error, {
