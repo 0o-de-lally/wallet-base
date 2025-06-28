@@ -5,6 +5,7 @@ import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { HistoricalTransactions } from "../components/transaction/HistoricalTransactions";
 import { appConfig, type AccountState } from "../util/app-config-store";
+import { shortenAddress } from "../util/format-utils";
 
 export default function AccountDetailsScreen() {
   const { accountId, profileName, accountNickname } = useLocalSearchParams<{
@@ -59,7 +60,8 @@ export default function AccountDetailsScreen() {
         <View style={{ marginBottom: 24 }}>
           <Text style={styles.title}>Account Details</Text>
           <Text style={styles.sectionTitle}>
-            {accountNickname} • {profileName}
+            {profileName} • {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
+            {account?.nickname && ` • ${account.nickname}`}
           </Text>
         </View>
 
