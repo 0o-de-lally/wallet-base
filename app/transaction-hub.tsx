@@ -51,23 +51,6 @@ export default function TransactionHubScreen() {
           }}
         />
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 16,
-            paddingHorizontal: 16,
-            paddingTop: 16,
-          }}
-        >
-          <ActionButton
-            text="← Back"
-            onPress={() => router.back()}
-            size="small"
-            style={{ marginRight: 16 }}
-          />
-        </View>
-
         <TransactionHub accountId={accountId} profileName={profileName} />
       </View>
     </SetupGuard>

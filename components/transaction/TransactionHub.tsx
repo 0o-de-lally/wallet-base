@@ -1,13 +1,13 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { ScrollView, Text } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { styles } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
 import { useTransactionPin } from "../../hooks/use-transaction-pin";
 import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
+import { shortenAddress } from "../../util/format-utils";
 import {
-  AccountHeader,
   TransferForm,
   AdminTransactions,
   TransactionPinModal,
@@ -150,7 +150,11 @@ export const TransactionHub = memo(
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
       >
-        <AccountHeader account={account} />
+        <View style={[styles.inputContainer, { marginBottom: 20 }]}>
+          <Text style={[styles.label, { fontSize: 18, fontWeight: "bold" }]}>
+            0x{shortenAddress(account.account_address)} {account.nickname}
+          </Text>
+        </View>
 
         <TransferForm
           account={account}

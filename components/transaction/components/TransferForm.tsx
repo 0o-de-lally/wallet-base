@@ -132,6 +132,13 @@ export const TransferForm = memo(
           recipient address.
         </Text>
 
+        <View style={[styles.inputContainer, { marginBottom: 16 }]}>
+          <Text style={styles.label}>Available Balance</Text>
+          <Text style={styles.resultValue}>
+            {formatLibraAmount(account.balance_unlocked)} LBR
+          </Text>
+        </View>
+
         <FormInput
           label="Recipient Address"
           value={recipientAddress}
@@ -150,7 +157,7 @@ export const TransferForm = memo(
         />
 
         {transactionError && (
-          <View style={[styles.inputContainer, { marginTop: 10 }]}>
+          <View style={[styles.inputContainer]}>
             <Text style={styles.errorText}>{transactionError}</Text>
           </View>
         )}
@@ -169,7 +176,6 @@ export const TransferForm = memo(
             onPress={clearForm}
             variant="secondary"
             disabled={isLoading}
-            style={{ marginTop: 10 }}
             accessibilityLabel="Clear transfer form"
           />
         </View>

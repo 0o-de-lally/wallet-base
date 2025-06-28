@@ -28,7 +28,7 @@ export const TransactionPinModal = memo(
         case "transfer":
           return "Authorize Transfer";
         case "v8_rejoin":
-          return "Authorize V8 RE-JOIN";
+          return "Authorize V8 Migration";
         default:
           return "Verify PIN";
       }
@@ -105,7 +105,7 @@ export const TransactionPinModal = memo(
 
             <View style={styles.buttonContainer}>
               <ActionButton
-                text="Verify PIN"
+                text="Verify"
                 onPress={handleSubmit}
                 isLoading={isLoading}
                 disabled={isLoading || !pin.trim()}
@@ -117,7 +117,6 @@ export const TransactionPinModal = memo(
                 onPress={handleClose}
                 variant="secondary"
                 disabled={isLoading}
-                style={{ marginTop: 10 }}
                 accessibilityLabel="Cancel PIN verification"
               />
             </View>

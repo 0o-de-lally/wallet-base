@@ -57,63 +57,34 @@ export const AdminTransactions = memo(
       }
     }, [account, accountId, onRequestMnemonic, showAlert]);
 
-    // Clear admin errors
-    const clearAdminErrors = useCallback(() => {
-      setAdminTransactionError(null);
-    }, []);
-
     return (
       <SectionContainer title="Admin Transactions">
+        <Text style={styles.label}>V8 Migration</Text>
         <Text style={styles.description}>
-          Administrative blockchain transactions for account management and
-          network migration.
-        </Text>
-
-        <Text style={[styles.label, { marginTop: 16, marginBottom: 8 }]}>
-          V8 Network RE-JOIN
-        </Text>
-        <Text style={styles.description}>
-          Execute the V8 network migration transaction
-          (0x1::filo_migration::maybe_migrate). This will attempt to migrate
-          your account to the V8 network if eligible.
+          This will update your account to the new V8 state.
         </Text>
 
         {adminTransactionError && (
-          <View style={[styles.inputContainer, { marginTop: 10 }]}>
+          <View>
             <Text style={styles.errorText}>{adminTransactionError}</Text>
           </View>
         )}
 
         <View style={styles.buttonContainer}>
           <ActionButton
-            text="Execute V8 RE-JOIN"
+            text="Migrate"
             onPress={handleV8Rejoin}
             isLoading={isLoading}
             disabled={isLoading || !account.is_key_stored}
             accessibilityLabel="Execute V8 network migration transaction"
           />
-
-          <ActionButton
-            text="Clear Errors"
-            onPress={clearAdminErrors}
-            variant="secondary"
-            disabled={isLoading || !adminTransactionError}
-            style={{ marginTop: 10 }}
-            accessibilityLabel="Clear admin transaction errors"
-          />
         </View>
 
         {!account.is_key_stored && (
-          <View style={[styles.inputContainer, { marginTop: 16 }]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+          <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
+            <View style={styles.viewOnlyHeader}>
               <Ionicons name="eye-outline" size={20} color="#ff9500" />
-              <Text style={[styles.label, { marginLeft: 8, color: "#ff9500" }]}>
+              <Text style={[styles.label, styles.viewOnlyIcon]}>
                 View-Only Account
               </Text>
             </View>
