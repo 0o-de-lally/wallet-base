@@ -8,10 +8,9 @@ import { appConfig, type AccountState } from "../util/app-config-store";
 import { shortenAddress } from "../util/format-utils";
 
 export default function AccountDetailsScreen() {
-  const { accountId, profileName, accountNickname } = useLocalSearchParams<{
+  const { accountId, profileName } = useLocalSearchParams<{
     accountId: string;
     profileName: string;
-    accountNickname: string;
   }>();
 
   const [account, setAccount] = useState<AccountState | null>(null);
@@ -48,6 +47,8 @@ export default function AccountDetailsScreen() {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
+  const accountNickname = account?.nickname || "";
+
   return (
     <View style={styles.safeAreaView}>
       <ScrollView
@@ -63,7 +64,7 @@ export default function AccountDetailsScreen() {
             {account
               ? shortenAddress(account.account_address, 4, 4)
               : "Loading..."}
-            {account?.nickname && ` • ${account.nickname}`}
+            {` • ${accountNickname}`}
           </Text>
         </View>
 
