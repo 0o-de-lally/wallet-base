@@ -18,7 +18,11 @@ export function AccountStateStatus({ account }: AccountStateStatusProps) {
         </View>
         <View style={{ marginBottom: 12 }}>
           <Text style={styles.resultLabel}>Address:</Text>
-          <Text style={styles.resultValue} numberOfLines={1} ellipsizeMode="middle">
+          <Text
+            style={styles.resultValue}
+            numberOfLines={1}
+            ellipsizeMode="middle"
+          >
             {account.account_address}
           </Text>
         </View>

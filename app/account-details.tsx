@@ -73,9 +73,7 @@ export default function AccountDetailsScreen() {
 
         {/* Historical Transactions */}
         {account && (
-          <HistoricalTransactions
-            accountAddress={account.account_address}
-          />
+          <HistoricalTransactions accountAddress={account.account_address} />
         )}
       </ScrollView>
     </View>

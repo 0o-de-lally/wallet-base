@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, RefreshControl } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { styles } from "../styles/styles";
 import { ActionButton } from "../components/common/ActionButton";
@@ -73,9 +68,7 @@ export default function TransactionsScreen() {
 
         {/* Use the HistoricalTransactions component to display transactions */}
         {account && (
-          <HistoricalTransactions
-            accountAddress={account.account_address}
-          />
+          <HistoricalTransactions accountAddress={account.account_address} />
         )}
       </ScrollView>
     </View>

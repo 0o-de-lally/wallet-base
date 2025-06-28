@@ -18,7 +18,7 @@ interface TransactionItem {
 }
 
 export function HistoricalTransactions({
-  accountAddress
+  accountAddress,
 }: HistoricalTransactionsProps) {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,40 +38,44 @@ export function HistoricalTransactions({
         accountAddress: accountAddress,
         options: {
           limit: 10, // Limit to last 10 transactions
-          offset: 0   // Start from the most recent
-        }
+          offset: 0, // Start from the most recent
+        },
       });
 
       console.log("Raw transaction response:", response);
 
       // Transform the response to our display format
-      const transformedTransactions: TransactionItem[] = response.map((tx: TransactionResponse) => {
-        // Handle different transaction types - be more careful with type checking
-        let version = 'N/A';
-        let timestamp = 'N/A';
-        let success = false;
+      const transformedTransactions: TransactionItem[] = response.map(
+        (tx: TransactionResponse) => {
+          // Handle different transaction types - be more careful with type checking
+          let version = "N/A";
+          let timestamp = "N/A";
+          let success = false;
 
-        // Check if this is a committed transaction
-        if ('version' in tx && tx.version !== undefined) {
-          version = tx.version.toString();
-        }
+          // Check if this is a committed transaction
+          if ("version" in tx && tx.version !== undefined) {
+            version = tx.version.toString();
+          }
 
-        if ('timestamp' in tx && tx.timestamp !== undefined) {
-          timestamp = new Date(parseInt(tx.timestamp) / 1000).toLocaleString();
-        }
+          if ("timestamp" in tx && tx.timestamp !== undefined) {
+            timestamp = new Date(
+              parseInt(tx.timestamp) / 1000,
+            ).toLocaleString();
+          }
 
-        if ('success' in tx && tx.success !== undefined) {
-          success = tx.success;
-        }
+          if ("success" in tx && tx.success !== undefined) {
+            success = tx.success;
+          }
 
-        return {
-          hash: tx.hash,
-          type: tx.type,
-          version,
-          timestamp,
-          success,
-        };
-      });
+          return {
+            hash: tx.hash,
+            type: tx.type,
+            version,
+            timestamp,
+            success,
+          };
+        },
+      );
 
       // Sort transactions in reverse chronological order (newest first)
       const sortedTransactions = transformedTransactions.sort((a, b) => {
@@ -85,7 +89,9 @@ export function HistoricalTransactions({
       setTransactions(sortedTransactions);
     } catch (err) {
       console.error("Error fetching transactions:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch transactions");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch transactions",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,19 +106,27 @@ export function HistoricalTransactions({
   const renderTransaction = ({ item }: { item: TransactionItem }) => (
     <View style={styles.listItem}>
       <View style={styles.transactionHeader}>
-        <Text style={styles.transactionHash} numberOfLines={1} ellipsizeMode="middle">
+        <Text
+          style={styles.transactionHash}
+          numberOfLines={1}
+          ellipsizeMode="middle"
+        >
           {item.hash}
         </Text>
-        <Text style={[
-          styles.transactionStatus,
-          { color: item.success ? '#4CAF50' : '#F44336' }
-        ]}>
-          {item.success ? '✓' : '✗'}
+        <Text
+          style={[
+            styles.transactionStatus,
+            { color: item.success ? "#4CAF50" : "#F44336" },
+          ]}
+        >
+          {item.success ? "✓" : "✗"}
         </Text>
       </View>
       <View style={styles.transactionDetails}>
         <Text style={styles.transactionDetailText}>Type: {item.type}</Text>
-        <Text style={styles.transactionDetailText}>Version: {item.version}</Text>
+        <Text style={styles.transactionDetailText}>
+          Version: {item.version}
+        </Text>
         <Text style={styles.transactionDetailText}>Time: {item.timestamp}</Text>
       </View>
     </View>
@@ -137,10 +151,7 @@ export function HistoricalTransactions({
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Error: {error}</Text>
-        <Text
-          style={styles.retryText}
-          onPress={fetchTransactions}
-        >
+        <Text style={styles.retryText} onPress={fetchTransactions}>
           Tap to retry
         </Text>
       </View>
