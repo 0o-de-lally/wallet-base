@@ -5,10 +5,10 @@ import {
 } from "./app-config-store";
 import { getLibraClient } from "./libra-client";
 import {
-  fetchAndUpdateProfileBalancesWithBackoff,
-  clearAccountErrors,
-  fetchAndUpdateAccountBalance,
-} from "./account-balance";
+  fetchAndUpdateProfilePollingData,
+  getActiveProfileAccounts,
+} from "./account-polling";
+import { clearAccountErrors } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
 import { reportErrorAuto } from "./error-utils";
 
@@ -51,7 +51,7 @@ export class BalancePollingService {
       return;
     }
 
-    console.log("Starting balance polling service (every 30 seconds)");
+    console.log("Starting account polling service (every 30 seconds)");
     this.isRunning = true;
 
     // Run immediately on start
@@ -89,7 +89,7 @@ export class BalancePollingService {
   }
 
   /**
-   * Polls balances for the active profile
+   * Polls account data (balances, v8 authorization, etc.) for the active profile
    */
   private async pollBalances(): Promise<void> {
     try {
@@ -126,18 +126,18 @@ export class BalancePollingService {
       }
 
       console.log(
-        `Polling balances for ${activeProfile.accounts.length} accounts in profile: ${activeProfileName}`,
+        `Polling account data for ${activeProfile.accounts.length} accounts in profile: ${activeProfileName}`,
       );
 
-      // Fetch and update balances for all accounts in the active profile
-      await fetchAndUpdateProfileBalancesWithBackoff(
+      // Fetch and update polling data for all accounts in the active profile
+      await fetchAndUpdateProfilePollingData(
         client,
         activeProfileName,
         activeProfile.accounts,
-        (account) => this.shouldSkipAccount(account),
+        (account: AccountState) => this.shouldSkipAccount(account),
       );
 
-      console.log("Balance polling completed successfully");
+      console.log("Account polling completed successfully");
     } catch (error) {
       // Use the error reporting system
       reportErrorAuto("balancePolling", error);
@@ -147,10 +147,10 @@ export class BalancePollingService {
   }
 
   /**
-   * Manually trigger a balance poll (useful for immediate refresh)
+   * Manually trigger an account data poll (useful for immediate refresh)
    */
   async triggerPoll(): Promise<void> {
-    console.log("Manually triggering balance poll");
+    console.log("Manually triggering account data poll");
     await this.pollBalances();
   }
 
@@ -163,7 +163,7 @@ export class BalancePollingService {
   }
 
   /**
-   * Manually retry balance fetch for a specific account (clears error state)
+   * Manually retry account data fetch for a specific account (clears error state)
    */
   async retryAccount(accountId: string): Promise<void> {
     try {
@@ -190,16 +190,17 @@ export class BalancePollingService {
       }
 
       console.log(
-        `Retrying balance fetch for account ${targetAccount.nickname} (${accountId})`,
+        `Retrying account data fetch for account ${targetAccount.nickname} (${accountId})`,
       );
 
       // Clear error state
       await clearAccountErrors(accountId);
 
-      // Fetch balance
+      // Fetch polling data
       const client = getLibraClient();
       if (client) {
-        await fetchAndUpdateAccountBalance(client, targetAccount);
+        const { fetchAndUpdateAccountPollingData } = await import("./account-polling");
+        await fetchAndUpdateAccountPollingData(client, targetAccount);
       }
     } catch (error) {
       reportErrorAuto("retryAccount", error, { accountId });
