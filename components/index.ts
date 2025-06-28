@@ -12,3 +12,6 @@ export {
   AccountSetupStep,
   CompleteStep,
 } from "./onboarding";
+
+// Profile components
+export { AccountStateStatus } from "./profile/AccountStateStatus";

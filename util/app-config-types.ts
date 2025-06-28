@@ -43,6 +43,7 @@ export type AccountState = {
   error_count?: number; // Number of consecutive errors (for exponential backoff)
   reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
   is_v8_authorized?: boolean; // Whether the account is v8 authorized
+  v8_migrated?: boolean; // Whether the account has been migrated successfully
 };
 
 /**

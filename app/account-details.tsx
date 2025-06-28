@@ -8,8 +8,9 @@ import {
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { styles } from "../styles/styles";
-import { ActionButton } from "../components/common/ActionButton";
+import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { formatTimestamp, formatLibraAmount } from "../util/format-utils";
+import { appConfig, type AccountState } from "../util/app-config-store";
 import { Ionicons } from "@expo/vector-icons";
 
 // Mock transaction data structure - replace with actual API calls
@@ -25,7 +26,7 @@ interface Transaction {
 }
 
 export default function TransactionsScreen() {
-  const { profileName, accountNickname } = useLocalSearchParams<{
+  const { accountId, profileName, accountNickname } = useLocalSearchParams<{
     accountId: string;
     profileName: string;
     accountNickname: string;
@@ -34,6 +35,29 @@ export default function TransactionsScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [account, setAccount] = useState<AccountState | null>(null);
+
+  // Find the account by ID and observe changes
+  useEffect(() => {
+    if (accountId && profileName) {
+      const updateAccount = () => {
+        const profiles = appConfig.profiles.get();
+        const profile = profiles[profileName];
+        if (profile) {
+          const foundAccount = profile.accounts.find((acc) => acc.id === accountId);
+          setAccount(foundAccount || null);
+        }
+      };
+
+      // Initial load
+      updateAccount();
+
+      // Subscribe to profile changes to get real-time updates
+      const unsubscribe = appConfig.profiles[profileName].onChange(updateAccount);
+
+      return unsubscribe;
+    }
+  }, [accountId, profileName]);
 
   // Mock data - replace with actual API calls
   const loadTransactions = async (refresh = false) => {
@@ -170,26 +194,15 @@ export default function TransactionsScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <ActionButton
-            text="← Back"
-            onPress={() => router.back()}
-            size="small"
-            style={{ marginRight: 16 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Transactions</Text>
-            <Text style={styles.sectionTitle}>
-              {accountNickname} • {profileName}
-            </Text>
-          </View>
+        <View style={{ marginBottom: 24 }}>
+          <Text style={styles.title}>Transactions</Text>
+          <Text style={styles.sectionTitle}>
+            {accountNickname} • {profileName}
+          </Text>
         </View>
+
+        {/* Account State Status */}
+        {account && <AccountStateStatus account={account} />}
 
         {isLoading ? (
           <View style={{ alignItems: "center", marginTop: 40 }}>

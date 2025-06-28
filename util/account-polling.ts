@@ -11,10 +11,16 @@ import {
   updateAccountV8Authorization,
   type V8AuthData,
 } from "./v8-authorization";
+import {
+  fetchAccountMigrationStatus,
+  updateAccountMigrationStatus,
+  type MigrationData,
+} from "./migration-status";
 
 export interface AccountPollingData {
   balance: BalanceData;
   v8Auth: V8AuthData;
+  migration: MigrationData;
 }
 
 export interface AccountPollingResult {
@@ -26,25 +32,27 @@ export interface AccountPollingResult {
 }
 
 /**
- * Fetches all polling data (balance, v8 authorization, etc.) for a single account
+ * Fetches all polling data (balance, v8 authorization, migration status, etc.) for a single account
  */
 export async function fetchAccountPollingData(
   client: LibraClient,
   accountAddress: string,
 ): Promise<AccountPollingData> {
-  const [balance, v8Auth] = await Promise.all([
+  const [balance, v8Auth, migration] = await Promise.all([
     fetchAccountBalance(client, accountAddress),
     fetchAccountV8Authorization(client, accountAddress),
+    fetchAccountMigrationStatus(client, accountAddress),
   ]);
 
   return {
     balance,
     v8Auth,
+    migration,
   };
 }
 
 /**
- * Updates all account data (balance, v8 authorization, etc.) in the app state
+ * Updates all account data (balance, v8 authorization, migration status, etc.) in the app state
  */
 export async function updateAccountPollingData(
   accountId: string,
@@ -55,6 +63,9 @@ export async function updateAccountPollingData(
 
   // Update v8 authorization data
   await updateAccountV8Authorization(accountId, pollingData.v8Auth);
+
+  // Update migration status data
+  await updateAccountMigrationStatus(accountId, pollingData.migration);
 }
 
 /**

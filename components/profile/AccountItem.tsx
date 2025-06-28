@@ -83,7 +83,7 @@ export const AccountItem = memo(
           compact && styles.compactAccountItem,
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
         onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
       >
@@ -126,6 +126,14 @@ export const AccountItem = memo(
                     size={12}
                     color="#ff3b30"
                     accessibilityLabel="Account not v8 authorized"
+                  />
+                )}
+                {account.v8_migrated === false && (
+                  <Ionicons
+                    name="swap-horizontal-outline"
+                    size={12}
+                    color="#ff9500"
+                    accessibilityLabel="Account not migrated"
                   />
                 )}
               </View>
@@ -195,6 +203,14 @@ export const AccountItem = memo(
                       size={14}
                       color="#ff3b30"
                       accessibilityLabel="Account not v8 authorized"
+                    />
+                  )}
+                  {account.v8_migrated === false && (
+                    <Ionicons
+                      name="swap-horizontal-outline"
+                      size={14}
+                      color="#ff9500"
+                      accessibilityLabel="Account not migrated"
                     />
                   )}
                 </View>
