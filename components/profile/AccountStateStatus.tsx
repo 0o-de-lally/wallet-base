@@ -77,12 +77,7 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
             size={18}
             color={v8AuthStatus.color}
           />
-          <Text
-            style={[
-              styles.resultValue,
-              { color: v8AuthStatus.color },
-            ]}
-          >
+          <Text style={[styles.resultValue, { color: v8AuthStatus.color }]}>
             {v8AuthStatus.text}
           </Text>
         </View>
@@ -100,12 +95,7 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
             size={18}
             color={migrationStatus.color}
           />
-          <Text
-            style={[
-              styles.resultValue,
-              { color: migrationStatus.color },
-            ]}
-          >
+          <Text style={[styles.resultValue, { color: migrationStatus.color }]}>
             {migrationStatus.text}
           </Text>
         </View>
@@ -127,8 +117,7 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
           <Text
             style={[styles.resultValue, { color: "#f5a9a9", fontSize: 14 }]}
           >
-            {account.is_v8_authorized === false &&
-            account.v8_migrated === false
+            {account.is_v8_authorized === false && account.v8_migrated === false
               ? "Account requires both V8 authorization and migration to access all features."
               : account.is_v8_authorized === false
                 ? "Account requires V8 authorization to access all features."

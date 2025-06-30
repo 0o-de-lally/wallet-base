@@ -53,9 +53,7 @@ export default function AccountDetailsScreen() {
     <View>
       <Text style={styles.sectionTitle}>
         {profileName} •{" "}
-        {account
-          ? shortenAddress(account.account_address, 4, 4)
-          : "Loading..."}
+        {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
         {` • ${accountNickname}`}
       </Text>
 
