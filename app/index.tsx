@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ActivityIndicator,
@@ -10,10 +10,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { observer } from "@legendapp/state/react";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../styles/styles";
+import { styles, namedColors } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
 import { SetupGuard } from "@/components/auth/SetupGuard";
-import { Menu } from "@/components/menu/Menu";
 import AccountList from "@/components/profile/AccountList";
 import { AccountTotals } from "@/components/profile/AccountTotals";
 import { appConfig, getProfileForAccount } from "@/util/app-config-store";
@@ -63,10 +62,7 @@ const AppContent = observer(() => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator
-          size="large"
-          color={require("../styles/styles").namedColors.blue}
-        />
+        <ActivityIndicator size="large" color={namedColors.blue} />
         <Text style={[styles.resultValue, { marginTop: 10 }]}>
           Initializing wallet...
         </Text>
