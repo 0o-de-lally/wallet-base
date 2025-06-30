@@ -13,7 +13,8 @@ import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
-interface HistoricalTransactionsProps {
+export interface HistoricalTransactionsProps {
+  accountId: string;
   accountAddress: string;
   showTitle?: boolean; // Optional prop to show/hide the title
 }
@@ -33,10 +34,11 @@ interface TransactionItem {
   // Add more fields as needed from TransactionResponse
 }
 
-export function HistoricalTransactions({
+export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
+  accountId,
   accountAddress,
   showTitle = true,
-}: HistoricalTransactionsProps) {
+}) => {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -307,4 +309,4 @@ export function HistoricalTransactions({
       />
     </View>
   );
-}
+};
