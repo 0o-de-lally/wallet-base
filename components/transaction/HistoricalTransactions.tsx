@@ -34,7 +34,6 @@ interface TransactionItem {
 }
 
 export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
-  accountId,
   accountAddress,
   showTitle = true,
 }) => {

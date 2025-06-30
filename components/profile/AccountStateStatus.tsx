@@ -149,7 +149,8 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
             <Text
               style={[styles.resultValue, { color: "#856404", fontSize: 12 }]}
             >
-              {account.is_v8_authorized === false && account.v8_migrated === false
+              {account.is_v8_authorized === false &&
+              account.v8_migrated === false
                 ? "⚠️ This account requires both V8 authorization and migration to access all features."
                 : account.is_v8_authorized === false
                   ? "⚠️ This account requires V8 authorization to access all features."
