@@ -14,6 +14,7 @@ export interface AccountItemProps {
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
   compact?: boolean;
+  isSwitching?: boolean;
 }
 
 export const AccountItem = memo(
@@ -23,6 +24,7 @@ export const AccountItem = memo(
     isActive,
     onSetActive,
     compact = false,
+    isSwitching = false,
   }: AccountItemProps) => {
     const navigateToAccountDetails = () => {
       router.navigate({
@@ -92,11 +94,13 @@ export const AccountItem = memo(
             : styles.accountItemContainer,
           isActive && styles.accountItemActive,
           compact && styles.compactAccountItem,
+          isSwitching && { opacity: 0.6 },
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
         onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
+        disabled={isSwitching}
       >
         {compact ? (
           // Compact layout for inactive accounts
@@ -159,14 +163,6 @@ export const AccountItem = memo(
                     <Ionicons name="eye-outline" size={16} color="#c2c2cc" />
                   </TouchableOpacity>
                 )}
-
-                <TouchableOpacity
-                  style={[styles.iconButton, { padding: 6 }]}
-                  onPress={navigateToTransactionHub}
-                  accessibilityLabel={`Transaction hub for ${account.nickname}`}
-                >
-                  <Ionicons name="send-outline" size={16} color="#c2c2cc" />
-                </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.iconButton, { padding: 6 }]}
