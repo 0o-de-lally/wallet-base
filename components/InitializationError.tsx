@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { colors } from "../styles/styles";
 import { ActionButton } from "./common/ActionButton";
 
 interface InitializationErrorProps {
@@ -46,28 +47,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 16,
-    color: "#d32f2f",
+    color: colors.red,
   },
   text: {
     fontSize: 16,
     marginBottom: 24,
     textAlign: "center",
-    color: "#666",
+    color: colors.textSecondary,
   },
   errorContainer: {
-    backgroundColor: "#ffebee",
+    backgroundColor: colors.redLight,
     padding: 16,
     borderRadius: 8,
     width: "100%",
     marginBottom: 24,
   },
   errorText: {
-    color: "#d32f2f",
+    color: colors.red,
   },
 });

@@ -1,7 +1,7 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
@@ -489,7 +489,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: "#a5d6b7" }]}>
+          <Text style={[styles.label, { color: colors.green }]}>
             ✓ Chain verification successful!
             {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
               ? " (Account verified or new)"

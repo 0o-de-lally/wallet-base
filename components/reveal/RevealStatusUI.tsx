@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 
 // Configuration for auto-hiding revealed values
@@ -201,7 +201,7 @@ export const RevealStatusUI = memo(
         <View
           style={[
             styles.resultContainer,
-            { marginTop: 20, borderWidth: 2, borderColor: "#94c2f3" },
+            { marginTop: 20, borderWidth: 2, borderColor: colors.blue },
           ]}
           accessible={true}
           accessibilityLabel={`Revealed secure value for ${accountName || "account"}`}
@@ -230,7 +230,7 @@ export const RevealStatusUI = memo(
           <Text style={styles.resultValue} selectable={true}>
             {storedValue}
           </Text>
-          <Text style={{ color: "#666", marginTop: 10, textAlign: "center" }}>
+          <Text style={{ color: colors.textSecondary, marginTop: 10, textAlign: "center" }}>
             Auto-hiding in {hideCountdown} seconds
           </Text>
         </View>
@@ -286,7 +286,7 @@ export const RevealStatusUI = memo(
                   text="Reveal Now"
                   onPress={handleExecuteReveal}
                   disabled={isLoading}
-                  style={{ backgroundColor: "#a5d6b7", marginBottom: 10 }}
+                  style={{ backgroundColor: colors.green, marginBottom: 10 }}
                   accessibilityLabel="Execute the reveal now"
                   accessibilityHint="Shows your secured data on screen"
                 />

@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { formatCurrency, shortenAddress } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
@@ -122,7 +122,7 @@ export const AccountItem = memo(
               >
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                    <Text style={{ color: "#666" }}>0x</Text>
+                    <Text style={{ color: colors.textSecondary }}>0x</Text>
                     {shortenAddress(account.account_address, 4, 4)}
                     {account.nickname && ` - ${account.nickname}`}
                   </Text>
@@ -199,7 +199,7 @@ export const AccountItem = memo(
                 >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.accountNickname}>
-                      <Text style={{ color: "#666" }}>0x</Text>
+                      <Text style={{ color: colors.textSecondary }}>0x</Text>
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>

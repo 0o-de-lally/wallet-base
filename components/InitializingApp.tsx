@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { colors } from "../styles/styles";
 
 /**
  * Component shown during app initialization
@@ -7,7 +8,7 @@ import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 export const InitializingApp: React.FC = () => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#5e35b1" />
+      <ActivityIndicator size="large" color={colors.primary} />
       <Text style={styles.text}>Initializing wallet...</Text>
     </View>
   );
@@ -19,12 +20,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   text: {
     fontSize: 16,
     marginTop: 16,
-    color: "#666",
+    color: colors.textSecondary,
     textAlign: "center",
   },
 });

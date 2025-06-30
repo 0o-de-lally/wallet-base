@@ -2,7 +2,7 @@ import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useCallback, memo } from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../../styles/styles";
+import { styles, colors } from "../../../styles/styles";
 import { SectionContainer } from "../../common/SectionContainer";
 import { ActionButton } from "../../common/ActionButton";
 import { FormInput } from "../../common/FormInput";
@@ -189,8 +189,8 @@ export const TransferForm = memo(
                 marginBottom: 8,
               }}
             >
-              <Ionicons name="eye-outline" size={20} color="#ff9500" />
-              <Text style={[styles.label, { marginLeft: 8, color: "#ff9500" }]}>
+              <Ionicons name="eye-outline" size={20} color={colors.red} />
+              <Text style={[styles.label, { marginLeft: 8, color: colors.red }]}>
                 View-Only Account
               </Text>
             </View>

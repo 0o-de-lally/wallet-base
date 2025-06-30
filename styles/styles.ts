@@ -1,26 +1,38 @@
 import { StyleSheet } from "react-native";
 
-// Improved subdued dark mode color palette with better contrast
+// App color palette - Only red, green, and blue highlight colors
 const colors = {
+  // Core app colors
   background: "#1a1a1f",
   cardBg: "#25252d",
-  primary: "#94c2f3", // Pastel blue
-  secondary: "#b3b8c3", // Pastel gray
-  success: "#a5d6b7", // Pastel green
-  danger: "#f5a9a9", // Pastel red
   textPrimary: "#f0f0f5",
   textSecondary: "#c2c2cc",
   border: "#444455",
   inputBg: "#2c2c36",
   disabledBg: "#2c2c36",
-  disabledText: "#a0a0b0", // Lightened for better contrast
+  disabledText: "#a0a0b0",
   modalOverlayBg: "rgba(15, 15, 20, 0.85)",
   statusBarBg: "#1a1a1f",
   outlineBold: "#c2c2cc",
-  buttonTextDark: "#16161c", // Darker text for buttons for better contrast
-  placeholderText: "#8c8c9e", // New color for placeholder text with better visibility
+  buttonTextDark: "#16161c",
+  placeholderText: "#8c8c9e",
   expandedBg: "#262935",
   cardBorder: "#3a3f55",
+  
+  // Three main highlight colors
+  blue: "#2196F3",      // Primary blue for main actions and info
+  green: "#4CAF50",     // Success and positive states
+  red: "#F44336",       // Danger, errors, and warnings
+  
+  // Semantic aliases for clarity
+  primary: "#2196F3",   // Blue
+  success: "#4CAF50",   // Green
+  danger: "#F44336",    // Red
+  
+  // Light variants for backgrounds
+  blueLight: "rgba(33, 150, 243, 0.1)",
+  greenLight: "rgba(76, 175, 80, 0.1)",
+  redLight: "rgba(244, 67, 54, 0.1)",
 };
 
 // Export colors so components can use them directly when needed
@@ -69,19 +81,20 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   authTitle: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
+    color: colors.textPrimary,
   },
   authText: {
     fontSize: 16,
     textAlign: "center",
     marginBottom: 24,
-    color: "#666",
+    color: colors.textSecondary,
   },
 
   // TYPOGRAPHY STYLES
@@ -207,20 +220,20 @@ export const styles = StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: "transparent",
-    borderColor: colors.secondary,
+    borderColor: colors.border,
     borderWidth: 2,
   },
   secondaryButtonText: {
-    color: colors.secondary,
+    color: colors.textSecondary,
     fontWeight: "700",
     fontSize: 16,
   },
   authButton: {
-    backgroundColor: "#5e35b1",
-    borderColor: "#5e35b1",
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   authButtonText: {
-    color: "#ffffff",
+    color: colors.buttonTextDark,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -229,7 +242,7 @@ export const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   resetButtonText: {
-    color: "#ffffff",
+    color: colors.textPrimary,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -252,10 +265,10 @@ export const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: colors.secondary,
+    borderColor: colors.border,
   },
   cancelButtonText: {
-    color: colors.secondary,
+    color: colors.textSecondary,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -270,10 +283,10 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   disabledButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.disabledBg,
     borderWidth: 2,
     borderColor: colors.disabledText,
-    color: colors.secondary,
+    color: colors.disabledText,
     opacity: 0.8,
   },
   toggleButton: {
@@ -402,7 +415,7 @@ export const styles = StyleSheet.create({
     width: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.secondary,
+    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -512,10 +525,10 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   accessTypeBadgeView: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.cardBg,
   },
   accessTypeBadgeText: {
-    color: "#fff",
+    color: colors.textPrimary,
     fontWeight: "bold",
     fontSize: 11,
     textAlign: "center",
@@ -700,7 +713,7 @@ export const styles = StyleSheet.create({
   },
   viewOnlyIcon: {
     marginLeft: 8,
-    color: "#ff9500",
+    color: colors.red,
   },
 
   // Transaction history styles
@@ -827,6 +840,6 @@ export const styles = StyleSheet.create({
   },
   switchingText: {
     textAlign: "center",
-    color: "#007AFF",
+    color: colors.blue,
   },
 });

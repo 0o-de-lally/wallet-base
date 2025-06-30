@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
 import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
@@ -229,11 +229,11 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
         <Text style={styles.transactionDate}>{item.formattedDate}</Text>
         <View style={styles.transactionStatusContainer}>
           {item.success ? (
-            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={20} color={colors.green} />
           ) : (
             <View style={styles.failureContainer}>
-              <Ionicons name="close-circle" size={20} color="#F44336" />
-              <Text style={[styles.vmStatusText, { color: "#F44336" }]}>
+              <Ionicons name="close-circle" size={20} color={colors.red} />
+              <Text style={[styles.vmStatusText, { color: colors.red }]}>
                 {item.vmStatus}
               </Text>
             </View>

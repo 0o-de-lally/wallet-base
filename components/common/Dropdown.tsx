@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { ActionButton } from "./ActionButton";
 
 interface DropdownProps<T> {
@@ -42,7 +42,7 @@ function Dropdown<T>({
       style={[
         styles.resultContainer,
         { marginVertical: 4, padding: 12 },
-        value === item && { backgroundColor: "#2c3040" },
+        value === item && { backgroundColor: colors.expandedBg },
       ]}
       onPress={() => handleSelect(item)}
       accessible={true}

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { ActionButton } from "../common/ActionButton";
+import { colors } from "../../styles/styles";
 
 interface AuthenticationViewProps {
   isLoading?: boolean;
@@ -74,7 +75,7 @@ export function AuthenticationView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginBottom: 24,
     padding: 16,
-    backgroundColor: "#e3f2fd",
+    backgroundColor: colors.blueLight,
     borderRadius: 50,
   },
   iconText: {
@@ -103,13 +104,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1a1a1a",
+    color: colors.textPrimary,
     textAlign: "center",
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: colors.textSecondary,
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 22,
@@ -117,27 +118,27 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#1a1a1a",
+    color: colors.textPrimary,
     textAlign: "center",
     marginBottom: 8,
   },
   subText: {
     fontSize: 14,
-    color: "#666",
+    color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 20,
   },
   infoContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.cardBg,
     padding: 16,
     borderRadius: 12,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: colors.border,
   },
   infoText: {
     fontSize: 14,
-    color: "#555",
+    color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 20,
   },
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: "#888",
+    color: colors.textSecondary,
     textAlign: "center",
     fontStyle: "italic",
   },

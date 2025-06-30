@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { validateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { ActionButton } from "./ActionButton";
@@ -246,27 +246,27 @@ const mnemonicStyles = StyleSheet.create({
     fontFamily: "monospace", // Better for mnemonic words
   },
   focusedInput: {
-    borderColor: "#2196F3",
+    borderColor: colors.blue,
     borderWidth: 2,
   },
   errorInput: {
-    borderColor: "#F44336",
+    borderColor: colors.red,
     borderWidth: 1,
   },
   validInput: {
-    borderColor: "#4CAF50",
+    borderColor: colors.green,
     borderWidth: 1,
   },
   verifiedInput: {
-    borderColor: "#4CAF50",
+    borderColor: colors.green,
     borderWidth: 2,
   },
   verifyingInput: {
-    borderColor: "#2196F3",
+    borderColor: colors.blue,
     borderWidth: 2,
   },
   readyToVerifyInput: {
-    borderColor: "#FF9800",
+    borderColor: colors.red,
     borderWidth: 1,
   },
   buttonContainer: {
