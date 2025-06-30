@@ -813,4 +813,20 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
   },
+
+  // Account switching feedback styles
+  switchingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  switchingActivityIndicator: {
+    marginRight: 8,
+  },
+  switchingText: {
+    textAlign: "center",
+    color: "#007AFF",
+  },
 });

@@ -88,7 +88,7 @@ export const AccountItem = memo(
       <TouchableOpacity
         key={account.id}
         style={[
-          styles.resultContainer,
+          styles.listItem, // Use the same style as historical transactions
           compact
             ? styles.accountItemContainerCompact
             : styles.accountItemContainer,

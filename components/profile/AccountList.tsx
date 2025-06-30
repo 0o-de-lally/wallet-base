@@ -31,31 +31,31 @@ const AccountList = memo(
     // Enhanced account switching with feedback
     const handleSetActiveAccount = useCallback((accountId: string) => {
       if (!onSetActiveAccount) return;
-      
+
       // Set switching state and animate in
       setSwitchingToAccountId(accountId);
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 200,
+        duration: 300, // Slightly longer fade in
         useNativeDriver: true,
       }).start();
-      
-      // Add a small delay for user feedback
+
+      // Keep the feedback visible for longer (2 seconds total)
       setTimeout(() => {
         // Animate out
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 200,
+          duration: 300, // Slightly longer fade out
           useNativeDriver: true,
         }).start(() => {
           onSetActiveAccount(accountId);
           setSwitchingToAccountId(null);
         });
-      }, 400);
+      }, 1400); // Show feedback for 1.4 seconds + 0.3s fade in + 0.3s fade out = 2 seconds total
     }, [onSetActiveAccount, fadeAnim]);
 
     // Get the account being switched to for display purposes
-    const switchingToAccount = switchingToAccountId 
+    const switchingToAccount = switchingToAccountId
       ? accounts.find(acc => acc.id === switchingToAccountId)
       : null;
 
@@ -82,13 +82,8 @@ const AccountList = memo(
       <View>
         {switchingToAccount && (
           <Animated.View style={[
-            styles.resultContainer, 
-            { 
-              backgroundColor: '#2a2a30', 
-              marginBottom: 10, 
-              flexDirection: 'row', 
-              alignItems: 'center', 
-              justifyContent: 'center',
+            styles.switchingContainer,
+            {
               opacity: fadeAnim,
               transform: [{
                 translateY: fadeAnim.interpolate({
@@ -98,8 +93,8 @@ const AccountList = memo(
               }],
             }
           ]}>
-            <ActivityIndicator size="small" color="#007AFF" style={{ marginRight: 8 }} />
-            <Text style={[styles.resultValue, { textAlign: 'center', color: '#007AFF' }]}>
+            <ActivityIndicator size="small" color="#007AFF" style={styles.switchingActivityIndicator} />
+            <Text style={[styles.resultValue, styles.switchingText]}>
               Switching to {switchingToAccount.nickname || shortenAddress(switchingToAccount.account_address, 4, 4)}...
             </Text>
           </Animated.View>
