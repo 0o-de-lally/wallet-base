@@ -73,7 +73,7 @@ const AppContent = observer(() => {
   // Use SetupGuard to ensure proper setup before showing main content
   return (
     <SetupGuard requiresPin={true} requiresAccount={true}>
-      <SmartAccountList onShowMenu={() => router.push("/menu")} />
+      <SmartAccountList onShowMenu={() => router.push("/settings")} />
     </SetupGuard>
   );
 });
