@@ -1,6 +1,7 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { styles, colors } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
@@ -489,12 +490,20 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.green }]}>
-            ✓ Chain verification successful!
-            {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
-              ? " (Account verified or new)"
-              : " (Account found with rotated keys)"}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons 
+              name="checkmark-circle" 
+              size={16} 
+              color={colors.green} 
+              style={{ marginRight: 8 }}
+            />
+            <Text style={[styles.label, { color: colors.green }]}>
+              Chain verification successful!
+              {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
+                ? " (Account verified or new)"
+                : " (Account found with rotated keys)"}
+            </Text>
+          </View>
           <FormInput
             label="Actual Chain Address:"
             value={chainAddress.toStringLong()}

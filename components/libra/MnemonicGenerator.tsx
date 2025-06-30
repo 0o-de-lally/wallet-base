@@ -1,6 +1,7 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useCallback, memo } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common/ActionButton";
 import { styles, colors } from "../../styles/styles";
 import {
@@ -317,19 +318,28 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                 </Text>
               </View>
             )}
-            <Text
-              style={[
-                styles.resultValue,
-                {
-                  fontSize: 10,
-                  fontStyle: "italic",
-                  color: colors.textSecondary,
-                },
-              ]}
-            >
-              ⚠️ Store this mnemonic securely. Anyone with access to it can
-              control your wallet.
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons 
+                name="warning-outline" 
+                size={12} 
+                color={colors.red} 
+                style={{ marginRight: 5 }}
+              />
+              <Text
+                style={[
+                  styles.resultValue,
+                  {
+                    fontSize: 10,
+                    fontStyle: "italic",
+                    color: colors.textSecondary,
+                    flex: 1,
+                  },
+                ]}
+              >
+                Store this mnemonic securely. Anyone with access to it can
+                control your wallet.
+              </Text>
+            </View>
           </ScrollView>
         </View>
       )}

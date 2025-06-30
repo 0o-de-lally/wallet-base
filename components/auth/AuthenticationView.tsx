@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common/ActionButton";
 import { colors } from "../../styles/styles";
 
@@ -40,7 +41,7 @@ export function AuthenticationView({
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Text style={styles.iconText}>🔐</Text>
+          <Ionicons name="lock-closed" size={32} color={colors.blue} />
         </View>
 
         <Text style={styles.title}>{title}</Text>
@@ -97,9 +98,8 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.blueLight,
     borderRadius: 50,
-  },
-  iconText: {
-    fontSize: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 24,

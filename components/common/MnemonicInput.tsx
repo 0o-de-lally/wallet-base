@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { styles, colors } from "../../styles/styles";
 import { validateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
@@ -153,12 +154,37 @@ export const MnemonicInput = memo(
       if (validation.error) {
         status = validation.error;
       } else if (validation.wordCount === 24 && validation.isValid) {
-        status += " ✓ Valid";
+        status += " Valid";
       } else if (validation.wordCount > 0 && validation.wordCount < 24) {
         status += " (incomplete)";
       }
 
       return status;
+    };
+
+    const renderStatusText = () => {
+      const statusText = getStatusText();
+      if (!statusText) return null;
+
+      const isValid = validation.wordCount === 24 && validation.isValid;
+      
+      return (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {isValid && (
+            <Ionicons 
+              name="checkmark-circle" 
+              size={14} 
+              color={colors.green} 
+              style={{ marginRight: 4 }}
+            />
+          )}
+          <Text
+            style={[mnemonicStyles.statusText, { color: getStatusColor() }]}
+          >
+            {statusText}
+          </Text>
+        </View>
+      );
     };
 
     const canClear = value.trim().length > 0 && !disabled;
@@ -167,13 +193,7 @@ export const MnemonicInput = memo(
       <View style={styles.inputContainer}>
         <View style={mnemonicStyles.labelContainer}>
           <Text style={styles.label}>{label}</Text>
-          {getStatusText() && (
-            <Text
-              style={[mnemonicStyles.statusText, { color: getStatusColor() }]}
-            >
-              {getStatusText()}
-            </Text>
-          )}
+          {renderStatusText()}
         </View>
 
         <TextInput
