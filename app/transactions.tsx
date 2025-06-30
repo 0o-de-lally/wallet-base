@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, RefreshControl } from "react-native";
+import { View, Text } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { styles } from "../styles/styles";
 import { ActionButton } from "../components/common/ActionButton";
@@ -13,7 +13,6 @@ export default function TransactionsScreen() {
     accountNickname: string;
   }>();
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [account, setAccount] = useState<AccountState | null>(null);
 
   // Get account data
@@ -30,26 +29,17 @@ export default function TransactionsScreen() {
     }
   }, [accountId, profileName]);
 
-  const onRefresh = async () => {
-    setIsRefreshing(true);
-    // The HistoricalTransactions component will handle its own refresh
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
-
   return (
     <View style={styles.safeAreaView}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.container}>
+        {/* Header section - fixed at top */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             marginBottom: 24,
+            paddingHorizontal: 16,
+            paddingTop: 16,
           }}
         >
           <ActionButton
@@ -67,10 +57,11 @@ export default function TransactionsScreen() {
         </View>
 
         {/* Use the HistoricalTransactions component to display transactions */}
+        {/* It will handle its own scrolling with FlatList */}
         {account && (
           <HistoricalTransactions accountAddress={account.account_address} />
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 }

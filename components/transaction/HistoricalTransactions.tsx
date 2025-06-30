@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { styles } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 interface HistoricalTransactionsProps {
   accountAddress: string;
+  showTitle?: boolean; // Optional prop to show/hide the title
 }
 
 interface TransactionItem {
@@ -19,10 +26,12 @@ interface TransactionItem {
 
 export function HistoricalTransactions({
   accountAddress,
+  showTitle = true,
 }: HistoricalTransactionsProps) {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchTransactions = async () => {
     try {
@@ -94,6 +103,7 @@ export function HistoricalTransactions({
       );
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -102,6 +112,11 @@ export function HistoricalTransactions({
       fetchTransactions();
     }
   }, [accountAddress]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTransactions();
+  };
 
   const renderTransaction = ({ item }: { item: TransactionItem }) => (
     <View style={styles.listItem}>
@@ -138,7 +153,12 @@ export function HistoricalTransactions({
     </View>
   );
 
-  if (loading) {
+  const renderHeader = () =>
+    showTitle ? (
+      <Text style={styles.sectionTitle}>Recent Transactions</Text>
+    ) : null;
+
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
@@ -159,15 +179,18 @@ export function HistoricalTransactions({
   }
 
   return (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>Recent Transactions</Text>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={transactions}
         renderItem={renderTransaction}
         keyExtractor={(item) => item.hash}
+        ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmptyComponent}
         showsVerticalScrollIndicator={false}
-        style={styles.transactionsList}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ paddingHorizontal: 16 }}
       />
     </View>
   );
