@@ -31,37 +31,35 @@ export default function TransactionsScreen() {
 
   return (
     <View style={styles.safeAreaView}>
-      <View style={styles.container}>
-        {/* Header section - fixed at top */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 24,
-            paddingHorizontal: 16,
-            paddingTop: 16,
-          }}
-        >
-          <ActionButton
-            text="← Back"
-            onPress={() => router.back()}
-            size="small"
-            style={{ marginRight: 16 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Transactions</Text>
-            <Text style={styles.sectionTitle}>
-              {accountNickname} • {profileName}
-            </Text>
-          </View>
+      {/* Header section - fixed at top */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 24,
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          backgroundColor: styles.container.backgroundColor,
+        }}
+      >
+        <ActionButton
+          text="← Back"
+          onPress={() => router.back()}
+          size="small"
+          style={{ marginRight: 16 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Transactions</Text>
+          <Text style={styles.sectionTitle}>
+            {accountNickname} • {profileName}
+          </Text>
         </View>
-
-        {/* Use the HistoricalTransactions component to display transactions */}
-        {/* It will handle its own scrolling with FlatList */}
-        {account && (
-          <HistoricalTransactions accountAddress={account.account_address} />
-        )}
       </View>
+
+      {/* Transactions list - expands to fill remaining space */}
+      {account && (
+        <HistoricalTransactions accountAddress={account.account_address} />
+      )}
     </View>
   );
 }

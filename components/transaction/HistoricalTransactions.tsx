@@ -179,7 +179,7 @@ export function HistoricalTransactions({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.transactionsList}>
       <FlatList
         data={transactions}
         renderItem={renderTransaction}

@@ -708,7 +708,7 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
   },
   transactionsList: {
-    maxHeight: 400,
+    flex: 1,
   },
   listItem: {
     backgroundColor: colors.cardBg,
