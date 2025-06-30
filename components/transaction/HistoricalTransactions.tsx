@@ -6,8 +6,10 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
+import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 interface HistoricalTransactionsProps {
@@ -17,9 +19,10 @@ interface HistoricalTransactionsProps {
 
 interface TransactionItem {
   hash: string;
-  type: string;
+  shortHash: string;
   version: string;
   timestamp: string;
+  formattedDate: string;
   success: boolean;
   gasFee: string;
   payloadFunction: string;
@@ -63,6 +66,7 @@ export function HistoricalTransactions({
           // Handle different transaction types - be more careful with type checking
           let version = "N/A";
           let timestamp = "N/A";
+          let formattedDate = "N/A";
           let success = false;
           let gasFee = "N/A";
           let payloadFunction = "N/A";
@@ -75,22 +79,38 @@ export function HistoricalTransactions({
           }
 
           if ("timestamp" in tx && tx.timestamp !== undefined) {
-            timestamp = new Date(
-              parseInt(tx.timestamp) / 1000,
-            ).toLocaleString();
+            const date = new Date(parseInt(tx.timestamp) / 1000);
+            timestamp = date.toLocaleString();
+            formattedDate =
+              date.toLocaleDateString() +
+              " " +
+              date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
           }
+
+          // Create shortened hash (first 4 characters after 0x)
+          const shortHash = tx.hash.startsWith("0x")
+            ? tx.hash.slice(0, 6)
+            : tx.hash.slice(0, 4);
 
           if ("success" in tx && tx.success !== undefined) {
             success = tx.success;
           }
 
-          // Calculate gas fee: gas_unit_price * gas_used
-          if ("gas_unit_price" in tx && "gas_used" in tx && 
-              tx.gas_unit_price !== undefined && tx.gas_used !== undefined) {
+          // Calculate gas fee: gas_unit_price * gas_used / LIBRA_SCALE_FACTOR
+          if (
+            "gas_unit_price" in tx &&
+            "gas_used" in tx &&
+            tx.gas_unit_price !== undefined &&
+            tx.gas_used !== undefined
+          ) {
             const gasUnitPrice = parseInt(tx.gas_unit_price);
             const gasUsed = parseInt(tx.gas_used);
             const totalGasFee = gasUnitPrice * gasUsed;
-            gasFee = totalGasFee.toLocaleString();
+            const scaledGasFee = totalGasFee / LIBRA_SCALE_FACTOR;
+            gasFee = scaledGasFee.toFixed(2) + " LBR";
           }
 
           // Extract payload function and arguments
@@ -104,8 +124,8 @@ export function HistoricalTransactions({
               payloadFunction = payload.function;
             }
             if (payload.arguments && Array.isArray(payload.arguments)) {
-              payloadArguments = payload.arguments.map((arg: unknown) => 
-                typeof arg === 'string' ? arg : JSON.stringify(arg)
+              payloadArguments = payload.arguments.map((arg: unknown) =>
+                typeof arg === "string" ? arg : JSON.stringify(arg),
               );
             }
           }
@@ -117,9 +137,10 @@ export function HistoricalTransactions({
 
           return {
             hash: tx.hash,
-            type: tx.type,
+            shortHash,
             version,
             timestamp,
+            formattedDate,
             success,
             gasFee,
             payloadFunction,
@@ -164,23 +185,13 @@ export function HistoricalTransactions({
   const renderTransaction = ({ item }: { item: TransactionItem }) => (
     <View style={styles.listItem}>
       <View style={styles.transactionHeader}>
-        <Text
-          style={styles.transactionHash}
-          numberOfLines={1}
-          ellipsizeMode="middle"
-        >
-          {item.hash}
-        </Text>
+        <Text style={styles.transactionDate}>{item.formattedDate}</Text>
         <View style={styles.transactionStatusContainer}>
           {item.success ? (
-            <Text style={[styles.transactionStatus, { color: "#4CAF50" }]}>
-              ✓
-            </Text>
+            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
           ) : (
-            <View>
-              <Text style={[styles.transactionStatus, { color: "#F44336" }]}>
-                ✗
-              </Text>
+            <View style={styles.failureContainer}>
+              <Ionicons name="close-circle" size={20} color="#F44336" />
               <Text style={[styles.vmStatusText, { color: "#F44336" }]}>
                 {item.vmStatus}
               </Text>
@@ -189,32 +200,34 @@ export function HistoricalTransactions({
         </View>
       </View>
       <View style={styles.transactionDetails}>
-        <Text style={styles.transactionDetailText}>Type: {item.type}</Text>
+        {/* Function and Arguments Section - moved to top */}
+        <View style={styles.functionSection}>
+          <Text style={styles.transactionDetailText}>
+            Function: {item.payloadFunction}
+          </Text>
+          {item.payloadArguments.length > 0 && (
+            <View style={styles.argumentsContainer}>
+              <Text style={styles.transactionDetailText}>Arguments:</Text>
+              {item.payloadArguments.map((arg, index) => (
+                <Text
+                  key={index}
+                  style={[styles.transactionDetailText, styles.argumentText]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  [{index}]: {arg}
+                </Text>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Transaction Details Section */}
+        <Text style={styles.transactionDetailText}>Hash: {item.shortHash}</Text>
         <Text style={styles.transactionDetailText}>
           Version: {item.version}
         </Text>
-        <Text style={styles.transactionDetailText}>Time: {item.timestamp}</Text>
-        <Text style={styles.transactionDetailText}>
-          Gas Fee: {item.gasFee} units
-        </Text>
-        <Text style={styles.transactionDetailText}>
-          Function: {item.payloadFunction}
-        </Text>
-        {item.payloadArguments.length > 0 && (
-          <View style={styles.argumentsContainer}>
-            <Text style={styles.transactionDetailText}>Arguments:</Text>
-            {item.payloadArguments.map((arg, index) => (
-              <Text 
-                key={index} 
-                style={[styles.transactionDetailText, styles.argumentText]}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                [{index}]: {arg}
-              </Text>
-            ))}
-          </View>
-        )}
+        <Text style={styles.transactionDetailText}>Gas Fee: {item.gasFee}</Text>
       </View>
     </View>
   );

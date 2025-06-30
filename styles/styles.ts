@@ -759,9 +759,7 @@ export const styles = StyleSheet.create({
   },
   argumentsContainer: {
     marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    paddingTop: 0,
   },
   argumentText: {
     fontSize: 11,
@@ -769,6 +767,21 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
     marginBottom: 2,
     fontFamily: "monospace",
+  },
+  transactionDate: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  failureContainer: {
+    alignItems: "flex-end",
+  },
+  functionSection: {
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   emptyState: {
     padding: 40,
