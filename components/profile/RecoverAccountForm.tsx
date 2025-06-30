@@ -2,7 +2,7 @@ import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles, colors } from "../../styles/styles";
+import { styles, colors, namedColors } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
@@ -449,7 +449,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
               gap: 8,
             }}
           >
-            <ActivityIndicator size="small" />
+            <ActivityIndicator size="small" color={namedColors.blue} />
             <Text style={[styles.label]}>Deriving keys from mnemonic...</Text>
           </View>
         </View>

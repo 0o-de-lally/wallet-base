@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
-import { colors } from "../styles/styles";
+import { namedColors, colors } from "../styles/styles";
 
 /**
  * Component shown during app initialization
@@ -8,7 +8,7 @@ import { colors } from "../styles/styles";
 export const InitializingApp: React.FC = () => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={namedColors.blue} />
       <Text style={styles.text}>Initializing wallet...</Text>
     </View>
   );

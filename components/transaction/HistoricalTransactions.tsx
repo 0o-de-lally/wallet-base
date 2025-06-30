@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles, colors } from "../../styles/styles";
+import { styles, colors, namedColors } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
 import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
@@ -302,7 +302,7 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
   if (loading && !isRefreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={namedColors.blue} />
         <Text style={styles.loadingText}>Loading transactions...</Text>
       </View>
     );

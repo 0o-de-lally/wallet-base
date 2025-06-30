@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
+import { namedColors } from "../../styles/styles";
 import { checkSetupStatus } from "../../hooks/use-setup-guard";
 import { OnboardingWizard } from "../onboarding/OnboardingWizard";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
@@ -59,7 +60,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#94c2f3" />
+        <ActivityIndicator size="large" color={namedColors.blue} />
         <Text style={[styles.resultValue, { marginTop: 10 }]}>
           Checking setup status...
         </Text>

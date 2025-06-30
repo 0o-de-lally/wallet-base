@@ -1,5 +1,6 @@
 import React, { useCallback, memo, useState, useRef } from "react";
 import { View, Text, Animated, ActivityIndicator } from "react-native";
+import { namedColors } from "../../styles/styles";
 import type { AccountState } from "../../util/app-config-store";
 import { AccountItem } from "./AccountItem";
 import { router } from "expo-router";
@@ -104,7 +105,7 @@ const AccountList = memo(
           >
             <ActivityIndicator
               size="small"
-              color="#007AFF"
+              color={namedColors.blue}
               style={styles.switchingActivityIndicator}
             />
             <Text style={[styles.resultValue, styles.switchingText]}>

@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { styles, colors } from "../../styles/styles";
+import { styles, colors, namedColors } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 
 // Configuration for auto-hiding revealed values
@@ -341,7 +341,7 @@ export const RevealStatusUI = memo(
           accessibilityLabel="Loading, please wait"
           accessibilityRole="progressbar"
         >
-          <ActivityIndicator size="large" color="#94c2f3" />
+          <ActivityIndicator size="large" color={namedColors.blue} />
           <Text style={{ color: styles.label.color, marginTop: 10 }}>
             Processing request...
           </Text>
