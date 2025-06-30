@@ -77,9 +77,10 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         style={styles.containerWithHeader}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Current Profile & Account Info */}
-        {currentProfile && (
-          <SectionContainer title="Active Profile">
+        {/* Account Management */}
+        <SectionContainer title="Account Management">
+          {/* Active Profile Info moved here */}
+          {currentProfile && (
             <View style={styles.resultContainer}>
               <Text style={styles.resultLabel}>
                 Profile: {currentProfile.name}
@@ -91,48 +92,42 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
               <Text style={styles.resultValue}>
                 {currentProfile.accounts.length} account(s)
               </Text>
-            </View>
-
-            {hasMultipleProfilesAvailable && (
-              <ActionButton
-                text={
-                  showProfileSwitcher
-                    ? "Cancel Profile Switch"
-                    : "Switch Profile"
-                }
-                onPress={toggleProfileSwitcher}
-                size="small"
-                style={{ marginTop: 10 }}
-                accessibilityLabel="Toggle profile switcher"
-              />
-            )}
-
-            {showProfileSwitcher && (
-              <View style={{ marginTop: 10 }}>
-                <Dropdown
-                  label="Switch to Profile"
-                  value={currentProfileName || ""}
-                  options={profileNames}
-                  onSelect={handleProfileSwitch}
-                  placeholder="Select a profile"
+              {hasMultipleProfilesAvailable && (
+                <ActionButton
+                  text={
+                    showProfileSwitcher
+                      ? "Cancel Profile Switch"
+                      : "Switch Profile"
+                  }
+                  onPress={toggleProfileSwitcher}
+                  size="small"
+                  style={{ marginTop: 10 }}
+                  accessibilityLabel="Toggle profile switcher"
                 />
-              </View>
-            )}
-          </SectionContainer>
-        )}
-
-        {/* Account Management */}
-        <SectionContainer title="Account Management">
+              )}
+              {showProfileSwitcher && (
+                <View style={{ marginTop: 10 }}>
+                  <Dropdown
+                    label="Switch to Profile"
+                    value={currentProfileName || ""}
+                    options={profileNames}
+                    onSelect={handleProfileSwitch}
+                    placeholder="Select a profile"
+                  />
+                </View>
+              )}
+            </View>
+          )}
           <ActionButton
             text="Manage Profiles"
             onPress={() => navigateToScreen("/profiles")}
             accessibilityLabel="View and manage accounts"
           />
           <ActionButton
-            text="Add Account"
+            text="Add Read-Only Account"
             onPress={() => navigateToScreen("/create-account")}
             style={{ marginTop: 10 }}
-            accessibilityLabel="Add a new account"
+            accessibilityLabel="Add a new view-only account"
           />
           <ActionButton
             text="Recover Account"
