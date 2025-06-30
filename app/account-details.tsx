@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { HistoricalTransactions } from "../components/transaction/HistoricalTransactions";
@@ -58,26 +58,34 @@ export default function AccountDetailsScreen() {
           : "Loading..."}
         {` • ${accountNickname}`}
       </Text>
-      
+
       {/* Account Authorization Status */}
       {account && <AccountStateStatus account={account} />}
     </View>
   );
 
   return (
-    <View style={styles.safeAreaView}>
-      {account ? (
-        <HistoricalTransactions 
-          accountAddress={account.account_address}
-          headerComponent={renderHeader}
-          onRefresh={onRefresh}
-          refreshing={isRefreshing}
-        />
-      ) : (
-        <View style={styles.container}>
-          <Text style={styles.sectionTitle}>Loading...</Text>
-        </View>
-      )}
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Account Details",
+          headerBackTitle: "Back",
+        }}
+      />
+      <View style={styles.safeAreaView}>
+        {account ? (
+          <HistoricalTransactions
+            accountAddress={account.account_address}
+            headerComponent={renderHeader}
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+          />
+        ) : (
+          <View style={styles.container}>
+            <Text style={styles.sectionTitle}>Loading...</Text>
+          </View>
+        )}
+      </View>
+    </>
   );
 }

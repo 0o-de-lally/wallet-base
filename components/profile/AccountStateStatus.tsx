@@ -61,7 +61,7 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
   return (
     <View style={[styles.listItem, { marginBottom: 16 }]}>
       <Text style={styles.sectionTitle}>Account Status</Text>
-      
+
       {/* V8 Status Information */}
       <View style={{ gap: 12, marginTop: 16 }}>
         {/* V8 Authorization Status */}
