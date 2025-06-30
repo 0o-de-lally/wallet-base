@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-} from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
-import { styles } from "../styles/styles";
-import { ActionButton } from "../components/common/ActionButton";
-import { formatTimestamp, formatLibraAmount } from "../util/format-utils";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { styles } from "../../styles/styles";
+import { formatTimestamp, formatLibraAmount } from "../../util/format-utils";
 
 // Mock transaction data structure - replace with actual API calls
 interface Transaction {
@@ -24,21 +16,21 @@ interface Transaction {
   from?: string;
 }
 
-export default function TransactionsScreen() {
-  const { profileName, accountNickname } = useLocalSearchParams<{
-    accountId: string;
-    profileName: string;
-    accountNickname: string;
-  }>();
+export interface HistoricalTransactionsProps {
+  accountId: string;
+  accountAddress: string;
+}
 
+export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
+  accountId,
+  accountAddress,
+}) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Mock data - replace with actual API calls
-  const loadTransactions = async (refresh = false) => {
-    if (refresh) setIsRefreshing(true);
-    else setIsLoading(true);
+  const loadTransactions = async () => {
+    setIsLoading(true);
 
     try {
       // Simulate API call
@@ -80,17 +72,12 @@ export default function TransactionsScreen() {
       console.error("Failed to load transactions:", error);
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     loadTransactions();
-  }, []);
-
-  const onRefresh = () => {
-    loadTransactions(true);
-  };
+  }, [accountId, accountAddress]);
 
   const renderTransaction = (transaction: Transaction) => {
     const isIncoming = transaction.type === "received";
@@ -162,62 +149,34 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <View style={styles.safeAreaView}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <ActionButton
-            text="← Back"
-            onPress={() => router.back()}
-            size="small"
-            style={{ marginRight: 16 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Transactions</Text>
-            <Text style={styles.sectionTitle}>
-              {accountNickname} • {profileName}
-            </Text>
-          </View>
-        </View>
+    <View>
+      <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
+        Transaction History
+      </Text>
 
-        {isLoading ? (
-          <View style={{ alignItems: "center", marginTop: 40 }}>
-            <ActivityIndicator size="large" />
-            <Text style={[styles.resultValue, { marginTop: 16 }]}>
-              Loading transactions...
-            </Text>
-          </View>
-        ) : transactions.length === 0 ? (
-          <View style={{ alignItems: "center", marginTop: 40 }}>
-            <Ionicons name="receipt-outline" size={64} color="#888" />
-            <Text style={[styles.title, { marginTop: 16, fontSize: 18 }]}>
-              No Transactions
-            </Text>
-            <Text
-              style={[
-                styles.resultValue,
-                { textAlign: "center", marginTop: 8 },
-              ]}
-            >
-              Your transaction history will appear here once you start sending
-              or receiving funds.
-            </Text>
-          </View>
-        ) : (
-          <View>{transactions.map(renderTransaction)}</View>
-        )}
-      </ScrollView>
+      {isLoading ? (
+        <View style={{ alignItems: "center", marginTop: 40 }}>
+          <ActivityIndicator size="large" />
+          <Text style={[styles.resultValue, { marginTop: 16 }]}>
+            Loading transactions...
+          </Text>
+        </View>
+      ) : transactions.length === 0 ? (
+        <View style={{ alignItems: "center", marginTop: 40 }}>
+          <Ionicons name="receipt-outline" size={64} color="#888" />
+          <Text style={[styles.title, { marginTop: 16, fontSize: 18 }]}>
+            No Transactions
+          </Text>
+          <Text
+            style={[styles.resultValue, { textAlign: "center", marginTop: 8 }]}
+          >
+            Your transaction history will appear here once you start sending or
+            receiving funds.
+          </Text>
+        </View>
+      ) : (
+        <View>{transactions.map(renderTransaction)}</View>
+      )}
     </View>
   );
-}
+};
