@@ -748,6 +748,28 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
     fontFamily: "monospace",
   },
+  transactionStatusContainer: {
+    alignItems: "flex-end",
+  },
+  vmStatusText: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontFamily: "monospace",
+    marginTop: 2,
+  },
+  argumentsContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  argumentText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginLeft: 8,
+    marginBottom: 2,
+    fontFamily: "monospace",
+  },
   emptyState: {
     padding: 40,
     alignItems: "center",

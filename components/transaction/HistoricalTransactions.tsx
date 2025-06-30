@@ -21,6 +21,10 @@ interface TransactionItem {
   version: string;
   timestamp: string;
   success: boolean;
+  gasFee: string;
+  payloadFunction: string;
+  payloadArguments: string[];
+  vmStatus: string;
   // Add more fields as needed from TransactionResponse
 }
 
@@ -60,6 +64,10 @@ export function HistoricalTransactions({
           let version = "N/A";
           let timestamp = "N/A";
           let success = false;
+          let gasFee = "N/A";
+          let payloadFunction = "N/A";
+          let payloadArguments: string[] = [];
+          let vmStatus = "N/A";
 
           // Check if this is a committed transaction
           if ("version" in tx && tx.version !== undefined) {
@@ -76,12 +84,47 @@ export function HistoricalTransactions({
             success = tx.success;
           }
 
+          // Calculate gas fee: gas_unit_price * gas_used
+          if ("gas_unit_price" in tx && "gas_used" in tx && 
+              tx.gas_unit_price !== undefined && tx.gas_used !== undefined) {
+            const gasUnitPrice = parseInt(tx.gas_unit_price);
+            const gasUsed = parseInt(tx.gas_used);
+            const totalGasFee = gasUnitPrice * gasUsed;
+            gasFee = totalGasFee.toLocaleString();
+          }
+
+          // Extract payload function and arguments
+          if ("payload" in tx && tx.payload !== undefined) {
+            const payload = tx.payload as {
+              function?: string;
+              arguments?: unknown[];
+              [key: string]: unknown;
+            };
+            if (payload.function) {
+              payloadFunction = payload.function;
+            }
+            if (payload.arguments && Array.isArray(payload.arguments)) {
+              payloadArguments = payload.arguments.map((arg: unknown) => 
+                typeof arg === 'string' ? arg : JSON.stringify(arg)
+              );
+            }
+          }
+
+          // Extract VM status
+          if ("vm_status" in tx && tx.vm_status !== undefined) {
+            vmStatus = tx.vm_status as string;
+          }
+
           return {
             hash: tx.hash,
             type: tx.type,
             version,
             timestamp,
             success,
+            gasFee,
+            payloadFunction,
+            payloadArguments,
+            vmStatus,
           };
         },
       );
@@ -128,14 +171,22 @@ export function HistoricalTransactions({
         >
           {item.hash}
         </Text>
-        <Text
-          style={[
-            styles.transactionStatus,
-            { color: item.success ? "#4CAF50" : "#F44336" },
-          ]}
-        >
-          {item.success ? "✓" : "✗"}
-        </Text>
+        <View style={styles.transactionStatusContainer}>
+          {item.success ? (
+            <Text style={[styles.transactionStatus, { color: "#4CAF50" }]}>
+              ✓
+            </Text>
+          ) : (
+            <View>
+              <Text style={[styles.transactionStatus, { color: "#F44336" }]}>
+                ✗
+              </Text>
+              <Text style={[styles.vmStatusText, { color: "#F44336" }]}>
+                {item.vmStatus}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
       <View style={styles.transactionDetails}>
         <Text style={styles.transactionDetailText}>Type: {item.type}</Text>
@@ -143,6 +194,27 @@ export function HistoricalTransactions({
           Version: {item.version}
         </Text>
         <Text style={styles.transactionDetailText}>Time: {item.timestamp}</Text>
+        <Text style={styles.transactionDetailText}>
+          Gas Fee: {item.gasFee} units
+        </Text>
+        <Text style={styles.transactionDetailText}>
+          Function: {item.payloadFunction}
+        </Text>
+        {item.payloadArguments.length > 0 && (
+          <View style={styles.argumentsContainer}>
+            <Text style={styles.transactionDetailText}>Arguments:</Text>
+            {item.payloadArguments.map((arg, index) => (
+              <Text 
+                key={index} 
+                style={[styles.transactionDetailText, styles.argumentText]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                [{index}]: {arg}
+              </Text>
+            ))}
+          </View>
+        )}
       </View>
     </View>
   );
