@@ -85,31 +85,37 @@ export function HistoricalTransactions({
           if ("timestamp" in tx && tx.timestamp !== undefined) {
             timestampMs = parseInt(tx.timestamp) / 1000;
             timestamp = formatTimestamp(timestampMs);
-            
+
             // Create a more compact date for the header with conditional year
             const date = new Date(timestampMs);
             const currentYear = new Date().getFullYear();
             const transactionYear = date.getFullYear();
-            
+
             if (currentYear === transactionYear) {
               // Same year - show only month, day and time
-              formattedDate = date.toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              }) + " " + date.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              formattedDate =
+                date.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                }) +
+                " " +
+                date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
             } else {
               // Different year - include the year
-              formattedDate = date.toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }) + " " + date.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              formattedDate =
+                date.toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }) +
+                " " +
+                date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
             }
           }
 
