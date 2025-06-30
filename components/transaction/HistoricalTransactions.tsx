@@ -16,6 +16,9 @@ import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 export interface HistoricalTransactionsProps {
   accountAddress: string;
   showTitle?: boolean; // Optional prop to show/hide the title
+  headerComponent?: () => React.ReactElement; // Optional header component
+  onRefresh?: () => void | Promise<void>; // Optional external refresh handler
+  refreshing?: boolean; // Optional external refreshing state
 }
 
 interface TransactionItem {
@@ -36,6 +39,9 @@ interface TransactionItem {
 export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
   accountAddress,
   showTitle = true,
+  headerComponent,
+  onRefresh: externalOnRefresh,
+  refreshing: externalRefreshing = false,
 }) => {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -205,10 +211,17 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
     }
   }, [accountAddress]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchTransactions();
+  const onRefresh = async () => {
+    if (externalOnRefresh) {
+      await externalOnRefresh();
+    } else {
+      setRefreshing(true);
+      await fetchTransactions();
+    }
   };
+
+  // Use external refreshing state if provided, otherwise use internal state
+  const isRefreshing = externalRefreshing || refreshing;
 
   const renderTransaction = ({ item }: { item: TransactionItem }) => (
     <View style={styles.listItem}>
@@ -266,12 +279,23 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
     </View>
   );
 
-  const renderHeader = () =>
-    showTitle ? (
+  const renderHeader = () => {
+    if (headerComponent) {
+      return (
+        <View>
+          {headerComponent()}
+          {showTitle && (
+            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          )}
+        </View>
+      );
+    }
+    return showTitle ? (
       <Text style={styles.sectionTitle}>Recent Transactions</Text>
     ) : null;
+  };
 
-  if (loading && !refreshing) {
+  if (loading && !isRefreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
@@ -301,7 +325,7 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
         ListEmptyComponent={renderEmptyComponent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
         contentContainerStyle={{ paddingHorizontal: 16 }}
       />

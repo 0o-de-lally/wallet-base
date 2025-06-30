@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, RefreshControl } from "react-native";
+import { View, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
@@ -49,33 +49,35 @@ export default function AccountDetailsScreen() {
 
   const accountNickname = account?.nickname || "";
 
+  const renderHeader = () => (
+    <View>
+      <Text style={styles.sectionTitle}>
+        {profileName} •{" "}
+        {account
+          ? shortenAddress(account.account_address, 4, 4)
+          : "Loading..."}
+        {` • ${accountNickname}`}
+      </Text>
+      
+      {/* Account Authorization Status */}
+      {account && <AccountStateStatus account={account} />}
+    </View>
+  );
+
   return (
     <View style={styles.safeAreaView}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View>
-          <Text style={styles.sectionTitle}>
-            {profileName} •{" "}
-            {account
-              ? shortenAddress(account.account_address, 4, 4)
-              : "Loading..."}
-            {` • ${accountNickname}`}
-          </Text>
+      {account ? (
+        <HistoricalTransactions 
+          accountAddress={account.account_address}
+          headerComponent={renderHeader}
+          onRefresh={onRefresh}
+          refreshing={isRefreshing}
+        />
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.sectionTitle}>Loading...</Text>
         </View>
-
-        {/* Account Authorization Status */}
-        {account && <AccountStateStatus account={account} />}
-
-        {/* Historical Transactions */}
-        {account && (
-          <HistoricalTransactions accountAddress={account.account_address} />
-        )}
-      </ScrollView>
+      )}
     </View>
   );
 }
