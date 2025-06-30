@@ -125,7 +125,7 @@ const ProfileList = memo(
             style={[
               styles.resultContainer,
               { marginBottom: 15 },
-              isActive && { borderColor: colors.blue, borderWidth: 2 },
+              isActive && { borderColor: colors.primary, borderWidth: 2 },
               isSelected && { backgroundColor: colors.expandedBg },
             ]}
           >
@@ -143,7 +143,7 @@ const ProfileList = memo(
                         borderRadius: 4,
                       }}
                     >
-                      <Text style={{ color: colors.blue, fontSize: 10 }}>
+                      <Text style={{ color: colors.primary, fontSize: 10 }}>
                         Contains Active Account
                       </Text>
                     </View>

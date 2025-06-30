@@ -41,7 +41,7 @@ export function AuthenticationView({
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name="lock-closed" size={32} color={colors.blue} />
+          <Ionicons name="lock-closed" size={32} color={colors.primary} />
         </View>
 
         <Text style={styles.title}>{title}</Text>

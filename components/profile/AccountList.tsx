@@ -21,7 +21,9 @@ const AccountList = memo(
     activeAccountId,
     onSetActiveAccount,
   }: AccountListProps) => {
-    const [switchingToAccountId, setSwitchingToAccountId] = useState<string | null>(null);
+    const [switchingToAccountId, setSwitchingToAccountId] = useState<
+      string | null
+    >(null);
     const fadeAnim = useRef(new Animated.Value(0)).current;
     // Navigation to create account screen
     const navigateToCreateAccount = useCallback(() => {
@@ -29,34 +31,37 @@ const AccountList = memo(
     }, []);
 
     // Enhanced account switching with feedback
-    const handleSetActiveAccount = useCallback((accountId: string) => {
-      if (!onSetActiveAccount) return;
+    const handleSetActiveAccount = useCallback(
+      (accountId: string) => {
+        if (!onSetActiveAccount) return;
 
-      // Set switching state and animate in
-      setSwitchingToAccountId(accountId);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300, // Slightly longer fade in
-        useNativeDriver: true,
-      }).start();
-
-      // Keep the feedback visible for longer (2 seconds total)
-      setTimeout(() => {
-        // Animate out
+        // Set switching state and animate in
+        setSwitchingToAccountId(accountId);
         Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300, // Slightly longer fade out
+          toValue: 1,
+          duration: 300, // Slightly longer fade in
           useNativeDriver: true,
-        }).start(() => {
-          onSetActiveAccount(accountId);
-          setSwitchingToAccountId(null);
-        });
-      }, 1400); // Show feedback for 1.4 seconds + 0.3s fade in + 0.3s fade out = 2 seconds total
-    }, [onSetActiveAccount, fadeAnim]);
+        }).start();
+
+        // Keep the feedback visible for longer (2 seconds total)
+        setTimeout(() => {
+          // Animate out
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300, // Slightly longer fade out
+            useNativeDriver: true,
+          }).start(() => {
+            onSetActiveAccount(accountId);
+            setSwitchingToAccountId(null);
+          });
+        }, 1400); // Show feedback for 1.4 seconds + 0.3s fade in + 0.3s fade out = 2 seconds total
+      },
+      [onSetActiveAccount, fadeAnim],
+    );
 
     // Get the account being switched to for display purposes
     const switchingToAccount = switchingToAccountId
-      ? accounts.find(acc => acc.id === switchingToAccountId)
+      ? accounts.find((acc) => acc.id === switchingToAccountId)
       : null;
 
     // Use the function to ensure it's not unused
@@ -81,21 +86,32 @@ const AccountList = memo(
     return (
       <View>
         {switchingToAccount && (
-          <Animated.View style={[
-            styles.switchingContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{
-                translateY: fadeAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-10, 0],
-                }),
-              }],
-            }
-          ]}>
-            <ActivityIndicator size="small" color="#007AFF" style={styles.switchingActivityIndicator} />
+          <Animated.View
+            style={[
+              styles.switchingContainer,
+              {
+                opacity: fadeAnim,
+                transform: [
+                  {
+                    translateY: fadeAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [-10, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <ActivityIndicator
+              size="small"
+              color="#007AFF"
+              style={styles.switchingActivityIndicator}
+            />
             <Text style={[styles.resultValue, styles.switchingText]}>
-              Switching to {switchingToAccount.nickname || shortenAddress(switchingToAccount.account_address, 4, 4)}...
+              Switching to{" "}
+              {switchingToAccount.nickname ||
+                shortenAddress(switchingToAccount.account_address, 4, 4)}
+              ...
             </Text>
           </Animated.View>
         )}

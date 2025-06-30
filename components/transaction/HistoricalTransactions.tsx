@@ -229,11 +229,15 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
         <Text style={styles.transactionDate}>{item.formattedDate}</Text>
         <View style={styles.transactionStatusContainer}>
           {item.success ? (
-            <Ionicons name="checkmark-circle" size={20} color={colors.green} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
           ) : (
             <View style={styles.failureContainer}>
-              <Ionicons name="close-circle" size={20} color={colors.red} />
-              <Text style={[styles.vmStatusText, { color: colors.red }]}>
+              <Ionicons name="close-circle" size={20} color={colors.danger} />
+              <Text style={[styles.vmStatusText, { color: colors.danger }]}>
                 {item.vmStatus}
               </Text>
             </View>

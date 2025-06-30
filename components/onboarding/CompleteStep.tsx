@@ -12,11 +12,13 @@ interface CompleteStepProps {
 export const CompleteStep: React.FC<CompleteStepProps> = ({ onFinish }) => {
   return (
     <SectionContainer title="Setup Complete!">
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-        <Ionicons 
-          name="checkmark-circle" 
-          size={20} 
-          color={colors.green} 
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}
+      >
+        <Ionicons
+          name="checkmark-circle"
+          size={20}
+          color={colors.success}
           style={{ marginRight: 8 }}
         />
         <Text style={styles.resultValue}>

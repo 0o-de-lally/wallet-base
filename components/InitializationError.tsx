@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 16,
-    color: colors.red,
+    color: colors.danger,
   },
   text: {
     fontSize: 16,
@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   errorText: {
-    color: colors.red,
+    color: colors.danger,
   },
 });

@@ -22,13 +22,13 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
     if (account.is_v8_authorized === false) {
       return {
         text: "V8 Authorization: Not Authorized",
-        color: colors.red,
+        color: colors.danger,
         icon: "shield-outline" as const,
       };
     }
     return {
       text: "V8 Authorization: Authorized",
-      color: colors.green,
+      color: colors.success,
       icon: "shield-checkmark-outline" as const,
     };
   };
@@ -44,13 +44,13 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
     if (account.v8_migrated === false) {
       return {
         text: "Migration Status: Not Migrated",
-        color: colors.red,
+        color: colors.danger,
         icon: "swap-horizontal-outline" as const,
       };
     }
     return {
       text: "Migration Status: Migrated",
-      color: colors.green,
+      color: colors.success,
       icon: "checkmark-circle-outline" as const,
     };
   };
@@ -111,11 +111,11 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
             backgroundColor: colors.redLight,
             borderRadius: 8,
             borderWidth: 1,
-            borderColor: colors.red,
+            borderColor: colors.danger,
           }}
         >
           <Text
-            style={[styles.resultValue, { color: colors.red, fontSize: 14 }]}
+            style={[styles.resultValue, { color: colors.danger, fontSize: 14 }]}
           >
             {account.is_v8_authorized === false && account.v8_migrated === false
               ? "Account requires both V8 authorization and migration to access all features."

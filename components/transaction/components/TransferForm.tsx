@@ -189,8 +189,10 @@ export const TransferForm = memo(
                 marginBottom: 8,
               }}
             >
-              <Ionicons name="eye-outline" size={20} color={colors.red} />
-              <Text style={[styles.label, { marginLeft: 8, color: colors.red }]}>
+              <Ionicons name="eye-outline" size={20} color={colors.danger} />
+              <Text
+                style={[styles.label, { marginLeft: 8, color: colors.danger }]}
+              >
                 View-Only Account
               </Text>
             </View>

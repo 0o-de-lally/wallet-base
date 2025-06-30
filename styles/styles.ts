@@ -1,42 +1,72 @@
 import { StyleSheet } from "react-native";
 
-// App color palette - Only red, green, and blue highlight colors
+// Named color constants - the actual color values
+const namedColors = {
+  // Grays and neutrals
+  darkestGray: "#1a1a1f",
+  darkGray: "#25252d",
+  mediumDarkGray: "#2c2c36",
+  mediumGray: "#444455",
+  lightMediumGray: "#8c8c9e",
+  lightGray: "#a0a0b0",
+  lighterGray: "#c2c2cc",
+  lightestGray: "#f0f0f5",
+
+  // Accent colors
+  blue: "#2196F3",
+  green: "#4CAF50",
+  red: "#F44336",
+
+  // Special grays for specific contexts
+  expandedGray: "#262935",
+  cardBorderGray: "#3a3f55",
+  buttonTextDark: "#16161c",
+
+  // Transparent overlays
+  darkOverlay: "rgba(15, 15, 20, 0.85)",
+  blueOverlay: "rgba(33, 150, 243, 0.1)",
+  greenOverlay: "rgba(76, 175, 80, 0.1)",
+  redOverlay: "rgba(244, 67, 54, 0.1)",
+
+  // Pure colors for shadows
+  black: "#000",
+};
+
+// Semantic color mappings - what each color is used for
 const colors = {
   // Core app colors
-  background: "#1a1a1f",
-  cardBg: "#25252d",
-  textPrimary: "#f0f0f5",
-  textSecondary: "#c2c2cc",
-  border: "#444455",
-  inputBg: "#2c2c36",
-  disabledBg: "#2c2c36",
-  disabledText: "#a0a0b0",
-  modalOverlayBg: "rgba(15, 15, 20, 0.85)",
-  statusBarBg: "#1a1a1f",
-  outlineBold: "#c2c2cc",
-  buttonTextDark: "#16161c",
-  placeholderText: "#8c8c9e",
-  expandedBg: "#262935",
-  cardBorder: "#3a3f55",
-  
-  // Three main highlight colors
-  blue: "#2196F3",      // Primary blue for main actions and info
-  green: "#4CAF50",     // Success and positive states
-  red: "#F44336",       // Danger, errors, and warnings
-  
+  background: namedColors.darkestGray,
+  cardBg: namedColors.darkGray,
+  textPrimary: namedColors.lightestGray,
+  textSecondary: namedColors.lighterGray,
+  border: namedColors.mediumGray,
+  inputBg: namedColors.mediumDarkGray,
+  disabledBg: namedColors.mediumDarkGray,
+  disabledText: namedColors.lightGray,
+  modalOverlayBg: namedColors.darkOverlay,
+  statusBarBg: namedColors.darkestGray,
+  outlineBold: namedColors.lighterGray,
+  buttonTextDark: namedColors.buttonTextDark,
+  placeholderText: namedColors.lightMediumGray,
+  expandedBg: namedColors.expandedGray,
+  cardBorder: namedColors.cardBorderGray,
+
   // Semantic aliases for clarity
-  primary: "#2196F3",   // Blue
-  success: "#4CAF50",   // Green
-  danger: "#F44336",    // Red
-  
+  primary: namedColors.blue,
+  success: namedColors.green,
+  danger: namedColors.red,
+
   // Light variants for backgrounds
-  blueLight: "rgba(33, 150, 243, 0.1)",
-  greenLight: "rgba(76, 175, 80, 0.1)",
-  redLight: "rgba(244, 67, 54, 0.1)",
+  blueLight: namedColors.blueOverlay,
+  greenLight: namedColors.greenOverlay,
+  redLight: namedColors.redOverlay,
+
+  // Shadow colors
+  shadowColor: namedColors.black,
 };
 
 // Export colors so components can use them directly when needed
-export { colors };
+export { colors, namedColors };
 
 export const styles = StyleSheet.create({
   // LAYOUT & CONTAINER STYLES
@@ -316,7 +346,7 @@ export const styles = StyleSheet.create({
     maxWidth: 400,
     borderWidth: 2,
     borderColor: colors.outlineBold,
-    shadowColor: "#000",
+    shadowColor: colors.shadowColor,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
@@ -361,7 +391,7 @@ export const styles = StyleSheet.create({
     borderRadius: 2,
     padding: 18,
     borderColor: colors.outlineBold,
-    shadowColor: "#000",
+    shadowColor: colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,
@@ -713,7 +743,7 @@ export const styles = StyleSheet.create({
   },
   viewOnlyIcon: {
     marginLeft: 8,
-    color: colors.red,
+    color: colors.danger,
   },
 
   // Transaction history styles
@@ -840,6 +870,6 @@ export const styles = StyleSheet.create({
   },
   switchingText: {
     textAlign: "center",
-    color: colors.blue,
+    color: colors.primary,
   },
 });

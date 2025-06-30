@@ -491,13 +491,13 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons 
-              name="checkmark-circle" 
-              size={16} 
-              color={colors.green} 
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color={colors.success}
               style={{ marginRight: 8 }}
             />
-            <Text style={[styles.label, { color: colors.green }]}>
+            <Text style={[styles.label, { color: colors.success }]}>
               Chain verification successful!
               {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
                 ? " (Account verified or new)"

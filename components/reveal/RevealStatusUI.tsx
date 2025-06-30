@@ -201,7 +201,7 @@ export const RevealStatusUI = memo(
         <View
           style={[
             styles.resultContainer,
-            { marginTop: 20, borderWidth: 2, borderColor: colors.blue },
+            { marginTop: 20, borderWidth: 2, borderColor: colors.primary },
           ]}
           accessible={true}
           accessibilityLabel={`Revealed secure value for ${accountName || "account"}`}
@@ -230,7 +230,13 @@ export const RevealStatusUI = memo(
           <Text style={styles.resultValue} selectable={true}>
             {storedValue}
           </Text>
-          <Text style={{ color: colors.textSecondary, marginTop: 10, textAlign: "center" }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              marginTop: 10,
+              textAlign: "center",
+            }}
+          >
             Auto-hiding in {hideCountdown} seconds
           </Text>
         </View>
@@ -286,7 +292,7 @@ export const RevealStatusUI = memo(
                   text="Reveal Now"
                   onPress={handleExecuteReveal}
                   disabled={isLoading}
-                  style={{ backgroundColor: colors.green, marginBottom: 10 }}
+                  style={{ backgroundColor: colors.success, marginBottom: 10 }}
                   accessibilityLabel="Execute the reveal now"
                   accessibilityHint="Shows your secured data on screen"
                 />

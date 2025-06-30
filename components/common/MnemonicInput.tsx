@@ -167,14 +167,14 @@ export const MnemonicInput = memo(
       if (!statusText) return null;
 
       const isValid = validation.wordCount === 24 && validation.isValid;
-      
+
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           {isValid && (
-            <Ionicons 
-              name="checkmark-circle" 
-              size={14} 
-              color={colors.green} 
+            <Ionicons
+              name="checkmark-circle"
+              size={14}
+              color={colors.success}
               style={{ marginRight: 4 }}
             />
           )}
@@ -266,27 +266,27 @@ const mnemonicStyles = StyleSheet.create({
     fontFamily: "monospace", // Better for mnemonic words
   },
   focusedInput: {
-    borderColor: colors.blue,
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   errorInput: {
-    borderColor: colors.red,
+    borderColor: colors.danger,
     borderWidth: 1,
   },
   validInput: {
-    borderColor: colors.green,
+    borderColor: colors.success,
     borderWidth: 1,
   },
   verifiedInput: {
-    borderColor: colors.green,
+    borderColor: colors.success,
     borderWidth: 2,
   },
   verifyingInput: {
-    borderColor: colors.blue,
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   readyToVerifyInput: {
-    borderColor: colors.red,
+    borderColor: colors.danger,
     borderWidth: 1,
   },
   buttonContainer: {

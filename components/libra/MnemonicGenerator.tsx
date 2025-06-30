@@ -295,7 +295,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                       fontSize: 10,
                       fontWeight: "bold",
                       marginBottom: 5,
-                      color: colors.green,
+                      color: colors.success,
                     },
                   ]}
                 >
@@ -319,10 +319,10 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
               </View>
             )}
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons 
-                name="warning-outline" 
-                size={12} 
-                color={colors.red} 
+              <Ionicons
+                name="warning-outline"
+                size={12}
+                color={colors.danger}
                 style={{ marginRight: 5 }}
               />
               <Text
