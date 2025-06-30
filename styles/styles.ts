@@ -13,9 +13,9 @@ const namedColors = {
   lightestGray: "#f0f0f5",
 
   // Accent colors - Electric Pastel palette (lighter & more electric)
-  blue: "#7DD3FC",      // Electric sky blue - brighter and more vivid
-  green: "#86EFAC",     // Electric mint green - glowing pastel
-  red: "#FCA5A5",       // Electric rose - soft but bright coral
+  blue: "#7DD3FC", // Electric sky blue - brighter and more vivid
+  green: "#86EFAC", // Electric mint green - glowing pastel
+  red: "#FCA5A5", // Electric rose - soft but bright coral
 
   // Special grays for specific contexts
   expandedGray: "#262935",

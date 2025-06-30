@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { observer } from "@legendapp/state/react";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../styles/styles";
 import { initializeApp } from "@/util/initialize-app";
@@ -37,7 +37,7 @@ export default function App() {
 // Content component with observer for reactive updates
 const AppContent = observer(() => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+  const router = useRouter();
 
   // Initialize app
   useEffect(() => {
@@ -54,15 +54,6 @@ const AppContent = observer(() => {
     initialize();
   }, []);
 
-  const handleMenuProfileChange = useCallback(() => {
-    // Force re-render when profile changes
-    setShowMenu(false);
-  }, []);
-
-  const handleMenuExit = useCallback(() => {
-    setShowMenu(false);
-  }, []);
-
   // Show loading state while initializing
   if (!isInitialized) {
     return (
@@ -72,7 +63,10 @@ const AppContent = observer(() => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#94c2f3" />
+        <ActivityIndicator
+          size="large"
+          color={require("../styles/styles").namedColors.blue}
+        />
         <Text style={[styles.resultValue, { marginTop: 10 }]}>
           Initializing wallet...
         </Text>
@@ -83,14 +77,7 @@ const AppContent = observer(() => {
   // Use SetupGuard to ensure proper setup before showing main content
   return (
     <SetupGuard requiresPin={true} requiresAccount={true}>
-      {showMenu ? (
-        <Menu
-          onProfileChange={handleMenuProfileChange}
-          onExit={handleMenuExit}
-        />
-      ) : (
-        <SmartAccountList onShowMenu={() => setShowMenu(true)} />
-      )}
+      <SmartAccountList onShowMenu={() => router.push("/menu")} />
     </SetupGuard>
   );
 });
@@ -136,7 +123,6 @@ const SmartAccountList = observer(
           <Text style={styles.resultValue}>
             No accounts found. Use the menu to add accounts.
           </Text>
-          <Menu onProfileChange={() => {}} onExit={undefined} />
         </View>
       );
     }
