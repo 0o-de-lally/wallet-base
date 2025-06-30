@@ -112,7 +112,6 @@ const AccountList = memo(
               Switching to{" "}
               {switchingToAccount.nickname ||
                 shortenAddress(switchingToAccount.account_address, 4, 4)}
-              ...
             </Text>
           </Animated.View>
         )}
