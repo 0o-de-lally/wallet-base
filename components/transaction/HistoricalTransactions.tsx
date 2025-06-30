@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
 import { getLibraClient } from "../../util/libra-client";
 import { LIBRA_SCALE_FACTOR } from "../../util/constants";
+import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 interface HistoricalTransactionsProps {
@@ -22,6 +23,7 @@ interface TransactionItem {
   shortHash: string;
   version: string;
   timestamp: string;
+  timestampMs: number; // Raw timestamp for reliable sorting
   formattedDate: string;
   success: boolean;
   gasFee: string;
@@ -66,6 +68,7 @@ export function HistoricalTransactions({
           // Handle different transaction types - be more careful with type checking
           let version = "N/A";
           let timestamp = "N/A";
+          let timestampMs = 0;
           let formattedDate = "N/A";
           let success = false;
           let gasFee = "N/A";
@@ -75,19 +78,39 @@ export function HistoricalTransactions({
 
           // Check if this is a committed transaction
           if ("version" in tx && tx.version !== undefined) {
-            version = tx.version.toString();
+            const versionNumber = parseInt(tx.version);
+            version = versionNumber.toLocaleString();
           }
 
           if ("timestamp" in tx && tx.timestamp !== undefined) {
-            const date = new Date(parseInt(tx.timestamp) / 1000);
-            timestamp = date.toLocaleString();
-            formattedDate =
-              date.toLocaleDateString() +
-              " " +
-              date.toLocaleTimeString([], {
+            timestampMs = parseInt(tx.timestamp) / 1000;
+            timestamp = formatTimestamp(timestampMs);
+            
+            // Create a more compact date for the header with conditional year
+            const date = new Date(timestampMs);
+            const currentYear = new Date().getFullYear();
+            const transactionYear = date.getFullYear();
+            
+            if (currentYear === transactionYear) {
+              // Same year - show only month, day and time
+              formattedDate = date.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              }) + " " + date.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               });
+            } else {
+              // Different year - include the year
+              formattedDate = date.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }) + " " + date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            }
           }
 
           // Create shortened hash (first 4 characters after 0x)
@@ -110,7 +133,7 @@ export function HistoricalTransactions({
             const gasUsed = parseInt(tx.gas_used);
             const totalGasFee = gasUnitPrice * gasUsed;
             const scaledGasFee = totalGasFee / LIBRA_SCALE_FACTOR;
-            gasFee = scaledGasFee.toFixed(2) + " LBR";
+            gasFee = formatCurrency(scaledGasFee, 2) + " LBR";
           }
 
           // Extract payload function and arguments
@@ -140,6 +163,7 @@ export function HistoricalTransactions({
             shortHash,
             version,
             timestamp,
+            timestampMs,
             formattedDate,
             success,
             gasFee,
@@ -152,10 +176,8 @@ export function HistoricalTransactions({
 
       // Sort transactions in reverse chronological order (newest first)
       const sortedTransactions = transformedTransactions.sort((a, b) => {
-        // Convert timestamp strings back to numbers for comparison
-        const timestampA = new Date(a.timestamp).getTime();
-        const timestampB = new Date(b.timestamp).getTime();
-        return timestampB - timestampA; // Newest first
+        // Use raw timestamp for reliable sorting
+        return b.timestampMs - a.timestampMs; // Newest first
       });
 
       console.log("Transformed and sorted transactions:", sortedTransactions);
