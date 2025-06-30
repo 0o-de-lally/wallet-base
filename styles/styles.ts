@@ -702,4 +702,115 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
     color: "#ff9500",
   },
+
+  // Transaction history styles
+  sectionContainer: {
+    marginBottom: 24,
+  },
+  transactionsList: {
+    flex: 1,
+  },
+  listItem: {
+    backgroundColor: colors.cardBg,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  transactionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  transactionHash: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    flex: 1,
+    fontFamily: "monospace",
+  },
+  transactionStatus: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  transactionDetails: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 8,
+    marginTop: 8,
+  },
+  transactionDetailText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 2,
+    fontFamily: "monospace",
+  },
+  transactionStatusContainer: {
+    alignItems: "flex-end",
+  },
+  vmStatusText: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontFamily: "monospace",
+    marginTop: 2,
+  },
+  argumentsContainer: {
+    marginTop: 8,
+    paddingTop: 0,
+  },
+  argumentText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginLeft: 8,
+    marginBottom: 2,
+    fontFamily: "monospace",
+  },
+  transactionDate: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  failureContainer: {
+    alignItems: "flex-end",
+  },
+  functionSection: {
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: "center",
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 12,
+    textAlign: "center",
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  retryText: {
+    fontSize: 16,
+    color: colors.primary,
+    marginTop: 8,
+    textAlign: "center",
+    textDecorationLine: "underline",
+  },
 });

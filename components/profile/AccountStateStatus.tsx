@@ -59,12 +59,11 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
   const migrationStatus = getMigrationStatus();
 
   return (
-    <View style={[styles.resultContainer, { marginBottom: 16 }]}>
-      <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
-        Account Status
-      </Text>
+    <View style={[styles.listItem, { marginBottom: 16 }]}>
+      <Text style={styles.sectionTitle}>Account Status</Text>
 
-      <View style={{ gap: 8 }}>
+      {/* V8 Status Information */}
+      <View style={{ gap: 12, marginTop: 16 }}>
         {/* V8 Authorization Status */}
         <View
           style={{
@@ -75,15 +74,10 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
         >
           <Ionicons
             name={v8AuthStatus.icon}
-            size={16}
+            size={18}
             color={v8AuthStatus.color}
           />
-          <Text
-            style={[
-              styles.resultValue,
-              { color: v8AuthStatus.color, fontSize: 14 },
-            ]}
-          >
+          <Text style={[styles.resultValue, { color: v8AuthStatus.color }]}>
             {v8AuthStatus.text}
           </Text>
         </View>
@@ -98,15 +92,10 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
         >
           <Ionicons
             name={migrationStatus.icon}
-            size={16}
+            size={18}
             color={migrationStatus.color}
           />
-          <Text
-            style={[
-              styles.resultValue,
-              { color: migrationStatus.color, fontSize: 14 },
-            ]}
-          >
+          <Text style={[styles.resultValue, { color: migrationStatus.color }]}>
             {migrationStatus.text}
           </Text>
         </View>
@@ -117,22 +106,22 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
         account.v8_migrated === false) && (
         <View
           style={{
-            marginTop: 12,
+            marginTop: 16,
             padding: 12,
-            backgroundColor: "#fff3cd",
+            backgroundColor: "rgba(245, 169, 169, 0.1)", // Subtle danger background
             borderRadius: 8,
-            borderLeftWidth: 4,
-            borderLeftColor: "#ff9500",
+            borderWidth: 1,
+            borderColor: "#f5a9a9", // Using the app's danger color
           }}
         >
           <Text
-            style={[styles.resultValue, { color: "#856404", fontSize: 12 }]}
+            style={[styles.resultValue, { color: "#f5a9a9", fontSize: 14 }]}
           >
             {account.is_v8_authorized === false && account.v8_migrated === false
-              ? "⚠️ This account requires both V8 authorization and migration to access all features."
+              ? "Account requires both V8 authorization and migration to access all features."
               : account.is_v8_authorized === false
-                ? "⚠️ This account requires V8 authorization to access all features."
-                : "⚠️ This account requires migration to access all features."}
+                ? "Account requires V8 authorization to access all features."
+                : "Account requires migration to access all features."}
           </Text>
         </View>
       )}

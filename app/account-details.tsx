@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, RefreshControl } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { View, Text } from "react-native";
+import { useLocalSearchParams, Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { HistoricalTransactions } from "../components/transaction/HistoricalTransactions";
@@ -49,36 +49,41 @@ export default function AccountDetailsScreen() {
 
   const accountNickname = account?.nickname || "";
 
-  return (
-    <View style={styles.safeAreaView}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View>
-          <Text style={styles.sectionTitle}>
-            {profileName} •{" "}
-            {account
-              ? shortenAddress(account.account_address, 4, 4)
-              : "Loading..."}
-            {` • ${accountNickname}`}
-          </Text>
-        </View>
+  const renderHeader = () => (
+    <View>
+      <Text style={styles.sectionTitle}>
+        {profileName} •{" "}
+        {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
+        {` • ${accountNickname}`}
+      </Text>
 
-        {/* Account Authorization Status */}
-        {account && <AccountStateStatus account={account} />}
-
-        {/* Historical Transactions */}
-        {account && (
-          <HistoricalTransactions
-            accountId={account.id}
-            accountAddress={account.account_address}
-          />
-        )}
-      </ScrollView>
+      {/* Account Authorization Status */}
+      {account && <AccountStateStatus account={account} />}
     </View>
+  );
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: "Account Details",
+          headerBackTitle: "Back",
+        }}
+      />
+      <View style={styles.safeAreaView}>
+        {account ? (
+          <HistoricalTransactions
+            accountAddress={account.account_address}
+            headerComponent={renderHeader}
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+          />
+        ) : (
+          <View style={styles.container}>
+            <Text style={styles.sectionTitle}>Loading...</Text>
+          </View>
+        )}
+      </View>
+    </>
   );
 }

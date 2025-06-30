@@ -1,182 +1,334 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/styles";
-import { formatTimestamp, formatLibraAmount } from "../../util/format-utils";
-
-// Mock transaction data structure - replace with actual API calls
-interface Transaction {
-  id: string;
-  type: "sent" | "received";
-  amount: number;
-  timestamp: number;
-  status: "confirmed" | "pending" | "failed";
-  hash?: string;
-  to?: string;
-  from?: string;
-}
+import { getLibraClient } from "../../util/libra-client";
+import { LIBRA_SCALE_FACTOR } from "../../util/constants";
+import { formatTimestamp, formatCurrency } from "../../util/format-utils";
+import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 export interface HistoricalTransactionsProps {
-  accountId: string;
   accountAddress: string;
+  showTitle?: boolean; // Optional prop to show/hide the title
+  headerComponent?: () => React.ReactElement; // Optional header component
+  onRefresh?: () => void | Promise<void>; // Optional external refresh handler
+  refreshing?: boolean; // Optional external refreshing state
+}
+
+interface TransactionItem {
+  hash: string;
+  shortHash: string;
+  version: string;
+  timestamp: string;
+  timestampMs: number; // Raw timestamp for reliable sorting
+  formattedDate: string;
+  success: boolean;
+  gasFee: string;
+  payloadFunction: string;
+  payloadArguments: string[];
+  vmStatus: string;
+  // Add more fields as needed from TransactionResponse
 }
 
 export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
-  accountId,
   accountAddress,
+  showTitle = true,
+  headerComponent,
+  onRefresh: externalOnRefresh,
+  refreshing: externalRefreshing = false,
 }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data - replace with actual API calls
-  const loadTransactions = async () => {
-    setIsLoading(true);
-
+  const fetchTransactions = async () => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setLoading(true);
+      setError(null);
 
-      // Mock transaction data
-      const mockTransactions: Transaction[] = [
-        {
-          id: "1",
-          type: "received",
-          amount: 100.5,
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          status: "confirmed",
-          from: "0x1234...5678",
-          hash: "0xabcd...efgh",
-        },
-        {
-          id: "2",
-          type: "sent",
-          amount: 25.75,
-          timestamp: Date.now() - 86400000, // 1 day ago
-          status: "confirmed",
-          to: "0x9876...5432",
-          hash: "0xijkl...mnop",
-        },
-        {
-          id: "3",
-          type: "sent",
-          amount: 50.0,
-          timestamp: Date.now() - 172800000, // 2 days ago
-          status: "pending",
-          to: "0xqrst...uvwx",
-          hash: "0xyzab...cdef",
-        },
-      ];
+      console.log("Fetching transactions for account:", accountAddress);
+      const client = getLibraClient();
 
-      setTransactions(mockTransactions);
-    } catch (error) {
-      console.error("Failed to load transactions:", error);
+      // Query the last 10 transactions for this account
+      // Since LibraClient extends Aptos, we can call getAccountTransactions directly
+      const response = await client.getAccountTransactions({
+        accountAddress: accountAddress,
+        options: {
+          limit: 10, // Limit to last 10 transactions
+          offset: 0, // Start from the most recent
+        },
+      });
+
+      console.log("Raw transaction response:", response);
+
+      // Transform the response to our display format
+      const transformedTransactions: TransactionItem[] = response.map(
+        (tx: TransactionResponse) => {
+          // Handle different transaction types - be more careful with type checking
+          let version = "N/A";
+          let timestamp = "N/A";
+          let timestampMs = 0;
+          let formattedDate = "N/A";
+          let success = false;
+          let gasFee = "N/A";
+          let payloadFunction = "N/A";
+          let payloadArguments: string[] = [];
+          let vmStatus = "N/A";
+
+          // Check if this is a committed transaction
+          if ("version" in tx && tx.version !== undefined) {
+            const versionNumber = parseInt(tx.version);
+            version = versionNumber.toLocaleString();
+          }
+
+          if ("timestamp" in tx && tx.timestamp !== undefined) {
+            timestampMs = parseInt(tx.timestamp) / 1000;
+            timestamp = formatTimestamp(timestampMs);
+
+            // Create a more compact date for the header with conditional year
+            const date = new Date(timestampMs);
+            const currentYear = new Date().getFullYear();
+            const transactionYear = date.getFullYear();
+
+            if (currentYear === transactionYear) {
+              // Same year - show only month, day and time
+              formattedDate =
+                date.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                }) +
+                " " +
+                date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+            } else {
+              // Different year - include the year
+              formattedDate =
+                date.toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }) +
+                " " +
+                date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+            }
+          }
+
+          // Create shortened hash (first 4 characters after 0x)
+          const shortHash = tx.hash.startsWith("0x")
+            ? tx.hash.slice(0, 6)
+            : tx.hash.slice(0, 4);
+
+          if ("success" in tx && tx.success !== undefined) {
+            success = tx.success;
+          }
+
+          // Calculate gas fee: gas_unit_price * gas_used / LIBRA_SCALE_FACTOR
+          if (
+            "gas_unit_price" in tx &&
+            "gas_used" in tx &&
+            tx.gas_unit_price !== undefined &&
+            tx.gas_used !== undefined
+          ) {
+            const gasUnitPrice = parseInt(tx.gas_unit_price);
+            const gasUsed = parseInt(tx.gas_used);
+            const totalGasFee = gasUnitPrice * gasUsed;
+            const scaledGasFee = totalGasFee / LIBRA_SCALE_FACTOR;
+            gasFee = formatCurrency(scaledGasFee, 2) + " LBR";
+          }
+
+          // Extract payload function and arguments
+          if ("payload" in tx && tx.payload !== undefined) {
+            const payload = tx.payload as {
+              function?: string;
+              arguments?: unknown[];
+              [key: string]: unknown;
+            };
+            if (payload.function) {
+              payloadFunction = payload.function;
+            }
+            if (payload.arguments && Array.isArray(payload.arguments)) {
+              payloadArguments = payload.arguments.map((arg: unknown) =>
+                typeof arg === "string" ? arg : JSON.stringify(arg),
+              );
+            }
+          }
+
+          // Extract VM status
+          if ("vm_status" in tx && tx.vm_status !== undefined) {
+            vmStatus = tx.vm_status as string;
+          }
+
+          return {
+            hash: tx.hash,
+            shortHash,
+            version,
+            timestamp,
+            timestampMs,
+            formattedDate,
+            success,
+            gasFee,
+            payloadFunction,
+            payloadArguments,
+            vmStatus,
+          };
+        },
+      );
+
+      // Sort transactions in reverse chronological order (newest first)
+      const sortedTransactions = transformedTransactions.sort((a, b) => {
+        // Use raw timestamp for reliable sorting
+        return b.timestampMs - a.timestampMs; // Newest first
+      });
+
+      console.log("Transformed and sorted transactions:", sortedTransactions);
+      setTransactions(sortedTransactions);
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch transactions",
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    loadTransactions();
-  }, [accountId, accountAddress]);
+    if (accountAddress) {
+      fetchTransactions();
+    }
+  }, [accountAddress]);
 
-  const renderTransaction = (transaction: Transaction) => {
-    const isIncoming = transaction.type === "received";
-    const statusColor = {
-      confirmed: "#a5d6b7",
-      pending: "#f5d76e",
-      failed: "#f5a9a9",
-    }[transaction.status];
+  const onRefresh = async () => {
+    if (externalOnRefresh) {
+      await externalOnRefresh();
+    } else {
+      setRefreshing(true);
+      await fetchTransactions();
+    }
+  };
 
-    return (
-      <View
-        key={transaction.id}
-        style={[styles.resultContainer, { marginBottom: 12 }]}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 8,
-          }}
-        >
-          <Ionicons
-            name={isIncoming ? "arrow-down-circle" : "arrow-up-circle"}
-            size={24}
-            color={isIncoming ? "#a5d6b7" : "#f5a9a9"}
-            style={{ marginRight: 12 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.resultLabel}>
-              {isIncoming ? "Received" : "Sent"}
-            </Text>
-            <Text
-              style={[styles.resultValue, { fontSize: 18, fontWeight: "600" }]}
-            >
-              {isIncoming ? "+" : "-"}
-              {formatLibraAmount(transaction.amount)}
-            </Text>
-          </View>
-          <View
-            style={{
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              backgroundColor: statusColor,
-              borderRadius: 4,
-            }}
-          >
-            <Text style={{ color: "#000", fontSize: 12, fontWeight: "600" }}>
-              {transaction.status.toUpperCase()}
-            </Text>
-          </View>
+  // Use external refreshing state if provided, otherwise use internal state
+  const isRefreshing = externalRefreshing || refreshing;
+
+  const renderTransaction = ({ item }: { item: TransactionItem }) => (
+    <View style={styles.listItem}>
+      <View style={styles.transactionHeader}>
+        <Text style={styles.transactionDate}>{item.formattedDate}</Text>
+        <View style={styles.transactionStatusContainer}>
+          {item.success ? (
+            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+          ) : (
+            <View style={styles.failureContainer}>
+              <Ionicons name="close-circle" size={20} color="#F44336" />
+              <Text style={[styles.vmStatusText, { color: "#F44336" }]}>
+                {item.vmStatus}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+      <View style={styles.transactionDetails}>
+        {/* Function and Arguments Section - moved to top */}
+        <View style={styles.functionSection}>
+          <Text style={styles.transactionDetailText}>
+            Function: {item.payloadFunction}
+          </Text>
+          {item.payloadArguments.length > 0 && (
+            <View style={styles.argumentsContainer}>
+              <Text style={styles.transactionDetailText}>Arguments:</Text>
+              {item.payloadArguments.map((arg, index) => (
+                <Text
+                  key={index}
+                  style={[styles.transactionDetailText, styles.argumentText]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  [{index}]: {arg}
+                </Text>
+              ))}
+            </View>
+          )}
         </View>
 
-        <Text style={styles.resultValue}>
-          {isIncoming ? "From" : "To"}:{" "}
-          {isIncoming ? transaction.from : transaction.to}
+        {/* Transaction Details Section */}
+        <Text style={styles.transactionDetailText}>Hash: {item.shortHash}</Text>
+        <Text style={styles.transactionDetailText}>
+          Version: {item.version}
         </Text>
+        <Text style={styles.transactionDetailText}>Gas Fee: {item.gasFee}</Text>
+      </View>
+    </View>
+  );
 
-        {transaction.hash && (
-          <Text style={[styles.resultValue, { fontSize: 12, color: "#888" }]}>
-            Hash: {transaction.hash}
-          </Text>
-        )}
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyStateText}>No transactions found</Text>
+    </View>
+  );
 
-        <Text style={styles.lastUpdatedText}>
-          {formatTimestamp(transaction.timestamp)}
+  const renderHeader = () => {
+    if (headerComponent) {
+      return (
+        <View>
+          {headerComponent()}
+          {showTitle && (
+            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          )}
+        </View>
+      );
+    }
+    return showTitle ? (
+      <Text style={styles.sectionTitle}>Recent Transactions</Text>
+    ) : null;
+  };
+
+  if (loading && !isRefreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>Loading transactions...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+        <Text style={styles.retryText} onPress={fetchTransactions}>
+          Tap to retry
         </Text>
       </View>
     );
-  };
+  }
 
   return (
-    <View>
-      <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
-        Transaction History
-      </Text>
-
-      {isLoading ? (
-        <View style={{ alignItems: "center", marginTop: 40 }}>
-          <ActivityIndicator size="large" />
-          <Text style={[styles.resultValue, { marginTop: 16 }]}>
-            Loading transactions...
-          </Text>
-        </View>
-      ) : transactions.length === 0 ? (
-        <View style={{ alignItems: "center", marginTop: 40 }}>
-          <Ionicons name="receipt-outline" size={64} color="#888" />
-          <Text style={[styles.title, { marginTop: 16, fontSize: 18 }]}>
-            No Transactions
-          </Text>
-          <Text
-            style={[styles.resultValue, { textAlign: "center", marginTop: 8 }]}
-          >
-            Your transaction history will appear here once you start sending or
-            receiving funds.
-          </Text>
-        </View>
-      ) : (
-        <View>{transactions.map(renderTransaction)}</View>
-      )}
+    <View style={styles.transactionsList}>
+      <FlatList
+        data={transactions}
+        renderItem={renderTransaction}
+        keyExtractor={(item) => item.hash}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyComponent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+      />
     </View>
   );
 };
