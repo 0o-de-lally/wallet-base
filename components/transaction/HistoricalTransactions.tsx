@@ -14,7 +14,6 @@ import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 
 export interface HistoricalTransactionsProps {
-  accountId: string;
   accountAddress: string;
   showTitle?: boolean; // Optional prop to show/hide the title
 }
