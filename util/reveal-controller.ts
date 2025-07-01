@@ -1,4 +1,3 @@
-import { getValue } from "./secure-store";
 import { IS_PRODUCTION } from "./environment";
 import {
   setAccountRevealSchedule,
@@ -100,40 +99,8 @@ export function checkRevealStatus(accountId: string): {
  *
  * @param accountId - The ID of the account
  * @returns A Promise that resolves to the value if available within the reveal window, or null otherwise
+ * Removed unused function: getScheduledReveal
  */
-export async function getScheduledReveal(
-  accountId: string,
-): Promise<{ value: string | null; status: string }> {
-  const status = checkRevealStatus(accountId);
-
-  if (!status) {
-    return { value: null, status: "not_scheduled" };
-  }
-
-  if (!status.available) {
-    return { value: null, status: "waiting" };
-  }
-
-  if (status.expired) {
-    // Clean up expired reveal request
-    clearAccountRevealSchedule(accountId);
-    return { value: null, status: "expired" };
-  }
-
-  try {
-    // Retrieve the value since we're in the valid reveal window
-    // Use the account storage key format
-    const key = `account_${accountId}`;
-    const value = await getValue(key);
-
-    // Keep the scheduled reveal active until it expires
-    // It will be automatically unavailable after expiration
-    return { value, status: "revealed" };
-  } catch (error) {
-    console.error("Error retrieving scheduled reveal:", error);
-    return { value: null, status: "error" };
-  }
-}
 
 /**
  * Cancels a scheduled reveal for an account.

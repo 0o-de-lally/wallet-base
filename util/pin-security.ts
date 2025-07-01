@@ -52,7 +52,7 @@ import {
 } from "./crypto";
 
 // Define a custom type for the hashed PIN
-export type HashedPin = {
+type HashedPin = {
   salt: string;
   hash: string;
   iterations: number;
@@ -114,7 +114,7 @@ export async function hashPin(
  * @param inputPin Raw PIN input to verify
  * @returns Promise resolving to true if the PINs match, false otherwise
  */
-export async function comparePins(
+async function comparePins(
   storedHashedPin: HashedPin,
   inputPin: string,
 ): Promise<boolean> {
@@ -150,7 +150,7 @@ export async function comparePins(
  * @param operation - Callback function that receives the PIN and performs an operation
  * @returns Promise resolving to the result of the operation
  */
-export async function processWithPin<T>(
+async function processWithPin<T>(
   pin: string,
   operation: (pin: string) => Promise<T>,
 ): Promise<T> {

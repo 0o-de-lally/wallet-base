@@ -358,7 +358,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   };
 
   // Mnemonic validation handler
-  const handleMnemonicValidation = (isValid: boolean, isVerified: boolean) => {
+  const handleMnemonicValidation = (_isValid: boolean, isVerified: boolean) => {
     // If mnemonic becomes verified, immediately show loading state
     if (isVerified && !isVerifiedMnemonic) {
       setIsDeriving(true);

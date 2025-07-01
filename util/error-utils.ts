@@ -7,7 +7,7 @@ import { observable } from "@legendapp/state";
 /**
  * Error log entry interface
  */
-export interface ErrorLogEntry {
+interface ErrorLogEntry {
   id: string;
   timestamp: number;
   level: "error" | "warn" | "debug";
@@ -20,7 +20,7 @@ export interface ErrorLogEntry {
 /**
  * Error category type for better error handling
  */
-export type ErrorCategory = {
+type ErrorCategory = {
   type: "network" | "api" | "timeout" | "unknown";
   shouldLog: boolean;
 };
@@ -28,7 +28,7 @@ export type ErrorCategory = {
 /**
  * Observable state for error logs
  */
-export const errorLogs = observable<ErrorLogEntry[]>([]);
+const errorLogs = observable<ErrorLogEntry[]>([]);
 
 /**
  * Maximum number of error logs to keep in memory
@@ -46,7 +46,7 @@ const AUTO_CLEAR_INTERVAL = 24 * 60 * 60 * 1000;
  * @param fallbackMessage Fallback message if error can't be processed
  * @returns A safe error message
  */
-export function getSafeErrorMessage(
+function getSafeErrorMessage(
   error: unknown,
   fallbackMessage = "An unexpected error occurred",
 ): string {
@@ -64,20 +64,8 @@ export function getSafeErrorMessage(
  * @param context The context where the error occurred
  * @param error The error object
  * @param level The logging level
+ * Removed unused function: logError
  */
-export function logError(
-  context: string,
-  error: unknown,
-  level: "warn" | "error" = "warn",
-): void {
-  const message = getSafeErrorMessage(error);
-
-  if (level === "warn") {
-    console.warn(`[${context}] ${message}`);
-  } else {
-    console.error(`[${context}] ${message}`);
-  }
-}
 
 /**
  * Categorizes error types for better handling and logging decisions

@@ -10,7 +10,7 @@ import { IS_DEVELOPMENT } from "./environment";
 
 // Default URLs for different networks
 const DEFAULT_MAINNET_URL = "https://rpc.scan.openlibra.world/v1";
-const DEFAULT_TESTNET_URL = "https://rpc.scan.openlibra.world/v1"; // Update if testnet has different URL
+// Removed unused: DEFAULT_TESTNET_URL
 
 /**
  * Global LibraClient instance
@@ -77,17 +77,8 @@ export function getLibraClient(): LibraClient {
  *
  * @param url New URL to use for the client
  * @param network Network type identifier for logging/debugging
+ * Removed unused function: setLibraClientUrl
  */
-export function setLibraClientUrl(
-  url: string,
-  network: "mainnet" | "testnet" | "custom" = "custom",
-): LibraClient {
-  if (IS_DEVELOPMENT) {
-    console.log(`Reconfiguring LibraClient to ${network} network: ${url}`);
-  }
-
-  return initializeLibraClient(url, network);
-}
 
 /**
  * Get the current configuration of the global LibraClient
@@ -98,23 +89,7 @@ export function getLibraClientConfig() {
   return { ...currentConfig };
 }
 
-/**
- * Reset the global LibraClient to mainnet defaults
- *
- * @returns The reset LibraClient instance
- */
-export function resetToMainnet(): LibraClient {
-  return initializeLibraClient(DEFAULT_MAINNET_URL, "mainnet");
-}
-
-/**
- * Reset the global LibraClient to testnet
- *
- * @returns The testnet LibraClient instance
- */
-export function resetToTestnet(): LibraClient {
-  return initializeLibraClient(DEFAULT_TESTNET_URL, "testnet");
-}
+// Removed unused exports: resetToMainnet, resetToTestnet
 
 /**
  * Check if the LibraClient is initialized
@@ -135,5 +110,5 @@ export function getLibraClientUrl(): string {
   return currentConfig.url;
 }
 
-// Export the default URLs for use in other parts of the app
-export { DEFAULT_MAINNET_URL, DEFAULT_TESTNET_URL };
+// Removed internal-only exports: DEFAULT_MAINNET_URL, DEFAULT_TESTNET_URL
+// These constants are only used within this module

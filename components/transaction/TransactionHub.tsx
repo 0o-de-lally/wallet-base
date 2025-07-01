@@ -7,12 +7,10 @@ import { useTransactionPin } from "../../hooks/use-transaction-pin";
 import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
 import { shortenAddress } from "../../util/format-utils";
-import {
-  TransferForm,
-  AdminTransactions,
-  TransactionPinModal,
-  useTransactionExecutor,
-} from "./components";
+import { TransferForm } from "./components/TransferForm";
+import { AdminTransactions } from "./components/AdminTransactions";
+import { TransactionPinModal } from "./components/TransactionPinModal";
+import { useTransactionExecutor } from "./components/TransactionExecutor";
 
 interface TransactionHubProps {
   accountId: string;

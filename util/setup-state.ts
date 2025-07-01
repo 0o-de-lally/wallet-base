@@ -2,11 +2,7 @@ import { observable } from "@legendapp/state";
 import { hasPINSetup, hasAccounts } from "./user-state";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 
-export type SetupStatus =
-  | "loading"
-  | "needs-pin"
-  | "needs-account"
-  | "complete";
+type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
 
 interface SetupState {
   status: SetupStatus;
@@ -19,7 +15,7 @@ interface SetupState {
  * Reactive setup state manager
  * This provides a centralized, observable state for user setup status
  */
-export const setupState = observable<SetupState>({
+const setupState = observable<SetupState>({
   status: "loading",
   hasPin: false,
   hasUserAccounts: false,
@@ -29,7 +25,7 @@ export const setupState = observable<SetupState>({
 /**
  * Updates the setup status by checking current state
  */
-export async function updateSetupStatus(): Promise<void> {
+async function updateSetupStatus(): Promise<void> {
   try {
     console.log("Updating setup status...");
     setupState.status.set("loading");

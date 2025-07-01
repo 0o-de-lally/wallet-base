@@ -10,7 +10,7 @@ import { clearAllScheduledReveals } from "./reveal-controller";
  * @returns Promise resolving when clearing is complete
  * @throws Error if clearing operations fail
  */
-export async function clearAllStorage(): Promise<void> {
+async function clearAllStorage(): Promise<void> {
   try {
     // Find all account-specific keys
     const allKeys = await getAllKeys();
@@ -70,23 +70,6 @@ export async function resetAppToCleanState(): Promise<void> {
  * [DEPRECATED] Securely clears all storage after PIN verification
  * @deprecated Use clearAllStorage() instead as PIN verification is not required
  */
-export async function clearAllWithPinVerification(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pin: string,
-): Promise<void> {
-  console.warn("PIN verification for clearing storage is deprecated");
-  await clearAllStorage();
-}
+// Removed unused function: clearAllWithPinVerification
 
-/**
- * Example function with unused parameters
- */
-export async function functionWithUnusedPin(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  key: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pin: string,
-): Promise<boolean> {
-  // Function implementation goes here
-  return true;
-}
+// Removed unused export: functionWithUnusedPin
