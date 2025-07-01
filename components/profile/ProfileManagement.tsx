@@ -84,7 +84,7 @@ const ProfileManagement: React.FC = observer(() => {
 
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
-      <View key={profileName} style={styles.profileItem}>
+      <View key={profileName} style={styles.listItem}>
         <View style={styles.profileContentRow}>
           <View style={styles.profileTitleContainer}>
             <Text style={styles.profileName}>{profileName}</Text>
@@ -114,6 +114,15 @@ const ProfileManagement: React.FC = observer(() => {
               </Text>
             ))}
           </View>
+        )}
+        {/* Show 'Make Active' button if not the active profile */}
+        {activeProfileName !== profileName && profile.accounts.length > 0 && (
+          <ActionButton
+            text="Make Active"
+            onPress={() => setActiveAccount(profile.accounts[0].id)}
+            style={{ marginTop: 8, alignSelf: "flex-start" }}
+            accessibilityLabel={`Make ${profileName} the active profile`}
+          />
         )}
       </View>
     ));

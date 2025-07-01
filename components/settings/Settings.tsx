@@ -36,6 +36,9 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
     ? profiles[currentProfileName]
     : null;
   const profileNames = Object.keys(profiles);
+  const availableProfileNames = profileNames.filter(
+    (name) => profiles[name].accounts && profiles[name].accounts.length > 0
+  );
   const hasMultipleProfilesAvailable = hasMultipleProfiles();
 
   const navigateToScreen = useCallback(
@@ -78,10 +81,10 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         contentContainerStyle={styles.scrollContent}
       >
         {/* Account Management */}
-        <SectionContainer title="Account Management">
+        <SectionContainer title="Account Management" style={styles.listItem}>
           {/* Active Profile Info moved here */}
           {currentProfile && (
-            <View style={styles.resultContainer}>
+            <View style={styles.listItem}>
               <Text style={styles.resultLabel}>
                 Profile: {currentProfile.name}
               </Text>
@@ -92,7 +95,7 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
               <Text style={styles.resultValue}>
                 {currentProfile.accounts.length} account(s)
               </Text>
-              {hasMultipleProfilesAvailable && (
+              {hasMultipleProfilesAvailable && availableProfileNames.length > 1 && (
                 <ActionButton
                   text={
                     showProfileSwitcher
@@ -110,7 +113,7 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
                   <Dropdown
                     label="Switch to Profile"
                     value={currentProfileName || ""}
-                    options={profileNames}
+                    options={availableProfileNames}
                     onSelect={handleProfileSwitch}
                     placeholder="Select a profile"
                   />
@@ -138,7 +141,7 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         </SectionContainer>
 
         {/* Security */}
-        <SectionContainer title="Security">
+        <SectionContainer title="Security" style={styles.listItem}>
           <ActionButton
             text="Change PIN"
             onPress={() => navigateToScreen("/pin")}
@@ -147,9 +150,9 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         </SectionContainer>
 
         {/* Developer Options */}
-        <SectionContainer title="Developer Options">
+        <SectionContainer title="Developer Options" style={styles.listItem}>
           <ActionButton
-            text="Show LibraClient Config"
+            text="Client Config"
             onPress={() => {
               if (isLibraClientInitialized()) {
                 const config = getLibraClientConfig();
@@ -182,7 +185,7 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         </SectionContainer>
 
         {/* Danger Zone */}
-        <SectionContainer title="Danger Zone">
+        <SectionContainer title="Danger Zone" style={styles.listItem}>
           <ActionButton
             text="Clear All App Data"
             onPress={() => {

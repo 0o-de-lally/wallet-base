@@ -5,13 +5,13 @@ import { View, Text } from "react-native";
 interface SectionContainerProps {
   title?: string;
   children: ReactNode;
-  style?: React.CSSProperties;
+  style?: any;
 }
 
 export const SectionContainer = memo(
-  ({ title, children }: SectionContainerProps) => {
+  ({ title, children, style }: SectionContainerProps) => {
     return (
-      <View style={[styles.section]}>
+      <View style={[styles.section, style]}>
         {title && <Text style={styles.sectionTitle}>{title}</Text>}
         {children}
       </View>
