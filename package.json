@@ -7,14 +7,15 @@
     "android": "expo run:android",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
-    "lint": "npx tsc --noEmit && eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:tsc": "npx tsc --noEmit",
+    "lint:tsc": "bunx tsc --noEmit",
+    "lint:unused": "bunx ts-prune --ignore '.tsx:' | tee /dev/stderr | (! grep -q .)",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
-    "fix": "bun format:fix && bun lint:fix",
-    "unused-exports": "bunx ts-prune --ignore '.tsx:'"
+    "fix": "bun format:fix && bun lint:fix"
+
   },
   "dependencies": {
     "@legendapp/state": "^2.1.15",

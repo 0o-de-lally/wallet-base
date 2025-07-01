@@ -35,7 +35,7 @@ export const SecureStorageForm = memo(
     const [hasStoredData, setHasStoredData] = useState(false);
     const [isCheckingData, setIsCheckingData] = useState(true);
 
-    const handleValidationChange = (isValid: boolean, isVerified: boolean) => {
+    const handleValidationChange = (_isValid: boolean, isVerified: boolean) => {
       setIsMnemonicVerified(isVerified);
     };
 
