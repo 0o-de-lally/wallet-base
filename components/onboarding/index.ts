@@ -1,6 +1,1 @@
-// Onboarding Components
-export { OnboardingWizard } from "./OnboardingWizard";
-export { WelcomeStep } from "./WelcomeStep";
-export { AccountChoiceStep } from "./AccountChoiceStep";
-export { AccountSetupStep } from "./AccountSetupStep";
-export { CompleteStep } from "./CompleteStep";
+// This barrel file has been cleaned up - all exports were unused according to ts-prune

@@ -65,7 +65,7 @@ export function getSafeErrorMessage(
  * @param error The error object
  * @param level The logging level
  */
-export function logError(
+function logError(
   context: string,
   error: unknown,
   level: "warn" | "error" = "warn",

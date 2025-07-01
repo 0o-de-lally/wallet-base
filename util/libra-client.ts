@@ -78,7 +78,7 @@ export function getLibraClient(): LibraClient {
  * @param url New URL to use for the client
  * @param network Network type identifier for logging/debugging
  */
-export function setLibraClientUrl(
+function setLibraClientUrl(
   url: string,
   network: "mainnet" | "testnet" | "custom" = "custom",
 ): LibraClient {
@@ -98,23 +98,7 @@ export function getLibraClientConfig() {
   return { ...currentConfig };
 }
 
-/**
- * Reset the global LibraClient to mainnet defaults
- *
- * @returns The reset LibraClient instance
- */
-export function resetToMainnet(): LibraClient {
-  return initializeLibraClient(DEFAULT_MAINNET_URL, "mainnet");
-}
-
-/**
- * Reset the global LibraClient to testnet
- *
- * @returns The testnet LibraClient instance
- */
-export function resetToTestnet(): LibraClient {
-  return initializeLibraClient(DEFAULT_TESTNET_URL, "testnet");
-}
+// Removed unused exports: resetToMainnet, resetToTestnet
 
 /**
  * Check if the LibraClient is initialized

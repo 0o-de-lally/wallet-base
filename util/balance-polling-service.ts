@@ -212,9 +212,7 @@ export const balancePollingService = new BalancePollingService();
 
 // Export convenience functions
 export const startBalancePolling = () => balancePollingService.start();
-export const stopBalancePolling = () => balancePollingService.stop();
-export const restartBalancePolling = () => balancePollingService.restart();
-export const triggerBalancePoll = () => balancePollingService.triggerPoll();
 export const retryAccountBalance = (accountId: string) =>
   balancePollingService.retryAccount(accountId);
-export const isBalancePollingRunning = () => balancePollingService.running;
+
+// Removed unused exports: stopBalancePolling, restartBalancePolling, triggerBalancePoll, isBalancePollingRunning

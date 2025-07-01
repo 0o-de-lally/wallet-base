@@ -118,24 +118,4 @@ export async function updateAccountMigrationStatus(
   }
 }
 
-/**
- * Fetches and updates migration status for a single account
- */
-export async function fetchAndUpdateAccountMigrationStatus(
-  client: LibraClient,
-  accountId: string,
-  accountAddress: string,
-): Promise<void> {
-  try {
-    const migrationData = await fetchAccountMigrationStatus(
-      client,
-      accountAddress,
-    );
-    await updateAccountMigrationStatus(accountId, migrationData);
-  } catch (error) {
-    reportError("warn", "fetchAndUpdateAccountMigrationStatus", error, {
-      accountId,
-      accountAddress,
-    });
-  }
-}
+// Removed unused export: fetchAndUpdateAccountMigrationStatus

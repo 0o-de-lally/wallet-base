@@ -20,7 +20,7 @@ export const BALANCE_POLLING = {
 /**
  * Network timeout and retry configuration
  */
-export const NETWORK = {
+const NETWORK = {
   DEFAULT_TIMEOUT_MS: 10_000, // 10 seconds
   MAX_RETRY_ATTEMPTS: 3,
 } as const;

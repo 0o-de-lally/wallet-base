@@ -39,7 +39,7 @@ export function constantTimeEqual(a: string, b: string): boolean {
  * @param b Second Uint8Array to compare
  * @returns true if the arrays are identical, false otherwise
  */
-export function constantTimeEqualUint8Array(
+function constantTimeEqualUint8Array(
   a: Uint8Array,
   b: Uint8Array,
 ): boolean {

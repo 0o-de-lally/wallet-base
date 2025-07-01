@@ -63,61 +63,9 @@ export function hasAccounts(): boolean {
   }
 }
 
-/**
- * Checks if the user has any accounts configured with detailed logging
- * Use this for debugging purposes
- */
-export function hasAccountsWithLogging(): boolean {
-  try {
-    const profiles = getProfiles();
-    if (!profiles) {
-      console.log("No profiles found, no accounts available");
-      return false;
-    }
-
-    const hasAccountsResult = Object.values(profiles).some(
-      (profile) => profile && profile.accounts && profile.accounts.length > 0,
-    );
-
-    console.log("hasAccounts check:", {
-      profileCount: Object.keys(profiles).length,
-      profileNames: Object.keys(profiles),
-      profileDetails: Object.keys(profiles).map((name) => ({
-        name,
-        accountCount: profiles[name]?.accounts?.length || 0,
-        accounts:
-          profiles[name]?.accounts?.map((acc: Account) => ({
-            id: acc.id,
-            nickname: acc.nickname,
-          })) || [],
-      })),
-      hasAccounts: hasAccountsResult,
-    });
-
-    return hasAccountsResult;
-  } catch (error) {
-    console.error("Error checking accounts status:", error);
-    return false;
-  }
-}
+// Removed unused exports: hasAccountsWithLogging, isFirstTimeUser
 
 /**
- * Checks if this is a first-time user
- * A first-time user needs to go through onboarding, which includes:
- * - Creating a PIN (if they don't have one)
- * - Setting up their first account (if they don't have any)
- */
-export async function isFirstTimeUser(): Promise<boolean> {
-  try {
-    const hasPIN = await hasPINSetup();
-    const hasUserAccounts = hasAccounts();
-
-    // User needs onboarding if they don't have PIN OR don't have accounts
-    // This covers:
-    // - Completely new users (no PIN, no accounts)
-    // - Users who created PIN but didn't finish account setup (has PIN, no accounts)
-    return !hasPIN || !hasUserAccounts;
-  } catch (error) {
     console.error("Error checking first-time user status:", error);
     // If we can't determine, assume first-time for safety
     return true;

@@ -21,9 +21,11 @@ export function getRandomBytes(size: number): Uint8Array {
  * @param size Number of bytes to generate (hex string will be 2x this length)
  * @returns Hex string
  */
-export function getRandomHex(size: number): string {
+function getRandomHex(size: number): string {
   const bytes = getRandomBytes(size);
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
+// Removed unused export: getRandomHex

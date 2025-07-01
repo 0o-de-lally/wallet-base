@@ -101,7 +101,7 @@ export function checkRevealStatus(accountId: string): {
  * @param accountId - The ID of the account
  * @returns A Promise that resolves to the value if available within the reveal window, or null otherwise
  */
-export async function getScheduledReveal(
+async function getScheduledReveal(
   accountId: string,
 ): Promise<{ value: string | null; status: string }> {
   const status = checkRevealStatus(accountId);

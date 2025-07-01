@@ -70,7 +70,7 @@ export async function resetAppToCleanState(): Promise<void> {
  * [DEPRECATED] Securely clears all storage after PIN verification
  * @deprecated Use clearAllStorage() instead as PIN verification is not required
  */
-export async function clearAllWithPinVerification(
+async function clearAllWithPinVerification(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pin: string,
 ): Promise<void> {
@@ -78,15 +78,4 @@ export async function clearAllWithPinVerification(
   await clearAllStorage();
 }
 
-/**
- * Example function with unused parameters
- */
-export async function functionWithUnusedPin(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  key: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pin: string,
-): Promise<boolean> {
-  // Function implementation goes here
-  return true;
-}
+// Removed unused export: functionWithUnusedPin
