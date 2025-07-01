@@ -154,7 +154,7 @@ const ProfileManagement: React.FC = observer(() => {
       {/* Move the Create Profile button below the profile list */}
       <View style={styles.container}>
         <ActionButton
-          text={showCreateForm ? "Cancel" : "Create Profile"}
+          text={showCreateForm ? "Cancel" : "New Profile"}
           onPress={toggleCreateForm}
           style={[styles.button, showCreateForm ? styles.disabledButton : {}]}
           accessibilityLabel={
