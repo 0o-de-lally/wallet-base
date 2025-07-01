@@ -14,7 +14,7 @@
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
     "fix": "bun format:fix && bun lint:fix",
-    "unused-exports": "bunx ts-prune | grep -v '\\.tsx:' | grep -v 'app/.*default'"
+    "unused-exports": "bunx ts-prune --ignore '.tsx:'"
   },
   "dependencies": {
     "@legendapp/state": "^2.1.15",
