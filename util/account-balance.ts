@@ -194,35 +194,7 @@ export async function fetchAndUpdateAccountBalance(
   }
 }
 
-/**
- * Fetches and updates balances for all accounts in a profile
- */
-async function fetchAndUpdateProfileBalances(
-  client: LibraClient,
-  profileName: string,
-  accounts: AccountState[],
-): Promise<void> {
-  if (!client) {
-    reportError(
-      "warn",
-      "fetchAndUpdateProfileBalances",
-      new Error("No client available"),
-      { profileName },
-    );
-    return;
-  }
-
-  console.log(
-    `Fetching balances for ${accounts.length} accounts in profile ${profileName}`,
-  );
-
-  // Fetch balances for all accounts in parallel
-  const balancePromises = accounts.map(async (account) => {
-    await fetchAndUpdateAccountBalance(client, account);
-  });
-
-  await Promise.allSettled(balancePromises);
-}
+// Removed unused function: fetchAndUpdateProfileBalances
 
 /**
  * Clears error state for an account (useful for manual retries)
