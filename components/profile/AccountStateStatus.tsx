@@ -23,7 +23,7 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
       return {
         text: "V8 Authorization: Not Authorized",
         color: colors.danger,
-        icon: "shield-outline" as const,
+        icon: "alert" as const,
       };
     }
     return {
