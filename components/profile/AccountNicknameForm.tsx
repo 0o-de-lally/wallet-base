@@ -8,7 +8,7 @@ import { updateAccountNickname } from "../../util/app-config-store";
 interface AccountNicknameFormProps {
   accountId: string;
   currentNickname?: string;
-  onNicknameUpdate?: (newNickname: string) => void;
+  onNicknameUpdate?: () => void;
 }
 
 /**
@@ -49,7 +49,7 @@ export const AccountNicknameForm = memo(
 
         if (success) {
           // Call the callback if provided
-          onNicknameUpdate?.(trimmedNickname);
+          onNicknameUpdate?.();
 
           Alert.alert(
             "Success",

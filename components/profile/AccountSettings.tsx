@@ -56,7 +56,7 @@ export const AccountSettings = memo(
       fetchAccount();
     }, [accountId, profileName]);
 
-    const handleNicknameUpdate = (_newNickname: string) => {
+    const handleNicknameUpdate = () => {
       // Refresh the account data to show the updated nickname
       fetchAccount();
     };
