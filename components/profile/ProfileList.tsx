@@ -2,7 +2,7 @@ import React, { memo, useState, useCallback, useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import type { Profile } from "../../util/app-config-store";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { ActionButton } from "../common/ActionButton";
 
@@ -125,8 +125,8 @@ const ProfileList = memo(
             style={[
               styles.resultContainer,
               { marginBottom: 15 },
-              isActive && { borderColor: "#94c2f3", borderWidth: 2 },
-              isSelected && { backgroundColor: "#2c3040" },
+              isActive && { borderColor: colors.primary, borderWidth: 2 },
+              isSelected && { backgroundColor: colors.expandedBg },
             ]}
           >
             <View style={styles.profileHeader}>
@@ -139,11 +139,11 @@ const ProfileList = memo(
                         marginLeft: 8,
                         paddingHorizontal: 8,
                         paddingVertical: 2,
-                        backgroundColor: "rgba(148, 194, 243, 0.3)",
+                        backgroundColor: colors.blueLight,
                         borderRadius: 4,
                       }}
                     >
-                      <Text style={{ color: "#94c2f3", fontSize: 10 }}>
+                      <Text style={{ color: colors.primary, fontSize: 10 }}>
                         Contains Active Account
                       </Text>
                     </View>

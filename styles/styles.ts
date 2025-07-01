@@ -1,30 +1,72 @@
 import { StyleSheet } from "react-native";
 
-// Improved subdued dark mode color palette with better contrast
+// Named color constants - the actual color values
+const namedColors = {
+  // Grays and neutrals
+  darkestGray: "#1a1a1f",
+  darkGray: "#25252d",
+  mediumDarkGray: "#2c2c36",
+  mediumGray: "#444455",
+  lightMediumGray: "#8c8c9e",
+  lightGray: "#a0a0b0",
+  lighterGray: "#c2c2cc",
+  lightestGray: "#f0f0f5",
+
+  // Accent colors - Electric Pastel palette (lighter & more electric)
+  blue: "#7DD3FC", // Electric sky blue - brighter and more vivid
+  green: "#86EFAC", // Electric mint green - glowing pastel
+  red: "#FCA5A5", // Electric rose - soft but bright coral
+
+  // Special grays for specific contexts
+  expandedGray: "#262935",
+  cardBorderGray: "#3a3f55",
+  buttonTextDark: "#16161c",
+
+  // Transparent overlays
+  darkOverlay: "rgba(15, 15, 20, 0.85)",
+  blueOverlay: "rgba(33, 150, 243, 0.1)",
+  greenOverlay: "rgba(76, 175, 80, 0.1)",
+  redOverlay: "rgba(244, 67, 54, 0.1)",
+
+  // Pure colors for shadows
+  black: "#000",
+};
+
+// Semantic color mappings - what each color is used for
 const colors = {
-  background: "#1a1a1f",
-  cardBg: "#25252d",
-  primary: "#94c2f3", // Pastel blue
-  secondary: "#b3b8c3", // Pastel gray
-  success: "#a5d6b7", // Pastel green
-  danger: "#f5a9a9", // Pastel red
-  textPrimary: "#f0f0f5",
-  textSecondary: "#c2c2cc",
-  border: "#444455",
-  inputBg: "#2c2c36",
-  disabledBg: "#2c2c36",
-  disabledText: "#a0a0b0", // Lightened for better contrast
-  modalOverlayBg: "rgba(15, 15, 20, 0.85)",
-  statusBarBg: "#1a1a1f",
-  outlineBold: "#c2c2cc",
-  buttonTextDark: "#16161c", // Darker text for buttons for better contrast
-  placeholderText: "#8c8c9e", // New color for placeholder text with better visibility
-  expandedBg: "#262935",
-  cardBorder: "#3a3f55",
+  // Core app colors
+  background: namedColors.darkestGray,
+  cardBg: namedColors.darkGray,
+  textPrimary: namedColors.lightestGray,
+  textSecondary: namedColors.lighterGray,
+  border: namedColors.mediumGray,
+  inputBg: namedColors.mediumDarkGray,
+  disabledBg: namedColors.mediumDarkGray,
+  disabledText: namedColors.lightGray,
+  modalOverlayBg: namedColors.darkOverlay,
+  statusBarBg: namedColors.darkestGray,
+  outlineBold: namedColors.lighterGray,
+  buttonTextDark: namedColors.buttonTextDark,
+  placeholderText: namedColors.lightMediumGray,
+  expandedBg: namedColors.expandedGray,
+  cardBorder: namedColors.cardBorderGray,
+
+  // Semantic aliases for clarity
+  primary: namedColors.blue,
+  success: namedColors.green,
+  danger: namedColors.red,
+
+  // Light variants for backgrounds
+  blueLight: namedColors.blueOverlay,
+  greenLight: namedColors.greenOverlay,
+  redLight: namedColors.redOverlay,
+
+  // Shadow colors
+  shadowColor: namedColors.black,
 };
 
 // Export colors so components can use them directly when needed
-export { colors };
+export { colors, namedColors };
 
 export const styles = StyleSheet.create({
   // LAYOUT & CONTAINER STYLES
@@ -69,19 +111,20 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   authTitle: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
+    color: colors.textPrimary,
   },
   authText: {
     fontSize: 16,
     textAlign: "center",
     marginBottom: 24,
-    color: "#666",
+    color: colors.textSecondary,
   },
 
   // TYPOGRAPHY STYLES
@@ -177,7 +220,7 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
 
-  // BUTTON STYLES
+  // BUTTON STYLES - All outline only, no filled backgrounds
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -185,7 +228,7 @@ export const styles = StyleSheet.create({
     marginBottom: 36,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 3,
@@ -196,46 +239,54 @@ export const styles = StyleSheet.create({
     elevation: 0,
   },
   buttonText: {
-    color: colors.buttonTextDark,
+    color: colors.primary,
     fontWeight: "700",
     fontSize: 16,
   },
-  // Button Variants - consistent styles for common button types
+  // Button Variants - consistent outline-only styles
   primaryButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  primaryButtonText: {
+    color: colors.primary,
+    fontWeight: "700",
+    fontSize: 16,
   },
   secondaryButton: {
     backgroundColor: "transparent",
-    borderColor: colors.secondary,
+    borderColor: colors.border,
     borderWidth: 2,
   },
   secondaryButtonText: {
-    color: colors.secondary,
+    color: colors.textSecondary,
     fontWeight: "700",
     fontSize: 16,
   },
   authButton: {
-    backgroundColor: "#5e35b1",
-    borderColor: "#5e35b1",
+    backgroundColor: "transparent",
+    borderColor: colors.primary,
+    borderWidth: 2,
   },
   authButtonText: {
-    color: "#ffffff",
+    color: colors.primary,
     fontWeight: "700",
     fontSize: 16,
   },
   resetButton: {
-    backgroundColor: colors.danger,
+    backgroundColor: "transparent",
     borderColor: colors.danger,
+    borderWidth: 2,
   },
   resetButtonText: {
-    color: "#ffffff",
+    color: colors.danger,
     fontWeight: "700",
     fontSize: 16,
   },
   // Legacy button styles (for backward compatibility)
   navButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 1,
@@ -245,17 +296,17 @@ export const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   navButtonText: {
-    color: colors.buttonTextDark,
+    color: colors.primary,
     fontWeight: "700",
     fontSize: 16,
   },
   cancelButton: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: colors.secondary,
+    borderColor: colors.border,
   },
   cancelButtonText: {
-    color: colors.secondary,
+    color: colors.textSecondary,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -270,11 +321,15 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   disabledButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: colors.disabledText,
-    color: colors.secondary,
-    opacity: 0.8,
+    opacity: 0.6,
+  },
+  disabledButtonText: {
+    color: colors.disabledText,
+    fontWeight: "700",
+    fontSize: 16,
   },
   toggleButton: {
     alignSelf: "center",
@@ -303,7 +358,7 @@ export const styles = StyleSheet.create({
     maxWidth: 400,
     borderWidth: 2,
     borderColor: colors.outlineBold,
-    shadowColor: "#000",
+    shadowColor: colors.shadowColor,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
@@ -335,10 +390,16 @@ export const styles = StyleSheet.create({
     marginHorizontal: 4,
     alignItems: "center",
     borderWidth: 2,
+    backgroundColor: "transparent",
   },
   confirmButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     borderColor: colors.primary,
+  },
+  confirmButtonText: {
+    color: colors.primary,
+    fontWeight: "700",
+    fontSize: 16,
   },
 
   // CARD & SECTION STYLES
@@ -348,7 +409,7 @@ export const styles = StyleSheet.create({
     borderRadius: 2,
     padding: 18,
     borderColor: colors.outlineBold,
-    shadowColor: "#000",
+    shadowColor: colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,
@@ -402,7 +463,7 @@ export const styles = StyleSheet.create({
     width: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.secondary,
+    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -449,8 +510,8 @@ export const styles = StyleSheet.create({
   actionButtonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: 12,
-    gap: 8,
+    marginTop: 16,
+    gap: 12,
   },
   profileItemSelected: {
     backgroundColor: colors.expandedBg,
@@ -467,7 +528,9 @@ export const styles = StyleSheet.create({
     marginRight: 10,
   },
   activeProfileBadge: {
-    backgroundColor: colors.success,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.success,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -476,7 +539,7 @@ export const styles = StyleSheet.create({
   activeProfileBadgeText: {
     fontSize: 10,
     fontWeight: "600",
-    color: colors.buttonTextDark,
+    color: colors.success,
   },
   profileAccountCountText: {
     fontSize: 12,
@@ -509,13 +572,17 @@ export const styles = StyleSheet.create({
     minWidth: 80,
   },
   accessTypeBadgeHot: {
-    backgroundColor: colors.success,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.success,
   },
   accessTypeBadgeView: {
-    backgroundColor: colors.secondary,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   accessTypeBadgeText: {
-    color: "#fff",
+    color: colors.textPrimary,
     fontWeight: "bold",
     fontSize: 11,
     textAlign: "center",
@@ -545,21 +612,29 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    marginTop: 12,
-    gap: 8,
+    marginTop: 16,
+    gap: 12,
   },
   iconButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    backgroundColor: colors.cardBg,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
+    margin: 4,
   },
   iconButtonActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
+    borderColor: colors.primary,
+    borderWidth: 2,
   },
   iconButtonDestructive: {
-    backgroundColor: colors.danger,
+    backgroundColor: "transparent",
+    borderColor: colors.danger,
+    borderWidth: 2,
   },
   accountHeader: {
     flexDirection: "row",
@@ -580,12 +655,14 @@ export const styles = StyleSheet.create({
   activeIndicatorBadge: {
     paddingVertical: 4,
     paddingHorizontal: 8,
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.primary,
     borderRadius: 12,
     alignSelf: "flex-start",
   },
   activeIndicatorText: {
-    color: colors.buttonTextDark,
+    color: colors.primary,
     fontSize: 11,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -593,20 +670,21 @@ export const styles = StyleSheet.create({
 
   // Compact mode styles
   compactAccountItem: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     marginTop: 8,
   },
   compactBalanceRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-    gap: 12,
+    marginTop: 8,
+    gap: 16,
   },
   compactActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
+    marginLeft: 12,
   },
 
   // Button spacing variants
@@ -666,18 +744,19 @@ export const styles = StyleSheet.create({
     paddingBottom: 20, // This will be overridden by safe area if needed
   },
 
-  // Filter button styles for dev views
+  // Filter button styles for dev views - outline only
   filterButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.cardBg,
+    backgroundColor: "transparent",
   },
   filterButtonActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     borderColor: colors.primary,
+    borderWidth: 2,
   },
   filterButtonText: {
     color: colors.textSecondary,
@@ -685,7 +764,7 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
   },
   filterButtonTextActive: {
-    color: colors.buttonTextDark,
+    color: colors.primary,
     fontWeight: "600",
   },
 
@@ -700,7 +779,7 @@ export const styles = StyleSheet.create({
   },
   viewOnlyIcon: {
     marginLeft: 8,
-    color: "#ff9500",
+    color: colors.danger,
   },
 
   // Transaction history styles
@@ -812,5 +891,21 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
     textDecorationLine: "underline",
+  },
+
+  // Account switching feedback styles
+  switchingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  switchingActivityIndicator: {
+    marginRight: 8,
+  },
+  switchingText: {
+    textAlign: "center",
+    color: colors.primary,
   },
 });

@@ -7,7 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, namedColors } from "../../styles/styles";
 
 interface ActionButtonProps {
   onPress: () => void;
@@ -104,7 +104,7 @@ export const ActionButton = memo(
         accessibilityState={{ disabled: isLoading || disabled }}
       >
         {isLoading ? (
-          <ActivityIndicator color="white" size="small" />
+          <ActivityIndicator color={namedColors.blue} size="small" />
         ) : (
           <Text
             style={[getVariantTextStyles(), textSizeStyles[size], textStyle]}

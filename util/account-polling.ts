@@ -106,7 +106,7 @@ export async function fetchAndUpdateAccountPollingData(
       !pollingData.balance.error
     ) {
       console.log(
-        `✓ Polling data fetch recovered for account ${account.id} after ${account.error_count} errors`,
+        `[SUCCESS] Polling data fetch recovered for account ${account.id} after ${account.error_count} errors`,
       );
     }
 

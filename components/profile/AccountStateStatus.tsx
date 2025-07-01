@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import type { AccountState } from "../../util/app-config-store";
 
 export interface AccountStateStatusProps {
@@ -15,20 +15,20 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
     if (account.is_v8_authorized === undefined) {
       return {
         text: "V8 Authorization: Checking...",
-        color: "#888",
+        color: colors.textSecondary,
         icon: "time-outline" as const,
       };
     }
     if (account.is_v8_authorized === false) {
       return {
         text: "V8 Authorization: Not Authorized",
-        color: "#ff3b30",
+        color: colors.danger,
         icon: "shield-outline" as const,
       };
     }
     return {
       text: "V8 Authorization: Authorized",
-      color: "#4cd964",
+      color: colors.success,
       icon: "shield-checkmark-outline" as const,
     };
   };
@@ -37,20 +37,20 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
     if (account.v8_migrated === undefined) {
       return {
         text: "Migration Status: Checking...",
-        color: "#888",
+        color: colors.textSecondary,
         icon: "time-outline" as const,
       };
     }
     if (account.v8_migrated === false) {
       return {
         text: "Migration Status: Not Migrated",
-        color: "#ff9500",
+        color: colors.danger,
         icon: "swap-horizontal-outline" as const,
       };
     }
     return {
       text: "Migration Status: Migrated",
-      color: "#4cd964",
+      color: colors.success,
       icon: "checkmark-circle-outline" as const,
     };
   };
@@ -108,14 +108,14 @@ export const AccountStateStatus: React.FC<AccountStateStatusProps> = ({
           style={{
             marginTop: 16,
             padding: 12,
-            backgroundColor: "rgba(245, 169, 169, 0.1)", // Subtle danger background
+            backgroundColor: colors.redLight,
             borderRadius: 8,
             borderWidth: 1,
-            borderColor: "#f5a9a9", // Using the app's danger color
+            borderColor: colors.danger,
           }}
         >
           <Text
-            style={[styles.resultValue, { color: "#f5a9a9", fontSize: 14 }]}
+            style={[styles.resultValue, { color: colors.danger, fontSize: 14 }]}
           >
             {account.is_v8_authorized === false && account.v8_migrated === false
               ? "Account requires both V8 authorization and migration to access all features."

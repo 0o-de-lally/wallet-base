@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import {
@@ -118,7 +118,7 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
     };
 
     return (
-      <View style={{ flex: 1, backgroundColor: "#1a1a1a" }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         {/* Header */}
         <View
           style={{
@@ -127,7 +127,7 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
             justifyContent: "space-between",
             padding: 16,
             borderBottomWidth: 1,
-            borderBottomColor: "#333",
+            borderBottomColor: colors.border,
           }}
         >
           <Text style={[styles.title, { flex: 1 }]}>Error Logs</Text>
@@ -344,7 +344,7 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
                               {
                                 fontSize: 10,
                                 fontFamily: "monospace",
-                                backgroundColor: "#222",
+                                backgroundColor: colors.inputBg,
                                 padding: 8,
                                 marginTop: 4,
                               },
@@ -371,7 +371,7 @@ export const ErrorLogsView: React.FC<ErrorLogsViewProps> = observer(
                               {
                                 fontSize: 10,
                                 fontFamily: "monospace",
-                                backgroundColor: "#222",
+                                backgroundColor: colors.inputBg,
                                 padding: 8,
                                 marginTop: 4,
                               },

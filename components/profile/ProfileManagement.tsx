@@ -1,11 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import {
@@ -14,10 +8,10 @@ import {
   setActiveAccount,
 } from "../../util/app-config-store";
 import CreateProfileForm from "./CreateProfileForm";
-import AccountList from "./AccountList";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
+import { shortenAddress } from "../../util/format-utils";
 
 const ProfileManagement: React.FC = observer(() => {
   const [selectedProfileName, setSelectedProfileName] = useState<string | null>(
@@ -25,7 +19,6 @@ const ProfileManagement: React.FC = observer(() => {
   );
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deleteAllModalVisible, setDeleteAllModalVisible] = useState(false);
-  const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
 
   // Get all profiles from the store
   const profiles = appConfig.profiles.get();
@@ -45,30 +38,6 @@ const ProfileManagement: React.FC = observer(() => {
       ? profiles[activeProfileName]
       : null;
 
-  const handleSelectProfile = useCallback((profileName: string) => {
-    // Set the selected profile name first
-    setSelectedProfileName(profileName);
-
-    // Toggle the expanded state of the selected profile
-    setExpandedProfile((prevProfile) =>
-      prevProfile === profileName ? null : profileName,
-    );
-    setShowCreateForm(false);
-  }, []);
-
-  const handleSetActiveAccount = useCallback(
-    (accountId: string, event?: GestureResponderEvent) => {
-      // Prevent event propagation to avoid triggering profile selection
-      if (event) {
-        event.stopPropagation();
-      }
-
-      // Set the active account
-      setActiveAccount(accountId);
-    },
-    [],
-  );
-
   const handleDeleteAllProfiles = useCallback(() => {
     setDeleteAllModalVisible(true);
   }, []);
@@ -84,73 +53,51 @@ const ProfileManagement: React.FC = observer(() => {
     setShowCreateForm((prev) => !prev);
   }, []);
 
-  const handleAccountsUpdated = useCallback(() => {
-    // No need to force re-render since this component is now an observer
-    // The component will automatically re-render when appConfig state changes
-  }, []);
-
   const renderProfileSections = useCallback(() => {
     return Object.entries(profiles).map(([profileName, profile]) => (
-      <View key={profileName}>
-        <TouchableOpacity
-          style={[
-            styles.profileItem,
-            activeProfileName === profileName && styles.accountItemActive,
-            selectedProfileName === profileName && styles.profileItemSelected,
-          ]}
-          onPress={() => handleSelectProfile(profileName)}
-          activeOpacity={0.7}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel={`${profileName} profile ${activeProfileName === profileName ? "(contains active account)" : ""}`}
-          accessibilityState={{ expanded: expandedProfile === profileName }}
-        >
-          <View style={styles.profileContentRow}>
-            <View style={styles.profileTitleContainer}>
-              <Text style={styles.profileName}>{profileName}</Text>
-              {activeProfileName === profileName && (
-                <View style={styles.activeProfileBadge}>
-                  <Text style={styles.activeProfileBadgeText}>
-                    Contains Active Account
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <Text style={styles.profileAccountCountText}>
-              {profile.accounts.length} account(s)
-              {expandedProfile === profileName ? " ▲" : " ▼"}
-            </Text>
+      <View key={profileName} style={styles.listItem}>
+        <View style={styles.profileContentRow}>
+          <View style={styles.profileTitleContainer}>
+            <Text style={styles.profileName}>{profileName}</Text>
+            {activeProfileName === profileName && (
+              <View style={styles.activeProfileBadge}>
+                <Text style={styles.activeProfileBadgeText}>
+                  Contains Active Account
+                </Text>
+              </View>
+            )}
           </View>
-
-          <Text style={styles.profileNetworkText}>
-            Network: {profile.network.network_name} (
-            {profile.network.network_type})
+          <Text style={styles.profileAccountCountText}>
+            {profile.accounts.length} account(s)
           </Text>
-        </TouchableOpacity>
-
-        {expandedProfile === profileName && (
-          <SectionContainer>
-            <AccountList
-              profileName={profileName}
-              accounts={profile.accounts}
-              activeAccountId={activeAccountId}
-              onSetActiveAccount={handleSetActiveAccount}
-            />
-          </SectionContainer>
+        </View>
+        <Text style={styles.profileNetworkText}>
+          Network: {profile.network.network_name} (
+          {profile.network.network_type})
+        </Text>
+        {/* List accounts for this profile */}
+        {profile.accounts.length > 0 && (
+          <View style={{ marginTop: 8 }}>
+            {profile.accounts.map((account) => (
+              <Text key={account.id} style={styles.resultValue}>
+                {shortenAddress(account.account_address)}
+                {account.nickname ? ` (${account.nickname})` : ""}
+              </Text>
+            ))}
+          </View>
+        )}
+        {/* Show 'Make Active' button if not the active profile */}
+        {activeProfileName !== profileName && profile.accounts.length > 0 && (
+          <ActionButton
+            text="Make Active"
+            onPress={() => setActiveAccount(profile.accounts[0].id)}
+            style={{ marginTop: 8, alignSelf: "flex-start" }}
+            accessibilityLabel={`Make ${profileName} the active profile`}
+          />
         )}
       </View>
     ));
-  }, [
-    profiles,
-    activeProfileName,
-    activeAccountId,
-    selectedProfileName,
-    expandedProfile,
-    handleSelectProfile,
-    handleSetActiveAccount,
-    handleAccountsUpdated,
-  ]);
+  }, [profiles, activeProfileName]);
 
   const renderEmptyState = useCallback(() => {
     if (selectedProfile || Object.keys(profiles).length > 0) return null;
@@ -178,12 +125,16 @@ const ProfileManagement: React.FC = observer(() => {
       accessible={true}
       accessibilityLabel="Profile management screen"
     >
-      <Text style={styles.title}>Profile Management</Text>
+      {/* <Text style={styles.title}>Profile Management</Text> */}
 
-      {/* Move the Create Profile button to the top and center it */}
+      <SectionContainer title="Wallet Profiles">
+        {renderProfileSections()}
+      </SectionContainer>
+
+      {/* Move the Create Profile button below the profile list */}
       <View style={styles.container}>
         <ActionButton
-          text={showCreateForm ? "Cancel" : "Create Profile"}
+          text={showCreateForm ? "Cancel" : "New Profile"}
           onPress={toggleCreateForm}
           style={[styles.button, showCreateForm ? styles.disabledButton : {}]}
           accessibilityLabel={
@@ -195,10 +146,6 @@ const ProfileManagement: React.FC = observer(() => {
       {showCreateForm && (
         <CreateProfileForm onComplete={() => setShowCreateForm(false)} />
       )}
-
-      <SectionContainer title="Wallet Profiles">
-        {renderProfileSections()}
-      </SectionContainer>
 
       {renderEmptyState()}
 

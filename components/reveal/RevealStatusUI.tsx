@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { styles } from "../../styles/styles";
+import { styles, colors, namedColors } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 
 // Configuration for auto-hiding revealed values
@@ -199,10 +199,7 @@ export const RevealStatusUI = memo(
 
       return (
         <View
-          style={[
-            styles.resultContainer,
-            { marginTop: 20, borderWidth: 2, borderColor: "#94c2f3" },
-          ]}
+          style={[styles.listItem, { marginTop: 20 }]}
           accessible={true}
           accessibilityLabel={`Revealed secure value for ${accountName || "account"}`}
           accessibilityHint={`Auto-hiding in ${hideCountdown} seconds`}
@@ -230,7 +227,13 @@ export const RevealStatusUI = memo(
           <Text style={styles.resultValue} selectable={true}>
             {storedValue}
           </Text>
-          <Text style={{ color: "#666", marginTop: 10, textAlign: "center" }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              marginTop: 10,
+              textAlign: "center",
+            }}
+          >
             Auto-hiding in {hideCountdown} seconds
           </Text>
         </View>
@@ -242,7 +245,7 @@ export const RevealStatusUI = memo(
 
       return (
         <View
-          style={styles.resultContainer}
+          style={styles.listItem}
           accessible={true}
           accessibilityLabel={`Reveal status for ${accountName || "account"}: ${
             !revealStatus.isAvailable && !revealStatus.isExpired
@@ -286,9 +289,9 @@ export const RevealStatusUI = memo(
                   text="Reveal Now"
                   onPress={handleExecuteReveal}
                   disabled={isLoading}
-                  style={{ backgroundColor: "#a5d6b7", marginBottom: 10 }}
                   accessibilityLabel="Execute the reveal now"
                   accessibilityHint="Shows your secured data on screen"
+                  style={{ marginBottom: 10 }} // Add spacing below Reveal Now
                 />
                 <ActionButton
                   text="Cancel Reveal"
@@ -335,7 +338,7 @@ export const RevealStatusUI = memo(
           accessibilityLabel="Loading, please wait"
           accessibilityRole="progressbar"
         >
-          <ActivityIndicator size="large" color="#94c2f3" />
+          <ActivityIndicator size="large" color={namedColors.blue} />
           <Text style={{ color: styles.label.color, marginTop: 10 }}>
             Processing request...
           </Text>

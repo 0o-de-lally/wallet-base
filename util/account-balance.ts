@@ -172,7 +172,7 @@ export async function fetchAndUpdateAccountBalance(
     // Log successful recovery if account previously had errors
     if (account.error_count && account.error_count > 0 && !balanceData.error) {
       console.log(
-        `✓ Balance fetch recovered for account ${account.id} after ${account.error_count} errors`,
+        `[SUCCESS] Balance fetch recovered for account ${account.id} after ${account.error_count} errors`,
       );
     }
   } catch (error) {

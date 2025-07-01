@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { styles } from "../styles/styles";
+import { styles, namedColors } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import ProfileManagement from "../components/profile/ProfileManagement";
 import { SetupGuard } from "../components/auth/SetupGuard";
@@ -27,7 +27,7 @@ const ProfilesScreen = observer(() => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#94c2f3" />
+        <ActivityIndicator size="large" color={namedColors.blue} />
       </View>
     );
   }

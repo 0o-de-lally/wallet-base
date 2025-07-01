@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import { styles } from "../../styles/styles";
+import { Ionicons } from "@expo/vector-icons";
+import { styles, colors } from "../../styles/styles";
 import { validateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { ActionButton } from "./ActionButton";
@@ -153,12 +154,37 @@ export const MnemonicInput = memo(
       if (validation.error) {
         status = validation.error;
       } else if (validation.wordCount === 24 && validation.isValid) {
-        status += " ✓ Valid";
+        status += " Valid";
       } else if (validation.wordCount > 0 && validation.wordCount < 24) {
         status += " (incomplete)";
       }
 
       return status;
+    };
+
+    const renderStatusText = () => {
+      const statusText = getStatusText();
+      if (!statusText) return null;
+
+      const isValid = validation.wordCount === 24 && validation.isValid;
+
+      return (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {isValid && (
+            <Ionicons
+              name="checkmark-circle"
+              size={14}
+              color={colors.success}
+              style={{ marginRight: 4 }}
+            />
+          )}
+          <Text
+            style={[mnemonicStyles.statusText, { color: getStatusColor() }]}
+          >
+            {statusText}
+          </Text>
+        </View>
+      );
     };
 
     const canClear = value.trim().length > 0 && !disabled;
@@ -167,13 +193,7 @@ export const MnemonicInput = memo(
       <View style={styles.inputContainer}>
         <View style={mnemonicStyles.labelContainer}>
           <Text style={styles.label}>{label}</Text>
-          {getStatusText() && (
-            <Text
-              style={[mnemonicStyles.statusText, { color: getStatusColor() }]}
-            >
-              {getStatusText()}
-            </Text>
-          )}
+          {renderStatusText()}
         </View>
 
         <TextInput
@@ -246,27 +266,27 @@ const mnemonicStyles = StyleSheet.create({
     fontFamily: "monospace", // Better for mnemonic words
   },
   focusedInput: {
-    borderColor: "#2196F3",
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   errorInput: {
-    borderColor: "#F44336",
+    borderColor: colors.danger,
     borderWidth: 1,
   },
   validInput: {
-    borderColor: "#4CAF50",
+    borderColor: colors.success,
     borderWidth: 1,
   },
   verifiedInput: {
-    borderColor: "#4CAF50",
+    borderColor: colors.success,
     borderWidth: 2,
   },
   verifyingInput: {
-    borderColor: "#2196F3",
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   readyToVerifyInput: {
-    borderColor: "#FF9800",
+    borderColor: colors.danger,
     borderWidth: 1,
   },
   buttonContainer: {

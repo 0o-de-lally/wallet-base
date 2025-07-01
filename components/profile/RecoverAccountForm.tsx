@@ -1,7 +1,8 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { styles } from "../../styles/styles";
+import { Ionicons } from "@expo/vector-icons";
+import { styles, colors, namedColors } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
@@ -448,7 +449,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
               gap: 8,
             }}
           >
-            <ActivityIndicator size="small" />
+            <ActivityIndicator size="small" color={namedColors.blue} />
             <Text style={[styles.label]}>Deriving keys from mnemonic...</Text>
           </View>
         </View>
@@ -489,12 +490,20 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: "#a5d6b7" }]}>
-            ✓ Chain verification successful!
-            {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
-              ? " (Account verified or new)"
-              : " (Account found with rotated keys)"}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color={colors.success}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={[styles.label, { color: colors.success }]}>
+              Chain verification successful!
+              {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
+                ? " (Account verified or new)"
+                : " (Account found with rotated keys)"}
+            </Text>
+          </View>
           <FormInput
             label="Actual Chain Address:"
             value={chainAddress.toStringLong()}

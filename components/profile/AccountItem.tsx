@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import { formatCurrency, shortenAddress } from "../../util/format-utils";
 import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
@@ -14,6 +14,7 @@ export interface AccountItemProps {
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
   compact?: boolean;
+  isSwitching?: boolean;
 }
 
 export const AccountItem = memo(
@@ -23,6 +24,7 @@ export const AccountItem = memo(
     isActive,
     onSetActive,
     compact = false,
+    isSwitching = false,
   }: AccountItemProps) => {
     const navigateToAccountDetails = () => {
       router.navigate({
@@ -86,17 +88,19 @@ export const AccountItem = memo(
       <TouchableOpacity
         key={account.id}
         style={[
-          styles.resultContainer,
+          styles.listItem, // Use the same style as historical transactions
           compact
             ? styles.accountItemContainerCompact
             : styles.accountItemContainer,
           isActive && styles.accountItemActive,
           compact && styles.compactAccountItem,
+          isSwitching && { opacity: 0.6 },
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
         onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
+        disabled={isSwitching}
       >
         {compact ? (
           // Compact layout for inactive accounts
@@ -118,7 +122,7 @@ export const AccountItem = memo(
               >
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                    <Text style={{ color: "#666" }}>0x</Text>
+                    <Text style={{ color: colors.textSecondary }}>0x</Text>
                     {shortenAddress(account.account_address, 4, 4)}
                     {account.nickname && ` - ${account.nickname}`}
                   </Text>
@@ -162,14 +166,6 @@ export const AccountItem = memo(
 
                 <TouchableOpacity
                   style={[styles.iconButton, { padding: 6 }]}
-                  onPress={navigateToTransactionHub}
-                  accessibilityLabel={`Transaction hub for ${account.nickname}`}
-                >
-                  <Ionicons name="send-outline" size={16} color="#c2c2cc" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.iconButton, { padding: 6 }]}
                   onPress={navigateToSettings}
                   accessibilityLabel={`Manage account ${account.nickname}`}
                 >
@@ -203,7 +199,7 @@ export const AccountItem = memo(
                 >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.accountNickname}>
-                      <Text style={{ color: "#666" }}>0x</Text>
+                      <Text style={{ color: colors.textSecondary }}>0x</Text>
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>

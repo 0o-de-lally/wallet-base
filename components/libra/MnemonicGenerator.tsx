@@ -1,8 +1,9 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useCallback, memo } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common/ActionButton";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 import {
   generateMnemonic,
   LibraWallet,
@@ -276,7 +277,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                 {
                   fontSize: 12,
                   marginBottom: 10,
-                  backgroundColor: "#2a2a2a",
+                  backgroundColor: colors.cardBg,
                   padding: 10,
                   borderRadius: 5,
                   fontFamily: "monospace",
@@ -294,7 +295,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                       fontSize: 10,
                       fontWeight: "bold",
                       marginBottom: 5,
-                      color: "#a5d6b7",
+                      color: colors.success,
                     },
                   ]}
                 >
@@ -305,11 +306,11 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                     styles.resultValue,
                     {
                       fontSize: 11,
-                      backgroundColor: "#1a1a1a",
+                      backgroundColor: colors.inputBg,
                       padding: 8,
                       borderRadius: 3,
                       fontFamily: "monospace",
-                      color: "#e0e0e0",
+                      color: colors.textPrimary,
                     },
                   ]}
                 >
@@ -317,19 +318,28 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
                 </Text>
               </View>
             )}
-            <Text
-              style={[
-                styles.resultValue,
-                {
-                  fontSize: 10,
-                  fontStyle: "italic",
-                  color: "#888",
-                },
-              ]}
-            >
-              ⚠️ Store this mnemonic securely. Anyone with access to it can
-              control your wallet.
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons
+                name="warning-outline"
+                size={12}
+                color={colors.danger}
+                style={{ marginRight: 5 }}
+              />
+              <Text
+                style={[
+                  styles.resultValue,
+                  {
+                    fontSize: 10,
+                    fontStyle: "italic",
+                    color: colors.textSecondary,
+                    flex: 1,
+                  },
+                ]}
+              >
+                Store this mnemonic securely. Anyone with access to it can
+                control your wallet.
+              </Text>
+            </View>
           </ScrollView>
         </View>
       )}
