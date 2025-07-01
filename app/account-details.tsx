@@ -47,14 +47,14 @@ export default function AccountDetailsScreen() {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  const accountNickname = account?.nickname || "";
+  const accountNickname = account?.nickname;
 
   const renderHeader = () => (
     <View>
       <Text style={styles.sectionTitle}>
         {profileName} •{" "}
         {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
-        {` • ${accountNickname}`}
+        {accountNickname ? `• ${accountNickname}` : ""}
       </Text>
 
       {/* Account Authorization Status */}

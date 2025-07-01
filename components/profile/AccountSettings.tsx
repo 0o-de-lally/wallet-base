@@ -7,6 +7,8 @@ import { PinInputModal } from "../pin-input/PinInputModal";
 import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
+import { AccountNicknameForm } from "./AccountNicknameForm";
+import { shortenAddress } from "@/util/format-utils";
 
 // Define the component props
 interface AccountSettingsProps {
@@ -19,41 +21,45 @@ export const AccountSettings = memo(
     const [isLoading, setIsLoading] = useState(true);
     const [account, setAccount] = useState<AccountState | null>(null);
 
-    useEffect(() => {
-      // Fetch account data using accountId (UUID)
-      const fetchAccount = async () => {
-        try {
-          // Get the profile from app-config-store
-          const profile = appConfig.profiles[profileName].get();
+    const fetchAccount = async () => {
+      try {
+        // Get the profile from app-config-store
+        const profile = appConfig.profiles[profileName].get();
 
-          if (!profile) {
-            console.error(`Profile '${profileName}' not found`);
-            setIsLoading(false);
-            return;
-          }
-
-          // Find the account by ID (UUID)
-          const foundAccount = profile.accounts.find(
-            (acc) => acc.id === accountId,
-          );
-
-          if (foundAccount) {
-            setAccount(foundAccount);
-          } else {
-            console.error(
-              `Account with ID '${accountId}' not found in profile '${profileName}'`,
-            );
-          }
-
+        if (!profile) {
+          console.error(`Profile '${profileName}' not found`);
           setIsLoading(false);
-        } catch (error) {
-          console.error("Error fetching account:", error);
-          setIsLoading(false);
+          return;
         }
-      };
 
+        // Find the account by ID (UUID)
+        const foundAccount = profile.accounts.find(
+          (acc) => acc.id === accountId,
+        );
+
+        if (foundAccount) {
+          setAccount(foundAccount);
+        } else {
+          console.error(
+            `Account with ID '${accountId}' not found in profile '${profileName}'`,
+          );
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching account:", error);
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
       fetchAccount();
     }, [accountId, profileName]);
+
+    const handleNicknameUpdate = () => {
+      // Refresh the account data to show the updated nickname
+      fetchAccount();
+    };
 
     // Pass accountId to the useSecureStorage hook to scope it to this account
     const {
@@ -97,7 +103,19 @@ export const AccountSettings = memo(
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.label}>{account.nickname}</Text>
+        <Text style={styles.sectionTitle}>
+          {profileName} •{" "}
+          {account
+            ? shortenAddress(account.account_address, 4, 4)
+            : "Loading..."}
+          {account.nickname ? `• ${account.nickname}` : ""}
+        </Text>
+
+        <AccountNicknameForm
+          accountId={account.id}
+          currentNickname={account.nickname}
+          onNicknameUpdate={handleNicknameUpdate}
+        />
 
         <View>
           <SecureStorageForm

@@ -7,6 +7,7 @@ import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
 import { reportErrorAuto } from "../../util/error-utils";
+import { Identicon } from "../common/Identicon";
 
 export interface AccountItemProps {
   account: AccountState;
@@ -120,37 +121,49 @@ export const AccountItem = memo(
                   flex: 1,
                 }}
               >
-                <View style={{ flex: 1 }}>
+                <View>
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
                     <Text style={{ color: colors.textSecondary }}>0x</Text>
                     {shortenAddress(account.account_address, 4, 4)}
                     {account.nickname && ` - ${account.nickname}`}
                   </Text>
+                  <Identicon
+                    address={account.account_address}
+                    size={16}
+                    style={{
+                      alignSelf: "flex-start",
+                    }}
+                  />
                 </View>
-                {account.last_error && (
-                  <Ionicons
-                    name="warning-outline"
-                    size={12}
-                    color="#ff9500"
-                    accessibilityLabel="Balance data may be outdated"
-                  />
-                )}
-                {account.is_v8_authorized === false && (
-                  <Ionicons
-                    name="shield-outline"
-                    size={12}
-                    color="#ff3b30"
-                    accessibilityLabel="Account not v8 authorized"
-                  />
-                )}
-                {account.v8_migrated === false && (
-                  <Ionicons
-                    name="swap-horizontal-outline"
-                    size={12}
-                    color="#ff9500"
-                    accessibilityLabel="Account not migrated"
-                  />
-                )}
+                <View style={{ flex: 1 }} />
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  {account.last_error && (
+                    <Ionicons
+                      name="warning-outline"
+                      size={12}
+                      color={colors.danger}
+                      accessibilityLabel="Balance data may be outdated"
+                    />
+                  )}
+                  {account.is_v8_authorized === false && (
+                    <Ionicons
+                      name="alert"
+                      size={12}
+                      color={colors.danger}
+                      accessibilityLabel="Account not v8 authorized"
+                    />
+                  )}
+                  {account.v8_migrated === false && (
+                    <Ionicons
+                      name="swap-horizontal-outline"
+                      size={12}
+                      color={colors.danger}
+                      accessibilityLabel="Account not migrated"
+                    />
+                  )}
+                </View>
               </View>
 
               <View style={styles.compactActions}>
@@ -160,7 +173,11 @@ export const AccountItem = memo(
                     disabled={true}
                     accessibilityLabel="View only account"
                   >
-                    <Ionicons name="eye-outline" size={16} color="#c2c2cc" />
+                    <Ionicons
+                      name="eye-outline"
+                      size={16}
+                      color={colors.textSecondary}
+                    />
                   </TouchableOpacity>
                 )}
 
@@ -169,7 +186,11 @@ export const AccountItem = memo(
                   onPress={navigateToSettings}
                   accessibilityLabel={`Manage account ${account.nickname}`}
                 >
-                  <Ionicons name="settings-outline" size={16} color="#c2c2cc" />
+                  <Ionicons
+                    name="settings-outline"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -197,37 +218,53 @@ export const AccountItem = memo(
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View>
                     <Text style={styles.accountNickname}>
                       <Text style={{ color: colors.textSecondary }}>0x</Text>
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>
+                    <Identicon
+                      address={account.account_address}
+                      size={24}
+                      style={{
+                        alignSelf: "flex-start",
+                      }}
+                    />
                   </View>
-                  {account.last_error && (
-                    <Ionicons
-                      name="warning-outline"
-                      size={14}
-                      color="#ff9500"
-                      accessibilityLabel="Balance data may be outdated"
-                    />
-                  )}
-                  {account.is_v8_authorized === false && (
-                    <Ionicons
-                      name="shield-outline"
-                      size={14}
-                      color="#ff3b30"
-                      accessibilityLabel="Account not v8 authorized"
-                    />
-                  )}
-                  {account.v8_migrated === false && (
-                    <Ionicons
-                      name="swap-horizontal-outline"
-                      size={14}
-                      color="#ff9500"
-                      accessibilityLabel="Account not migrated"
-                    />
-                  )}
+                  <View style={{ flex: 1 }} />
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    {account.last_error && (
+                      <Ionicons
+                        name="warning-outline"
+                        size={14}
+                        color={colors.danger}
+                        accessibilityLabel="Balance data may be outdated"
+                      />
+                    )}
+                    {account.is_v8_authorized === false && (
+                      <Ionicons
+                        name="alert"
+                        size={14}
+                        color={colors.danger}
+                        accessibilityLabel="Account not v8 authorized"
+                      />
+                    )}
+                    {account.v8_migrated === false && (
+                      <Ionicons
+                        name="swap-horizontal-outline"
+                        size={14}
+                        color={colors.danger}
+                        accessibilityLabel="Account not migrated"
+                      />
+                    )}
+                  </View>
                 </View>
               </View>
 
@@ -254,7 +291,11 @@ export const AccountItem = memo(
                   disabled={true}
                   accessibilityLabel="View only account"
                 >
-                  <Ionicons name="eye-outline" size={20} color="#c2c2cc" />
+                  <Ionicons
+                    name="eye-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
                 </TouchableOpacity>
               )}
 
@@ -263,7 +304,11 @@ export const AccountItem = memo(
                 onPress={navigateToTransactionHub}
                 accessibilityLabel={`Transaction hub for ${account.nickname}`}
               >
-                <Ionicons name="send-outline" size={20} color="#c2c2cc" />
+                <Ionicons
+                  name="send-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -271,7 +316,11 @@ export const AccountItem = memo(
                 onPress={navigateToSettings}
                 accessibilityLabel={`Manage account ${account.nickname}`}
               >
-                <Ionicons name="settings-outline" size={20} color="#c2c2cc" />
+                <Ionicons
+                  name="settings-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                />
               </TouchableOpacity>
             </View>
           </View>
