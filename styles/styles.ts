@@ -560,7 +560,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   accountItemActive: {
-    borderColor: colors.primary,
+    borderColor: namedColors.lighterGray,
     borderWidth: 2,
   },
   accessTypeBadge: {
@@ -657,12 +657,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: namedColors.lighterGray,
     borderRadius: 12,
     alignSelf: "flex-start",
   },
   activeIndicatorText: {
-    color: colors.primary,
+    color: namedColors.lighterGray,
     fontSize: 11,
     fontWeight: "600",
     textTransform: "uppercase",

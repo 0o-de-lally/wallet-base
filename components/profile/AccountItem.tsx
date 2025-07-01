@@ -120,44 +120,51 @@ export const AccountItem = memo(
                   gap: 6,
                   flex: 1,
                 }}
-              >                  <View>
-                    <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                      <Text style={{ color: colors.textSecondary }}>0x</Text>
-                      {shortenAddress(account.account_address, 4, 4)}
-                      {account.nickname && ` - ${account.nickname}`}
-                    </Text>
-                    <Identicon
-                      address={account.account_address}
-                      size={16}
-                      style={{
-                        alignSelf: 'flex-start'
-                      }}
+              >
+                {" "}
+                <View>
+                  <Text style={[styles.accountNickname, { fontSize: 14 }]}>
+                    <Text style={{ color: colors.textSecondary }}>0x</Text>
+                    {shortenAddress(account.account_address, 4, 4)}
+                    {account.nickname && ` - ${account.nickname}`}
+                  </Text>
+                  <Identicon
+                    address={account.account_address}
+                    size={16}
+                    style={{
+                      alignSelf: "flex-start",
+                    }}
+                  />
+                </View>
+                <View style={{ flex: 1 }} />
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  {account.last_error && (
+                    <Ionicons
+                      name="warning-outline"
+                      size={12}
+                      color="#ff9500"
+                      accessibilityLabel="Balance data may be outdated"
                     />
-                  </View>
-                {account.last_error && (
-                  <Ionicons
-                    name="warning-outline"
-                    size={12}
-                    color="#ff9500"
-                    accessibilityLabel="Balance data may be outdated"
-                  />
-                )}
-                {account.is_v8_authorized === false && (
-                  <Ionicons
-                    name="shield-outline"
-                    size={12}
-                    color="#ff3b30"
-                    accessibilityLabel="Account not v8 authorized"
-                  />
-                )}
-                {account.v8_migrated === false && (
-                  <Ionicons
-                    name="swap-horizontal-outline"
-                    size={12}
-                    color="#ff9500"
-                    accessibilityLabel="Account not migrated"
-                  />
-                )}
+                  )}
+                  {account.is_v8_authorized === false && (
+                    <Ionicons
+                      name="shield-outline"
+                      size={12}
+                      color="#ff3b30"
+                      accessibilityLabel="Account not v8 authorized"
+                    />
+                  )}
+                  {account.v8_migrated === false && (
+                    <Ionicons
+                      name="swap-horizontal-outline"
+                      size={12}
+                      color="#ff9500"
+                      accessibilityLabel="Account not migrated"
+                    />
+                  )}
+                </View>
               </View>
 
               <View style={styles.compactActions}>
@@ -214,34 +221,43 @@ export const AccountItem = memo(
                       address={account.account_address}
                       size={24}
                       style={{
-                        alignSelf: 'flex-start'
+                        alignSelf: "flex-start",
                       }}
                     />
                   </View>
-                  {account.last_error && (
-                    <Ionicons
-                      name="warning-outline"
-                      size={14}
-                      color="#ff9500"
-                      accessibilityLabel="Balance data may be outdated"
-                    />
-                  )}
-                  {account.is_v8_authorized === false && (
-                    <Ionicons
-                      name="shield-outline"
-                      size={14}
-                      color="#ff3b30"
-                      accessibilityLabel="Account not v8 authorized"
-                    />
-                  )}
-                  {account.v8_migrated === false && (
-                    <Ionicons
-                      name="swap-horizontal-outline"
-                      size={14}
-                      color="#ff9500"
-                      accessibilityLabel="Account not migrated"
-                    />
-                  )}
+                  <View style={{ flex: 1 }} />
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    {account.last_error && (
+                      <Ionicons
+                        name="warning-outline"
+                        size={14}
+                        color="#ff9500"
+                        accessibilityLabel="Balance data may be outdated"
+                      />
+                    )}
+                    {account.is_v8_authorized === false && (
+                      <Ionicons
+                        name="shield-outline"
+                        size={14}
+                        color="#ff3b30"
+                        accessibilityLabel="Account not v8 authorized"
+                      />
+                    )}
+                    {account.v8_migrated === false && (
+                      <Ionicons
+                        name="swap-horizontal-outline"
+                        size={14}
+                        color="#ff9500"
+                        accessibilityLabel="Account not migrated"
+                      />
+                    )}
+                  </View>
                 </View>
               </View>
 
