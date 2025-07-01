@@ -10,7 +10,7 @@ import { clearAllScheduledReveals } from "./reveal-controller";
  * @returns Promise resolving when clearing is complete
  * @throws Error if clearing operations fail
  */
-export async function clearAllStorage(): Promise<void> {
+async function clearAllStorage(): Promise<void> {
   try {
     // Find all account-specific keys
     const allKeys = await getAllKeys();

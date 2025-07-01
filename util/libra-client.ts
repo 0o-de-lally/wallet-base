@@ -10,7 +10,7 @@ import { IS_DEVELOPMENT } from "./environment";
 
 // Default URLs for different networks
 const DEFAULT_MAINNET_URL = "https://rpc.scan.openlibra.world/v1";
-const DEFAULT_TESTNET_URL = "https://rpc.scan.openlibra.world/v1"; // Update if testnet has different URL
+// Removed unused: DEFAULT_TESTNET_URL
 
 /**
  * Global LibraClient instance
@@ -110,5 +110,5 @@ export function getLibraClientUrl(): string {
   return currentConfig.url;
 }
 
-// Export the default URLs for use in other parts of the app
-export { DEFAULT_MAINNET_URL, DEFAULT_TESTNET_URL };
+// Removed internal-only exports: DEFAULT_MAINNET_URL, DEFAULT_TESTNET_URL
+// These constants are only used within this module

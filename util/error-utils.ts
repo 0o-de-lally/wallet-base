@@ -7,7 +7,7 @@ import { observable } from "@legendapp/state";
 /**
  * Error log entry interface
  */
-export interface ErrorLogEntry {
+interface ErrorLogEntry {
   id: string;
   timestamp: number;
   level: "error" | "warn" | "debug";
@@ -20,7 +20,7 @@ export interface ErrorLogEntry {
 /**
  * Error category type for better error handling
  */
-export type ErrorCategory = {
+type ErrorCategory = {
   type: "network" | "api" | "timeout" | "unknown";
   shouldLog: boolean;
 };
@@ -28,7 +28,7 @@ export type ErrorCategory = {
 /**
  * Observable state for error logs
  */
-export const errorLogs = observable<ErrorLogEntry[]>([]);
+const errorLogs = observable<ErrorLogEntry[]>([]);
 
 /**
  * Maximum number of error logs to keep in memory
@@ -46,7 +46,7 @@ const AUTO_CLEAR_INTERVAL = 24 * 60 * 60 * 1000;
  * @param fallbackMessage Fallback message if error can't be processed
  * @returns A safe error message
  */
-export function getSafeErrorMessage(
+function getSafeErrorMessage(
   error: unknown,
   fallbackMessage = "An unexpected error occurred",
 ): string {

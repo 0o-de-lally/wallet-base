@@ -75,7 +75,7 @@ export function hasAccounts(): boolean {
 /**
  * Gets the number of profiles the user has
  */
-export function getProfileCount(): number {
+function getProfileCount(): number {
   try {
     const profiles = getProfiles();
     if (!profiles) {

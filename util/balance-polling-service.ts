@@ -9,7 +9,7 @@ import { clearAccountErrors } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
 import { reportErrorAuto } from "./error-utils";
 
-export class BalancePollingService {
+class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private isRunning = false;
   private readonly POLL_INTERVAL = BALANCE_POLLING.INTERVAL_MS;
@@ -208,11 +208,11 @@ export class BalancePollingService {
 }
 
 // Create a singleton instance
-export const balancePollingService = new BalancePollingService();
+const balancePollingService = new BalancePollingService();
 
 // Export convenience functions
 export const startBalancePolling = () => balancePollingService.start();
 export const retryAccountBalance = (accountId: string) =>
   balancePollingService.retryAccount(accountId);
 
-// Removed unused exports: stopBalancePolling, restartBalancePolling, triggerBalancePoll, isBalancePollingRunning
+// Removed unused exports: stopBalancePolling, restartBalancePolling, triggerBalancePoll, isBalancePollingRunning, balancePollingService
