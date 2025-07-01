@@ -15,7 +15,11 @@ interface AccountNicknameFormProps {
  * Form component for updating account nickname
  */
 export const AccountNicknameForm = memo(
-  ({ accountId, currentNickname = "", onNicknameUpdate }: AccountNicknameFormProps) => {
+  ({
+    accountId,
+    currentNickname = "",
+    onNicknameUpdate,
+  }: AccountNicknameFormProps) => {
     const [nickname, setNickname] = useState(currentNickname);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | undefined>();
@@ -50,7 +54,7 @@ export const AccountNicknameForm = memo(
           Alert.alert(
             "Success",
             "Account nickname has been updated successfully.",
-            [{ text: "OK" }]
+            [{ text: "OK" }],
           );
         } else {
           setError("Failed to update nickname. Account not found.");

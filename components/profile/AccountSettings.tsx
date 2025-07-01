@@ -103,12 +103,13 @@ export const AccountSettings = memo(
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.sectionTitle}>
-        {profileName} •{" "}
-        {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
-        {account.nickname ? `• ${account.nickname}` : ""}
-      </Text>
-
+        <Text style={styles.sectionTitle}>
+          {profileName} •{" "}
+          {account
+            ? shortenAddress(account.account_address, 4, 4)
+            : "Loading..."}
+          {account.nickname ? `• ${account.nickname}` : ""}
+        </Text>
 
         <AccountNicknameForm
           accountId={account.id}
