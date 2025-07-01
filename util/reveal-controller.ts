@@ -1,4 +1,3 @@
-import { getValue } from "./secure-store";
 import { IS_PRODUCTION } from "./environment";
 import {
   setAccountRevealSchedule,
