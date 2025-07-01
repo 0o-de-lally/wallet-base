@@ -4,6 +4,9 @@ export { AuthenticationView } from "./auth/AuthenticationView";
 export { useSetupGuard } from "../hooks/use-setup-guard";
 export type { SetupStatus } from "../hooks/use-setup-guard";
 
+// Common components
+export { Identicon } from "./common/Identicon";
+
 // Onboarding exports
 export { OnboardingWizard } from "./onboarding/OnboardingWizard";
 export {

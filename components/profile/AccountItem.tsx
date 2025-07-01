@@ -7,6 +7,7 @@ import type { AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
 import { reportErrorAuto } from "../../util/error-utils";
+import { Identicon } from "../common/Identicon";
 
 export interface AccountItemProps {
   account: AccountState;
@@ -120,6 +121,11 @@ export const AccountItem = memo(
                   flex: 1,
                 }}
               >
+                <Identicon 
+                  address={account.account_address} 
+                  size={24}
+                  style={{ marginRight: 8 }}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountNickname, { fontSize: 14 }]}>
                     <Text style={{ color: colors.textSecondary }}>0x</Text>
@@ -197,6 +203,11 @@ export const AccountItem = memo(
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
+                  <Identicon 
+                    address={account.account_address} 
+                    size={32}
+                    style={{ marginRight: 8 }}
+                  />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.accountNickname}>
                       <Text style={{ color: colors.textSecondary }}>0x</Text>
