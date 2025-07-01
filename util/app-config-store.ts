@@ -443,3 +443,34 @@ export {
   type AppConfig,
   type RevealSchedule,
 } from "./app-config-types";
+
+/**
+ * Updates the nickname for an account
+ *
+ * @param accountId ID of the account to update
+ * @param nickname New nickname for the account
+ * @returns boolean indicating success or failure
+ */
+export function updateAccountNickname(
+  accountId: string,
+  nickname: string,
+): boolean {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const accountIndex = profile.accounts.findIndex(
+      (acc) => acc.id === accountId,
+    );
+
+    if (accountIndex !== -1) {
+      // Update the nickname for the found account
+      appConfig.profiles[profileName].accounts[accountIndex].nickname.set(
+        nickname.trim() || undefined,
+      );
+      return true;
+    }
+  }
+
+  return false; // Account not found
+}

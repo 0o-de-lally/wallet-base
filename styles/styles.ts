@@ -146,7 +146,8 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: colors.textPrimary,
-    marginBottom: 8,
+    // marginBottom: 8,
+    paddingBottom: 8,
     textTransform: "uppercase",
   },
   label: {
