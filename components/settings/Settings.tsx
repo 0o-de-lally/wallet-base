@@ -22,7 +22,7 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) => {
   const router = useRouter();
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
-  const { showAlert } = useModal();
+  const { showAlert, showConfirmation } = useModal();
 
   // Get current app state
   const profiles = appConfig.profiles.get();
@@ -149,12 +149,6 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
         {/* Developer Options */}
         <SectionContainer title="Developer Options">
           <ActionButton
-            text="Test Libra SDK"
-            onPress={() => navigateToScreen("/libra-test")}
-            style={{ marginTop: 0 }}
-            accessibilityLabel="Test Libra SDK integration"
-          />
-          <ActionButton
             text="Show LibraClient Config"
             onPress={() => {
               if (isLibraClientInitialized()) {
@@ -172,6 +166,51 @@ export const Settings: React.FC<SettingsProps> = observer(({ onProfileChange }) 
             }}
             style={{ marginTop: 10 }}
             accessibilityLabel="Show current LibraClient configuration"
+          />
+          <ActionButton
+            text="View Debug Logs"
+            onPress={() => navigateToScreen("/error-logs")}
+            style={{ marginTop: 10 }}
+            accessibilityLabel="View debug and error logs"
+          />
+          <ActionButton
+            text="Generate Wallet Mnemonic"
+            onPress={() => navigateToScreen("/mnemonic-generator")}
+            style={{ marginTop: 10 }}
+            accessibilityLabel="Generate a new wallet mnemonic phrase"
+          />
+        </SectionContainer>
+
+        {/* Danger Zone */}
+        <SectionContainer title="Danger Zone">
+          <ActionButton
+            text="Clear All App Data"
+            onPress={() => {
+              showConfirmation(
+                "Reset App Data?",
+                "This will permanently delete all profiles, accounts, and PINs. This action cannot be undone.",
+                async () => {
+                  try {
+                    const { resetAppToFirstTimeUser } = await import("../../util/dev-utils");
+                    await resetAppToFirstTimeUser();
+                    showAlert(
+                      "Data Cleared",
+                      "All app data has been reset. You can now start fresh."
+                    );
+                  } catch (error) {
+                    showAlert(
+                      "Reset Failed",
+                      "Failed to reset app data. Please try again."
+                    );
+                  }
+                },
+                "Reset Everything",
+                true
+              );
+            }}
+            style={{ marginTop: 0 }}
+            accessibilityLabel="Clear all app data and reset to first-time user state"
+            isDestructive={true}
           />
         </SectionContainer>
       </ScrollView>
