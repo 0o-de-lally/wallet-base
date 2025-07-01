@@ -5,7 +5,7 @@ import { View, Text } from "react-native";
 interface SectionContainerProps {
   title?: string;
   children: ReactNode;
-  style?: any;
+  style?: object;
 }
 
 export const SectionContainer = memo(

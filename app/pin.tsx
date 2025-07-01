@@ -1,9 +1,8 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { memo } from "react";
 import { View } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
 import EnterPinScreen from "../components/pin-input/PinManagement";
-import { useModal } from "../context/ModalContext";
 import { SetupGuard } from "../components/auth/SetupGuard";
 import { Stack } from "expo-router";
 

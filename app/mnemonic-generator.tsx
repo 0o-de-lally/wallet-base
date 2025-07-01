@@ -6,7 +6,9 @@ import MnemonicGenerator from "../components/libra/MnemonicGenerator";
 export default function MnemonicGeneratorScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: "Generate Mnemonic", headerBackTitle: "Back" }} />
+      <Stack.Screen
+        options={{ title: "Generate Mnemonic", headerBackTitle: "Back" }}
+      />
       <View style={{ flex: 1 }}>
         <MnemonicGenerator />
       </View>

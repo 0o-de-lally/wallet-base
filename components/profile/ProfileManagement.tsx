@@ -1,11 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import {
@@ -44,24 +38,6 @@ const ProfileManagement: React.FC = observer(() => {
       ? profiles[activeProfileName]
       : null;
 
-  const handleSelectProfile = useCallback((profileName: string) => {
-    // Set the selected profile name first
-    setSelectedProfileName(profileName);
-  }, []);
-
-  const handleSetActiveAccount = useCallback(
-    (accountId: string, event?: GestureResponderEvent) => {
-      // Prevent event propagation to avoid triggering profile selection
-      if (event) {
-        event.stopPropagation();
-      }
-
-      // Set the active account
-      setActiveAccount(accountId);
-    },
-    [],
-  );
-
   const handleDeleteAllProfiles = useCallback(() => {
     setDeleteAllModalVisible(true);
   }, []);
@@ -75,11 +51,6 @@ const ProfileManagement: React.FC = observer(() => {
 
   const toggleCreateForm = useCallback(() => {
     setShowCreateForm((prev) => !prev);
-  }, []);
-
-  const handleAccountsUpdated = useCallback(() => {
-    // No need to force re-render since this component is now an observer
-    // The component will automatically re-render when appConfig state changes
   }, []);
 
   const renderProfileSections = useCallback(() => {
