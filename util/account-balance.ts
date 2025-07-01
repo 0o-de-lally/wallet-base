@@ -1,6 +1,5 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { appConfig } from "./app-config-store";
-import type { AccountState } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
 import { categorizeError, reportError } from "./error-utils";
 
@@ -148,52 +147,8 @@ export async function updateAccountBalance(
 /**
  * Fetches and updates balance for a single account
  */
-export async function fetchAndUpdateAccountBalance(
-  client: LibraClient,
-  account: AccountState,
-): Promise<void> {
-  if (!account.account_address) {
-    reportError(
-      "warn",
-      "fetchAndUpdateAccountBalance",
-      new Error("Account has no address"),
-      { accountId: account.id },
-    );
-    return;
-  }
 
-  try {
-    const balanceData = await fetchAccountBalance(
-      client,
-      account.account_address,
-    );
-    await updateAccountBalance(account.id, balanceData);
-
-    // Log successful recovery if account previously had errors
-    if (account.error_count && account.error_count > 0 && !balanceData.error) {
-      console.log(
-        `[SUCCESS] Balance fetch recovered for account ${account.id} after ${account.error_count} errors`,
-      );
-    }
-  } catch (error) {
-    // This should rarely happen now since fetchAccountBalance returns errors instead of throwing
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to fetch balance";
-
-    reportError("warn", "fetchAndUpdateAccountBalance", error, {
-      accountId: account.id,
-    });
-
-    // Update account with error state
-    await updateAccountBalance(account.id, {
-      balance_unlocked: account.balance_unlocked,
-      balance_total: account.balance_total,
-      error: errorMessage,
-      error_type: "unknown",
-    });
-  }
-}
-
+// Removed unused function: fetchAndUpdateAccountBalance
 // Removed unused function: fetchAndUpdateProfileBalances
 
 /**
