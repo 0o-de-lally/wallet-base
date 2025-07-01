@@ -199,10 +199,7 @@ export const RevealStatusUI = memo(
 
       return (
         <View
-          style={[
-            styles.resultContainer,
-            { marginTop: 20, borderWidth: 2, borderColor: colors.primary },
-          ]}
+          style={[styles.listItem, { marginTop: 20 }]}
           accessible={true}
           accessibilityLabel={`Revealed secure value for ${accountName || "account"}`}
           accessibilityHint={`Auto-hiding in ${hideCountdown} seconds`}
@@ -248,7 +245,7 @@ export const RevealStatusUI = memo(
 
       return (
         <View
-          style={styles.resultContainer}
+          style={styles.listItem}
           accessible={true}
           accessibilityLabel={`Reveal status for ${accountName || "account"}: ${
             !revealStatus.isAvailable && !revealStatus.isExpired
@@ -292,9 +289,9 @@ export const RevealStatusUI = memo(
                   text="Reveal Now"
                   onPress={handleExecuteReveal}
                   disabled={isLoading}
-                  style={{ backgroundColor: colors.success, marginBottom: 10 }}
                   accessibilityLabel="Execute the reveal now"
                   accessibilityHint="Shows your secured data on screen"
+                  style={{ marginBottom: 10 }} // Add spacing below Reveal Now
                 />
                 <ActionButton
                   text="Cancel Reveal"

@@ -52,13 +52,13 @@ export const MnemonicManagement = memo(
 
         <View style={localStyles.verticalButtonContainer}>
           <ActionButton
-            text="Rotate Mnemonic"
+            text="Override Mnemonic"
             onPress={onRotateMnemonic}
             isLoading={isLoading}
             disabled={disabled}
             style={localStyles.verticalButton}
             accessibilityLabel="Replace mnemonic phrase"
-            accessibilityHint="Replace the current mnemonic phrase with a new one"
+            accessibilityHint="Replace the current mnemonic phrase with a new one. Does NOT change keys on chain."
           />
 
           <ActionButton
