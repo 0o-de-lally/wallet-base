@@ -120,19 +120,20 @@ export const AccountItem = memo(
                   gap: 6,
                   flex: 1,
                 }}
-              >
-                <Identicon 
-                  address={account.account_address} 
-                  size={24}
-                  style={{ marginRight: 8 }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                    <Text style={{ color: colors.textSecondary }}>0x</Text>
-                    {shortenAddress(account.account_address, 4, 4)}
-                    {account.nickname && ` - ${account.nickname}`}
-                  </Text>
-                </View>
+              >                  <View>
+                    <Text style={[styles.accountNickname, { fontSize: 14 }]}>
+                      <Text style={{ color: colors.textSecondary }}>0x</Text>
+                      {shortenAddress(account.account_address, 4, 4)}
+                      {account.nickname && ` - ${account.nickname}`}
+                    </Text>
+                    <Identicon
+                      address={account.account_address}
+                      size={16}
+                      style={{
+                        alignSelf: 'flex-start'
+                      }}
+                    />
+                  </View>
                 {account.last_error && (
                   <Ionicons
                     name="warning-outline"
@@ -203,17 +204,19 @@ export const AccountItem = memo(
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
-                  <Identicon 
-                    address={account.account_address} 
-                    size={32}
-                    style={{ marginRight: 8 }}
-                  />
-                  <View style={{ flex: 1 }}>
+                  <View>
                     <Text style={styles.accountNickname}>
                       <Text style={{ color: colors.textSecondary }}>0x</Text>
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>
+                    <Identicon
+                      address={account.account_address}
+                      size={24}
+                      style={{
+                        alignSelf: 'flex-start'
+                      }}
+                    />
                   </View>
                   {account.last_error && (
                     <Ionicons
