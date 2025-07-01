@@ -197,7 +197,7 @@ export async function fetchAndUpdateAccountBalance(
 /**
  * Fetches and updates balances for all accounts in a profile
  */
-export async function fetchAndUpdateProfileBalances(
+async function fetchAndUpdateProfileBalances(
   client: LibraClient,
   profileName: string,
   accounts: AccountState[],
