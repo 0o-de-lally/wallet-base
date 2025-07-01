@@ -2,11 +2,7 @@ import { observable } from "@legendapp/state";
 import { hasPINSetup, hasAccounts } from "./user-state";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 
-type SetupStatus =
-  | "loading"
-  | "needs-pin"
-  | "needs-account"
-  | "complete";
+type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
 
 interface SetupState {
   status: SetupStatus;
