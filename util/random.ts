@@ -20,10 +20,7 @@ export function getRandomBytes(size: number): Uint8Array {
  * Generates a random hex string
  * @param size Number of bytes to generate (hex string will be 2x this length)
  * @returns Hex string
+ * Removed unused function: getRandomHex
  */
-export function getRandomHex(size: number): string {
-  const bytes = getRandomBytes(size);
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+
+// Removed unused export: getRandomHex

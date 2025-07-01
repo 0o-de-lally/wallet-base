@@ -14,21 +14,7 @@ import {
 // Session-level flag to track if reset has already been performed
 let hasResetInThisSession = false;
 
-/**
- * Resets the session flag to allow another reset in the current session.
- * This is primarily for testing/debugging purposes.
- */
-export function resetSessionFlag(): void {
-  hasResetInThisSession = false;
-  console.log("Session reset flag cleared - reset can be performed again");
-}
-
-/**
- * Returns whether a reset has been performed in the current session.
- */
-export function hasPerformedResetInSession(): boolean {
-  return hasResetInThisSession;
-}
+// Removed unused exports: resetSessionFlag, hasPerformedResetInSession
 
 /**
  * Initializes the application by ensuring the configuration is properly loaded.

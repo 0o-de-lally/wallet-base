@@ -119,24 +119,4 @@ export async function updateAccountV8Authorization(
   }
 }
 
-/**
- * Fetches and updates v8 authorization status for a single account
- */
-export async function fetchAndUpdateAccountV8Authorization(
-  client: LibraClient,
-  accountId: string,
-  accountAddress: string,
-): Promise<void> {
-  try {
-    const v8AuthData = await fetchAccountV8Authorization(
-      client,
-      accountAddress,
-    );
-    await updateAccountV8Authorization(accountId, v8AuthData);
-  } catch (error) {
-    reportError("warn", "fetchAndUpdateAccountV8Authorization", error, {
-      accountId,
-      accountAddress,
-    });
-  }
-}
+// Removed unused export: fetchAndUpdateAccountV8Authorization
