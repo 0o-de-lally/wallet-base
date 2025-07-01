@@ -77,17 +77,8 @@ export function getLibraClient(): LibraClient {
  *
  * @param url New URL to use for the client
  * @param network Network type identifier for logging/debugging
+ * Removed unused function: setLibraClientUrl
  */
-function setLibraClientUrl(
-  url: string,
-  network: "mainnet" | "testnet" | "custom" = "custom",
-): LibraClient {
-  if (IS_DEVELOPMENT) {
-    console.log(`Reconfiguring LibraClient to ${network} network: ${url}`);
-  }
-
-  return initializeLibraClient(url, network);
-}
 
 /**
  * Get the current configuration of the global LibraClient

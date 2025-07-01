@@ -64,20 +64,8 @@ export function getSafeErrorMessage(
  * @param context The context where the error occurred
  * @param error The error object
  * @param level The logging level
+ * Removed unused function: logError
  */
-function logError(
-  context: string,
-  error: unknown,
-  level: "warn" | "error" = "warn",
-): void {
-  const message = getSafeErrorMessage(error);
-
-  if (level === "warn") {
-    console.warn(`[${context}] ${message}`);
-  } else {
-    console.error(`[${context}] ${message}`);
-  }
-}
 
 /**
  * Categorizes error types for better handling and logging decisions

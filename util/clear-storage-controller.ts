@@ -70,12 +70,6 @@ export async function resetAppToCleanState(): Promise<void> {
  * [DEPRECATED] Securely clears all storage after PIN verification
  * @deprecated Use clearAllStorage() instead as PIN verification is not required
  */
-async function clearAllWithPinVerification(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pin: string,
-): Promise<void> {
-  console.warn("PIN verification for clearing storage is deprecated");
-  await clearAllStorage();
-}
+// Removed unused function: clearAllWithPinVerification
 
 // Removed unused export: functionWithUnusedPin

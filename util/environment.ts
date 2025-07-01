@@ -24,8 +24,8 @@ export const IS_DEVELOPMENT = !IS_PRODUCTION;
 /**
  * Build-time constant that determines if debugging features should be enabled.
  * This includes the __DEV__ flag check for React Native development mode.
+ * Removed unused constant: IS_DEBUG
  */
-const IS_DEBUG = __DEV__ || process.env.NODE_ENV === "development";
 
 /**
  * Environment flag to trigger complete app data reset on startup.
