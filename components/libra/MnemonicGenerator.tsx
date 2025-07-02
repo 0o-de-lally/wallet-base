@@ -15,10 +15,11 @@ import { getLibraClientUrl } from "../../util/libra-client";
 
 interface MnemonicGeneratorProps {
   onClear?: () => void;
+  initialMode?: "test" | "create";
 }
 
-const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
-  const [mode, setMode] = useState<"test" | "create">("test");
+const MnemonicGenerator = memo(({ onClear, initialMode = "create" }: MnemonicGeneratorProps) => {
+  const [mode, setMode] = useState<"test" | "create">(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -214,7 +215,11 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
   }, [currentWallet]);
 
   return (
-    <View>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 20 }}
+      showsVerticalScrollIndicator={true}
+    >
       {/* Mode Selector */}
       <View style={styles.sectionContainer}>
         <Text style={styles.label}>Mode:</Text>
@@ -235,7 +240,9 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
       </View>
 
       {mode === "create" ? (
-        <NewAccountWizard onComplete={onClear} />
+        <View style={{ flex: 1 }}>
+          <NewAccountWizard onComplete={onClear} />
+        </View>
       ) : (
         <View>
           <ActionButton
@@ -370,7 +377,7 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
           )}
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 });
 

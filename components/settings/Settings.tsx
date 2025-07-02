@@ -49,7 +49,8 @@ export const Settings: React.FC<SettingsProps> = observer(
             | `/profiles`
             | `/create-account`
             | `/recover-account`
-            | `/pin`,
+            | `/pin`
+            | `/mnemonic-generator`,
         );
       },
       [router],
@@ -131,6 +132,12 @@ export const Settings: React.FC<SettingsProps> = observer(
               accessibilityLabel="View and manage accounts"
             />
             <ActionButton
+              text="Create New Account"
+              onPress={() => router.navigate("/mnemonic-generator")}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Create a new account with generated mnemonic"
+            />
+            <ActionButton
               text="Add Read-Only Account"
               onPress={() => navigateToScreen("/create-account")}
               style={{ marginTop: 10 }}
@@ -181,10 +188,10 @@ export const Settings: React.FC<SettingsProps> = observer(
               accessibilityLabel="View debug and error logs"
             />
             <ActionButton
-              text="Generate Wallet Mnemonic"
-              onPress={() => navigateToScreen("/mnemonic-generator")}
+              text="Generate Wallet Mnemonic (Test)"
+              onPress={() => router.navigate("/mnemonic-generator?mode=test")}
               style={{ marginTop: 10 }}
-              accessibilityLabel="Generate a new wallet mnemonic phrase"
+              accessibilityLabel="Generate and test wallet mnemonic phrases"
             />
           </SectionContainer>
 

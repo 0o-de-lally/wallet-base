@@ -28,8 +28,6 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
     }
   };
 
-  const mnemonicWords = mnemonic.split(" ");
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Recovery Phrase</Text>
@@ -41,13 +39,13 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
         </Text>
       </View>
 
-      <View style={styles.sectionContainer}>
-        {mnemonicWords.map((word, index) => (
-          <View key={index} style={styles.listItem}>
-            <Text style={styles.label}>{index + 1}</Text>
-            <Text style={styles.description}>{word}</Text>
-          </View>
-        ))}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Recovery Phrase</Text>
+        <View style={styles.input}>
+          <Text style={[styles.description, { fontFamily: "monospace", lineHeight: 20 }]}>
+            {mnemonic}
+          </Text>
+        </View>
       </View>
 
       <View style={{ flexDirection: "row", marginTop: 10 }}>
