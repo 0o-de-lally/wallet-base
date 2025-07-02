@@ -26,7 +26,7 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
       } else {
         Alert.alert("Error", "Clipboard not available");
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to copy address");
     }
   };
@@ -39,7 +39,7 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
       } else {
         Alert.alert("Error", "Clipboard not available");
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to copy recovery phrase");
     }
   };

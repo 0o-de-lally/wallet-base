@@ -24,7 +24,7 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
       } else {
         Alert.alert("Error", "Clipboard not available");
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to copy to clipboard");
     }
   };
@@ -43,7 +43,7 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
       <View style={styles.resultContainer}>
         <Ionicons name="warning" size={20} color={colors.danger} />
         <Text style={styles.description}>
-          Write this down and store it safely. You'll need it to recover your account.
+          Write this down and store it safely. You&apos;ll need it to recover your account.
         </Text>
       </View>
 
