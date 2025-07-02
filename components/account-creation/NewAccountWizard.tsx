@@ -1,18 +1,17 @@
 import React, { useState, useCallback } from "react";
-import { View, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { generateMnemonic, LibraWallet, Network } from "open-libra-sdk";
 import { GeneratedMnemonicDisplay } from "./GeneratedMnemonicDisplay";
-import { DerivedAddressDisplay } from "./DerivedAddressDisplay";
 import { AccountDetailsForm } from "./AccountDetailsForm";
-import { AccountCreationSuccess } from "./AccountCreationSuccess";
 import { ActionButton } from "../common/ActionButton";
 import { createAccount } from "../../util/account-utils";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { getLibraClientUrl } from "../../util/libra-client";
+import { styles } from "../../styles/styles";
 
-type CreationStep = "generate" | "derive" | "details" | "success";
+type CreationStep = "generate" | "details";
 
 interface NewAccountWizardProps {
   onComplete?: () => void;
@@ -25,11 +24,8 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   const [mnemonic, setMnemonic] = useState<string>("");
   const [derivedAddress, setDerivedAddress] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDerivingAddress, setIsDerivingAddress] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newAccountId, setNewAccountId] = useState<string>("");
-  const [accountNickname, setAccountNickname] = useState<string>("");
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [pendingAccountData, setPendingAccountData] = useState<{
     profileName: string;
@@ -42,13 +38,35 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   const generateNewMnemonic = useCallback(async () => {
     setIsGenerating(true);
     setError(null);
+    
+    // Immediately clear existing mnemonic and address to show progress
+    setMnemonic("");
+    setDerivedAddress("");
 
     try {
       await new Promise(resolve => setTimeout(resolve, 500)); // UX delay
+      
+      // Generate mnemonic
       const newMnemonic = generateMnemonic();
+      console.log("Generated mnemonic");
+      
+      // Immediately derive wallet and address from the new mnemonic
+      const wallet = LibraWallet.fromMnemonic(
+        newMnemonic,
+        Network.MAINNET,
+        getLibraClientUrl(),
+      );
+
+      const address = wallet.getAddress();
+      const addressString = address.toStringLong();
+      
+      console.log("Derived address:", addressString);
+      
+      // Set both mnemonic and derived address
       setMnemonic(newMnemonic);
+      setDerivedAddress(addressString);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to generate mnemonic";
+      const errorMessage = err instanceof Error ? err.message : "Failed to generate mnemonic and derive address";
       setError(errorMessage);
       Alert.alert("Error", errorMessage);
     } finally {
@@ -56,46 +74,11 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
     }
   }, []);
 
-  const handleMnemonicConfirm = useCallback(async () => {
-    if (!mnemonic) return;
-    
-    setIsDerivingAddress(true);
-    setError(null);
-
-    try {
-      // Add a small delay to ensure the loading state is visible
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Derive wallet and address from mnemonic
-      const wallet = LibraWallet.fromMnemonic(
-        mnemonic,
-        Network.MAINNET,
-        getLibraClientUrl(),
-      );
-
-      const address = wallet.getAddress();
-      setDerivedAddress(address.toStringLong());
-      setCurrentStep("derive");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to derive address";
-      setError(errorMessage);
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setIsDerivingAddress(false);
-    }
-  }, [mnemonic]);
-
-  const handleAddressConfirm = useCallback(() => {
-    if (derivedAddress) {
+  const handleContinueToDetails = useCallback(() => {
+    if (mnemonic && derivedAddress) {
       setCurrentStep("details");
     }
-  }, [derivedAddress]);
-
-  const handleBackToGenerate = useCallback(() => {
-    setCurrentStep("generate");
-    setDerivedAddress("");
-    setError(null);
-  }, []);
+  }, [mnemonic, derivedAddress]);
 
   const handleAccountDetails = useCallback(async (profileName: string, nickname: string) => {
     setPendingAccountData({ profileName, nickname });
@@ -105,11 +88,14 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   const handlePinSubmit = useCallback(async (_pin: string) => {
     if (!pendingAccountData || !mnemonic || !derivedAddress) return;
 
+    console.log("Creating account...");
+    console.log("Expected address:", derivedAddress);
+
     setIsCreating(true);
     setError(null);
 
     try {
-      // Create wallet from mnemonic to get address
+      // Create wallet from mnemonic to get address - use the exact same mnemonic
       const wallet = LibraWallet.fromMnemonic(
         mnemonic,
         Network.MAINNET,
@@ -117,6 +103,15 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
       );
 
       const address = wallet.getAddress();
+      const newAddressString = address.toStringLong();
+      
+      console.log("Wallet created with address:", newAddressString);
+      console.log("Addresses match:", newAddressString === derivedAddress);
+
+      // Verify the address matches what we derived earlier
+      if (newAddressString !== derivedAddress) {
+        throw new Error("Address mismatch - wallet derivation inconsistent");
+      }
 
       // Create account in profile
       const result = await createAccount(
@@ -131,13 +126,26 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
 
       // Store mnemonic securely using the secure storage hook
       if (result.account?.id) {
+        console.log("Storing mnemonic for account:", result.account.id);
         secureStorage.handleSaveWithValue(result.account.id, mnemonic);
       }
 
-      setNewAccountId(result.account?.id || "");
-      setAccountNickname(pendingAccountData.nickname);
-      setCurrentStep("success");
+      // Show success notification and navigate back to main page
+      Alert.alert(
+        "Account Created", 
+        `New account${pendingAccountData.nickname ? ` "${pendingAccountData.nickname}"` : ""} has been created successfully.`,
+        [{ text: "OK" }]
+      );
+
+      // Close modal and navigate back
+      setPinModalVisible(false);
+      setPendingAccountData(null);
+      
+      // Navigate back to main page and call onComplete
+      router.push("/");
+      onComplete?.();
     } catch (err) {
+      console.error("Error creating account:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to create account";
       setError(errorMessage);
       Alert.alert("Error", errorMessage);
@@ -146,55 +154,60 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
       setPinModalVisible(false);
       setPendingAccountData(null);
     }
-  }, [pendingAccountData, mnemonic, derivedAddress, secureStorage]);
-
-  const handleViewAccount = useCallback(() => {
-    if (newAccountId) {
-      router.push(`/account-details?accountId=${newAccountId}`);
-    }
-  }, [newAccountId, router]);
-
-  const handleContinue = useCallback(() => {
-    onComplete?.();
-  }, [onComplete]);
-
-  // Initialize with mnemonic generation
-  React.useEffect(() => {
-    generateNewMnemonic();
-  }, [generateNewMnemonic]);
+  }, [pendingAccountData, mnemonic, derivedAddress, secureStorage, router, onComplete]);
 
   return (
     <View style={{ flex: 1 }}>
       {currentStep === "generate" && (
         <View>
-          {mnemonic && (
+          {!mnemonic && !isGenerating && (
+            <View style={{ marginTop: 20 }}>
+              <ActionButton
+                text="Generate Recovery Phrase"
+                onPress={generateNewMnemonic}
+                disabled={isGenerating}
+              />
+            </View>
+          )}
+          {isGenerating && (
+            <View style={{ marginTop: 20 }}>
+              <ActionButton
+                text="Generating..."
+                onPress={() => {}}
+                disabled={true}
+                isLoading={true}
+              />
+            </View>
+          )}
+          {mnemonic && !isGenerating && (
             <GeneratedMnemonicDisplay
               mnemonic={mnemonic}
               onRegenerate={generateNewMnemonic}
               isLoading={isGenerating}
             />
           )}
-          {mnemonic && !isGenerating && (
+          {derivedAddress && !isGenerating && (
+            <View style={{ marginTop: 20 }}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Derived Address</Text>
+                <View style={styles.input}>
+                  <Text style={[styles.description, { fontFamily: "monospace", fontSize: 12 }]}>
+                    {derivedAddress}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+          {mnemonic && derivedAddress && !isGenerating && (
             <View style={{ marginTop: 20 }}>
               <ActionButton
-                text={isDerivingAddress ? "Initializing Wallet..." : "Continue"}
-                onPress={handleMnemonicConfirm}
-                disabled={isDerivingAddress}
-                isLoading={isDerivingAddress}
+                text="Continue"
+                onPress={handleContinueToDetails}
+                disabled={isGenerating}
               />
             </View>
           )}
         </View>
-      )}
-
-      {currentStep === "derive" && (
-        <DerivedAddressDisplay
-          address={derivedAddress}
-          mnemonic={mnemonic}
-          onConfirm={handleAddressConfirm}
-          onBack={handleBackToGenerate}
-          isLoading={isCreating}
-        />
       )}
 
       {currentStep === "details" && (
@@ -202,15 +215,6 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
           onConfirm={handleAccountDetails}
           isLoading={isCreating}
           error={error}
-        />
-      )}
-
-      {currentStep === "success" && (
-        <AccountCreationSuccess
-          accountId={newAccountId}
-          accountNickname={accountNickname}
-          onViewAccount={handleViewAccount}
-          onContinue={handleContinue}
         />
       )}
 
@@ -224,6 +228,7 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
         onPinAction={handlePinSubmit}
         actionTitle="Enter PIN"
         actionSubtitle="Enter your PIN to securely store the recovery phrase"
+        autoCloseOnSuccess={false}
       />
     </View>
   );

@@ -31,7 +31,7 @@ export const AccountCreationSuccess: React.FC<AccountCreationSuccessProps> = ({
         <Text style={styles.title}>Account Created!</Text>
 
         <Text style={styles.description}>
-          Your new account "{accountNickname}" has been created successfully.
+          Your new account{accountNickname ? ` "${accountNickname}"` : ""} has been created successfully.
           Your recovery phrase has been encrypted and stored securely.
         </Text>
 

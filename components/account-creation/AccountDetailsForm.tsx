@@ -32,13 +32,10 @@ export const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({
   }, [profileNames, selectedProfile]);
 
   const handleConfirm = () => {
-    if (!nickname.trim()) {
-      return;
-    }
     onConfirm(selectedProfile, nickname.trim());
   };
 
-  const isValid = nickname.trim().length > 0 && selectedProfile;
+  const isValid = selectedProfile;
 
   return (
     <View style={styles.container}>
@@ -62,10 +59,10 @@ export const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({
       )}
 
       <FormInput
-        label="Account Nickname"
+        label="Account Nickname (Optional)"
         value={nickname}
         onChangeText={setNickname}
-        placeholder="Enter a nickname for this account"
+        placeholder="Enter a nickname for this account (optional)"
         autoCapitalize="words"
         returnKeyType="done"
         onSubmitEditing={handleConfirm}
