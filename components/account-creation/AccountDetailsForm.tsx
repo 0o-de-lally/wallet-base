@@ -39,8 +39,6 @@ export const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Account Details</Text>
-
       <View style={styles.resultContainer}>
         <Ionicons name="information-circle" size={20} color={colors.textSecondary} />
         <Text style={styles.description}>

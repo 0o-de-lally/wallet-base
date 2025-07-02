@@ -187,12 +187,6 @@ export const Settings: React.FC<SettingsProps> = observer(
               style={{ marginTop: 10 }}
               accessibilityLabel="View debug and error logs"
             />
-            <ActionButton
-              text="Generate Wallet Mnemonic (Test)"
-              onPress={() => router.navigate("/mnemonic-generator?mode=test")}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Generate and test wallet mnemonic phrases"
-            />
           </SectionContainer>
 
           {/* Danger Zone */}

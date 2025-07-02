@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { generateMnemonic, LibraWallet, Network } from "open-libra-sdk";
 import { GeneratedMnemonicDisplay } from "./GeneratedMnemonicDisplay";
@@ -9,7 +9,7 @@ import { createAccount } from "../../util/account-utils";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { getLibraClientUrl } from "../../util/libra-client";
-import { styles } from "../../styles/styles";
+import { styles, colors } from "../../styles/styles";
 
 type CreationStep = "generate" | "details";
 
@@ -38,18 +38,18 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   const generateNewMnemonic = useCallback(async () => {
     setIsGenerating(true);
     setError(null);
-    
+
     // Immediately clear existing mnemonic and address to show progress
     setMnemonic("");
     setDerivedAddress("");
 
     try {
       await new Promise(resolve => setTimeout(resolve, 500)); // UX delay
-      
+
       // Generate mnemonic
       const newMnemonic = generateMnemonic();
       console.log("Generated mnemonic");
-      
+
       // Immediately derive wallet and address from the new mnemonic
       const wallet = LibraWallet.fromMnemonic(
         newMnemonic,
@@ -59,9 +59,9 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
 
       const address = wallet.getAddress();
       const addressString = address.toStringLong();
-      
+
       console.log("Derived address:", addressString);
-      
+
       // Set both mnemonic and derived address
       setMnemonic(newMnemonic);
       setDerivedAddress(addressString);
@@ -104,7 +104,7 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
 
       const address = wallet.getAddress();
       const newAddressString = address.toStringLong();
-      
+
       console.log("Wallet created with address:", newAddressString);
       console.log("Addresses match:", newAddressString === derivedAddress);
 
@@ -132,7 +132,7 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
 
       // Show success notification and navigate back to main page
       Alert.alert(
-        "Account Created", 
+        "Account Created",
         `New account${pendingAccountData.nickname ? ` "${pendingAccountData.nickname}"` : ""} has been created successfully.`,
         [{ text: "OK" }]
       );
@@ -140,7 +140,7 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
       // Close modal and navigate back
       setPinModalVisible(false);
       setPendingAccountData(null);
-      
+
       // Navigate back to main page and call onComplete
       router.push("/");
       onComplete?.();
@@ -157,7 +157,11 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   }, [pendingAccountData, mnemonic, derivedAddress, secureStorage, router, onComplete]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView 
+      style={{ flex: 1 }} 
+      contentContainerStyle={{ padding: 20 }}
+      showsVerticalScrollIndicator={true}
+    >
       {currentStep === "generate" && (
         <View>
           {!mnemonic && !isGenerating && (
@@ -170,13 +174,11 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
             </View>
           )}
           {isGenerating && (
-            <View style={{ marginTop: 20 }}>
-              <ActionButton
-                text="Generating..."
-                onPress={() => {}}
-                disabled={true}
-                isLoading={true}
-              />
+            <View style={{ marginTop: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.description, { marginTop: 16, textAlign: 'center' }]}>
+                Generating recovery phrase and deriving address...
+              </Text>
             </View>
           )}
           {mnemonic && !isGenerating && (
@@ -230,6 +232,6 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
         actionSubtitle="Enter your PIN to securely store the recovery phrase"
         autoCloseOnSuccess={false}
       />
-    </View>
+    </ScrollView>
   );
 };

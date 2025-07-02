@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { ActionButton } from "../common/ActionButton";
 import { styles, colors } from "../../styles/styles";
 
 interface GeneratedMnemonicDisplayProps {
@@ -30,7 +31,14 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Recovery Phrase</Text>
+      <View style={{ marginBottom: 20 }}>
+        <ActionButton
+          text="Generate New"
+          onPress={onRegenerate}
+          disabled={isLoading}
+          variant="secondary"
+        />
+      </View>
 
       <View style={styles.resultContainer}>
         <Ionicons name="warning" size={20} color={colors.danger} />
@@ -48,17 +56,9 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", marginTop: 10 }}>
+      <View style={{ marginTop: 10 }}>
         <TouchableOpacity
-          style={[styles.secondaryButton, { flex: 1, marginRight: 5 }]}
-          onPress={onRegenerate}
-          disabled={isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>Generate New</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.primaryButton, { flex: 1, marginLeft: 5 }]}
+          style={styles.primaryButton}
           onPress={handleCopy}
           disabled={isLoading}
         >
