@@ -6,9 +6,11 @@ import { GeneratedMnemonicDisplay } from "./GeneratedMnemonicDisplay";
 import { AccountDetailsForm } from "./AccountDetailsForm";
 import { ActionButton } from "../common/ActionButton";
 import { createAccount } from "../../util/account-utils";
-import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { getLibraClientUrl } from "../../util/libra-client";
+import { verifyStoredPin, secureEncryptWithPin } from "../../util/pin-security";
+import { saveValue } from "../../util/secure-store";
+import { updateAccountKeyStoredStatus } from "../../util/app-config-store";
 import { styles, colors } from "../../styles/styles";
 
 type CreationStep = "generate" | "details";
@@ -30,10 +32,10 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   const [pendingAccountData, setPendingAccountData] = useState<{
     profileName: string;
     nickname: string;
+    accountId: string;
   } | null>(null);
 
   const router = useRouter();
-  const secureStorage = useSecureStorage();
 
   const generateNewMnemonic = useCallback(async () => {
     setIsGenerating(true);
@@ -81,15 +83,7 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
   }, [mnemonic, derivedAddress]);
 
   const handleAccountDetails = useCallback(async (profileName: string, nickname: string) => {
-    setPendingAccountData({ profileName, nickname });
-    setPinModalVisible(true);
-  }, []);
-
-  const handlePinSubmit = useCallback(async (_pin: string) => {
-    if (!pendingAccountData || !mnemonic || !derivedAddress) return;
-
-    console.log("Creating account...");
-    console.log("Expected address:", derivedAddress);
+    if (!mnemonic || !derivedAddress) return;
 
     setIsCreating(true);
     setError(null);
@@ -115,20 +109,60 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
 
       // Create account in profile
       const result = await createAccount(
-        pendingAccountData.profileName,
+        profileName,
         address,
-        pendingAccountData.nickname
+        nickname
       );
 
       if (!result.success) {
         throw new Error(result.error || "Failed to create account");
       }
 
-      // Store mnemonic securely using the secure storage hook
-      if (result.account?.id) {
-        console.log("Storing mnemonic for account:", result.account.id);
-        secureStorage.handleSaveWithValue(result.account.id, mnemonic);
+      if (!result.account?.id) {
+        throw new Error("No account ID returned from account creation");
       }
+
+      // Store the account data and show PIN modal to save the mnemonic
+      setPendingAccountData({
+        profileName,
+        nickname,
+        accountId: result.account.id
+      });
+      setPinModalVisible(true);
+    } catch (err) {
+      console.error("Error creating account:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to create account";
+      setError(errorMessage);
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [mnemonic, derivedAddress]);
+
+  const handlePinSubmit = useCallback(async (pin: string) => {
+    if (!pendingAccountData || !mnemonic) return;
+
+    try {
+      // First verify this is really the user's PIN
+      const isValid = await verifyStoredPin(pin);
+      if (!isValid) {
+        Alert.alert("Error", "Invalid PIN");
+        return;
+      }
+
+      // Use the pin-security utilities to encrypt the mnemonic
+      const encryptedBase64 = await secureEncryptWithPin(mnemonic, pin);
+
+      if (!encryptedBase64) {
+        throw new Error("Encryption failed");
+      }
+
+      // Save the encrypted mnemonic with the account ID as the key
+      const key = `mnemonic_${pendingAccountData.accountId}`;
+      await saveValue(key, encryptedBase64);
+
+      // Update the account's is_key_stored status
+      updateAccountKeyStoredStatus(pendingAccountData.accountId, true);
 
       // Show success notification and navigate back to main page
       Alert.alert(
@@ -145,20 +179,15 @@ export const NewAccountWizard: React.FC<NewAccountWizardProps> = ({
       router.push("/");
       onComplete?.();
     } catch (err) {
-      console.error("Error creating account:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to create account";
-      setError(errorMessage);
+      console.error("Error saving mnemonic:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to save mnemonic";
       Alert.alert("Error", errorMessage);
-    } finally {
-      setIsCreating(false);
-      setPinModalVisible(false);
-      setPendingAccountData(null);
     }
-  }, [pendingAccountData, mnemonic, derivedAddress, secureStorage, router, onComplete]);
+  }, [pendingAccountData, mnemonic, router, onComplete]);
 
   return (
-    <ScrollView 
-      style={{ flex: 1 }} 
+    <ScrollView
+      style={{ flex: 1 }}
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={true}
     >
