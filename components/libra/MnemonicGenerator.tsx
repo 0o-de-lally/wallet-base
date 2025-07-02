@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common/ActionButton";
 import { styles, colors } from "../../styles/styles";
+import { NewAccountWizard } from "../account-creation/NewAccountWizard";
 import {
   generateMnemonic,
   LibraWallet,
@@ -17,6 +18,7 @@ interface MnemonicGeneratorProps {
 }
 
 const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
+  const [mode, setMode] = useState<"test" | "create">("test");
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -213,134 +215,159 @@ const MnemonicGenerator = memo(({ onClear }: MnemonicGeneratorProps) => {
 
   return (
     <View>
-      <ActionButton
-        text="Generate Mnemonic"
-        onPress={generateMnemonicPhrase}
-        isLoading={isLoading}
-        disabled={isLoading || isTestingTransaction}
-        accessibilityLabel="Generate new wallet mnemonic"
-        accessibilityHint="Creates a new BIP39 mnemonic phrase for wallet creation"
-      />
-
-      {currentWallet && (
-        <ActionButton
-          text="Test Transaction"
-          onPress={testTransaction}
-          isLoading={isTestingTransaction}
-          disabled={isLoading || isTestingTransaction}
-          style={{ marginTop: 10 }}
-          accessibilityLabel="Test transaction with current wallet"
-          accessibilityHint="Attempts to send a test transaction using the generated wallet"
-        />
-      )}
-
-      {(mnemonic || error) && (
-        <ActionButton
-          text="Clear Mnemonic"
-          onPress={clearResults}
-          disabled={isLoading || isTestingTransaction}
-          style={{ marginTop: 10 }}
-          accessibilityLabel="Clear mnemonic results"
-        />
-      )}
-
-      {/* Error Section */}
-      {error && (
-        <View style={[styles.inputContainer, { marginTop: 20 }]}>
-          <Text style={styles.label}>Mnemonic Error:</Text>
-          <ScrollView
-            style={[
-              styles.input,
-              { height: 100, paddingHorizontal: 12, paddingVertical: 8 },
-            ]}
-            showsVerticalScrollIndicator={true}
-          >
-            <Text style={[styles.errorText, { fontSize: 12 }]}>{error}</Text>
-          </ScrollView>
+      {/* Mode Selector */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.label}>Mode:</Text>
+        <View style={{ flexDirection: "row", marginTop: 10 }}>
+          <ActionButton
+            text="Test Mode"
+            onPress={() => setMode("test")}
+            variant={mode === "test" ? "primary" : "secondary"}
+            style={{ flex: 1, marginRight: 5 }}
+          />
+          <ActionButton
+            text="Create Account"
+            onPress={() => setMode("create")}
+            variant={mode === "create" ? "primary" : "secondary"}
+            style={{ flex: 1, marginLeft: 5 }}
+          />
         </View>
-      )}
+      </View>
 
-      {/* Mnemonic Section */}
-      {mnemonic && (
-        <View style={[styles.inputContainer, { marginTop: 20 }]}>
-          <Text style={styles.label}>Generated Mnemonic:</Text>
-          <ScrollView
-            style={[
-              styles.input,
-              { height: 160, paddingHorizontal: 12, paddingVertical: 8 },
-            ]}
-            showsVerticalScrollIndicator={true}
-          >
-            <Text
-              style={[
-                styles.resultValue,
-                {
-                  fontSize: 12,
-                  marginBottom: 10,
-                  backgroundColor: colors.cardBg,
-                  padding: 10,
-                  borderRadius: 5,
-                  fontFamily: "monospace",
-                },
-              ]}
-            >
-              {mnemonic}
-            </Text>
-            {walletAddress && (
-              <View style={{ marginBottom: 10 }}>
-                <Text
-                  style={[
-                    styles.resultValue,
-                    {
-                      fontSize: 10,
-                      fontWeight: "bold",
-                      marginBottom: 5,
-                      color: colors.success,
-                    },
-                  ]}
-                >
-                  Wallet Address:
-                </Text>
-                <Text
-                  style={[
-                    styles.resultValue,
-                    {
-                      fontSize: 11,
-                      backgroundColor: colors.inputBg,
-                      padding: 8,
-                      borderRadius: 3,
-                      fontFamily: "monospace",
-                      color: colors.textPrimary,
-                    },
-                  ]}
-                >
-                  {walletAddress}
-                </Text>
-              </View>
-            )}
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons
-                name="warning-outline"
-                size={12}
-                color={colors.danger}
-                style={{ marginRight: 5 }}
-              />
-              <Text
+      {mode === "create" ? (
+        <NewAccountWizard onComplete={onClear} />
+      ) : (
+        <View>
+          <ActionButton
+            text="Generate Mnemonic"
+            onPress={generateMnemonicPhrase}
+            isLoading={isLoading}
+            disabled={isLoading || isTestingTransaction}
+            accessibilityLabel="Generate new wallet mnemonic"
+            accessibilityHint="Creates a new BIP39 mnemonic phrase for wallet creation"
+          />
+
+          {currentWallet && (
+            <ActionButton
+              text="Test Transaction"
+              onPress={testTransaction}
+              isLoading={isTestingTransaction}
+              disabled={isLoading || isTestingTransaction}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Test transaction with current wallet"
+              accessibilityHint="Attempts to send a test transaction using the generated wallet"
+            />
+          )}
+
+          {(mnemonic || error) && (
+            <ActionButton
+              text="Clear Mnemonic"
+              onPress={clearResults}
+              disabled={isLoading || isTestingTransaction}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Clear mnemonic results"
+            />
+          )}
+
+          {/* Error Section */}
+          {error && (
+            <View style={[styles.inputContainer, { marginTop: 20 }]}>
+              <Text style={styles.label}>Mnemonic Error:</Text>
+              <ScrollView
                 style={[
-                  styles.resultValue,
-                  {
-                    fontSize: 10,
-                    fontStyle: "italic",
-                    color: colors.textSecondary,
-                    flex: 1,
-                  },
+                  styles.input,
+                  { height: 100, paddingHorizontal: 12, paddingVertical: 8 },
                 ]}
+                showsVerticalScrollIndicator={true}
               >
-                Store this mnemonic securely. Anyone with access to it can
-                control your wallet.
-              </Text>
+                <Text style={[styles.errorText, { fontSize: 12 }]}>{error}</Text>
+              </ScrollView>
             </View>
-          </ScrollView>
+          )}
+
+          {/* Mnemonic Section */}
+          {mnemonic && (
+            <View style={[styles.inputContainer, { marginTop: 20 }]}>
+              <Text style={styles.label}>Generated Mnemonic:</Text>
+              <ScrollView
+                style={[
+                  styles.input,
+                  { height: 160, paddingHorizontal: 12, paddingVertical: 8 },
+                ]}
+                showsVerticalScrollIndicator={true}
+              >
+                <Text
+                  style={[
+                    styles.resultValue,
+                    {
+                      fontSize: 12,
+                      marginBottom: 10,
+                      backgroundColor: colors.cardBg,
+                      padding: 10,
+                      borderRadius: 5,
+                      fontFamily: "monospace",
+                    },
+                  ]}
+                >
+                  {mnemonic}
+                </Text>
+                {walletAddress && (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text
+                      style={[
+                        styles.resultValue,
+                        {
+                          fontSize: 10,
+                          fontWeight: "bold",
+                          marginBottom: 5,
+                          color: colors.success,
+                        },
+                      ]}
+                    >
+                      Wallet Address:
+                    </Text>
+                    <Text
+                      style={[
+                        styles.resultValue,
+                        {
+                          fontSize: 11,
+                          backgroundColor: colors.inputBg,
+                          padding: 8,
+                          borderRadius: 3,
+                          fontFamily: "monospace",
+                          color: colors.textPrimary,
+                        },
+                      ]}
+                    >
+                      {walletAddress}
+                    </Text>
+                  </View>
+                )}
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons
+                    name="warning-outline"
+                    size={12}
+                    color={colors.danger}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text
+                    style={[
+                      styles.resultValue,
+                      {
+                        fontSize: 10,
+                        fontStyle: "italic",
+                        color: colors.textSecondary,
+                        flex: 1,
+                      },
+                    ]}
+                  >
+                    Store this mnemonic securely. Anyone with access to it can
+                    control your wallet.
+                  </Text>
+                </View>
+              </ScrollView>
+            </View>
+          )}
         </View>
       )}
     </View>
