@@ -40,7 +40,7 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Ionicons
-            name={icon as any}
+            name={icon as keyof typeof Ionicons.glyphMap}
             size={24}
             color={isSelected ? colors.primary : colors.textPrimary}
             style={{ marginRight: 12 }}
