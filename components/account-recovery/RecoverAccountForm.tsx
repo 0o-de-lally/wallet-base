@@ -1,5 +1,5 @@
 import "buffer"; // Ensure Buffer is available globally
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
@@ -50,7 +50,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   }, [onResetForm]);
 
   // Mnemonic validation handler
-  const handleMnemonicValidation = (_isValid: boolean, isVerified: boolean) => {
+  const handleMnemonicValidation = useCallback((_isValid: boolean, isVerified: boolean) => {
     if (isVerified && !state.isVerifiedMnemonic) {
       actions.setIsDeriving(true);
     }
@@ -58,7 +58,20 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     if (!isVerified) {
       actions.setError(null);
     }
-  };
+  }, [state.isVerifiedMnemonic, actions]);
+
+  // Profile selection handler
+  const handleProfileSelect = useCallback((profile: string) => {
+    actions.setSelectedProfile(profile);
+    actions.setError(null);
+  }, [actions]);
+
+  // Verify on chain handler
+  const handleVerifyOnChain = useCallback(() => {
+    actions.setIsVerifyingChain(true);
+    actions.setError(null);
+    verifyOnChain();
+  }, [actions, verifyOnChain]);
 
   return (
     <SectionContainer
@@ -71,33 +84,42 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       )}
 
       <ProfileSelectionSection
-        state={state}
-        actions={actions}
+        error={hasMultipleProfiles ? state.error : null}
+        selectedProfile={state.selectedProfile}
         profileNames={profileNames}
         hasMultipleProfiles={hasMultipleProfiles}
+        onProfileSelect={handleProfileSelect}
       />
 
       <MnemonicInputSection
-        state={state}
-        actions={actions}
+        mnemonic={state.mnemonic}
+        isDeriving={state.isDeriving}
+        isLoading={state.isLoading}
+        onMnemonicChange={actions.setMnemonic}
         onMnemonicValidation={handleMnemonicValidation}
       />
 
       <AddressVerificationSection
-        state={state}
-        actions={actions}
-        onVerifyOnChain={verifyOnChain}
+        derivedAddress={state.derivedAddress}
+        chainAddress={state.chainAddress}
+        isChainVerified={state.isChainVerified}
+        isVerifyingChain={state.isVerifyingChain}
+        onVerifyOnChain={handleVerifyOnChain}
       />
 
       <RecoveryActionSection
-        state={state}
-        actions={actions}
+        nickname={state.nickname}
+        selectedProfile={state.selectedProfile}
+        isChainVerified={state.isChainVerified}
+        isLoading={state.isLoading}
         canRecover={canRecover || false}
+        onNicknameChange={actions.setNickname}
         onRecoverAccount={handleRecoverAccount}
       />
 
       <RecoveryModals
-        state={state}
+        successModalVisible={state.successModalVisible}
+        selectedProfile={state.selectedProfile}
         secureStorage={secureStorage}
         onSuccess={handleSuccess}
       />

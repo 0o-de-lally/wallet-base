@@ -2,39 +2,35 @@ import React from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import Dropdown from "../common/Dropdown";
-import { RecoveryState, RecoveryActions } from "./types";
 
 interface ProfileSelectionSectionProps {
-  state: RecoveryState;
-  actions: RecoveryActions;
+  error: string | null;
+  selectedProfile: string;
   profileNames: string[];
   hasMultipleProfiles: boolean;
+  onProfileSelect: (profile: string) => void;
 }
 
 export const ProfileSelectionSection: React.FC<ProfileSelectionSectionProps> = ({
-  state,
-  actions,
+  error,
+  selectedProfile,
   profileNames,
   hasMultipleProfiles,
+  onProfileSelect,
 }) => {
-  const handleProfileSelect = (profile: string) => {
-    actions.setSelectedProfile(profile);
-    actions.setError(null);
-  };
-
   if (!hasMultipleProfiles) {
     return null;
   }
 
   return (
     <>
-      {state.error && <Text style={styles.errorText}>{state.error}</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
       
       <Dropdown
         label="Profile"
-        value={state.selectedProfile}
+        value={selectedProfile}
         options={profileNames}
-        onSelect={handleProfileSelect}
+        onSelect={onProfileSelect}
         placeholder="Select a profile"
       />
     </>

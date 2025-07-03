@@ -2,33 +2,36 @@ import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { styles, namedColors } from "../../styles/styles";
 import { MnemonicInput } from "../common/MnemonicInput";
-import { RecoveryState, RecoveryActions } from "./types";
 
 interface MnemonicInputSectionProps {
-  state: RecoveryState;
-  actions: RecoveryActions;
+  mnemonic: string;
+  isDeriving: boolean;
+  isLoading: boolean;
+  onMnemonicChange: (mnemonic: string) => void;
   onMnemonicValidation: (isValid: boolean, isVerified: boolean) => void;
 }
 
 export const MnemonicInputSection: React.FC<MnemonicInputSectionProps> = ({
-  state,
-  actions,
+  mnemonic,
+  isDeriving,
+  isLoading,
+  onMnemonicChange,
   onMnemonicValidation,
 }) => {
   return (
     <>
       <MnemonicInput
         label="Recovery Phrase:"
-        value={state.mnemonic}
-        onChangeText={actions.setMnemonic}
+        value={mnemonic}
+        onChangeText={onMnemonicChange}
         onValidationChange={onMnemonicValidation}
         placeholder="Enter your 24-word recovery phrase..."
-        disabled={state.isLoading || state.isDeriving}
+        disabled={isLoading || isDeriving}
         showWordCount={true}
         autoValidate={true}
       />
 
-      {state.isDeriving && (
+      {isDeriving && (
         <View style={styles.inputContainer}>
           <View
             style={{

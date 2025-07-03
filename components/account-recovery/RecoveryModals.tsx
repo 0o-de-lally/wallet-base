@@ -2,16 +2,17 @@ import React from "react";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
-import { RecoveryState } from "./types";
 
 interface RecoveryModalsProps {
-  state: RecoveryState;
+  successModalVisible: boolean;
+  selectedProfile: string;
   secureStorage: ReturnType<typeof useSecureStorage>;
   onSuccess: () => void;
 }
 
 export const RecoveryModals: React.FC<RecoveryModalsProps> = ({
-  state,
+  successModalVisible,
+  selectedProfile,
   secureStorage,
   onSuccess,
 }) => {
@@ -19,9 +20,9 @@ export const RecoveryModals: React.FC<RecoveryModalsProps> = ({
     <>
       {/* Success Modal */}
       <ConfirmationModal
-        visible={state.successModalVisible}
+        visible={successModalVisible}
         title="Success"
-        message={`Account recovered and added to "${state.selectedProfile}" successfully.`}
+        message={`Account recovered and added to "${selectedProfile}" successfully.`}
         confirmText="OK"
         onConfirm={onSuccess}
         onCancel={onSuccess}

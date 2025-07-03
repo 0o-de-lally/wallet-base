@@ -4,20 +4,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles, colors } from "../../styles/styles";
 import { FormInput } from "../common/FormInput";
 import { ActionButton } from "../common/ActionButton";
-import { RecoveryState, RecoveryActions } from "./types";
+import { AccountAddress } from "open-libra-sdk";
 
 interface AddressVerificationSectionProps {
-  state: RecoveryState;
-  actions: RecoveryActions;
+  derivedAddress: AccountAddress | null;
+  chainAddress: AccountAddress | null;
+  isChainVerified: boolean;
+  isVerifyingChain: boolean;
   onVerifyOnChain: () => void;
 }
 
 export const AddressVerificationSection: React.FC<AddressVerificationSectionProps> = ({
-  state,
-  actions,
+  derivedAddress,
+  chainAddress,
+  isChainVerified,
+  isVerifyingChain,
   onVerifyOnChain,
 }) => {
-  if (!state.derivedAddress) {
+  if (!derivedAddress) {
     return null;
   }
 
@@ -25,13 +29,13 @@ export const AddressVerificationSection: React.FC<AddressVerificationSectionProp
     <>
       <FormInput
         label="Derived Address:"
-        value={state.derivedAddress.toStringLong()}
+        value={derivedAddress.toStringLong()}
         onChangeText={() => {}} // Read-only
         placeholder="Address will appear here"
         disabled={true}
       />
 
-      {!state.isChainVerified && (
+      {!isChainVerified && (
         <View style={styles.inputContainer}>
           <Text style={styles.label}>
             Verify the mnemonic by connecting to the blockchain. This works for
@@ -39,20 +43,16 @@ export const AddressVerificationSection: React.FC<AddressVerificationSectionProp
           </Text>
           <ActionButton
             text="Verify on Chain"
-            onPress={() => {
-              actions.setIsVerifyingChain(true);
-              actions.setError(null);
-              onVerifyOnChain();
-            }}
-            disabled={state.isVerifyingChain || !state.derivedAddress}
-            isLoading={state.isVerifyingChain}
+            onPress={onVerifyOnChain}
+            disabled={isVerifyingChain || !derivedAddress}
+            isLoading={isVerifyingChain}
             accessibilityLabel="Verify address on blockchain"
             accessibilityHint="Connects to the blockchain to verify the account exists or confirm it's new"
           />
         </View>
       )}
 
-      {state.isChainVerified && state.chainAddress && (
+      {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Ionicons
@@ -63,14 +63,14 @@ export const AddressVerificationSection: React.FC<AddressVerificationSectionProp
             />
             <Text style={[styles.label, { color: colors.success }]}>
               Chain verification successful!
-              {state.chainAddress?.toStringLong() === state.derivedAddress?.toStringLong()
+              {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
                 ? " (Account verified or new)"
                 : " (Account found with rotated keys)"}
             </Text>
           </View>
           <FormInput
             label="Actual Chain Address:"
-            value={state.chainAddress.toStringLong()}
+            value={chainAddress.toStringLong()}
             onChangeText={() => {}} // Read-only
             placeholder="Verified address"
             disabled={true}
