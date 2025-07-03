@@ -84,10 +84,11 @@ export async function fetchAccountBalance(
       error instanceof Error ? error.message : "Failed to fetch balance";
 
     // Check if this is a 404 error indicating the account doesn't exist on chain
-    const isAccountNotFound = errorMessage.includes("404") || 
-                             errorMessage.includes("not found") ||
-                             errorMessage.includes("does not exist") ||
-                             errorMessage.includes("Account not found");
+    const isAccountNotFound =
+      errorMessage.includes("404") ||
+      errorMessage.includes("not found") ||
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("Account not found");
 
     // Use the error reporting system instead of console logging
     reportError(shouldLog ? "warn" : "debug", "fetchAccountBalance", error, {
@@ -139,9 +140,10 @@ export async function updateAccountBalance(
             ? (currentAccount.error_count || 0) + 1
             : undefined, // Clear error count on successful update
           // Update exists_on_chain flag
-          exists_on_chain: balanceData.exists_on_chain !== undefined 
-            ? balanceData.exists_on_chain 
-            : currentAccount.exists_on_chain,
+          exists_on_chain:
+            balanceData.exists_on_chain !== undefined
+              ? balanceData.exists_on_chain
+              : currentAccount.exists_on_chain,
         };
         // Update the profile in storage
         appConfig.profiles[profileKey].set(profile);

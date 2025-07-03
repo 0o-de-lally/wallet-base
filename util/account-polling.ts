@@ -46,7 +46,7 @@ export async function fetchAccountPollingData(
     console.log(`Account ${accountAddress} exists on chain`);
   } catch (error) {
     console.log(`Account ${accountAddress} does not exist on chain:`, error);
-    
+
     // If account doesn't exist, return data with exists_on_chain: false
     return {
       balance: {

@@ -58,8 +58,20 @@ export default function AccountDetailsScreen() {
         {accountNickname ? `• ${accountNickname}` : ""}
       </Text>
 
-      {/* Account Authorization Status */}
-      {account && <AccountStateStatus account={account} />}
+      {/* Account Authorization Status - only show if account exists on chain */}
+      {account && account.exists_on_chain !== false && (
+        <AccountStateStatus account={account} />
+      )}
+    </View>
+  );
+
+  const renderHeaderForNotFound = () => (
+    <View>
+      <Text style={styles.sectionTitle}>
+        {profileName} •{" "}
+        {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
+        {accountNickname ? `• ${accountNickname}` : ""}
+      </Text>
     </View>
   );
 
@@ -75,7 +87,7 @@ export default function AccountDetailsScreen() {
         {account ? (
           account.exists_on_chain === false ? (
             <View style={styles.container}>
-              {renderHeader()}
+              {renderHeaderForNotFound()}
               <AccountNotFoundCard accountAddress={account.account_address} />
             </View>
           ) : (

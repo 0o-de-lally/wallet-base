@@ -20,20 +20,17 @@ export const AccountNotFoundCard: React.FC<AccountNotFoundCardProps> = ({
           marginBottom: 16,
         }}
       >
-        <Ionicons
-          name="globe-outline"
-          size={24}
-          color={colors.textSecondary}
-        />
+        <Ionicons name="globe-outline" size={24} color={colors.textSecondary} />
         <Text style={[styles.sectionTitle, { flex: 1 }]}>
           Account Not Found on Chain
         </Text>
       </View>
-      
+
       <Text style={[styles.resultValue, { marginBottom: 16 }]}>
-        This account address does not exist on the blockchain yet. To activate this account, someone needs to send coins to it.
+        This account address does not exist on the blockchain yet. To activate
+        this account, someone needs to send coins to it.
       </Text>
-      
+
       <View
         style={{
           backgroundColor: colors.cardBg,
@@ -50,7 +47,7 @@ export const AccountNotFoundCard: React.FC<AccountNotFoundCardProps> = ({
           {accountAddress}
         </Text>
       </View>
-      
+
       <View
         style={{
           marginTop: 16,
@@ -60,7 +57,8 @@ export const AccountNotFoundCard: React.FC<AccountNotFoundCardProps> = ({
         }}
       >
         <Text style={[styles.resultValue, { fontSize: 14 }]}>
-          💡 <Text style={{ fontWeight: "bold" }}>Tip:</Text> Share this address with someone to receive your first coins and activate the account.
+          💡 <Text style={{ fontWeight: "bold" }}>Tip:</Text> Share this address
+          with someone to receive your first coins and activate the account.
         </Text>
       </View>
     </View>
