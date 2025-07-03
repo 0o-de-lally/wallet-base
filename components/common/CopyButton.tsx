@@ -28,20 +28,17 @@ export const CopyButton = memo(
     accessibilityLabel,
     accessibilityHint,
   }: CopyButtonProps) => {
-    const [isCopying, setIsCopying] = useState(false);
-
-    const handleCopy = async () => {
+    const [isCopying, setIsCopying] = useState(false);    const handleCopy = async () => {
       if (disabled || isCopying) return;
 
       setIsCopying(true);
       try {
         await Clipboard.setStringAsync(text);
-
+        
         if (onCopySuccess) {
           onCopySuccess();
-        } else {
-          Alert.alert("Copied", `${label} copied to clipboard`);
         }
+        // Removed the default Alert.alert notification for a cleaner UX
       } catch (error) {
         const errorMessage = "Failed to copy to clipboard";
         if (onCopyError) {
