@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AccountAddress } from "open-libra-sdk";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
@@ -35,8 +35,8 @@ export const useRecoveryState = () => {
   // Initialize secure storage hook
   const secureStorage = useSecureStorage();
 
-  // Actions
-  const actions: RecoveryActions = {
+  // Actions - memoized to prevent infinite re-renders
+  const actions: RecoveryActions = useMemo(() => ({
     setMnemonic: (mnemonic: string) => setState(prev => ({ ...prev, mnemonic })),
     setNickname: (nickname: string) => setState(prev => ({ ...prev, nickname })),
     setError: (error: string | null) => setState(prev => ({ ...prev, error })),
@@ -50,7 +50,7 @@ export const useRecoveryState = () => {
     setSelectedProfile: (selectedProfile: string) => setState(prev => ({ ...prev, selectedProfile })),
     setSuccessModalVisible: (successModalVisible: boolean) => setState(prev => ({ ...prev, successModalVisible })),
     setSaveInitiated: (saveInitiated: boolean) => setState(prev => ({ ...prev, saveInitiated })),
-  };
+  }), []);
 
   return {
     state,
