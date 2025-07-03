@@ -14,7 +14,9 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
   onAccountChoice,
   onResetApp,
 }) => {
-  const [selectedChoice, setSelectedChoice] = useState<"create" | "recover" | null>(null);
+  const [selectedChoice, setSelectedChoice] = useState<
+    "create" | "recover" | null
+  >(null);
 
   const renderChoiceOption = (
     choice: "create" | "recover",

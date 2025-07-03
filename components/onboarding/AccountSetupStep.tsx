@@ -33,11 +33,7 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
           }}
           accessibilityLabel="Go back to account choice"
         >
-          <Ionicons
-            name="arrow-back"
-            size={20}
-            color={colors.textSecondary}
-          />
+          <Ionicons name="arrow-back" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
