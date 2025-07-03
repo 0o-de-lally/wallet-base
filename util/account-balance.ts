@@ -6,6 +6,7 @@ import { categorizeError, reportError } from "./error-utils";
 export interface BalanceData {
   balance_unlocked: number;
   balance_total: number;
+  exists_on_chain?: boolean; // Whether the account exists on chain
   error?: string;
   error_type?: "network" | "api" | "timeout" | "unknown";
 }
@@ -70,6 +71,7 @@ export async function fetchAccountBalance(
       return {
         balance_unlocked,
         balance_total,
+        exists_on_chain: true,
       };
     } else {
       throw new Error(
@@ -81,16 +83,25 @@ export async function fetchAccountBalance(
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch balance";
 
+    // Check if this is a 404 error indicating the account doesn't exist on chain
+    const isAccountNotFound =
+      errorMessage.includes("404") ||
+      errorMessage.includes("not found") ||
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("Account not found");
+
     // Use the error reporting system instead of console logging
     reportError(shouldLog ? "warn" : "debug", "fetchAccountBalance", error, {
       accountAddress,
       type,
+      isAccountNotFound,
     });
 
     // Return error state instead of throwing
     return {
       balance_unlocked: 0,
       balance_total: 0,
+      exists_on_chain: isAccountNotFound ? false : undefined,
       error: errorMessage,
       error_type: type,
     };
@@ -128,6 +139,11 @@ export async function updateAccountBalance(
           error_count: balanceData.error
             ? (currentAccount.error_count || 0) + 1
             : undefined, // Clear error count on successful update
+          // Update exists_on_chain flag
+          exists_on_chain:
+            balanceData.exists_on_chain !== undefined
+              ? balanceData.exists_on_chain
+              : currentAccount.exists_on_chain,
         };
         // Update the profile in storage
         appConfig.profiles[profileKey].set(profile);

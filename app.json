@@ -19,6 +19,8 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.olcarpe.walletbase",
+
       "infoPlist": {
         "NSFaceIDUsageDescription": "This app uses Face ID to secure your wallet credentials."
       }
