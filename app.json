@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Carpe",
-    "slug": "open-libra-wallet",
+    "slug": "wallet-base",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
