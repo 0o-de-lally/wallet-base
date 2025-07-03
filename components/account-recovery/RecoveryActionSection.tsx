@@ -1,6 +1,7 @@
 import React from "react";
 import { ActionButton } from "../common/ActionButton";
 import { FormInput } from "../common/FormInput";
+import { AccountMode } from "./types";
 
 interface RecoveryActionSectionProps {
   nickname: string;
@@ -8,6 +9,7 @@ interface RecoveryActionSectionProps {
   isChainVerified: boolean;
   isLoading: boolean;
   canRecover: boolean;
+  mode: AccountMode;
   onNicknameChange: (nickname: string) => void;
   onRecoverAccount: () => void;
 }
@@ -18,9 +20,28 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
   isChainVerified,
   isLoading,
   canRecover,
+  mode,
   onNicknameChange,
   onRecoverAccount,
 }) => {
+  const getButtonText = () => {
+    if (!isChainVerified) {
+      return "Verify Chain First";
+    }
+    return mode === "recover" ? "Recover Account" : "Create Account";
+  };
+
+  const getAccessibilityLabel = () => {
+    return mode === "recover" 
+      ? "Recover account from mnemonic"
+      : "Create new account with generated mnemonic";
+  };
+
+  const getAccessibilityHint = () => {
+    const action = mode === "recover" ? "Recovers" : "Creates";
+    return `${action} an account from the mnemonic phrase and adds it to the ${selectedProfile} profile`;
+  };
+
   return (
     <>
       <FormInput
@@ -32,12 +53,12 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
       />
 
       <ActionButton
-        text={isChainVerified ? "Recover Account" : "Verify Chain First"}
+        text={getButtonText()}
         onPress={onRecoverAccount}
         disabled={!canRecover}
         isLoading={isLoading}
-        accessibilityLabel="Recover account from mnemonic"
-        accessibilityHint={`Recovers an account from the mnemonic phrase and adds it to the ${selectedProfile} profile`}
+        accessibilityLabel={getAccessibilityLabel()}
+        accessibilityHint={getAccessibilityHint()}
       />
     </>
   );

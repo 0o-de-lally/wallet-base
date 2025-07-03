@@ -162,6 +162,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         isChainVerified={state.isChainVerified}
         isLoading={state.isLoading}
         canRecover={canRecover || false}
+        mode={state.mode}
         onNicknameChange={actions.setNickname}
         onRecoverAccount={handleRecoverAccount}
       />
