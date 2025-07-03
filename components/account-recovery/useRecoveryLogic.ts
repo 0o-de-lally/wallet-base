@@ -205,7 +205,7 @@ export const useRecoveryLogic = (
   const canRecover =
     state.isVerifiedMnemonic &&
     state.derivedAddress &&
-    state.isChainVerified &&
+    (state.mode === "generate" || state.isChainVerified) &&
     !state.isLoading &&
     !state.isVerifyingChain &&
     !state.isDeriving &&

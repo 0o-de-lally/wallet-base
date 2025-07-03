@@ -25,7 +25,7 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
   onRecoverAccount,
 }) => {
   const getButtonText = () => {
-    if (!isChainVerified) {
+    if (mode === "recover" && !isChainVerified) {
       return "Verify Chain First";
     }
     return mode === "recover" ? "Recover Account" : "Create Account";

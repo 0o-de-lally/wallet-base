@@ -6,6 +6,7 @@ import { SectionContainer } from "../common/SectionContainer";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import { AccountModeSelection } from "./AccountModeSelection";
 import { GeneratedMnemonicSection } from "./GeneratedMnemonicSection";
+import { GeneratedAddressDisplay } from "./GeneratedAddressDisplay";
 import { ProfileSelectionSection } from "./ProfileSelectionSection";
 import { MnemonicInputSection } from "./MnemonicInputSection";
 import { AddressVerificationSection } from "./AddressVerificationSection";
@@ -92,8 +93,9 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       actions.setError(null);
       actions.setIsVerifiedMnemonic(false);
       actions.setDerivedAddress(null);
-      actions.setIsChainVerified(false);
       actions.setChainAddress(null);
+      // For generate mode, we don't need chain verification
+      actions.setIsChainVerified(mode === "generate");
     },
     [actions],
   );
@@ -148,13 +150,22 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         />
       )}
 
-      <AddressVerificationSection
-        derivedAddress={state.derivedAddress}
-        chainAddress={state.chainAddress}
-        isChainVerified={state.isChainVerified}
-        isVerifyingChain={state.isVerifyingChain}
-        onVerifyOnChain={handleVerifyOnChain}
-      />
+      {state.mode === "generate" && (
+        <GeneratedAddressDisplay
+          derivedAddress={state.derivedAddress}
+          isDeriving={state.isDeriving}
+        />
+      )}
+
+      {state.mode === "recover" && (
+        <AddressVerificationSection
+          derivedAddress={state.derivedAddress}
+          chainAddress={state.chainAddress}
+          isChainVerified={state.isChainVerified}
+          isVerifyingChain={state.isVerifyingChain}
+          onVerifyOnChain={handleVerifyOnChain}
+        />
+      )}
 
       <RecoveryActionSection
         nickname={state.nickname}
