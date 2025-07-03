@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import AddAccountForm from "../profile/AddAccountForm";
-import RecoverAccountForm from "../profile/RecoverAccountForm";
+import RecoverAccountForm from "../account-recovery/RecoverAccountForm";
 
 interface AccountSetupStepProps {
   accountChoice: "create" | "recover" | null;
