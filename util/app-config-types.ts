@@ -44,6 +44,7 @@ export type AccountState = {
   reveal_schedule?: RevealSchedule; // Optional reveal schedule for this account's secure data
   is_v8_authorized?: boolean; // Whether the account is v8 authorized
   v8_migrated?: boolean; // Whether the account has been migrated successfully
+  exists_on_chain?: boolean; // Whether the account exists on chain (false if 404 error from API)
 };
 
 /**

@@ -98,7 +98,7 @@ export const AccountItem = memo(
           isSwitching && { opacity: 0.6 },
         ]}
         accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.exists_on_chain === false ? " (not found on chain)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`}
         onPress={handlePress}
         onLongPress={account.last_error ? handleRetryBalance : undefined}
         disabled={isSwitching}
@@ -145,6 +145,14 @@ export const AccountItem = memo(
                       size={12}
                       color={colors.danger}
                       accessibilityLabel="Balance data may be outdated"
+                    />
+                  )}
+                  {account.exists_on_chain === false && (
+                    <Ionicons
+                      name="globe-outline"
+                      size={12}
+                      color={colors.textSecondary}
+                      accessibilityLabel="Account not found on chain"
                     />
                   )}
                   {account.is_v8_authorized === false && (
@@ -246,6 +254,14 @@ export const AccountItem = memo(
                         size={14}
                         color={colors.danger}
                         accessibilityLabel="Balance data may be outdated"
+                      />
+                    )}
+                    {account.exists_on_chain === false && (
+                      <Ionicons
+                        name="globe-outline"
+                        size={14}
+                        color={colors.textSecondary}
+                        accessibilityLabel="Account not found on chain"
                       />
                     )}
                     {account.is_v8_authorized === false && (

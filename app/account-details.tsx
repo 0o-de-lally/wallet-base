@@ -4,6 +4,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { HistoricalTransactions } from "../components/transaction/HistoricalTransactions";
+import { AccountNotFoundCard } from "../components/transaction/AccountNotFoundCard";
 import { appConfig, type AccountState } from "../util/app-config-store";
 import { shortenAddress } from "../util/format-utils";
 
@@ -72,12 +73,19 @@ export default function AccountDetailsScreen() {
       />
       <View style={styles.safeAreaView}>
         {account ? (
-          <HistoricalTransactions
-            accountAddress={account.account_address}
-            headerComponent={renderHeader}
-            onRefresh={onRefresh}
-            refreshing={isRefreshing}
-          />
+          account.exists_on_chain === false ? (
+            <View style={styles.container}>
+              {renderHeader()}
+              <AccountNotFoundCard accountAddress={account.account_address} />
+            </View>
+          ) : (
+            <HistoricalTransactions
+              accountAddress={account.account_address}
+              headerComponent={renderHeader}
+              onRefresh={onRefresh}
+              refreshing={isRefreshing}
+            />
+          )
         ) : (
           <View style={styles.container}>
             <Text style={styles.sectionTitle}>Loading...</Text>
