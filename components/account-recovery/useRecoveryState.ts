@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { AccountAddress } from "open-libra-sdk";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
-import { RecoveryState, RecoveryActions } from "./types";
+import { RecoveryState, RecoveryActions, AccountMode } from "./types";
 
 export const useRecoveryState = () => {
   // Get all available profiles
@@ -14,6 +14,7 @@ export const useRecoveryState = () => {
 
   // Initialize state
   const [state, setState] = useState<RecoveryState>(() => ({
+    mode: "recover",
     mnemonic: "",
     nickname: "",
     error: null,
@@ -40,6 +41,8 @@ export const useRecoveryState = () => {
   // Actions - memoized to prevent infinite re-renders
   const actions: RecoveryActions = useMemo(
     () => ({
+      setMode: (mode: AccountMode) =>
+        setState((prev) => ({ ...prev, mode })),
       setMnemonic: (mnemonic: string) =>
         setState((prev) => ({ ...prev, mnemonic })),
       setNickname: (nickname: string) =>

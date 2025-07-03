@@ -1,6 +1,9 @@
 import { AccountAddress } from "open-libra-sdk";
 
+export type AccountMode = "recover" | "generate";
+
 export interface RecoveryState {
+  mode: AccountMode;
   mnemonic: string;
   nickname: string;
   error: string | null;
@@ -17,6 +20,7 @@ export interface RecoveryState {
 }
 
 export interface RecoveryActions {
+  setMode: (mode: AccountMode) => void;
   setMnemonic: (mnemonic: string) => void;
   setNickname: (nickname: string) => void;
   setError: (error: string | null) => void;

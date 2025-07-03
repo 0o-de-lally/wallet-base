@@ -4,6 +4,8 @@ import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { appConfig, getProfileForAccount } from "../../util/app-config-store";
+import { AccountModeSelection } from "./AccountModeSelection";
+import { GeneratedMnemonicSection } from "./GeneratedMnemonicSection";
 import { ProfileSelectionSection } from "./ProfileSelectionSection";
 import { MnemonicInputSection } from "./MnemonicInputSection";
 import { AddressVerificationSection } from "./AddressVerificationSection";
@@ -11,7 +13,7 @@ import { RecoveryActionSection } from "./RecoveryActionSection";
 import { RecoveryModals } from "./RecoveryModals";
 import { useRecoveryState } from "./useRecoveryState";
 import { useRecoveryLogic } from "./useRecoveryLogic";
-import { RecoverAccountFormProps } from "./types";
+import { RecoverAccountFormProps, AccountMode } from "./types";
 
 const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   profileName,
@@ -82,12 +84,43 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     verifyOnChain();
   }, [actions, verifyOnChain]);
 
+  // Mode change handler
+  const handleModeChange = useCallback(
+    (mode: AccountMode) => {
+      actions.setMode(mode);
+      actions.setMnemonic("");
+      actions.setError(null);
+      actions.setIsVerifiedMnemonic(false);
+      actions.setDerivedAddress(null);
+      actions.setIsChainVerified(false);
+      actions.setChainAddress(null);
+    },
+    [actions],
+  );
+
+  // Generated mnemonic handler
+  const handleMnemonicGenerated = useCallback(
+    (mnemonic: string) => {
+      actions.setMnemonic(mnemonic);
+      actions.setIsVerifiedMnemonic(true);
+      actions.setIsDeriving(true);
+    },
+    [actions],
+  );
+
   return (
     <SectionContainer
       title={
-        profileName ? `Recover Account to ${profileName}` : "Recover Account"
+        state.mode === "recover"
+          ? (profileName ? `Recover Account to ${profileName}` : "Recover Account")
+          : (profileName ? `Create Account to ${profileName}` : "Create Account")
       }
     >
+      <AccountModeSelection
+        selectedMode={state.mode}
+        onModeChange={handleModeChange}
+      />
+
       {!hasMultipleProfiles && state.error && (
         <Text style={styles.errorText}>{state.error}</Text>
       )}
@@ -100,13 +133,20 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         onProfileSelect={handleProfileSelect}
       />
 
-      <MnemonicInputSection
-        mnemonic={state.mnemonic}
-        isDeriving={state.isDeriving}
-        isLoading={state.isLoading}
-        onMnemonicChange={actions.setMnemonic}
-        onMnemonicValidation={handleMnemonicValidation}
-      />
+      {state.mode === "recover" ? (
+        <MnemonicInputSection
+          mnemonic={state.mnemonic}
+          isDeriving={state.isDeriving}
+          isLoading={state.isLoading}
+          onMnemonicChange={actions.setMnemonic}
+          onMnemonicValidation={handleMnemonicValidation}
+        />
+      ) : (
+        <GeneratedMnemonicSection
+          onMnemonicGenerated={handleMnemonicGenerated}
+          isLoading={state.isLoading}
+        />
+      )}
 
       <AddressVerificationSection
         derivedAddress={state.derivedAddress}
