@@ -9,11 +9,12 @@ interface GeneratedMnemonicSectionProps {
   isLoading?: boolean;
 }
 
-export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> = ({
-  onMnemonicGenerated,
-  isLoading = false,
-}) => {
-  const [generatedMnemonic, setGeneratedMnemonic] = useState<string | null>(null);
+export const GeneratedMnemonicSection: React.FC<
+  GeneratedMnemonicSectionProps
+> = ({ onMnemonicGenerated, isLoading = false }) => {
+  const [generatedMnemonic, setGeneratedMnemonic] = useState<string | null>(
+    null,
+  );
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateMnemonic = useCallback(async () => {
@@ -21,7 +22,7 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
 
     try {
       // Add a small delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const newMnemonic = generateMnemonic();
       setGeneratedMnemonic(newMnemonic);
@@ -30,14 +31,14 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
       Alert.alert(
         "Mnemonic Generated",
         "Your recovery words have been generated successfully. Please write them down in a secure place.",
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
     } catch (error) {
       console.error("Error generating mnemonic:", error);
       Alert.alert(
         "Error",
         "Failed to generate recovery words. Please try again.",
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
     } finally {
       setIsGenerating(false);
@@ -51,7 +52,8 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
       {!generatedMnemonic ? (
         <View>
           <Text style={[styles.description, { marginBottom: 16 }]}>
-            Generate new recovery words for your account. These words will be used to restore your account if needed.
+            Generate new recovery words for your account. These words will be
+            used to restore your account if needed.
           </Text>
 
           <ActionButton
@@ -69,8 +71,11 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
             </Text>
           </View>
 
-          <Text style={[styles.description, { marginTop: 12, marginBottom: 0 }]}>
-            ⚠️ Write these words down in order and keep them safe. You&apos;ll need them to recover your account.
+          <Text
+            style={[styles.description, { marginTop: 12, marginBottom: 0 }]}
+          >
+            ⚠️ Write these words down in order and keep them safe. You&apos;ll
+            need them to recover your account.
           </Text>
 
           <ActionButton

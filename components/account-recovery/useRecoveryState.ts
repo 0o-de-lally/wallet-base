@@ -8,9 +8,9 @@ export const useRecoveryState = () => {
   // Get all available profiles - memoized to prevent recalculation on every render
   const profileNames = useMemo(() => Object.keys(appConfig.profiles.get()), []);
   const activeAccountId = useMemo(() => appConfig.activeAccountId.get(), []);
-  const activeProfileName = useMemo(() => 
-    activeAccountId ? getProfileForAccount(activeAccountId) : null,
-    [activeAccountId]
+  const activeProfileName = useMemo(
+    () => (activeAccountId ? getProfileForAccount(activeAccountId) : null),
+    [activeAccountId],
   );
 
   // Initialize state
@@ -44,8 +44,7 @@ export const useRecoveryState = () => {
   // Actions - memoized to prevent infinite re-renders
   const actions: RecoveryActions = useMemo(
     () => ({
-      setMode: (mode: AccountMode) =>
-        setState((prev) => ({ ...prev, mode })),
+      setMode: (mode: AccountMode) => setState((prev) => ({ ...prev, mode })),
       setMnemonic: (mnemonic: string) =>
         setState((prev) => ({ ...prev, mnemonic })),
       setNickname: (nickname: string) =>

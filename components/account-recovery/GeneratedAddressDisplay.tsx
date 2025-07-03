@@ -8,10 +8,9 @@ interface GeneratedAddressDisplayProps {
   isDeriving: boolean;
 }
 
-export const GeneratedAddressDisplay: React.FC<GeneratedAddressDisplayProps> = ({
-  derivedAddress,
-  isDeriving,
-}) => {
+export const GeneratedAddressDisplay: React.FC<
+  GeneratedAddressDisplayProps
+> = ({ derivedAddress, isDeriving }) => {
   if (!derivedAddress && !isDeriving) {
     return null;
   }
@@ -36,7 +35,8 @@ export const GeneratedAddressDisplay: React.FC<GeneratedAddressDisplayProps> = (
 
       {derivedAddress && (
         <Text style={[styles.description, { marginTop: 8, marginBottom: 0 }]}>
-          This is your new account address that will be created on the blockchain.
+          This is your new account address that will be created on the
+          blockchain.
         </Text>
       )}
     </View>

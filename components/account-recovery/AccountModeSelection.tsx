@@ -93,14 +93,14 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
         "recover",
         "Recover Existing Account",
         "Use existing recovery words to restore your account",
-        "key"
+        "key",
       )}
 
       {renderModeOption(
         "generate",
         "Generate New Account",
         "Create a new account with fresh recovery words",
-        "add-circle"
+        "add-circle",
       )}
     </View>
   );

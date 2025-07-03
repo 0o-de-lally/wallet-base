@@ -24,7 +24,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   const { verifyOnChain, handleRecoverAccount, handleSuccess, canRecover } =
     useRecoveryLogic(state, actions, secureStorage, onComplete);
 
-  // Update selected profile if initial profile changes  
+  // Update selected profile if initial profile changes
   useEffect(() => {
     if (profileName && state.selectedProfile !== profileName) {
       actions.setSelectedProfile(profileName);
@@ -104,8 +104,12 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     <SectionContainer
       title={
         state.mode === "recover"
-          ? (profileName ? `Recover Account to ${profileName}` : "Recover Account")
-          : (profileName ? `Create Account to ${profileName}` : "Create Account")
+          ? profileName
+            ? `Recover Account to ${profileName}`
+            : "Recover Account"
+          : profileName
+            ? `Create Account to ${profileName}`
+            : "Create Account"
       }
     >
       <AccountModeSelection

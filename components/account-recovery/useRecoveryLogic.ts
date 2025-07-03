@@ -202,12 +202,21 @@ export const useRecoveryLogic = (
       pinModalVisible: secureStorage.pinModalVisible,
     });
 
-    if (state.accountCreated && state.saveInitiated && !secureStorage.pinModalVisible) {
+    if (
+      state.accountCreated &&
+      state.saveInitiated &&
+      !secureStorage.pinModalVisible
+    ) {
       console.log("Conditions met, showing success modal");
       // PIN modal was closed, mnemonic should be saved, show success
       actions.setSuccessModalVisible(true);
     }
-  }, [state.accountCreated, state.saveInitiated, secureStorage.pinModalVisible, actions]);
+  }, [
+    state.accountCreated,
+    state.saveInitiated,
+    secureStorage.pinModalVisible,
+    actions,
+  ]);
 
   const resetForm = useCallback(() => {
     actions.setMnemonic("");
