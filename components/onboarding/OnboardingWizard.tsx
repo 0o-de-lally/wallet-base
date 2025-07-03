@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Text, ScrollView } from "react-native";
+import { Text, ScrollView, View } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { styles } from "../../styles/styles";
@@ -143,38 +143,42 @@ export const OnboardingWizard: React.FC = observer(() => {
 
   if (isLoading) {
     return (
+      <View style={styles.safeAreaView}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <Text style={styles.title}>Wallet Setup</Text>
+          <SectionContainer title="Checking Setup Status">
+            <Text style={styles.resultValue}>
+              Checking your PIN and account status...
+            </Text>
+          </SectionContainer>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.safeAreaView}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
       >
         <Text style={styles.title}>Wallet Setup</Text>
-        <SectionContainer title="Checking Setup Status">
-          <Text style={styles.resultValue}>
-            Checking your PIN and account status...
-          </Text>
-        </SectionContainer>
-      </ScrollView>
-    );
-  }
-
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <Text style={styles.title}>Wallet Setup</Text>
-      {/* <Text>{hasUserAccounts.valueOf()}</Text>
+        {/* <Text>{hasUserAccounts.valueOf()}</Text>
         <Text>{hasPin.valueOf()}</Text> */}
 
-      {renderCurrentView()}
+        {renderCurrentView()}
 
-      <PinCreationFlow
-        visible={pinCreationVisible}
-        onComplete={handlePinCreationComplete}
-        onCancel={() => setPinCreationVisible(false)}
-        showSuccessAlert={true}
-      />
-    </ScrollView>
+        <PinCreationFlow
+          visible={pinCreationVisible}
+          onComplete={handlePinCreationComplete}
+          onCancel={() => setPinCreationVisible(false)}
+          showSuccessAlert={true}
+        />
+      </ScrollView>
+    </View>
   );
 });
 

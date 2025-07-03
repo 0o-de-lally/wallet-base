@@ -101,17 +101,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   );
 
   return (
-    <SectionContainer
-      title={
-        state.mode === "recover"
-          ? profileName
-            ? `Recover Account to ${profileName}`
-            : "Recover Account"
-          : profileName
-            ? `Create Account to ${profileName}`
-            : "Create Account"
-      }
-    >
+    <SectionContainer>
       <AccountModeSelection
         selectedMode={state.mode}
         onModeChange={handleModeChange}

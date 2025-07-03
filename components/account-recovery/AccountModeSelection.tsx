@@ -85,10 +85,6 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
 
   return (
     <View style={{ marginBottom: 24 }}>
-      <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
-        Choose Account Setup Method
-      </Text>
-
       {renderModeOption(
         "recover",
         "Recover Existing Account",
