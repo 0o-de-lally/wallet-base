@@ -79,7 +79,7 @@ export const useRecoveryLogic = (
   useEffect(() => {
     const addressToCheck = state.chainAddress || state.derivedAddress;
     const exists = accountExistsInProfile();
-    
+
     if (exists && addressToCheck) {
       const addressString = addressToCheck.toStringLong();
       actions.setError(
@@ -186,7 +186,7 @@ export const useRecoveryLogic = (
     onComplete();
   }, [actions, resetForm, onComplete]);
 
-  const canRecover = 
+  const canRecover =
     state.isVerifiedMnemonic &&
     state.derivedAddress &&
     state.isChainVerified &&

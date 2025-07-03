@@ -25,7 +25,7 @@ export const ProfileSelectionSection: React.FC<ProfileSelectionSectionProps> = (
   return (
     <>
       {error && <Text style={styles.errorText}>{error}</Text>}
-      
+
       <Dropdown
         label="Profile"
         value={selectedProfile}

@@ -33,7 +33,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
     } else if ((!state.selectedProfile || !profileNames.includes(state.selectedProfile)) && profileNames.length > 0) {
       const activeAccountId = appConfig.activeAccountId.get();
       const activeProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
-      
+
       if (activeProfileName && profileNames.includes(activeProfileName)) {
         actions.setSelectedProfile(activeProfileName);
       } else {
