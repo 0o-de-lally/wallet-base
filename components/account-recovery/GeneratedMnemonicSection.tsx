@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, Text, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
+import { CopyButton } from "../common/CopyButton";
 import { styles } from "../../styles/styles";
 import { generateMnemonic } from "open-libra-sdk";
 
@@ -27,12 +28,6 @@ export const GeneratedMnemonicSection: React.FC<
       const newMnemonic = generateMnemonic();
       setGeneratedMnemonic(newMnemonic);
       onMnemonicGenerated(newMnemonic);
-
-      Alert.alert(
-        "Mnemonic Generated",
-        "Your recovery words have been generated successfully. Please write them down in a secure place.",
-        [{ text: "OK" }],
-      );
     } catch (error) {
       console.error("Error generating mnemonic:", error);
       Alert.alert(
@@ -47,7 +42,27 @@ export const GeneratedMnemonicSection: React.FC<
 
   return (
     <View style={styles.inputContainer}>
-      <Text style={styles.label}>Recovery Words</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        }}
+      >
+        <Text style={styles.label}>Recovery Words</Text>
+        {generatedMnemonic && (
+          <CopyButton
+            text={generatedMnemonic}
+            label="Copy"
+            variant="icon"
+            size="small"
+            disabled={isLoading}
+            accessibilityLabel="Copy recovery words"
+            accessibilityHint="Copy the recovery words to clipboard"
+          />
+        )}
+      </View>
 
       {!generatedMnemonic ? (
         <View>
@@ -66,7 +81,12 @@ export const GeneratedMnemonicSection: React.FC<
       ) : (
         <View>
           <View style={[styles.input, { minHeight: 100, padding: 16 }]}>
-            <Text style={[styles.resultValue, { lineHeight: 24 }]}>
+            <Text
+              style={[
+                styles.resultValue,
+                { lineHeight: 24, fontFamily: "monospace" },
+              ]}
+            >
               {generatedMnemonic}
             </Text>
           </View>

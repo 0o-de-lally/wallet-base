@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { CopyButton } from "../common/CopyButton";
 import { styles, colors } from "../../styles/styles";
 
 interface DerivedAddressDisplayProps {
@@ -18,32 +19,6 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
   onBack,
   isLoading = false,
 }) => {
-  const handleCopyAddress = async () => {
-    try {
-      if (navigator?.clipboard) {
-        await navigator.clipboard.writeText(address);
-        Alert.alert("Copied", "Address copied to clipboard");
-      } else {
-        Alert.alert("Error", "Clipboard not available");
-      }
-    } catch {
-      Alert.alert("Error", "Failed to copy address");
-    }
-  };
-
-  const handleCopyMnemonic = async () => {
-    try {
-      if (navigator?.clipboard) {
-        await navigator.clipboard.writeText(mnemonic);
-        Alert.alert("Copied", "Recovery phrase copied to clipboard");
-      } else {
-        Alert.alert("Error", "Clipboard not available");
-      }
-    } catch {
-      Alert.alert("Error", "Failed to copy recovery phrase");
-    }
-  };
-
   return (
     <View>
       <Text style={styles.title}>Derived Account Address</Text>
@@ -56,7 +31,25 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Account Address</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <Text style={styles.label}>Account Address</Text>
+          <CopyButton
+            text={address}
+            label="Copy"
+            variant="icon"
+            size="small"
+            disabled={isLoading}
+            accessibilityLabel="Copy account address"
+            accessibilityHint="Copy the account address to clipboard"
+          />
+        </View>
         <View style={styles.input}>
           <Text
             style={[
@@ -68,18 +61,28 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
             {address}
           </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.secondaryButton, { marginTop: 5 }]}
-          onPress={handleCopyAddress}
-          disabled={isLoading}
-        >
-          <Ionicons name="copy" size={16} color={colors.textPrimary} />
-          <Text style={styles.secondaryButtonText}> Copy Address</Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Recovery Phrase</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <Text style={styles.label}>Recovery Phrase</Text>
+          <CopyButton
+            text={mnemonic}
+            label="Copy"
+            variant="icon"
+            size="small"
+            disabled={isLoading}
+            accessibilityLabel="Copy recovery phrase"
+            accessibilityHint="Copy the recovery phrase to clipboard"
+          />
+        </View>
         <View style={styles.input}>
           <Text
             style={[
@@ -90,32 +93,28 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
             {mnemonic}
           </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.secondaryButton, { marginTop: 5 }]}
-          onPress={handleCopyMnemonic}
-          disabled={isLoading}
-        >
-          <Ionicons name="copy" size={16} color={colors.textPrimary} />
-          <Text style={styles.secondaryButtonText}> Copy Recovery Phrase</Text>
-        </TouchableOpacity>
       </View>
 
-      <View style={{ flexDirection: "row", marginTop: 20 }}>
-        <TouchableOpacity
-          style={[styles.secondaryButton, { flex: 1, marginRight: 5 }]}
-          onPress={onBack}
-          disabled={isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>Back</Text>
-        </TouchableOpacity>
+      <View style={{ flexDirection: "row", marginTop: 20, gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={[styles.secondaryButton, { width: "100%" }]}
+            onPress={onBack}
+            disabled={isLoading}
+          >
+            <Text style={styles.secondaryButtonText}>Back</Text>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={[styles.primaryButton, { flex: 1, marginLeft: 5 }]}
-          onPress={onConfirm}
-          disabled={isLoading}
-        >
-          <Text style={styles.primaryButtonText}>Continue</Text>
-        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={[styles.primaryButton, { width: "100%" }]}
+            onPress={onConfirm}
+            disabled={isLoading}
+          >
+            <Text style={styles.primaryButtonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { AccountAddress } from "open-libra-sdk";
+import { CopyButton } from "../common/CopyButton";
 import { styles } from "../../styles/styles";
 
 interface GeneratedAddressDisplayProps {
@@ -17,7 +18,26 @@ export const GeneratedAddressDisplay: React.FC<
 
   return (
     <View style={styles.inputContainer}>
-      <Text style={styles.label}>Generated Account Address</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        }}
+      >
+        <Text style={styles.label}>Generated Account Address</Text>
+        {derivedAddress && !isDeriving && (
+          <CopyButton
+            text={derivedAddress.toStringLong()}
+            label="Copy"
+            variant="icon"
+            size="small"
+            accessibilityLabel="Copy generated address"
+            accessibilityHint="Copy the generated account address to clipboard"
+          />
+        )}
+      </View>
 
       {isDeriving ? (
         <View style={[styles.input, { padding: 16 }]}>

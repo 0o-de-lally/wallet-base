@@ -39,12 +39,6 @@ const RecoverAccountContent = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Recover Account</Text>
-        <Text style={styles.description}>
-          Restore an account from your 24-word recovery phrase. The account will
-          be added to your wallet and you can assign a nickname to it.
-        </Text>
-
         <RecoverAccountForm onComplete={handleComplete} />
       </View>
     </ScrollView>
