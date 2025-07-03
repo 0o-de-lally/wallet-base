@@ -17,6 +17,8 @@ export interface RecoveryState {
   selectedProfile: string;
   successModalVisible: boolean;
   saveInitiated: boolean;
+  accountCreated: boolean;
+  createdAccountId: string | null;
 }
 
 export interface RecoveryActions {
@@ -34,6 +36,8 @@ export interface RecoveryActions {
   setSelectedProfile: (profile: string) => void;
   setSuccessModalVisible: (visible: boolean) => void;
   setSaveInitiated: (initiated: boolean) => void;
+  setAccountCreated: (created: boolean) => void;
+  setCreatedAccountId: (id: string | null) => void;
 }
 
 export interface RecoverAccountFormProps {

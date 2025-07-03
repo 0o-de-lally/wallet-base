@@ -18,15 +18,15 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
 
   const handleGenerateMnemonic = useCallback(async () => {
     setIsGenerating(true);
-    
+
     try {
       // Add a small delay for better UX
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const newMnemonic = generateMnemonic();
       setGeneratedMnemonic(newMnemonic);
       onMnemonicGenerated(newMnemonic);
-      
+
       Alert.alert(
         "Mnemonic Generated",
         "Your recovery words have been generated successfully. Please write them down in a secure place.",
@@ -47,13 +47,13 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>Recovery Words</Text>
-      
+
       {!generatedMnemonic ? (
         <View>
           <Text style={[styles.description, { marginBottom: 16 }]}>
             Generate new recovery words for your account. These words will be used to restore your account if needed.
           </Text>
-          
+
           <ActionButton
             text="Generate Recovery Words"
             onPress={handleGenerateMnemonic}
@@ -68,11 +68,11 @@ export const GeneratedMnemonicSection: React.FC<GeneratedMnemonicSectionProps> =
               {generatedMnemonic}
             </Text>
           </View>
-          
+
           <Text style={[styles.description, { marginTop: 12, marginBottom: 0 }]}>
             ⚠️ Write these words down in order and keep them safe. You'll need them to recover your account.
           </Text>
-          
+
           <ActionButton
             text="Generate New Words"
             onPress={handleGenerateMnemonic}

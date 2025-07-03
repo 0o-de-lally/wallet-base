@@ -94,6 +94,9 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       actions.setIsVerifiedMnemonic(false);
       actions.setDerivedAddress(null);
       actions.setChainAddress(null);
+      actions.setAccountCreated(false);
+      actions.setCreatedAccountId(null);
+      actions.setSaveInitiated(false);
       // For generate mode, we don't need chain verification
       actions.setIsChainVerified(mode === "generate");
     },
@@ -181,6 +184,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
       <RecoveryModals
         successModalVisible={state.successModalVisible}
         selectedProfile={state.selectedProfile}
+        mode={state.mode}
         secureStorage={secureStorage}
         onSuccess={handleSuccess}
       />

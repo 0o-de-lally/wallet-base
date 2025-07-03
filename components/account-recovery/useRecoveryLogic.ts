@@ -157,11 +157,22 @@ export const useRecoveryLogic = (
       );
 
       if (result.success && result.account) {
+        console.log("Account created successfully:", result.account.id);
+        // Store the created account ID
+        actions.setCreatedAccountId(result.account.id);
+        actions.setAccountCreated(true);
+
         if (state.mnemonic.trim() && !state.saveInitiated) {
+          console.log("Saving mnemonic for account:", result.account.id);
           actions.setSaveInitiated(true);
+          // Save the mnemonic securely - PIN modal will show
           secureStorage.handleSaveWithValue(result.account.id, state.mnemonic);
+          // Success modal will be shown after mnemonic is saved (handled by useEffect)
+        } else {
+          console.log("No mnemonic to save, showing success immediately");
+          // If no mnemonic to save, show success immediately
+          actions.setSuccessModalVisible(true);
         }
-        actions.setSuccessModalVisible(true);
       } else {
         actions.setError(result.error || "Unknown error occurred");
       }
@@ -180,9 +191,24 @@ export const useRecoveryLogic = (
     state.nickname,
     state.mnemonic,
     state.saveInitiated,
-    secureStorage,
     actions,
+    secureStorage,
   ]);
+
+  // Show success modal after mnemonic is saved
+  useEffect(() => {
+    console.log("PIN modal visibility changed:", {
+      accountCreated: state.accountCreated,
+      saveInitiated: state.saveInitiated,
+      pinModalVisible: secureStorage.pinModalVisible,
+    });
+
+    if (state.accountCreated && state.saveInitiated && !secureStorage.pinModalVisible) {
+      console.log("Conditions met, showing success modal");
+      // PIN modal was closed, mnemonic should be saved, show success
+      actions.setSuccessModalVisible(true);
+    }
+  }, [state.accountCreated, state.saveInitiated, secureStorage.pinModalVisible, actions]);
 
   const resetForm = useCallback(() => {
     actions.setMnemonic("");
@@ -194,6 +220,8 @@ export const useRecoveryLogic = (
     actions.setChainAddress(null);
     actions.setIsDeriving(false);
     actions.setSaveInitiated(false);
+    actions.setAccountCreated(false);
+    actions.setCreatedAccountId(null);
   }, [actions]);
 
   const handleSuccess = useCallback(() => {

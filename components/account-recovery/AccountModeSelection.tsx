@@ -21,7 +21,7 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
     icon: string,
   ) => {
     const isSelected = selectedMode === mode;
-    
+
     return (
       <TouchableOpacity
         key={mode}
@@ -88,14 +88,14 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
       <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
         Choose Account Setup Method
       </Text>
-      
+
       {renderModeOption(
         "recover",
         "Recover Existing Account",
         "Use existing recovery words to restore your account",
         "key"
       )}
-      
+
       {renderModeOption(
         "generate",
         "Generate New Account",

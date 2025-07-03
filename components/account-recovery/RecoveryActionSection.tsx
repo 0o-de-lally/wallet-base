@@ -32,7 +32,7 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
   };
 
   const getAccessibilityLabel = () => {
-    return mode === "recover" 
+    return mode === "recover"
       ? "Recover account from mnemonic"
       : "Create new account with generated mnemonic";
   };

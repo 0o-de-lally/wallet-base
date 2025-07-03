@@ -19,7 +19,7 @@ export const GeneratedAddressDisplay: React.FC<GeneratedAddressDisplayProps> = (
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>Generated Account Address</Text>
-      
+
       {isDeriving ? (
         <View style={[styles.input, { padding: 16 }]}>
           <Text style={[styles.resultValue, { fontStyle: "italic" }]}>
@@ -33,7 +33,7 @@ export const GeneratedAddressDisplay: React.FC<GeneratedAddressDisplayProps> = (
           </Text>
         </View>
       ) : null}
-      
+
       {derivedAddress && (
         <Text style={[styles.description, { marginTop: 8, marginBottom: 0 }]}>
           This is your new account address that will be created on the blockchain.

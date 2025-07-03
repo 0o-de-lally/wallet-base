@@ -33,6 +33,8 @@ export const useRecoveryState = () => {
     })(),
     successModalVisible: false,
     saveInitiated: false,
+    accountCreated: false,
+    createdAccountId: null,
   }));
 
   // Initialize secure storage hook
@@ -69,6 +71,10 @@ export const useRecoveryState = () => {
         setState((prev) => ({ ...prev, successModalVisible })),
       setSaveInitiated: (saveInitiated: boolean) =>
         setState((prev) => ({ ...prev, saveInitiated })),
+      setAccountCreated: (accountCreated: boolean) =>
+        setState((prev) => ({ ...prev, accountCreated })),
+      setCreatedAccountId: (createdAccountId: string | null) =>
+        setState((prev) => ({ ...prev, createdAccountId })),
     }),
     [],
   );
