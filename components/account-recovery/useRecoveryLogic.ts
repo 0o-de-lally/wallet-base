@@ -3,12 +3,13 @@ import { LibraWallet, Network } from "open-libra-sdk";
 import { createAccount } from "../../util/account-utils";
 import { getLibraClientUrl } from "../../util/libra-client";
 import { appConfig } from "../../util/app-config-store";
+import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { RecoveryState, RecoveryActions } from "./types";
 
 export const useRecoveryLogic = (
   state: RecoveryState,
   actions: RecoveryActions,
-  secureStorage: any,
+  secureStorage: ReturnType<typeof useSecureStorage>,
   onComplete: () => void
 ) => {
   // Check if the account already exists in the selected profile
