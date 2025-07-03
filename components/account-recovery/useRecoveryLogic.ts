@@ -73,6 +73,27 @@ export const useRecoveryLogic = (
     deriveAddress();
   }, [state.isVerifiedMnemonic, state.mnemonic, actions]); // Removed state.isDeriving to prevent loops
 
+  // Show success modal after PIN process completes
+  useEffect(() => {
+    // If we have a created account and initiated save, but PIN modal is no longer visible,
+    // then PIN process is complete - show success modal
+    if (
+      state.accountCreated &&
+      state.saveInitiated &&
+      !secureStorage.pinModalVisible &&
+      !state.successModalVisible
+    ) {
+      console.log("PIN process complete, showing success modal");
+      actions.setSuccessModalVisible(true);
+    }
+  }, [
+    state.accountCreated,
+    state.saveInitiated,
+    secureStorage.pinModalVisible,
+    state.successModalVisible,
+    actions,
+  ]);
+
   // Show error when account already exists in the selected profile
   useEffect(() => {
     const addressToCheck = state.chainAddress || state.derivedAddress;
@@ -164,10 +185,10 @@ export const useRecoveryLogic = (
         if (state.mnemonic.trim() && !state.saveInitiated) {
           console.log("Saving mnemonic for account:", result.account.id);
           actions.setSaveInitiated(true);
-          // Save the mnemonic securely - PIN modal will show
+          
+          // Don't show success modal yet - wait for PIN process to complete
+          // The PIN modal will be shown by the secure storage hook
           secureStorage.handleSaveWithValue(result.account.id, state.mnemonic);
-          // Show success modal immediately since we've combined the messages
-          actions.setSuccessModalVisible(true);
         } else {
           console.log("No mnemonic to save, showing success immediately");
           // If no mnemonic to save, show success immediately
@@ -195,29 +216,8 @@ export const useRecoveryLogic = (
     secureStorage,
   ]);
 
-  // Show success modal after mnemonic is saved - REMOVED: Now showing immediately
-  // useEffect(() => {
-  //   console.log("PIN modal visibility changed:", {
-  //     accountCreated: state.accountCreated,
-  //     saveInitiated: state.saveInitiated,
-  //     pinModalVisible: secureStorage.pinModalVisible,
-  //   });
-
-  //   if (
-  //     state.accountCreated &&
-  //     state.saveInitiated &&
-  //     !secureStorage.pinModalVisible
-  //   ) {
-  //     console.log("Conditions met, showing success modal");
-  //     // PIN modal was closed, mnemonic should be saved, show success
-  //     actions.setSuccessModalVisible(true);
-  //   }
-  // }, [
-  //   state.accountCreated,
-  //   state.saveInitiated,
-  //   secureStorage.pinModalVisible,
-  //   actions,
-  // ]);
+  // Note: Success modal is now shown immediately after account creation
+  // The mnemonic saving happens in the background without additional PIN prompt
 
   const resetForm = useCallback(() => {
     actions.setMnemonic("");
