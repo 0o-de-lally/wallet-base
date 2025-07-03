@@ -18,7 +18,8 @@ export const RecoveryModals: React.FC<RecoveryModalsProps> = ({
   mode,
   secureStorage,
   onSuccess,
-}) => {  const getSuccessMessage = () => {
+}) => {
+  const getSuccessMessage = () => {
     const action = mode === "recover" ? "recovered" : "created";
     return `Account ${action} and added to "${selectedProfile}" successfully.`;
   };

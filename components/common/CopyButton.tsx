@@ -28,13 +28,14 @@ export const CopyButton = memo(
     accessibilityLabel,
     accessibilityHint,
   }: CopyButtonProps) => {
-    const [isCopying, setIsCopying] = useState(false);    const handleCopy = async () => {
+    const [isCopying, setIsCopying] = useState(false);
+    const handleCopy = async () => {
       if (disabled || isCopying) return;
 
       setIsCopying(true);
       try {
         await Clipboard.setStringAsync(text);
-        
+
         if (onCopySuccess) {
           onCopySuccess();
         }

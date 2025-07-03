@@ -185,7 +185,7 @@ export const useRecoveryLogic = (
         if (state.mnemonic.trim() && !state.saveInitiated) {
           console.log("Saving mnemonic for account:", result.account.id);
           actions.setSaveInitiated(true);
-          
+
           // Don't show success modal yet - wait for PIN process to complete
           // The PIN modal will be shown by the secure storage hook
           secureStorage.handleSaveWithValue(result.account.id, state.mnemonic);
