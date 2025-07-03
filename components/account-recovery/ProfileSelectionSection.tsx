@@ -11,7 +11,9 @@ interface ProfileSelectionSectionProps {
   onProfileSelect: (profile: string) => void;
 }
 
-export const ProfileSelectionSection: React.FC<ProfileSelectionSectionProps> = ({
+export const ProfileSelectionSection: React.FC<
+  ProfileSelectionSectionProps
+> = ({
   error,
   selectedProfile,
   profileNames,

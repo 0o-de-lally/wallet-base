@@ -18,21 +18,24 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   onComplete,
   onResetForm,
 }) => {
-  const { state, actions, profileNames, hasMultipleProfiles, secureStorage } = useRecoveryState();
-  const { verifyOnChain, handleRecoverAccount, handleSuccess, canRecover } = useRecoveryLogic(
-    state,
-    actions,
-    secureStorage,
-    onComplete
-  );
+  const { state, actions, profileNames, hasMultipleProfiles, secureStorage } =
+    useRecoveryState();
+  const { verifyOnChain, handleRecoverAccount, handleSuccess, canRecover } =
+    useRecoveryLogic(state, actions, secureStorage, onComplete);
 
   // Update selected profile if initial profile changes
   useEffect(() => {
     if (profileName) {
       actions.setSelectedProfile(profileName);
-    } else if ((!state.selectedProfile || !profileNames.includes(state.selectedProfile)) && profileNames.length > 0) {
+    } else if (
+      (!state.selectedProfile ||
+        !profileNames.includes(state.selectedProfile)) &&
+      profileNames.length > 0
+    ) {
       const activeAccountId = appConfig.activeAccountId.get();
-      const activeProfileName = activeAccountId ? getProfileForAccount(activeAccountId) : null;
+      const activeProfileName = activeAccountId
+        ? getProfileForAccount(activeAccountId)
+        : null;
 
       if (activeProfileName && profileNames.includes(activeProfileName)) {
         actions.setSelectedProfile(activeProfileName);
@@ -50,21 +53,27 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   }, [onResetForm]);
 
   // Mnemonic validation handler
-  const handleMnemonicValidation = useCallback((_isValid: boolean, isVerified: boolean) => {
-    if (isVerified && !state.isVerifiedMnemonic) {
-      actions.setIsDeriving(true);
-    }
-    actions.setIsVerifiedMnemonic(isVerified);
-    if (!isVerified) {
-      actions.setError(null);
-    }
-  }, [state.isVerifiedMnemonic, actions]);
+  const handleMnemonicValidation = useCallback(
+    (_isValid: boolean, isVerified: boolean) => {
+      if (isVerified && !state.isVerifiedMnemonic) {
+        actions.setIsDeriving(true);
+      }
+      actions.setIsVerifiedMnemonic(isVerified);
+      if (!isVerified) {
+        actions.setError(null);
+      }
+    },
+    [state.isVerifiedMnemonic, actions],
+  );
 
   // Profile selection handler
-  const handleProfileSelect = useCallback((profile: string) => {
-    actions.setSelectedProfile(profile);
-    actions.setError(null);
-  }, [actions]);
+  const handleProfileSelect = useCallback(
+    (profile: string) => {
+      actions.setSelectedProfile(profile);
+      actions.setError(null);
+    },
+    [actions],
+  );
 
   // Verify on chain handler
   const handleVerifyOnChain = useCallback(() => {

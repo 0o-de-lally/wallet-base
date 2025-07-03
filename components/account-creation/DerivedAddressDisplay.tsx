@@ -58,7 +58,13 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Account Address</Text>
         <View style={styles.input}>
-          <Text style={[styles.description, { fontFamily: "monospace", fontSize: 12 }]} numberOfLines={2}>
+          <Text
+            style={[
+              styles.description,
+              { fontFamily: "monospace", fontSize: 12 },
+            ]}
+            numberOfLines={2}
+          >
             {address}
           </Text>
         </View>
@@ -75,7 +81,12 @@ export const DerivedAddressDisplay: React.FC<DerivedAddressDisplayProps> = ({
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Recovery Phrase</Text>
         <View style={styles.input}>
-          <Text style={[styles.description, { fontFamily: "monospace", lineHeight: 20 }]}>
+          <Text
+            style={[
+              styles.description,
+              { fontFamily: "monospace", lineHeight: 20 },
+            ]}
+          >
             {mnemonic}
           </Text>
         </View>

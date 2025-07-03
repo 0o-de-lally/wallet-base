@@ -10,7 +10,7 @@ export const useRecoveryLogic = (
   state: RecoveryState,
   actions: RecoveryActions,
   secureStorage: ReturnType<typeof useSecureStorage>,
-  onComplete: () => void
+  onComplete: () => void,
 ) => {
   // Check if the account already exists in the selected profile
   const accountExistsInProfile = useCallback(() => {
@@ -23,7 +23,7 @@ export const useRecoveryLogic = (
 
     const addressToCheckString = addressToCheck.toStringLong();
     return profile.accounts.some(
-      (acc) => acc.account_address === addressToCheckString
+      (acc) => acc.account_address === addressToCheckString,
     );
   }, [state.chainAddress, state.derivedAddress, state.selectedProfile]);
 
@@ -55,7 +55,7 @@ export const useRecoveryLogic = (
         const wallet = LibraWallet.fromMnemonic(
           state.mnemonic.trim(),
           Network.MAINNET,
-          clientUrl
+          clientUrl,
         );
 
         const address = wallet.getAddress();
@@ -83,14 +83,21 @@ export const useRecoveryLogic = (
     if (exists && addressToCheck) {
       const addressString = addressToCheck.toStringLong();
       actions.setError(
-        `Account ${addressString} already exists in profile "${state.selectedProfile}"`
+        `Account ${addressString} already exists in profile "${state.selectedProfile}"`,
       );
     } else if (!exists && addressToCheck) {
       if (state.error && state.error.includes("already exists")) {
         actions.setError(null);
       }
     }
-  }, [accountExistsInProfile, state.chainAddress, state.derivedAddress, state.selectedProfile, state.error, actions]);
+  }, [
+    accountExistsInProfile,
+    state.chainAddress,
+    state.derivedAddress,
+    state.selectedProfile,
+    state.error,
+    actions,
+  ]);
 
   const verifyOnChain = useCallback(async () => {
     if (!state.derivedAddress || !state.mnemonic.trim()) {
@@ -104,7 +111,7 @@ export const useRecoveryLogic = (
       const wallet = LibraWallet.fromMnemonic(
         state.mnemonic.trim(),
         Network.MAINNET,
-        clientUrl
+        clientUrl,
       );
 
       try {
@@ -146,7 +153,7 @@ export const useRecoveryLogic = (
       const result = await createAccount(
         state.selectedProfile,
         addressToUse,
-        state.nickname || ""
+        state.nickname || "",
       );
 
       if (result.success && result.account) {
@@ -166,7 +173,16 @@ export const useRecoveryLogic = (
     } finally {
       actions.setIsLoading(false);
     }
-  }, [state.chainAddress, state.derivedAddress, state.selectedProfile, state.nickname, state.mnemonic, state.saveInitiated, secureStorage, actions]);
+  }, [
+    state.chainAddress,
+    state.derivedAddress,
+    state.selectedProfile,
+    state.nickname,
+    state.mnemonic,
+    state.saveInitiated,
+    secureStorage,
+    actions,
+  ]);
 
   const resetForm = useCallback(() => {
     actions.setMnemonic("");

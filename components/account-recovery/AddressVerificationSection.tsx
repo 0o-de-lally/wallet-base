@@ -14,7 +14,9 @@ interface AddressVerificationSectionProps {
   onVerifyOnChain: () => void;
 }
 
-export const AddressVerificationSection: React.FC<AddressVerificationSectionProps> = ({
+export const AddressVerificationSection: React.FC<
+  AddressVerificationSectionProps
+> = ({
   derivedAddress,
   chainAddress,
   isChainVerified,

@@ -10,11 +10,9 @@ interface GeneratedMnemonicDisplayProps {
   isLoading?: boolean;
 }
 
-export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> = ({
-  mnemonic,
-  onRegenerate,
-  isLoading = false,
-}) => {
+export const GeneratedMnemonicDisplay: React.FC<
+  GeneratedMnemonicDisplayProps
+> = ({ mnemonic, onRegenerate, isLoading = false }) => {
   const handleCopy = async () => {
     try {
       // Use native Clipboard API
@@ -43,14 +41,20 @@ export const GeneratedMnemonicDisplay: React.FC<GeneratedMnemonicDisplayProps> =
       <View style={styles.resultContainer}>
         <Ionicons name="warning" size={20} color={colors.danger} />
         <Text style={styles.description}>
-          Write this down and store it safely. You&apos;ll need it to recover your account.
+          Write this down and store it safely. You&apos;ll need it to recover
+          your account.
         </Text>
       </View>
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Recovery Phrase</Text>
         <View style={styles.input}>
-          <Text style={[styles.description, { fontFamily: "monospace", lineHeight: 20 }]}>
+          <Text
+            style={[
+              styles.description,
+              { fontFamily: "monospace", lineHeight: 20 },
+            ]}
+          >
             {mnemonic}
           </Text>
         </View>
