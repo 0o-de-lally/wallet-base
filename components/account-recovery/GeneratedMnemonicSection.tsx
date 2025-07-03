@@ -94,7 +94,7 @@ export const GeneratedMnemonicSection: React.FC<
           <Text
             style={[styles.description, { marginTop: 12, marginBottom: 0 }]}
           >
-            ⚠️ Write these words down in order and keep them safe. You&apos;ll
+            Write these words down in order and keep them safe. You&apos;ll
             need them to recover your account.
           </Text>
 

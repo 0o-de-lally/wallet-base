@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { CopyButton } from "../common/CopyButton";
 import { styles, colors } from "../../styles/styles";
 
 export interface AccountNotFoundCardProps {
@@ -40,25 +41,27 @@ export const AccountNotFoundCard: React.FC<AccountNotFoundCardProps> = ({
           borderColor: colors.border,
         }}
       >
-        <Text style={[styles.resultLabel, { marginBottom: 4 }]}>
-          Account Address:
-        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 4,
+          }}
+        >
+          <Text style={styles.resultLabel}>Account Address:</Text>
+          <CopyButton
+            text={accountAddress}
+            label="Copy"
+            variant="icon"
+            size="small"
+            accessibilityLabel="Copy account address"
+            accessibilityHint="Copy the account address to clipboard"
+          />
+        </View>
+
         <Text style={[styles.resultValue, { fontFamily: "monospace" }]}>
           {accountAddress}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          marginTop: 16,
-          padding: 12,
-          backgroundColor: colors.cardBg,
-          borderRadius: 8,
-        }}
-      >
-        <Text style={[styles.resultValue, { fontSize: 14 }]}>
-          💡 <Text style={{ fontWeight: "bold" }}>Tip:</Text> Share this address
-          with someone to receive your first coins and activate the account.
         </Text>
       </View>
     </View>

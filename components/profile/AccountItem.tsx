@@ -325,17 +325,20 @@ export const AccountItem = memo(
                 </TouchableOpacity>
               )}
 
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={navigateToTransactionHub}
-                accessibilityLabel={`Transaction hub for ${account.nickname}`}
-              >
-                <Ionicons
-                  name="send-outline"
-                  size={20}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
+              {/* Only show transfer icon if account exists on chain */}
+              {account.exists_on_chain !== false && (
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={navigateToTransactionHub}
+                  accessibilityLabel={`Transaction hub for ${account.nickname}`}
+                >
+                  <Ionicons
+                    name="send-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.iconButton}

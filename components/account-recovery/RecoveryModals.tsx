@@ -21,7 +21,14 @@ export const RecoveryModals: React.FC<RecoveryModalsProps> = ({
 }) => {
   const getSuccessMessage = () => {
     const action = mode === "recover" ? "recovered" : "created";
-    return `Account ${action} and added to "${selectedProfile}" successfully.`;
+    const baseMessage = `Account ${action} and added to "${selectedProfile}" successfully.`;
+
+    // If mnemonic was saved, mention it in the success message
+    if (mode === "recover" || mode === "generate") {
+      return `${baseMessage}\n\nYour recovery phrase has been securely stored.`;
+    }
+
+    return baseMessage;
   };
 
   return (

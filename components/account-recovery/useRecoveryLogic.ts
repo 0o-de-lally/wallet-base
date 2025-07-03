@@ -166,7 +166,8 @@ export const useRecoveryLogic = (
           actions.setSaveInitiated(true);
           // Save the mnemonic securely - PIN modal will show
           secureStorage.handleSaveWithValue(result.account.id, state.mnemonic);
-          // Success modal will be shown after mnemonic is saved (handled by useEffect)
+          // Show success modal immediately since we've combined the messages
+          actions.setSuccessModalVisible(true);
         } else {
           console.log("No mnemonic to save, showing success immediately");
           // If no mnemonic to save, show success immediately
@@ -194,29 +195,29 @@ export const useRecoveryLogic = (
     secureStorage,
   ]);
 
-  // Show success modal after mnemonic is saved
-  useEffect(() => {
-    console.log("PIN modal visibility changed:", {
-      accountCreated: state.accountCreated,
-      saveInitiated: state.saveInitiated,
-      pinModalVisible: secureStorage.pinModalVisible,
-    });
+  // Show success modal after mnemonic is saved - REMOVED: Now showing immediately
+  // useEffect(() => {
+  //   console.log("PIN modal visibility changed:", {
+  //     accountCreated: state.accountCreated,
+  //     saveInitiated: state.saveInitiated,
+  //     pinModalVisible: secureStorage.pinModalVisible,
+  //   });
 
-    if (
-      state.accountCreated &&
-      state.saveInitiated &&
-      !secureStorage.pinModalVisible
-    ) {
-      console.log("Conditions met, showing success modal");
-      // PIN modal was closed, mnemonic should be saved, show success
-      actions.setSuccessModalVisible(true);
-    }
-  }, [
-    state.accountCreated,
-    state.saveInitiated,
-    secureStorage.pinModalVisible,
-    actions,
-  ]);
+  //   if (
+  //     state.accountCreated &&
+  //     state.saveInitiated &&
+  //     !secureStorage.pinModalVisible
+  //   ) {
+  //     console.log("Conditions met, showing success modal");
+  //     // PIN modal was closed, mnemonic should be saved, show success
+  //     actions.setSuccessModalVisible(true);
+  //   }
+  // }, [
+  //   state.accountCreated,
+  //   state.saveInitiated,
+  //   secureStorage.pinModalVisible,
+  //   actions,
+  // ]);
 
   const resetForm = useCallback(() => {
     actions.setMnemonic("");
