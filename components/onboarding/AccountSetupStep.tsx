@@ -8,14 +8,12 @@ interface AccountSetupStepProps {
   accountChoice: "create" | "recover" | null;
   onBackToChoice: () => void;
   onComplete: () => void;
-  onResetForm: () => void;
 }
 
 export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
   accountChoice,
   onBackToChoice,
   onComplete,
-  onResetForm,
 }) => {
   return (
     <View>
@@ -38,7 +36,6 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
         <AddAccountForm
           profileName="mainnet" // Use the default profile
           onComplete={onComplete}
-          onResetForm={onResetForm}
         />
       )}
 
@@ -46,7 +43,6 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
         <RecoverAccountForm
           profileName="mainnet" // Use the default profile
           onComplete={onComplete}
-          onResetForm={onResetForm}
         />
       )}
     </View>

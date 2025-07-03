@@ -43,5 +43,4 @@ export interface RecoveryActions {
 export interface RecoverAccountFormProps {
   profileName?: string;
   onComplete: () => void;
-  onResetForm?: () => void;
 }

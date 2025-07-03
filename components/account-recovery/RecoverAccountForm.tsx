@@ -3,7 +3,6 @@ import React, { useEffect, useCallback } from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
-import { appConfig, getProfileForAccount } from "../../util/app-config-store";
 import { AccountModeSelection } from "./AccountModeSelection";
 import { GeneratedMnemonicSection } from "./GeneratedMnemonicSection";
 import { GeneratedAddressDisplay } from "./GeneratedAddressDisplay";
@@ -19,41 +18,29 @@ import { RecoverAccountFormProps, AccountMode } from "./types";
 const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
   profileName,
   onComplete,
-  onResetForm,
 }) => {
   const { state, actions, profileNames, hasMultipleProfiles, secureStorage } =
     useRecoveryState();
   const { verifyOnChain, handleRecoverAccount, handleSuccess, canRecover } =
     useRecoveryLogic(state, actions, secureStorage, onComplete);
 
-  // Update selected profile if initial profile changes
+  // Update selected profile if initial profile changes  
   useEffect(() => {
-    if (profileName) {
+    if (profileName && state.selectedProfile !== profileName) {
       actions.setSelectedProfile(profileName);
-    } else if (
+    }
+  }, [profileName, state.selectedProfile, actions]);
+
+  // Set default profile if none selected
+  useEffect(() => {
+    if (
       (!state.selectedProfile ||
         !profileNames.includes(state.selectedProfile)) &&
       profileNames.length > 0
     ) {
-      const activeAccountId = appConfig.activeAccountId.get();
-      const activeProfileName = activeAccountId
-        ? getProfileForAccount(activeAccountId)
-        : null;
-
-      if (activeProfileName && profileNames.includes(activeProfileName)) {
-        actions.setSelectedProfile(activeProfileName);
-      } else {
-        actions.setSelectedProfile(profileNames[0]);
-      }
+      actions.setSelectedProfile(profileNames[0]);
     }
-  }, [profileName, profileNames, state.selectedProfile, actions]);
-
-  // Call the onResetForm callback with our local resetForm function
-  useEffect(() => {
-    if (onResetForm) {
-      onResetForm();
-    }
-  }, [onResetForm]);
+  }, [profileNames, state.selectedProfile, actions]);
 
   // Mnemonic validation handler
   const handleMnemonicValidation = useCallback(

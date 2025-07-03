@@ -125,7 +125,6 @@ export const OnboardingWizard: React.FC = observer(() => {
               accountChoice={accountChoice}
               onBackToChoice={() => setAccountChoice(null)}
               onComplete={handleAccountSetupComplete}
-              onResetForm={() => {}} // Simple no-op
             />
           );
         }

@@ -5,12 +5,13 @@ import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { RecoveryState, RecoveryActions, AccountMode } from "./types";
 
 export const useRecoveryState = () => {
-  // Get all available profiles
-  const profileNames = Object.keys(appConfig.profiles.get());
-  const activeAccountId = appConfig.activeAccountId.get();
-  const activeProfileName = activeAccountId
-    ? getProfileForAccount(activeAccountId)
-    : null;
+  // Get all available profiles - memoized to prevent recalculation on every render
+  const profileNames = useMemo(() => Object.keys(appConfig.profiles.get()), []);
+  const activeAccountId = useMemo(() => appConfig.activeAccountId.get(), []);
+  const activeProfileName = useMemo(() => 
+    activeAccountId ? getProfileForAccount(activeAccountId) : null,
+    [activeAccountId]
+  );
 
   // Initialize state
   const [state, setState] = useState<RecoveryState>(() => ({

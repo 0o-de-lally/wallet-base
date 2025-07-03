@@ -46,9 +46,7 @@ export const useRecoveryLogic = (
       }
 
       try {
-        if (!state.isDeriving) {
-          actions.setIsDeriving(true);
-        }
+        actions.setIsDeriving(true);
         actions.setError(null);
 
         const clientUrl = getLibraClientUrl();
@@ -73,7 +71,7 @@ export const useRecoveryLogic = (
     };
 
     deriveAddress();
-  }, [state.isVerifiedMnemonic, state.mnemonic, state.isDeriving, actions]);
+  }, [state.isVerifiedMnemonic, state.mnemonic, actions]); // Removed state.isDeriving to prevent loops
 
   // Show error when account already exists in the selected profile
   useEffect(() => {
@@ -82,22 +80,23 @@ export const useRecoveryLogic = (
 
     if (exists && addressToCheck) {
       const addressString = addressToCheck.toStringLong();
-      actions.setError(
-        `Account ${addressString} already exists in profile "${state.selectedProfile}"`,
-      );
+      const errorMessage = `Account ${addressString} already exists in profile "${state.selectedProfile}"`;
+      // Only set error if it's different to prevent loops
+      if (state.error !== errorMessage) {
+        actions.setError(errorMessage);
+      }
     } else if (!exists && addressToCheck) {
+      // Only clear error if it's about "already exists" to prevent loops
       if (state.error && state.error.includes("already exists")) {
         actions.setError(null);
       }
     }
   }, [
-    accountExistsInProfile,
     state.chainAddress,
     state.derivedAddress,
     state.selectedProfile,
-    state.error,
     actions,
-  ]);
+  ]); // Removed accountExistsInProfile and state.error to prevent loops
 
   const verifyOnChain = useCallback(async () => {
     if (!state.derivedAddress || !state.mnemonic.trim()) {
