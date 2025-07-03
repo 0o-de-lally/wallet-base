@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { getProfileForAccount } from "../../util/app-config-store";
@@ -14,13 +14,11 @@ import { addressFromString } from "open-libra-sdk";
 interface AddAccountFormProps {
   profileName?: string;
   onComplete: () => void;
-  onResetForm?: () => void;
 }
 
 const AddAccountForm: React.FC<AddAccountFormProps> = ({
   profileName,
   onComplete,
-  onResetForm,
 }) => {
   // Get all available profiles
   const profileNames = Object.keys(appConfig.profiles.get());
@@ -74,20 +72,13 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
     }
   }, [profileName, profileNames, activeProfileName, selectedProfile]);
 
-  // Expose a reset method through prop callback
-  const resetForm = () => {
+  // Reset form function for internal use
+  const resetForm = useCallback(() => {
     setAccountAddress("");
     setNickname("");
     setError(null);
     // Don't reset the selectedProfile here to persist selection
-  };
-
-  // Call the onResetForm callback with our local resetForm function
-  useEffect(() => {
-    if (onResetForm) {
-      onResetForm();
-    }
-  }, [onResetForm]);
+  }, []);
 
   const handleAddAccount = async () => {
     try {

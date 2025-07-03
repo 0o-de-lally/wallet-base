@@ -1,21 +1,20 @@
 import React from "react";
-import { View } from "react-native";
-import { ActionButton } from "../common/ActionButton";
+import { View, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../styles/styles";
 import AddAccountForm from "../profile/AddAccountForm";
-import RecoverAccountForm from "../profile/RecoverAccountForm";
+import RecoverAccountForm from "../account-recovery/RecoverAccountForm";
 
 interface AccountSetupStepProps {
   accountChoice: "create" | "recover" | null;
   onBackToChoice: () => void;
   onComplete: () => void;
-  onResetForm: () => void;
 }
 
 export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
   accountChoice,
   onBackToChoice,
   onComplete,
-  onResetForm,
 }) => {
   return (
     <View>
@@ -26,19 +25,22 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
           marginBottom: 10,
         }}
       >
-        <ActionButton
-          text="← Back"
+        <TouchableOpacity
           onPress={onBackToChoice}
-          size="small"
+          style={{
+            padding: 8,
+            borderRadius: 4,
+          }}
           accessibilityLabel="Go back to account choice"
-        />
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       {accountChoice === "create" && (
         <AddAccountForm
           profileName="mainnet" // Use the default profile
           onComplete={onComplete}
-          onResetForm={onResetForm}
         />
       )}
 
@@ -46,7 +48,6 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
         <RecoverAccountForm
           profileName="mainnet" // Use the default profile
           onComplete={onComplete}
-          onResetForm={onResetForm}
         />
       )}
     </View>

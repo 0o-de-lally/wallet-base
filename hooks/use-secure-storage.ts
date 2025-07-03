@@ -191,7 +191,6 @@ export function useSecureStorage(initialAccountId?: string) {
       // Update the account's is_key_stored status
       updateAccountKeyStoredStatus(currentAccountId, true);
 
-      showAlert("Success", "Value saved securely and encrypted");
       setValue("");
 
       // Cancel any active reveals when saving a new value

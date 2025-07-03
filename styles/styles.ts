@@ -238,6 +238,7 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     elevation: 0,
+    width: "100%", // Ensure consistent width
   },
   buttonText: {
     color: colors.primary,

@@ -180,12 +180,6 @@ export const Settings: React.FC<SettingsProps> = observer(
               style={{ marginTop: 10 }}
               accessibilityLabel="View debug and error logs"
             />
-            <ActionButton
-              text="Generate Wallet Mnemonic"
-              onPress={() => navigateToScreen("/mnemonic-generator")}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Generate a new wallet mnemonic phrase"
-            />
           </SectionContainer>
 
           {/* Danger Zone */}
