@@ -38,6 +38,38 @@ export async function fetchAccountPollingData(
   client: LibraClient,
   accountAddress: string,
 ): Promise<AccountPollingData> {
+  // First check if the account exists on chain
+  try {
+    await client.account.getAccountInfo({
+      accountAddress: accountAddress,
+    });
+    console.log(`Account ${accountAddress} exists on chain`);
+  } catch (error) {
+    console.log(`Account ${accountAddress} does not exist on chain:`, error);
+
+    // If account doesn't exist, return data with exists_on_chain: false
+    return {
+      balance: {
+        balance_unlocked: 0,
+        balance_total: 0,
+        exists_on_chain: false,
+        error: "Account does not exist on chain",
+        error_type: "api",
+      },
+      v8Auth: {
+        is_v8_authorized: false,
+        error: "Account does not exist on chain",
+        error_type: "api",
+      },
+      migration: {
+        v8_migrated: false,
+        error: "Account does not exist on chain",
+        error_type: "api",
+      },
+    };
+  }
+
+  // If account exists, proceed with normal polling
   const [balance, v8Auth, migration] = await Promise.all([
     fetchAccountBalance(client, accountAddress),
     fetchAccountV8Authorization(client, accountAddress),

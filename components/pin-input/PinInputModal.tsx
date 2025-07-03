@@ -219,6 +219,7 @@ export const PinInputModal = memo(
                 onPress={handleCancel}
                 disabled={isVerifying}
                 accessibilityLabel="Cancel PIN entry"
+                style={{ flex: 1, marginRight: 8 }}
               />
 
               <ActionButton
@@ -226,6 +227,7 @@ export const PinInputModal = memo(
                 onPress={processPinSecurely}
                 isLoading={isVerifying}
                 accessibilityLabel="Verify PIN"
+                style={{ flex: 1, marginLeft: 8 }}
               />
             </View>
           </View>
