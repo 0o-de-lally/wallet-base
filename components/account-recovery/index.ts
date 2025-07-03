@@ -1,5 +1,2 @@
-export { default as RecoverAccountForm } from "./RecoverAccountForm";
-export { AccountModeSelection } from "./AccountModeSelection";
-export { GeneratedMnemonicSection } from "./GeneratedMnemonicSection";
-export { GeneratedAddressDisplay } from "./GeneratedAddressDisplay";
-export * from "./types";
+// This module contains account recovery components
+// Components are imported directly by consumers
