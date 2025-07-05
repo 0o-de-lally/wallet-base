@@ -18,7 +18,7 @@ export default function RecoverAccountScreen() {
       <View style={styles.root}>
         <Stack.Screen
           options={{
-            title: "Recover Account",
+            title: "Add Account",
             headerBackTitle: "Back",
           }}
         />

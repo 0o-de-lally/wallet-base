@@ -59,6 +59,7 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
         isLoading={isLoading}
         accessibilityLabel={getAccessibilityLabel()}
         accessibilityHint={getAccessibilityHint()}
+        style={{ width: "100%", marginHorizontal: 0 }}
       />
     </>
   );
