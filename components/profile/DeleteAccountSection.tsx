@@ -30,28 +30,25 @@ export const DeleteAccountSection = memo(
 
     const handleConfirmDelete = async () => {
       setIsDeleting(true);
-      
+
       try {
         const success = await deleteAccountCompletely(accountId);
-        
+
         if (success) {
           showAlert(
             "Account Deleted",
-            "The account has been successfully deleted."
+            "The account has been successfully deleted.",
           );
           // Navigate back to the main screen after showing alert
           setTimeout(() => router.replace("/"), 1000);
         } else {
-          showAlert(
-            "Error",
-            "Failed to delete the account. Please try again."
-          );
+          showAlert("Error", "Failed to delete the account. Please try again.");
         }
       } catch (error) {
         console.error("Error deleting account:", error);
         showAlert(
           "Error",
-          "An unexpected error occurred while deleting the account."
+          "An unexpected error occurred while deleting the account.",
         );
       } finally {
         setIsDeleting(false);
@@ -68,14 +65,14 @@ export const DeleteAccountSection = memo(
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Danger Zone</Text>
-        
+
         <View style={styles.dangerContainer}>
           <Text style={styles.dangerTitle}>Delete Account</Text>
           <Text style={styles.dangerDescription}>
-            This will permanently delete this account and remove all associated 
+            This will permanently delete this account and remove all associated
             data including mnemonics. This action cannot be undone.
           </Text>
-          
+
           <ActionButton
             text={isDeleting ? "Deleting..." : "Delete Account"}
             onPress={handleDeletePress}
@@ -98,7 +95,7 @@ export const DeleteAccountSection = memo(
         />
       </View>
     );
-  }
+  },
 );
 
 DeleteAccountSection.displayName = "DeleteAccountSection";

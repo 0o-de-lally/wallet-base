@@ -142,7 +142,6 @@ export const Settings: React.FC<SettingsProps> = observer(
               onPress={() => navigateToScreen("/profiles")}
               accessibilityLabel="View and manage accounts"
             />
-
           </SectionContainer>
 
           {/* Security */}

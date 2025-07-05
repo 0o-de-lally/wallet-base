@@ -22,7 +22,10 @@ export async function deleteAccountCompletely(
       await deleteValue(mnemonicKey);
       console.log(`Deleted mnemonic for account ${accountId}`);
     } catch (error) {
-      console.warn(`Failed to delete mnemonic for account ${accountId}:`, error);
+      console.warn(
+        `Failed to delete mnemonic for account ${accountId}:`,
+        error,
+      );
       // Continue with deletion even if mnemonic deletion fails
       // (might not exist or already deleted)
     }
@@ -38,7 +41,10 @@ export async function deleteAccountCompletely(
     console.log(`Successfully deleted account ${accountId} completely`);
     return true;
   } catch (error) {
-    console.error(`Error during complete account deletion for ${accountId}:`, error);
+    console.error(
+      `Error during complete account deletion for ${accountId}:`,
+      error,
+    );
     return false;
   }
 }
