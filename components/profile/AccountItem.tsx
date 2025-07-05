@@ -86,27 +86,37 @@ export const AccountItem = memo(
     };
 
     return (
-      <TouchableOpacity
-        key={account.id}
-        style={[
-          styles.listItem, // Use the same style as historical transactions
-          compact
-            ? styles.accountItemContainerCompact
-            : styles.accountItemContainer,
-          isActive && styles.accountItemActive,
-          compact && styles.compactAccountItem,
-          isSwitching && { opacity: 0.6 },
-        ]}
-        accessible={true}
-        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${
-          account.exists_on_chain === false
-            ? " (not found on chain)"
-            : `${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`
-        }`}
-        onPress={handlePress}
-        onLongPress={account.last_error ? handleRetryBalance : undefined}
-        disabled={isSwitching}
-      >
+      <View style={{ flexDirection: "row" }}>
+        {/* Vertical identicon stripe as leftmost border */}
+        <Identicon
+          address={account.account_address}
+          size={compact ? 16 : 24}
+          style={{
+            alignSelf: "stretch",
+          }}
+        />
+        <TouchableOpacity
+          key={account.id}
+          style={[
+            styles.listItem, // Use the same style as historical transactions
+            compact
+              ? styles.accountItemContainerCompact
+              : styles.accountItemContainer,
+            isActive && styles.accountItemActive,
+            compact && styles.compactAccountItem,
+            isSwitching && { opacity: 0.6 },
+            { flex: 1 }, // Take remaining space
+          ]}
+          accessible={true}
+          accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${
+            account.exists_on_chain === false
+              ? " (not found on chain)"
+              : `${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`
+          }`}
+          onPress={handlePress}
+          onLongPress={account.last_error ? handleRetryBalance : undefined}
+          disabled={isSwitching}
+        >
         {compact ? (
           // Compact layout for inactive accounts
           <View>
@@ -131,13 +141,6 @@ export const AccountItem = memo(
                     {shortenAddress(account.account_address, 4, 4)}
                     {account.nickname && ` - ${account.nickname}`}
                   </Text>
-                  <Identicon
-                    address={account.account_address}
-                    size={16}
-                    style={{
-                      alignSelf: "flex-start",
-                    }}
-                  />
                 </View>
                 <View style={{ flex: 1 }} />
                 <View
@@ -239,13 +242,6 @@ export const AccountItem = memo(
                       {shortenAddress(account.account_address, 4, 4)}
                       {account.nickname && ` - ${account.nickname} `}
                     </Text>
-                    <Identicon
-                      address={account.account_address}
-                      size={24}
-                      style={{
-                        alignSelf: "flex-start",
-                      }}
-                    />
                   </View>
                   <View style={{ flex: 1 }} />
                   <View
@@ -354,7 +350,8 @@ export const AccountItem = memo(
             </View>
           </View>
         )}
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   },
 );

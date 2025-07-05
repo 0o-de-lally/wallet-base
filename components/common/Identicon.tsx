@@ -9,7 +9,7 @@ interface IdenticonProps {
 
 /**
  * Generates a deterministic identicon based on account address
- * Creates a thick horizontal gradient line unique to the address
+ * Creates a vertical gradient stripe unique to the address
  */
 export const Identicon = memo(
   ({ address, size = 32, style }: IdenticonProps) => {
@@ -81,8 +81,8 @@ export const Identicon = memo(
     };
 
     const [startColor, endColor] = generateGradientColors(address);
-    const lineHeight = Math.max(3, size * 0.15); // Thick line, at least 3px
-    const borderRadius = lineHeight / 2; // Rounded ends
+    const stripeWidth = Math.max(4, size * 0.15); // Width of vertical stripe, at least 4px
+    const borderRadius = stripeWidth / 2; // Rounded edges
 
     // Create a smooth gradient with multiple segments
     const gradientSteps = 12;
@@ -122,19 +122,19 @@ export const Identicon = memo(
       <View
         style={[
           {
-            height: lineHeight,
+            width: stripeWidth,
             justifyContent: "center",
-            alignItems: "flex-start",
+            alignItems: "center",
           },
           style,
         ]}
       >
         <View
           style={{
+            width: stripeWidth,
             flex: 1,
-            height: lineHeight,
             borderRadius,
-            flexDirection: "row",
+            flexDirection: "column",
             overflow: "hidden",
           }}
         >
@@ -147,7 +147,7 @@ export const Identicon = memo(
                 key={index}
                 style={{
                   flex: 1,
-                  height: lineHeight,
+                  width: stripeWidth,
                   backgroundColor: segmentColor,
                 }}
               />
