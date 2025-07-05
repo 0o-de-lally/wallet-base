@@ -8,6 +8,7 @@ import type { AccountState } from "../../util/app-config-store";
 import { appConfig } from "../../util/app-config-store";
 import { observer } from "@legendapp/state/react";
 import { AccountNicknameForm } from "./AccountNicknameForm";
+import { DeleteAccountSection } from "./DeleteAccountSection";
 import { shortenAddress } from "@/util/format-utils";
 
 // Define the component props
@@ -136,6 +137,12 @@ export const AccountSettings = memo(
           onClose={handlePinModalClose}
           onPinAction={handlePinAction}
           purpose={getPinPurpose()}
+        />
+
+        <DeleteAccountSection
+          accountId={account.id}
+          accountNickname={account.nickname}
+          accountAddress={account.account_address}
         />
       </ScrollView>
     );

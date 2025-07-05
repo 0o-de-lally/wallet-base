@@ -126,21 +126,21 @@ export const Settings: React.FC<SettingsProps> = observer(
               </View>
             )}
             <ActionButton
-              text="Manage Profiles"
-              onPress={() => navigateToScreen("/profiles")}
-              accessibilityLabel="View and manage accounts"
+              text="Add Signing Account"
+              onPress={() => navigateToScreen("/recover-account")}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Recover an existing account"
             />
             <ActionButton
-              text="Add Read-Only Account"
+              text="Add View-Only Account"
               onPress={() => navigateToScreen("/create-account")}
               style={{ marginTop: 10 }}
               accessibilityLabel="Add a new view-only account"
             />
             <ActionButton
-              text="Recover Account"
-              onPress={() => navigateToScreen("/recover-account")}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Recover an existing account"
+              text="Manage Profiles"
+              onPress={() => navigateToScreen("/profiles")}
+              accessibilityLabel="View and manage accounts"
             />
           </SectionContainer>
 
