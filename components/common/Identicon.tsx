@@ -83,7 +83,19 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
   const gradientId = `gradient-${address.slice(-8)}`;
 
   return (
-    <Svg width={stripeWidth} height="100%" style={style}>
+    <Svg
+      width={stripeWidth}
+      height="100%"
+      style={[
+        {
+          flex: 1,
+          alignSelf: 'stretch',
+        },
+        style
+      ]}
+      preserveAspectRatio="none"
+      viewBox={`0 0 ${stripeWidth} 100`}
+    >
       <Defs>
         <LinearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop offset="0%" stopColor={startColor} />
@@ -94,7 +106,7 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
         x={0}
         y={0}
         width={stripeWidth}
-        height="100%"
+        height={100}
         fill={`url(#${gradientId})`}
         rx={borderRadius}
         ry={borderRadius}
