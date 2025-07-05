@@ -86,272 +86,283 @@ export const AccountItem = memo(
     };
 
     return (
-      <View style={{ flexDirection: "row" }}>
-        {/* Vertical identicon stripe as leftmost border */}
-        <Identicon
-          address={account.account_address}
-          size={compact ? 16 : 24}
-          style={{
-            alignSelf: "stretch",
-          }}
-        />
-        <TouchableOpacity
-          key={account.id}
-          style={[
-            styles.listItem, // Use the same style as historical transactions
-            compact
-              ? styles.accountItemContainerCompact
-              : styles.accountItemContainer,
-            isActive && styles.accountItemActive,
-            compact && styles.compactAccountItem,
-            isSwitching && { opacity: 0.6 },
-            { flex: 1 }, // Take remaining space
-          ]}
-          accessible={true}
-          accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${
-            account.exists_on_chain === false
-              ? " (not found on chain)"
-              : `${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`
+      <TouchableOpacity
+        key={account.id}
+        style={[
+          styles.listItem, // Use the same style as historical transactions
+          compact
+            ? styles.accountItemContainerCompact
+            : styles.accountItemContainer,
+          isActive && styles.accountItemActive,
+          compact && styles.compactAccountItem,
+          isSwitching && { opacity: 0.6 },
+          {
+            padding: 0, // Remove default padding to allow stripe to be flush
+            paddingHorizontal: 0, // Explicitly override compact padding
+            paddingVertical: 0, // Explicitly override compact padding
+          },
+        ]}
+        accessible={true}
+        accessibilityLabel={`Account ${account.nickname}${isActive ? " (active)" : ""}${isSwitching ? " (switching)" : ""}${account.exists_on_chain === false
+            ? " (not found on chain)"
+            : `${account.last_error ? " (data may be outdated - long press to retry)" : ""}${account.is_v8_authorized === false ? " (not v8 authorized)" : ""}${account.v8_migrated === false ? " (not migrated)" : ""}`
           }`}
-          onPress={handlePress}
-          onLongPress={account.last_error ? handleRetryBalance : undefined}
-          disabled={isSwitching}
-        >
-        {compact ? (
-          // Compact layout for inactive accounts
-          <View>
-            <View
+        onPress={handlePress}
+        onLongPress={account.last_error ? handleRetryBalance : undefined}
+        disabled={isSwitching}
+      >
+        {/* Position identicon behind the card content and border */}
+        <View style={{
+          position: 'relative',
+          flexDirection: "row",
+          overflow: 'hidden', // Clip identicon to card bounds
+        }}>
+          {/* Vertical identicon stripe positioned behind content */}
+          <View style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 0, // Behind content
+          }}>
+            <Identicon
+              address={account.account_address}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
+                height: '100%',
               }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 6,
-                  flex: 1,
-                }}
-              >
-                <View>
-                  <Text style={[styles.accountNickname, { fontSize: 14 }]}>
-                    <Text style={{ color: colors.textSecondary }}>0x</Text>
-                    {shortenAddress(account.account_address, 4, 4)}
-                    {account.nickname && ` - ${account.nickname}`}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }} />
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-                >
-                  {account.exists_on_chain === false ? (
-                    <Ionicons
-                      name="globe-outline"
-                      size={12}
-                      color={colors.danger}
-                      accessibilityLabel="Account not found on chain"
-                    />
-                  ) : (
-                    <>
-                      {account.last_error && (
-                        <Ionicons
-                          name="warning-outline"
-                          size={12}
-                          color={colors.danger}
-                          accessibilityLabel="Balance data may be outdated"
-                        />
-                      )}
-                      {account.is_v8_authorized === false && (
-                        <Ionicons
-                          name="alert"
-                          size={12}
-                          color={colors.danger}
-                          accessibilityLabel="Account not v8 authorized"
-                        />
-                      )}
-                      {account.v8_migrated === false && (
-                        <Ionicons
-                          name="swap-horizontal-outline"
-                          size={12}
-                          color={colors.danger}
-                          accessibilityLabel="Account not migrated"
-                        />
-                      )}
-                    </>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.compactActions}>
-                {!account.is_key_stored && (
-                  <TouchableOpacity
-                    style={[styles.iconButton, { padding: 6 }]}
-                    disabled={true}
-                    accessibilityLabel="View only account"
-                  >
-                    <Ionicons
-                      name="eye-outline"
-                      size={16}
-                      color={colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={[styles.iconButton, { padding: 6 }]}
-                  onPress={navigateToSettings}
-                  accessibilityLabel={`Manage account ${account.nickname}`}
-                >
-                  <Ionicons
-                    name="settings-outline"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.compactBalanceRow}>
-              <Text
-                style={[
-                  styles.balanceText,
-                  styles.balancePrimary,
-                  { fontSize: 13 },
-                ]}
-              >
-                {formatCurrency(account.balance_unlocked, 2)}
-              </Text>
-              <Text style={[styles.balanceText, { fontSize: 12 }]}>
-                Total: {formatCurrency(account.balance_total, 2)}
-              </Text>
-            </View>
+            />
           </View>
-        ) : (
-          // Full layout for active account
-          <View>
-            <View style={styles.accountHeader}>
-              <View style={styles.accountInfo}>
+
+          {/* Content container with left margin to avoid overlap */}
+          <View style={{
+            flex: 1,
+            marginLeft: 16,
+            padding: compact ? 4 : 16,
+          }}>
+            {compact ? (
+              // Compact layout for inactive accounts
+              <View>
                 <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  <View>
-                    <Text style={styles.accountNickname}>
-                      <Text style={{ color: colors.textSecondary }}>0x</Text>
-                      {shortenAddress(account.account_address, 4, 4)}
-                      {account.nickname && ` - ${account.nickname} `}
-                    </Text>
-                  </View>
-                  <View style={{ flex: 1 }} />
                   <View
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      gap: 4,
+                      gap: 6,
+                      flex: 1,
                     }}
                   >
-                    {account.exists_on_chain === false ? (
-                      <Ionicons
-                        name="globe-outline"
-                        size={14}
-                        color={colors.danger}
-                        accessibilityLabel="Account not found on chain"
-                      />
-                    ) : (
-                      <>
-                        {account.last_error && (
-                          <Ionicons
-                            name="warning-outline"
-                            size={14}
-                            color={colors.danger}
-                            accessibilityLabel="Balance data may be outdated"
-                          />
-                        )}
-                        {account.is_v8_authorized === false && (
-                          <Ionicons
-                            name="alert"
-                            size={14}
-                            color={colors.danger}
-                            accessibilityLabel="Account not v8 authorized"
-                          />
-                        )}
-                        {account.v8_migrated === false && (
-                          <Ionicons
-                            name="swap-horizontal-outline"
-                            size={14}
-                            color={colors.danger}
-                            accessibilityLabel="Account not migrated"
-                          />
-                        )}
-                      </>
+                    <View>
+                      <Text style={[styles.accountNickname, { fontSize: 14 }]}>
+                        <Text style={{ color: colors.textSecondary }}>0x</Text>
+                        {shortenAddress(account.account_address, 4, 4)}
+                        {account.nickname && ` - ${account.nickname}`}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }} />
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                    >
+                      {account.exists_on_chain === false ? (
+                        <Ionicons
+                          name="globe-outline"
+                          size={12}
+                          color={colors.danger}
+                          accessibilityLabel="Account not found on chain"
+                        />
+                      ) : (
+                        <>
+                          {account.last_error && (
+                            <Ionicons
+                              name="warning-outline"
+                              size={12}
+                              color={colors.danger}
+                              accessibilityLabel="Balance data may be outdated"
+                            />
+                          )}
+                          {account.is_v8_authorized === false && (
+                            <Ionicons
+                              name="alert"
+                              size={12}
+                              color={colors.danger}
+                              accessibilityLabel="Account not v8 authorized"
+                            />
+                          )}
+                          {account.v8_migrated === false && (
+                            <Ionicons
+                              name="swap-horizontal-outline"
+                              size={12}
+                              color={colors.danger}
+                              accessibilityLabel="Account not migrated"
+                            />
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.compactActions}>
+                    {!account.is_key_stored && (
+                      <TouchableOpacity
+                        style={[styles.iconButton, { padding: 6 }]}
+                        disabled={true}
+                        accessibilityLabel="View only account"
+                      >
+                        <Ionicons
+                          name="eye-outline"
+                          size={16}
+                          color={colors.textSecondary}
+                        />
+                      </TouchableOpacity>
                     )}
                   </View>
                 </View>
-              </View>
 
-              {isActive && (
-                <View style={styles.activeIndicatorBadge}>
-                  <Text style={styles.activeIndicatorText}>Active</Text>
+                <View style={styles.compactBalanceRow}>
+                  <Text
+                    style={[
+                      styles.balanceText,
+                      styles.balancePrimary,
+                      { fontSize: 13 },
+                    ]}
+                  >
+                    {formatCurrency(account.balance_unlocked, 2)}
+                  </Text>
+                  <Text style={[styles.balanceText, { fontSize: 12 }]}>
+                    Total: {formatCurrency(account.balance_total, 2)}
+                  </Text>
                 </View>
-              )}
-            </View>
+              </View>
+            ) : (
+              // Full layout for active account
+              <View>
+                <View style={styles.accountHeader}>
+                  <View style={styles.accountInfo}>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                    >
+                      <View>
+                        <Text style={styles.accountNickname}>
+                          <Text style={{ color: colors.textSecondary }}>0x</Text>
+                          {shortenAddress(account.account_address, 4, 4)}
+                          {account.nickname && ` - ${account.nickname} `}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1 }} />
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        {account.exists_on_chain === false ? (
+                          <Ionicons
+                            name="globe-outline"
+                            size={14}
+                            color={colors.danger}
+                            accessibilityLabel="Account not found on chain"
+                          />
+                        ) : (
+                          <>
+                            {account.last_error && (
+                              <Ionicons
+                                name="warning-outline"
+                                size={14}
+                                color={colors.danger}
+                                accessibilityLabel="Balance data may be outdated"
+                              />
+                            )}
+                            {account.is_v8_authorized === false && (
+                              <Ionicons
+                                name="alert"
+                                size={14}
+                                color={colors.danger}
+                                accessibilityLabel="Account not v8 authorized"
+                              />
+                            )}
+                            {account.v8_migrated === false && (
+                              <Ionicons
+                                name="swap-horizontal-outline"
+                                size={14}
+                                color={colors.danger}
+                                accessibilityLabel="Account not migrated"
+                              />
+                            )}
+                          </>
+                        )}
+                      </View>
+                    </View>
+                  </View>
 
-            <View style={styles.balanceRow}>
-              <Text style={[styles.balanceText, styles.balancePrimary]}>
-                Unlocked: {formatCurrency(account.balance_unlocked, 2)}
-              </Text>
-              <Text style={styles.balanceText}>
-                Total: {formatCurrency(account.balance_total, 2)}
-              </Text>
-            </View>
+                  {isActive && (
+                    <View style={styles.activeIndicatorBadge}>
+                      <Text style={styles.activeIndicatorText}>Active</Text>
+                    </View>
+                  )}
+                </View>
 
-            <View style={styles.accountActionsRow}>
-              {!account.is_key_stored && (
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  disabled={true}
-                  accessibilityLabel="View only account"
-                >
-                  <Ionicons
-                    name="eye-outline"
-                    size={20}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              )}
+                <View style={styles.balanceRow}>
+                  <Text style={[styles.balanceText, styles.balancePrimary]}>
+                    Unlocked: {formatCurrency(account.balance_unlocked, 2)}
+                  </Text>
+                  <Text style={styles.balanceText}>
+                    Total: {formatCurrency(account.balance_total, 2)}
+                  </Text>
+                </View>
 
-              {/* Only show transfer icon if account exists on chain */}
-              {account.exists_on_chain !== false && (
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={navigateToTransactionHub}
-                  accessibilityLabel={`Transaction hub for ${account.nickname}`}
-                >
-                  <Ionicons
-                    name="send-outline"
-                    size={20}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              )}
+                <View style={styles.accountActionsRow}>
+                  {!account.is_key_stored && (
+                    <TouchableOpacity
+                      style={styles.iconButton}
+                      disabled={true}
+                      accessibilityLabel="View only account"
+                    >
+                      <Ionicons
+                        name="eye-outline"
+                        size={20}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  )}
 
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={navigateToSettings}
-                accessibilityLabel={`Manage account ${account.nickname}`}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={20}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
+                  {/* Only show transfer icon if account exists on chain */}
+                  {account.exists_on_chain !== false && (
+                    <TouchableOpacity
+                      style={styles.iconButton}
+                      onPress={navigateToTransactionHub}
+                      accessibilityLabel={`Transaction hub for ${account.nickname}`}
+                    >
+                      <Ionicons
+                        name="send-outline"
+                        size={20}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  )}
+
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={navigateToSettings}
+                    accessibilityLabel={`Manage account ${account.nickname}`}
+                  >
+                    <Ionicons
+                      name="settings-outline"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
-        )}
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
     );
   },
 );

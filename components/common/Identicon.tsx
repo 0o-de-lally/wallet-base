@@ -3,7 +3,6 @@ import { View, ViewStyle } from "react-native";
 
 interface IdenticonProps {
   address: string;
-  size?: number;
   style?: ViewStyle;
 }
 
@@ -12,7 +11,7 @@ interface IdenticonProps {
  * Creates a vertical gradient stripe unique to the address
  */
 export const Identicon = memo(
-  ({ address, size = 32, style }: IdenticonProps) => {
+  ({ address, style }: IdenticonProps) => {
     // Generate deterministic colors from the address
     const generateGradientColors = (address: string): [string, string] => {
       // Remove 0x prefix if present
@@ -81,7 +80,7 @@ export const Identicon = memo(
     };
 
     const [startColor, endColor] = generateGradientColors(address);
-    const stripeWidth = Math.max(4, size * 0.15); // Width of vertical stripe, at least 4px
+    const stripeWidth = 6; // Fixed width of vertical stripe
     const borderRadius = stripeWidth / 2; // Rounded edges
 
     // Create a smooth gradient with multiple segments
