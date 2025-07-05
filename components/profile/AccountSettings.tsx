@@ -143,7 +143,7 @@ export const AccountSettings = memo(
           </View>
 
           <Text style={[styles.description, { marginTop: 8, marginBottom: 0 }]}>
-            This is your account's full address on the blockchain.
+            This is your account&apos;s full address on the blockchain.
           </Text>
         </View>
 
