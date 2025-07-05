@@ -474,3 +474,57 @@ export function updateAccountNickname(
 
   return false; // Account not found
 }
+
+/**
+ * Deletes an account from its profile
+ *
+ * @param accountId ID of the account to delete
+ * @returns boolean indicating success or failure
+ */
+export function deleteAccount(accountId: string): boolean {
+  const profiles = appConfig.profiles.get();
+
+  for (const profileName in profiles) {
+    const profile = profiles[profileName];
+    const accountIndex = profile.accounts.findIndex(
+      (acc) => acc.id === accountId,
+    );
+
+    if (accountIndex !== -1) {
+      // Remove the account from the profile
+      const updatedAccounts = profile.accounts.filter(
+        (acc) => acc.id !== accountId,
+      );
+      appConfig.profiles[profileName].accounts.set(updatedAccounts);
+
+      // If this was the active account, we need to set a new active account
+      const activeAccountId = appConfig.activeAccountId.get();
+      if (activeAccountId === accountId) {
+        // Try to find another account to set as active
+        let newActiveAccountId: string | null = null;
+
+        // First, try to find another account in the same profile
+        if (updatedAccounts.length > 0) {
+          newActiveAccountId = updatedAccounts[0].id;
+        } else {
+          // If no accounts left in this profile, look in other profiles
+          for (const otherProfileName in profiles) {
+            if (otherProfileName !== profileName) {
+              const otherProfile = profiles[otherProfileName];
+              if (otherProfile.accounts.length > 0) {
+                newActiveAccountId = otherProfile.accounts[0].id;
+                break;
+              }
+            }
+          }
+        }
+
+        appConfig.activeAccountId.set(newActiveAccountId);
+      }
+
+      return true;
+    }
+  }
+
+  return false; // Account not found
+}
