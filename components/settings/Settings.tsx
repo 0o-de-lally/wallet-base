@@ -139,6 +139,7 @@ export const Settings: React.FC<SettingsProps> = observer(
             />
             <ActionButton
               text="Manage Profiles"
+              style={{ marginTop: 10 }}
               onPress={() => navigateToScreen("/profiles")}
               accessibilityLabel="View and manage accounts"
             />

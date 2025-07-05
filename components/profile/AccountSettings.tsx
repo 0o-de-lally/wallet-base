@@ -10,6 +10,7 @@ import { observer } from "@legendapp/state/react";
 import { AccountNicknameForm } from "./AccountNicknameForm";
 import { DeleteAccountSection } from "./DeleteAccountSection";
 import { shortenAddress } from "@/util/format-utils";
+import { CopyButton } from "../common/CopyButton";
 
 // Define the component props
 interface AccountSettingsProps {
@@ -111,6 +112,40 @@ export const AccountSettings = memo(
             : "Loading..."}
           {account.nickname ? `• ${account.nickname}` : ""}
         </Text>
+
+        {/* Full Address Display Section */}
+        <View style={styles.inputContainer}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <Text style={styles.label}>Account Address</Text>
+            {account && (
+              <CopyButton
+                text={account.account_address}
+                label="Copy"
+                variant="icon"
+                size="small"
+                accessibilityLabel="Copy account address"
+                accessibilityHint="Copy the full account address to clipboard"
+              />
+            )}
+          </View>
+
+          <View style={[styles.input, { padding: 16 }]}>
+            <Text style={[styles.resultValue, { fontFamily: "monospace" }]}>
+              {account ? account.account_address : "Loading..."}
+            </Text>
+          </View>
+
+          <Text style={[styles.description, { marginTop: 8, marginBottom: 0 }]}>
+            This is your account's full address on the blockchain.
+          </Text>
+        </View>
 
         <AccountNicknameForm
           accountId={account.id}
