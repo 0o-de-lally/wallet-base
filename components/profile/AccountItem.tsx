@@ -10,7 +10,13 @@ import { reportErrorAuto } from "../../util/error-utils";
 import { Identicon } from "../common/Identicon";
 
 // Helper component for account status icons
-const AccountStatusIcons = ({ account, iconSize = 14 }: { account: AccountState; iconSize?: number }) => {
+const AccountStatusIcons = ({
+  account,
+  iconSize = 14,
+}: {
+  account: AccountState;
+  iconSize?: number;
+}) => {
   if (account.exists_on_chain === false) {
     return (
       <Ionicons
@@ -53,7 +59,13 @@ const AccountStatusIcons = ({ account, iconSize = 14 }: { account: AccountState;
 };
 
 // Helper component for account address and nickname
-const AccountHeader = ({ account, fontSize = 16 }: { account: AccountState; fontSize?: number }) => (
+const AccountHeader = ({
+  account,
+  fontSize = 16,
+}: {
+  account: AccountState;
+  fontSize?: number;
+}) => (
   <Text style={[styles.accountNickname, { fontSize }]}>
     <Text style={{ color: colors.textSecondary }}>0x</Text>
     {shortenAddress(account.account_address, 4, 4)}
@@ -62,9 +74,15 @@ const AccountHeader = ({ account, fontSize = 16 }: { account: AccountState; font
 );
 
 // Helper component for view-only icon
-const ViewOnlyIcon = ({ account, iconSize = 20 }: { account: AccountState; iconSize?: number }) => {
+const ViewOnlyIcon = ({
+  account,
+  iconSize = 20,
+}: {
+  account: AccountState;
+  iconSize?: number;
+}) => {
   if (account.is_key_stored) return null;
-  
+
   return (
     <TouchableOpacity
       style={[styles.iconButton, iconSize < 20 ? { padding: 6 } : undefined]}
@@ -83,22 +101,32 @@ const ViewOnlyIcon = ({ account, iconSize = 20 }: { account: AccountState; iconS
 // Compact view component
 const CompactAccountView = ({ account }: { account: AccountState }) => (
   <View>
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <View
+        style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}
+      >
         <AccountHeader account={account} fontSize={14} />
         <View style={{ flex: 1 }} />
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <AccountStatusIcons account={account} iconSize={12} />
         </View>
       </View>
-      
+
       <View style={styles.compactActions}>
         <ViewOnlyIcon account={account} iconSize={16} />
       </View>
     </View>
 
     <View style={styles.compactBalanceRow}>
-      <Text style={[styles.balanceText, styles.balancePrimary, { fontSize: 13 }]}>
+      <Text
+        style={[styles.balanceText, styles.balancePrimary, { fontSize: 13 }]}
+      >
         {formatCurrency(account.balance_unlocked, 2)}
       </Text>
       <Text style={[styles.balanceText, { fontSize: 12 }]}>
@@ -109,13 +137,13 @@ const CompactAccountView = ({ account }: { account: AccountState }) => (
 );
 
 // Full view component
-const FullAccountView = ({ 
-  account, 
-  isActive, 
-  navigateToTransactionHub, 
-  navigateToSettings 
-}: { 
-  account: AccountState; 
+const FullAccountView = ({
+  account,
+  isActive,
+  navigateToTransactionHub,
+  navigateToSettings,
+}: {
+  account: AccountState;
   isActive?: boolean;
   navigateToTransactionHub: () => void;
   navigateToSettings: () => void;
@@ -150,7 +178,7 @@ const FullAccountView = ({
 
     <View style={styles.accountActionsRow}>
       <ViewOnlyIcon account={account} iconSize={20} />
-      
+
       {account.exists_on_chain !== false && (
         <TouchableOpacity
           style={styles.iconButton}
@@ -258,7 +286,8 @@ export const AccountItem = memo(
       if (isActive) parts.push("(active)");
       if (isSwitching) parts.push("(switching)");
       if (account.exists_on_chain === false) parts.push("(not found on chain)");
-      if (account.last_error) parts.push("(data may be outdated - long press to retry)");
+      if (account.last_error)
+        parts.push("(data may be outdated - long press to retry)");
       if (account.is_v8_authorized === false) parts.push("(not v8 authorized)");
       if (account.v8_migrated === false) parts.push("(not migrated)");
       return parts.join(" ");
@@ -266,7 +295,9 @@ export const AccountItem = memo(
 
     const containerStyles = [
       styles.listItem,
-      compact ? styles.accountItemContainerCompact : styles.accountItemContainer,
+      compact
+        ? styles.accountItemContainerCompact
+        : styles.accountItemContainer,
       isActive && styles.accountItemActive,
       compact && styles.compactAccountItem,
       isSwitching && { opacity: 0.6 },
@@ -287,29 +318,35 @@ export const AccountItem = memo(
         onLongPress={account.last_error ? handleRetryBalance : undefined}
         disabled={isSwitching}
       >
-        <View style={{
-          position: 'relative',
-          flexDirection: "row",
-          overflow: 'hidden',
-        }}>
-          <View style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            zIndex: 0,
-          }}>
+        <View
+          style={{
+            position: "relative",
+            flexDirection: "row",
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              zIndex: 0,
+            }}
+          >
             <Identicon
               address={account.account_address}
-              style={{ height: '100%' }}
+              style={{ height: "100%" }}
             />
           </View>
 
-          <View style={{
-            flex: 1,
-            marginLeft: 16,
-            padding: compact ? 4 : 16,
-          }}>
+          <View
+            style={{
+              flex: 1,
+              marginLeft: 16,
+              padding: compact ? 4 : 16,
+            }}
+          >
             {compact ? (
               <CompactAccountView account={account} />
             ) : (
