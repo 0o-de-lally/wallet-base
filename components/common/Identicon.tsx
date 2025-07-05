@@ -89,9 +89,9 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
       style={[
         {
           flex: 1,
-          alignSelf: 'stretch',
+          alignSelf: "stretch",
         },
-        style
+        style,
       ]}
       preserveAspectRatio="none"
       viewBox={`0 0 ${stripeWidth} 100`}
