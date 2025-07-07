@@ -236,15 +236,6 @@ export const AccountItem = memo(
       if (!profile?.accounts) return null;
       const foundAccount = profile.accounts.find((acc) => acc.id === accountId) || null;
       
-      // Debug logging
-      if (foundAccount) {
-        console.log(`AccountItem useSelector - Account ${accountId} balance:`, {
-          unlocked: foundAccount.balance_unlocked,
-          total: foundAccount.balance_total,
-          lastUpdate: foundAccount.last_update
-        });
-      }
-      
       return foundAccount;
     });
 
@@ -286,7 +277,6 @@ export const AccountItem = memo(
       if (!account.last_error) return;
 
       try {
-        console.log(`Retrying balance fetch for ${account.nickname}`);
         await retryAccountBalance(account.id);
       } catch (error) {
         reportErrorAuto("AccountItem.handleRetryBalance", error, {

@@ -10,43 +10,36 @@ interface AccountTotalsProps {
 }
 
 export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
-  // Get accounts from Legend state for the specific profile
-  const accounts = useSelector(() => {
+  // Get account balance totals from Legend state, tracking specific balance properties
+  const balanceTotals = useSelector(() => {
     const profiles = appConfig.profiles.get();
     const profile = profiles[profileName];
-    return profile?.accounts || [];
+    const accounts = profile?.accounts || [];
+    
+    // Return an object with the calculated totals to ensure reactivity
+    // when individual account balances change
+    const totalUnlocked = accounts.reduce(
+      (sum, account) => sum + (account.balance_unlocked || 0),
+      0,
+    );
+
+    const totalBalance = accounts.reduce(
+      (sum, account) => sum + (account.balance_total || 0),
+      0,
+    );
+
+    return {
+      accountCount: accounts.length,
+      totalUnlocked,
+      totalBalance,
+      // Include a timestamp of the last update to ensure reactivity
+      lastUpdate: Math.max(...accounts.map(acc => acc.last_update || 0), 0)
+    };
   });
 
-  console.log("AccountTotals received accounts:", accounts.length);
-  console.log(
-    "Account balances:",
-    accounts.map((acc) => ({
-      id: acc.id,
-      unlocked: acc.balance_unlocked,
-      total: acc.balance_total,
-    })),
-  );
-
-  if (accounts.length === 0) {
+  if (balanceTotals.accountCount === 0) {
     return null;
   }
-
-  const totalUnlocked = accounts.reduce(
-    (sum, account) => sum + (account.balance_unlocked || 0),
-    0,
-  );
-
-  const totalBalance = accounts.reduce(
-    (sum, account) => sum + (account.balance_total || 0),
-    0,
-  );
-
-  console.log(
-    "Calculated totals - Unlocked:",
-    totalUnlocked,
-    "Total:",
-    totalBalance,
-  );
 
   return (
     <View style={{ marginTop: 20 }}>
@@ -62,14 +55,14 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
           Total Unlocked:
         </Text>
         <Text style={[styles.balanceText, styles.balancePrimary]}>
-          {formatLibraAmount(totalUnlocked)}
+          {formatLibraAmount(balanceTotals.totalUnlocked)}
         </Text>
       </View>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={styles.balanceText}>Total Balance:</Text>
         <Text style={styles.balanceText}>
-          {formatLibraAmount(totalBalance)}
+          {formatLibraAmount(balanceTotals.totalBalance)}
         </Text>
       </View>
     </View>

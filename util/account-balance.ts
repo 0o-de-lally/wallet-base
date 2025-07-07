@@ -29,8 +29,6 @@ export async function fetchAccountBalance(
     // Call the view function
     const result = await client.viewJson(payload);
 
-    console.log("Balance API response for", accountAddress, ":", result);
-
     // Handle different possible response formats
     let balance_unlocked = 0;
     let balance_total = 0;
