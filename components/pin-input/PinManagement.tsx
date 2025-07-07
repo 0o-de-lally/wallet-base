@@ -161,18 +161,35 @@ const EnterPinScreen = memo(() => {
 
       if (success && oldPin && newPin) {
         try {
-          // Show progress modal
-          setRotationProgressVisible(true);
+          // Initialize progress state
+          setRotationProgress({
+            total: 0,
+            completed: 0,
+            failed: [],
+          });
 
           const result = await rotatePinAndReencryptData(
             oldPin,
             newPin,
             (progress) => {
               setRotationProgress(progress);
+              // Show modal when we have accounts to process
+              if (progress.total > 0) {
+                setRotationProgressVisible(true);
+              }
             },
           );
 
-          setRotationProgressVisible(false);
+          // If we have accounts, show the final state briefly
+          if (result.rotatedCount > 0 || result.failedAccounts.length > 0) {
+            // Keep the modal open for a moment to show completion
+            setTimeout(() => {
+              setRotationProgressVisible(false);
+            }, 2000);
+          } else {
+            // No accounts were processed, close immediately
+            setRotationProgressVisible(false);
+          }
 
           if (result.success) {
             showAlert(
