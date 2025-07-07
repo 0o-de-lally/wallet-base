@@ -43,7 +43,7 @@ export async function fetchAccountPollingData(
     await client.account.getAccountInfo({
       accountAddress: accountAddress,
     });
-  } catch (error) {
+  } catch {
     // If account doesn't exist, return data with exists_on_chain: false
     return {
       balance: {
