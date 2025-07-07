@@ -3,7 +3,10 @@ import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
 /**
  * Updates the internal keys list maintained for getAllKeys functionality
  */
-async function updateKeysList(key: string, operation: 'add' | 'remove'): Promise<void> {
+async function updateKeysList(
+  key: string,
+  operation: "add" | "remove",
+): Promise<void> {
   try {
     // Don't track the keys list key itself to avoid recursion
     if (key === "all_storage_keys") {
@@ -14,12 +17,12 @@ async function updateKeysList(key: string, operation: 'add' | 'remove'): Promise
     const keysListJson = await getItemAsync("all_storage_keys");
     const currentKeys: string[] = keysListJson ? JSON.parse(keysListJson) : [];
 
-    if (operation === 'add') {
+    if (operation === "add") {
       // Add key if not already present
       if (!currentKeys.includes(key)) {
         currentKeys.push(key);
       }
-    } else if (operation === 'remove') {
+    } else if (operation === "remove") {
       // Remove key if present
       const index = currentKeys.indexOf(key);
       if (index > -1) {
@@ -48,7 +51,7 @@ export async function saveValue(key: string, value: string): Promise<void> {
     await setItemAsync(key, value);
 
     // Update the keys list
-    await updateKeysList(key, 'add');
+    await updateKeysList(key, "add");
   } catch (error) {
     console.error("Error saving to secure store:", error);
     throw error;
@@ -84,7 +87,7 @@ export async function deleteValue(key: string): Promise<void> {
     await deleteItemAsync(key);
 
     // Update the keys list
-    await updateKeysList(key, 'remove');
+    await updateKeysList(key, "remove");
   } catch (error) {
     console.error("Error deleting from secure store:", error);
     throw error;

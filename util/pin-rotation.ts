@@ -302,7 +302,10 @@ export async function debugStorageKeys(): Promise<void> {
       for (const [profileName, profile] of Object.entries(profiles)) {
         const account = profile.accounts.find((acc) => acc.id === accountId);
         if (account) {
-          console.log(`Found account ${accountId} in profile ${profileName}:`, account);
+          console.log(
+            `Found account ${accountId} in profile ${profileName}:`,
+            account,
+          );
           found = true;
           break;
         }

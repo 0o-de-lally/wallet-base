@@ -11,8 +11,8 @@ import { PinInputModal } from "./PinInputModal";
 import { PinCreationFlow } from "./PinCreationFlow";
 import { PinRotationFlow } from "./PinRotationFlow";
 import { PinRotationProgressModal } from "./PinRotationProgressModal";
-import { 
-  rotatePinAndReencryptData, 
+import {
+  rotatePinAndReencryptData,
   validateOldPinCanDecryptData,
   getAllAccountsWithStoredData,
   type PinRotationProgress,
