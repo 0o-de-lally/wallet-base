@@ -48,19 +48,25 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
     onCancel();
   }, [resetState, onCancel]);
 
-  const handlePinChange = useCallback((newPin: string) => {
-    setPin(newPin);
-    if (error) {
-      setError(null);
-    }
-  }, [error]);
+  const handlePinChange = useCallback(
+    (newPin: string) => {
+      setPin(newPin);
+      if (error) {
+        setError(null);
+      }
+    },
+    [error],
+  );
 
-  const handleConfirmPinChange = useCallback((newConfirmPin: string) => {
-    setConfirmPin(newConfirmPin);
-    if (error) {
-      setError(null);
-    }
-  }, [error]);
+  const handleConfirmPinChange = useCallback(
+    (newConfirmPin: string) => {
+      setConfirmPin(newConfirmPin);
+      if (error) {
+        setError(null);
+      }
+    },
+    [error],
+  );
 
   const validateAndProceed = useCallback(() => {
     if (!validatePin(pin)) {
@@ -120,7 +126,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
     <>
       <Text style={styles.modalTitle}>Create Your New PIN</Text>
       <Text style={styles.modalSubtitle}>
-        Choose a new 6-digit PIN to secure your wallet. All your encrypted data will be re-encrypted with this new PIN.
+        Choose a new 6-digit PIN to secure your wallet. All your encrypted data
+        will be re-encrypted with this new PIN.
       </Text>
 
       <PinInputField

@@ -10,16 +10,16 @@ interface PinRotationProgressModalProps {
   onClose?: () => void;
 }
 
-export const PinRotationProgressModal: React.FC<PinRotationProgressModalProps> = ({
-  visible,
-  progress,
-  onClose,
-}) => {
-  const progressPercentage = progress.total > 0 
-    ? Math.round((progress.completed / progress.total) * 100)
-    : 0;
+export const PinRotationProgressModal: React.FC<
+  PinRotationProgressModalProps
+> = ({ visible, progress, onClose }) => {
+  const progressPercentage =
+    progress.total > 0
+      ? Math.round((progress.completed / progress.total) * 100)
+      : 0;
 
-  const isComplete = progress.completed + progress.failed.length >= progress.total;
+  const isComplete =
+    progress.completed + progress.failed.length >= progress.total;
 
   return (
     <Modal
@@ -36,12 +36,11 @@ export const PinRotationProgressModal: React.FC<PinRotationProgressModalProps> =
           <Text style={styles.modalTitle}>
             {isComplete ? "PIN Rotation Complete" : "Rotating PIN..."}
           </Text>
-          
+
           <Text style={styles.modalSubtitle}>
-            {isComplete 
-              ? "Your PIN has been updated and data re-encrypted." 
-              : "Please wait while we re-encrypt your account data with the new PIN."
-            }
+            {isComplete
+              ? "Your PIN has been updated and data re-encrypted."
+              : "Please wait while we re-encrypt your account data with the new PIN."}
           </Text>
 
           {!isComplete && (
@@ -52,28 +51,41 @@ export const PinRotationProgressModal: React.FC<PinRotationProgressModalProps> =
 
           <View style={{ marginVertical: 20 }}>
             {/* Progress bar */}
-            <View style={{
-              height: 8,
-              backgroundColor: namedColors.lightGray,
-              borderRadius: 4,
-              marginBottom: 12,
-            }}>
-              <View style={{
-                height: "100%",
-                backgroundColor: progress.failed.length > 0 ? namedColors.red : namedColors.blue,
+            <View
+              style={{
+                height: 8,
+                backgroundColor: namedColors.lightGray,
                 borderRadius: 4,
-                width: `${progressPercentage}%`,
-              }} />
+                marginBottom: 12,
+              }}
+            >
+              <View
+                style={{
+                  height: "100%",
+                  backgroundColor:
+                    progress.failed.length > 0
+                      ? namedColors.red
+                      : namedColors.blue,
+                  borderRadius: 4,
+                  width: `${progressPercentage}%`,
+                }}
+              />
             </View>
 
             {/* Progress text */}
             <Text style={[styles.description, { textAlign: "center" }]}>
-              {progress.completed + progress.failed.length} of {progress.total} accounts processed ({progressPercentage}%)
+              {progress.completed + progress.failed.length} of {progress.total}{" "}
+              accounts processed ({progressPercentage}%)
             </Text>
 
             {/* Current account being processed */}
             {progress.current && !isComplete && (
-              <Text style={[styles.description, { textAlign: "center", marginTop: 8, fontStyle: "italic" }]}>
+              <Text
+                style={[
+                  styles.description,
+                  { textAlign: "center", marginTop: 8, fontStyle: "italic" },
+                ]}
+              >
                 Processing: {progress.current}
               </Text>
             )}
@@ -84,9 +96,18 @@ export const PinRotationProgressModal: React.FC<PinRotationProgressModalProps> =
                 <Text style={[styles.description, { textAlign: "center" }]}>
                   ✅ Successfully re-encrypted: {progress.completed} accounts
                 </Text>
-                
+
                 {progress.failed.length > 0 && (
-                  <Text style={[styles.description, { textAlign: "center", color: namedColors.red, marginTop: 8 }]}>
+                  <Text
+                    style={[
+                      styles.description,
+                      {
+                        textAlign: "center",
+                        color: namedColors.red,
+                        marginTop: 8,
+                      },
+                    ]}
+                  >
                     ⚠️ Failed to re-encrypt: {progress.failed.length} accounts
                   </Text>
                 )}
@@ -96,15 +117,17 @@ export const PinRotationProgressModal: React.FC<PinRotationProgressModalProps> =
 
           {/* Warning about failed accounts */}
           {isComplete && progress.failed.length > 0 && (
-            <View style={{
-              backgroundColor: namedColors.redOverlay,
-              padding: 12,
-              borderRadius: 8,
-              marginTop: 12,
-            }}>
+            <View
+              style={{
+                backgroundColor: namedColors.redOverlay,
+                padding: 12,
+                borderRadius: 8,
+                marginTop: 12,
+              }}
+            >
               <Text style={[styles.description, { fontSize: 12 }]}>
-                Some accounts could not be re-encrypted automatically. 
-                You may need to re-enter and save their recovery phrases manually.
+                Some accounts could not be re-encrypted automatically. You may
+                need to re-enter and save their recovery phrases manually.
               </Text>
             </View>
           )}

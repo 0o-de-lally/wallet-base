@@ -1,16 +1,20 @@
 /**
  * PIN Rotation Utilities
- * 
+ *
  * Handles the complete PIN rotation workflow, including re-encrypting
  * all account data with the new PIN.
  */
 
 import { appConfig } from "./app-config-store";
 import { getAllKeys, getValue, saveValue } from "./secure-store";
-import { secureDecryptWithPin, secureEncryptWithPin, hashPin } from "./pin-security";
+import {
+  secureDecryptWithPin,
+  secureEncryptWithPin,
+  hashPin,
+} from "./pin-security";
 import { reportErrorAuto } from "./error-utils";
 
-export interface AccountWithStoredData {
+interface AccountWithStoredData {
   accountId: string;
   profileName: string;
   nickname?: string;
@@ -24,7 +28,7 @@ export interface PinRotationProgress {
   failed: string[]; // list of account IDs that failed
 }
 
-export interface PinRotationResult {
+interface PinRotationResult {
   success: boolean;
   rotatedCount: number;
   failedAccounts: string[];
@@ -34,24 +38,26 @@ export interface PinRotationResult {
 /**
  * Gets all accounts that have stored encrypted data in secure storage
  */
-export async function getAllAccountsWithStoredData(): Promise<AccountWithStoredData[]> {
+export async function getAllAccountsWithStoredData(): Promise<
+  AccountWithStoredData[]
+> {
   try {
     // Get all keys from secure storage
     const allKeys = await getAllKeys();
-    
+
     // Filter for account keys (pattern: account_${accountId})
-    const accountKeys = allKeys.filter(key => key.startsWith('account_'));
-    
+    const accountKeys = allKeys.filter((key) => key.startsWith("account_"));
+
     // Extract account IDs and match with profile data
     const accountsWithData: AccountWithStoredData[] = [];
     const profiles = appConfig.profiles.get();
-    
+
     for (const key of accountKeys) {
-      const accountId = key.replace('account_', '');
-      
+      const accountId = key.replace("account_", "");
+
       // Find this account in the profiles
       for (const [profileName, profile] of Object.entries(profiles)) {
-        const account = profile.accounts.find(acc => acc.id === accountId);
+        const account = profile.accounts.find((acc) => acc.id === accountId);
         if (account) {
           accountsWithData.push({
             accountId: account.id,
@@ -63,11 +69,11 @@ export async function getAllAccountsWithStoredData(): Promise<AccountWithStoredD
         }
       }
     }
-    
+
     return accountsWithData;
   } catch (error) {
-    console.error('Error getting accounts with stored data:', error);
-    reportErrorAuto('getAllAccountsWithStoredData', error);
+    console.error("Error getting accounts with stored data:", error);
+    reportErrorAuto("getAllAccountsWithStoredData", error);
     return [];
   }
 }
@@ -83,70 +89,75 @@ export async function rotatePinAndReencryptData(
   try {
     // First, get all accounts with stored data
     const accountsWithData = await getAllAccountsWithStoredData();
-    
+
     if (accountsWithData.length === 0) {
       // No data to re-encrypt, just update the PIN
       const hashedPin = await hashPin(newPin);
       await saveValue("user_pin", JSON.stringify(hashedPin));
-      
+
       return {
         success: true,
         rotatedCount: 0,
         failedAccounts: [],
       };
     }
-    
+
     const progress: PinRotationProgress = {
       total: accountsWithData.length,
       completed: 0,
       failed: [],
     };
-    
+
     // Report initial progress
     onProgress?.(progress);
-    
+
     // Re-encrypt each account's data
     for (const account of accountsWithData) {
       try {
         progress.current = account.nickname || account.accountId;
         onProgress?.(progress);
-        
-        const success = await reencryptAccountData(account.accountId, oldPin, newPin);
-        
+
+        const success = await reencryptAccountData(
+          account.accountId,
+          oldPin,
+          newPin,
+        );
+
         if (success) {
           progress.completed++;
         } else {
           progress.failed.push(account.accountId);
         }
-        
+
         onProgress?.(progress);
-        
       } catch (error) {
-        console.error(`Failed to re-encrypt data for account ${account.accountId}:`, error);
+        console.error(
+          `Failed to re-encrypt data for account ${account.accountId}:`,
+          error,
+        );
         progress.failed.push(account.accountId);
         onProgress?.(progress);
       }
     }
-    
+
     // Update the stored PIN hash with the new PIN
     const hashedPin = await hashPin(newPin);
     await saveValue("user_pin", JSON.stringify(hashedPin));
-    
+
     return {
       success: progress.failed.length === 0,
       rotatedCount: progress.completed,
       failedAccounts: progress.failed,
     };
-    
   } catch (error) {
-    console.error('Error during PIN rotation:', error);
-    reportErrorAuto('rotatePinAndReencryptData', error);
-    
+    console.error("Error during PIN rotation:", error);
+    reportErrorAuto("rotatePinAndReencryptData", error);
+
     return {
       success: false,
       rotatedCount: 0,
       failedAccounts: [],
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -161,37 +172,43 @@ async function reencryptAccountData(
 ): Promise<boolean> {
   try {
     const storageKey = `account_${accountId}`;
-    
+
     // Get the encrypted data
     const encryptedData = await getValue(storageKey);
     if (!encryptedData) {
       console.warn(`No encrypted data found for account ${accountId}`);
       return true; // No data to re-encrypt is not a failure
     }
-    
+
     // Decrypt with old PIN
     const decryptResult = await secureDecryptWithPin(encryptedData, oldPin);
     if (!decryptResult || !decryptResult.verified) {
-      console.error(`Failed to decrypt data for account ${accountId} with old PIN`);
+      console.error(
+        `Failed to decrypt data for account ${accountId} with old PIN`,
+      );
       return false;
     }
-    
+
     // Re-encrypt with new PIN
-    const newEncryptedData = await secureEncryptWithPin(decryptResult.value, newPin);
+    const newEncryptedData = await secureEncryptWithPin(
+      decryptResult.value,
+      newPin,
+    );
     if (!newEncryptedData) {
-      console.error(`Failed to encrypt data for account ${accountId} with new PIN`);
+      console.error(
+        `Failed to encrypt data for account ${accountId} with new PIN`,
+      );
       return false;
     }
-    
+
     // Save the re-encrypted data
     await saveValue(storageKey, newEncryptedData);
-    
+
     console.log(`Successfully re-encrypted data for account ${accountId}`);
     return true;
-    
   } catch (error) {
     console.error(`Error re-encrypting account ${accountId}:`, error);
-    reportErrorAuto('reencryptAccountData', error, { accountId });
+    reportErrorAuto("reencryptAccountData", error, { accountId });
     return false;
   }
 }
@@ -206,18 +223,21 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
 }> {
   try {
     const accountsWithData = await getAllAccountsWithStoredData();
-    
+
     if (accountsWithData.length === 0) {
       return { isValid: true, testedAccounts: 0 };
     }
-    
+
     // Test the old PIN on a few accounts to make sure it works
-    const accountsToTest = accountsWithData.slice(0, Math.min(3, accountsWithData.length));
-    
+    const accountsToTest = accountsWithData.slice(
+      0,
+      Math.min(3, accountsWithData.length),
+    );
+
     for (const account of accountsToTest) {
       const storageKey = `account_${account.accountId}`;
       const encryptedData = await getValue(storageKey);
-      
+
       if (encryptedData) {
         const decryptResult = await secureDecryptWithPin(encryptedData, oldPin);
         if (!decryptResult || !decryptResult.verified) {
@@ -229,15 +249,14 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
         }
       }
     }
-    
+
     return { isValid: true, testedAccounts: accountsToTest.length };
-    
   } catch (error) {
-    console.error('Error validating old PIN:', error);
+    console.error("Error validating old PIN:", error);
     return {
       isValid: false,
       testedAccounts: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

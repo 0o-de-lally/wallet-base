@@ -11,8 +11,8 @@ import { PinInputModal } from "./PinInputModal";
 import { PinCreationFlow } from "./PinCreationFlow";
 import { PinRotationFlow } from "./PinRotationFlow";
 import { PinRotationProgressModal } from "./PinRotationProgressModal";
-import { 
-  rotatePinAndReencryptData, 
+import {
+  rotatePinAndReencryptData,
   validateOldPinCanDecryptData,
   getAllAccountsWithStoredData,
   type PinRotationProgress,
@@ -40,11 +40,13 @@ const EnterPinScreen = memo(() => {
   >(null);
   const [oldPin, setOldPin] = useState<string | null>(null);
   const [accountsWithData, setAccountsWithData] = useState<number>(0);
-  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>({
-    total: 0,
-    completed: 0,
-    failed: [],
-  });
+  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>(
+    {
+      total: 0,
+      completed: 0,
+      failed: [],
+    },
+  );
 
   const { showAlert } = useModal();
 
@@ -122,11 +124,12 @@ const EnterPinScreen = memo(() => {
 
         // Additionally validate that the PIN can decrypt existing data
         if (accountsWithData > 0) {
-          const validationResult = await validateOldPinCanDecryptData(oldPinValue);
+          const validationResult =
+            await validateOldPinCanDecryptData(oldPinValue);
           if (!validationResult.isValid) {
             showAlert(
-              "PIN Validation Failed", 
-              `Cannot decrypt existing data with this PIN. ${validationResult.error || ''}`
+              "PIN Validation Failed",
+              `Cannot decrypt existing data with this PIN. ${validationResult.error || ""}`,
             );
             setIsLoading(false);
             return;
@@ -160,13 +163,13 @@ const EnterPinScreen = memo(() => {
         try {
           // Show progress modal
           setRotationProgressVisible(true);
-          
+
           const result = await rotatePinAndReencryptData(
             oldPin,
             newPin,
             (progress) => {
               setRotationProgress(progress);
-            }
+            },
           );
 
           setRotationProgressVisible(false);
@@ -174,15 +177,16 @@ const EnterPinScreen = memo(() => {
           if (result.success) {
             showAlert(
               "Success",
-              `PIN updated successfully! Re-encrypted ${result.rotatedCount} accounts.`
+              `PIN updated successfully! Re-encrypted ${result.rotatedCount} accounts.`,
             );
           } else {
-            const failedMessage = result.failedAccounts.length > 0 
-              ? ` ${result.failedAccounts.length} accounts failed to re-encrypt.`
-              : '';
+            const failedMessage =
+              result.failedAccounts.length > 0
+                ? ` ${result.failedAccounts.length} accounts failed to re-encrypt.`
+                : "";
             showAlert(
               "Warning",
-              `PIN updated but there were issues with data re-encryption.${failedMessage} ${result.error || ''}`
+              `PIN updated but there were issues with data re-encryption.${failedMessage} ${result.error || ""}`,
             );
           }
 
@@ -190,10 +194,7 @@ const EnterPinScreen = memo(() => {
           await loadAccountsWithData();
         } catch (error) {
           setRotationProgressVisible(false);
-          showAlert(
-            "Error",
-            "Failed to complete PIN rotation"
-          );
+          showAlert("Error", "Failed to complete PIN rotation");
           console.error(error);
         }
 
@@ -209,7 +210,7 @@ const EnterPinScreen = memo(() => {
   );
 
   /**
-   * Handles cancellation of PIN rotation flow  
+   * Handles cancellation of PIN rotation flow
    */
   const handlePinRotationCancel = useCallback(() => {
     setPinRotationFlowVisible(false);
@@ -275,7 +276,7 @@ const EnterPinScreen = memo(() => {
   const getRotationMessage = useCallback(() => {
     const baseMessage = "You are about to change your PIN.";
     if (accountsWithData > 0) {
-      return `${baseMessage} This will automatically re-encrypt all secure data for ${accountsWithData} account${accountsWithData > 1 ? 's' : ''}. Continue?`;
+      return `${baseMessage} This will automatically re-encrypt all secure data for ${accountsWithData} account${accountsWithData > 1 ? "s" : ""}. Continue?`;
     }
     return `${baseMessage} Continue?`;
   }, [accountsWithData]);
