@@ -1,6 +1,41 @@
 import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
 
 /**
+ * Updates the internal keys list maintained for getAllKeys functionality
+ */
+async function updateKeysList(key: string, operation: 'add' | 'remove'): Promise<void> {
+  try {
+    // Don't track the keys list key itself to avoid recursion
+    if (key === "all_storage_keys") {
+      return;
+    }
+
+    // Get current keys list
+    const keysListJson = await getItemAsync("all_storage_keys");
+    const currentKeys: string[] = keysListJson ? JSON.parse(keysListJson) : [];
+
+    if (operation === 'add') {
+      // Add key if not already present
+      if (!currentKeys.includes(key)) {
+        currentKeys.push(key);
+      }
+    } else if (operation === 'remove') {
+      // Remove key if present
+      const index = currentKeys.indexOf(key);
+      if (index > -1) {
+        currentKeys.splice(index, 1);
+      }
+    }
+
+    // Save updated keys list
+    await setItemAsync("all_storage_keys", JSON.stringify(currentKeys));
+  } catch (error) {
+    console.error("Error updating keys list:", error);
+    // Don't throw here to avoid breaking the main operation
+  }
+}
+
+/**
  * Saves a key-value pair to secure storage.
  *
  * @param key - The unique identifier for the stored value
@@ -11,6 +46,9 @@ import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
 export async function saveValue(key: string, value: string): Promise<void> {
   try {
     await setItemAsync(key, value);
+
+    // Update the keys list
+    await updateKeysList(key, 'add');
   } catch (error) {
     console.error("Error saving to secure store:", error);
     throw error;
@@ -44,6 +82,9 @@ export async function getValue(key: string): Promise<string | null> {
 export async function deleteValue(key: string): Promise<void> {
   try {
     await deleteItemAsync(key);
+
+    // Update the keys list
+    await updateKeysList(key, 'remove');
   } catch (error) {
     console.error("Error deleting from secure store:", error);
     throw error;
@@ -96,5 +137,66 @@ export async function getAllKeys(): Promise<string[]> {
   } catch (error) {
     console.error("Error getting all keys:", error);
     return [];
+  }
+}
+
+/**
+ * Development utility to rebuild the keys list from known patterns
+ * This is useful if the keys list gets out of sync
+ */
+export async function rebuildKeysList(): Promise<void> {
+  try {
+    console.log("Rebuilding keys list...");
+
+    // Try to detect existing keys using known patterns
+    const knownKeys: string[] = [];
+
+    // Check for common key patterns
+    const patternsToCheck = [
+      "user_pin",
+      // Account keys - we'll need to check based on current profiles
+    ];
+
+    for (const key of patternsToCheck) {
+      try {
+        const value = await getItemAsync(key);
+        if (value !== null) {
+          knownKeys.push(key);
+        }
+      } catch {
+        // Key doesn't exist, ignore
+      }
+    }
+
+    // Also check for account keys based on current profiles
+    // This requires importing appConfig, but we'll do it dynamically to avoid circular imports
+    try {
+      const { appConfig } = await import("./app-config-store");
+      const profiles = appConfig.profiles.get();
+
+      for (const [, profile] of Object.entries(profiles)) {
+        for (const account of profile.accounts) {
+          const accountKey = `account_${account.id}`;
+          try {
+            const value = await getItemAsync(accountKey);
+            if (value !== null) {
+              knownKeys.push(accountKey);
+            }
+          } catch {
+            // Key doesn't exist, ignore
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking account keys:", error);
+    }
+
+    // Save the rebuilt keys list
+    await setItemAsync("all_storage_keys", JSON.stringify(knownKeys));
+
+    console.log("Keys list rebuilt with keys:", knownKeys);
+  } catch (error) {
+    console.error("Error rebuilding keys list:", error);
+    throw error;
   }
 }

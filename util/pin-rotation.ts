@@ -44,21 +44,27 @@ export async function getAllAccountsWithStoredData(): Promise<
   try {
     // Get all keys from secure storage
     const allKeys = await getAllKeys();
+    console.log("All storage keys:", allKeys);
 
     // Filter for account keys (pattern: account_${accountId})
     const accountKeys = allKeys.filter((key) => key.startsWith("account_"));
+    console.log("Filtered account keys:", accountKeys);
 
     // Extract account IDs and match with profile data
     const accountsWithData: AccountWithStoredData[] = [];
     const profiles = appConfig.profiles.get();
+    console.log("Current profiles:", profiles);
 
     for (const key of accountKeys) {
       const accountId = key.replace("account_", "");
+      console.log(`Processing account key: ${key}, extracted ID: ${accountId}`);
 
       // Find this account in the profiles
       for (const [profileName, profile] of Object.entries(profiles)) {
+        console.log(`Checking profile ${profileName}:`, profile.accounts);
         const account = profile.accounts.find((acc) => acc.id === accountId);
         if (account) {
+          console.log(`Found matching account:`, account);
           accountsWithData.push({
             accountId: account.id,
             profileName,
@@ -70,6 +76,7 @@ export async function getAllAccountsWithStoredData(): Promise<
       }
     }
 
+    console.log("Final accounts with data:", accountsWithData);
     return accountsWithData;
   } catch (error) {
     console.error("Error getting accounts with stored data:", error);
@@ -258,5 +265,56 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
       testedAccounts: 0,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+
+/**
+ * Debug function to test storage key discovery
+ */
+export async function debugStorageKeys(): Promise<void> {
+  try {
+    console.log("=== DEBUG: Storage Key Discovery ===");
+
+    // First rebuild the keys list to make sure it's up to date
+    console.log("Rebuilding keys list...");
+    const { rebuildKeysList } = await import("./secure-store");
+    await rebuildKeysList();
+
+    const allKeys = await getAllKeys();
+    console.log("All keys in storage:", allKeys);
+
+    const accountKeys = allKeys.filter((key) => key.startsWith("account_"));
+    console.log("Account keys found:", accountKeys);
+
+    const profiles = appConfig.profiles.get();
+    console.log("Current profiles config:", profiles);
+
+    // Test each account key
+    for (const key of accountKeys) {
+      const accountId = key.replace("account_", "");
+      console.log(`Testing key: ${key} -> account ID: ${accountId}`);
+
+      const data = await getValue(key);
+      console.log(`Data exists for ${key}:`, data !== null);
+
+      // Look for this account in profiles
+      let found = false;
+      for (const [profileName, profile] of Object.entries(profiles)) {
+        const account = profile.accounts.find((acc) => acc.id === accountId);
+        if (account) {
+          console.log(`Found account ${accountId} in profile ${profileName}:`, account);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        console.log(`Account ${accountId} not found in any profile!`);
+      }
+    }
+
+    console.log("=== END DEBUG ===");
+  } catch (error) {
+    console.error("Error in debugStorageKeys:", error);
   }
 }
