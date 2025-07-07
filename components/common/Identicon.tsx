@@ -44,21 +44,25 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
     const djb2Hash = (str: string) => {
       let hash = 5381;
       for (let i = 0; i < str.length; i++) {
-        hash = ((hash << 5) + hash) + str.charCodeAt(i);
+        hash = (hash << 5) + hash + str.charCodeAt(i);
       }
       return Math.abs(hash);
     };
 
     // Use different parts of the address for each color selection
-    const firstHalf = trimmedAddress.slice(0, Math.ceil(trimmedAddress.length / 2));
-    const secondHalf = trimmedAddress.slice(Math.floor(trimmedAddress.length / 2));
-    const reverseAddress = trimmedAddress.split('').reverse().join('');
+    const firstHalf = trimmedAddress.slice(
+      0,
+      Math.ceil(trimmedAddress.length / 2),
+    );
+    const secondHalf = trimmedAddress.slice(
+      Math.floor(trimmedAddress.length / 2),
+    );
+    const reverseAddress = trimmedAddress.split("").reverse().join("");
 
     // Generate hashes from different representations
     const hash1 = djb2Hash(firstHalf);
     const hash2 = djb2Hash(secondHalf);
     const hash3 = djb2Hash(reverseAddress);
-    const hash4 = djb2Hash(trimmedAddress);
 
     // Use simple modulo for better distribution
     const colorIndex1 = hash1 % colorPalette.length;
@@ -67,7 +71,9 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
     // Ensure the second color is different from the first
     // Use a more robust approach that guarantees variety without blocking colors
     if (colorIndex2 === colorIndex1) {
-      colorIndex2 = (colorIndex1 + (hash3 % (colorPalette.length - 1)) + 1) % colorPalette.length;
+      colorIndex2 =
+        (colorIndex1 + (hash3 % (colorPalette.length - 1)) + 1) %
+        colorPalette.length;
     }
 
     return [colorPalette[colorIndex1], colorPalette[colorIndex2]];
