@@ -29,8 +29,6 @@ export async function fetchAccountBalance(
     // Call the view function
     const result = await client.viewJson(payload);
 
-    console.log("Balance API response for", accountAddress, ":", result);
-
     // Handle different possible response formats
     let balance_unlocked = 0;
     let balance_total = 0;
@@ -120,33 +118,36 @@ export async function updateAccountBalance(
     const now = Date.now();
     let accountUpdated = false;
 
-    // Find and update the account in the profile
+    // Find and update the account in the profile using proper Legend State pattern
     Object.keys(profiles).forEach((profileKey) => {
       const profile = profiles[profileKey];
       const accountIndex = profile.accounts.findIndex(
         (acc) => acc.id === accountId,
       );
       if (accountIndex !== -1) {
-        const currentAccount = profile.accounts[accountIndex];
+        // Update the specific account using Legend State's direct property access
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
 
-        profile.accounts[accountIndex] = {
-          ...currentAccount,
-          balance_unlocked: balanceData.balance_unlocked,
-          balance_total: balanceData.balance_total,
-          last_update: now,
-          // Handle error state
-          last_error: balanceData.error || undefined,
-          error_count: balanceData.error
-            ? (currentAccount.error_count || 0) + 1
-            : undefined, // Clear error count on successful update
-          // Update exists_on_chain flag
-          exists_on_chain:
-            balanceData.exists_on_chain !== undefined
-              ? balanceData.exists_on_chain
-              : currentAccount.exists_on_chain,
-        };
-        // Update the profile in storage
-        appConfig.profiles[profileKey].set(profile);
+        // Update individual properties to trigger reactive updates
+        accountPath.balance_unlocked.set(balanceData.balance_unlocked);
+        accountPath.balance_total.set(balanceData.balance_total);
+        accountPath.last_update.set(now);
+
+        // Handle error state
+        if (balanceData.error) {
+          accountPath.last_error.set(balanceData.error);
+          accountPath.error_count.set((accountPath.error_count.get() || 0) + 1);
+        } else {
+          accountPath.last_error.set(undefined);
+          accountPath.error_count.set(undefined);
+        }
+
+        // Update exists_on_chain flag
+        if (balanceData.exists_on_chain !== undefined) {
+          accountPath.exists_on_chain.set(balanceData.exists_on_chain);
+        }
+
         accountUpdated = true;
       }
     });

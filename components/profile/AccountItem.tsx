@@ -1,9 +1,10 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSelector } from "@legendapp/state/react";
 import { styles, colors } from "../../styles/styles";
 import { formatCurrency, shortenAddress } from "../../util/format-utils";
-import type { AccountState } from "../../util/app-config-store";
+import { appConfig, type AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
 import { reportErrorAuto } from "../../util/error-utils";
@@ -179,19 +180,21 @@ const FullAccountView = ({
     <View style={styles.accountActionsRow}>
       <ViewOnlyIcon account={account} iconSize={20} />
 
-      {account.exists_on_chain !== false && (
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={navigateToTransactionHub}
-          accessibilityLabel={`Transaction hub for ${account.nickname}`}
-        >
-          <Ionicons
-            name="send-outline"
-            size={20}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
-      )}
+      {account.exists_on_chain !== false &&
+        account.v8_migrated !== false &&
+        account.is_v8_authorized !== false && (
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={navigateToTransactionHub}
+            accessibilityLabel={`Transaction hub for ${account.nickname}`}
+          >
+            <Ionicons
+              name="send-outline"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        )}
 
       <TouchableOpacity
         style={styles.iconButton}
@@ -209,7 +212,7 @@ const FullAccountView = ({
 );
 
 export interface AccountItemProps {
-  account: AccountState;
+  accountId: string;
   profileName: string;
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
@@ -219,13 +222,29 @@ export interface AccountItemProps {
 
 export const AccountItem = memo(
   ({
-    account,
+    accountId,
     profileName,
     isActive,
     onSetActive,
     compact = false,
     isSwitching = false,
   }: AccountItemProps) => {
+    // Reactively get account data from the store
+    const account = useSelector(() => {
+      const profiles = appConfig.profiles.get();
+      const profile = profiles[profileName];
+      if (!profile?.accounts) return null;
+      const foundAccount =
+        profile.accounts.find((acc) => acc.id === accountId) || null;
+
+      return foundAccount;
+    });
+
+    // Early return if account not found
+    if (!account) {
+      return null;
+    }
+
     const navigateToAccountDetails = () => {
       router.navigate({
         pathname: "./account-details",
@@ -259,7 +278,6 @@ export const AccountItem = memo(
       if (!account.last_error) return;
 
       try {
-        console.log(`Retrying balance fetch for ${account.nickname}`);
         await retryAccountBalance(account.id);
       } catch (error) {
         reportErrorAuto("AccountItem.handleRetryBalance", error, {

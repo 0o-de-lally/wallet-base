@@ -12,24 +12,24 @@ interface IdenticonProps {
  * Creates a vertical gradient stripe unique to the address
  */
 export const Identicon = memo(({ address, style }: IdenticonProps) => {
-  // Fixed palette of consistently bright, electric colors that complement the app's style
+  // Fixed palette of consistently bright, electric colors - shuffled order to avoid bias
   const colorPalette = [
-    "#00D9FF", // Bright electric cyan
-    "#00FF88", // Bright electric green
     "#FF6B6B", // Bright electric coral
-    "#FFD93D", // Bright electric yellow
-    "#BB6BD9", // Bright electric purple
-    "#FF69B4", // Bright electric hot pink
     "#00E676", // Bright electric mint
-    "#448AFF", // Bright electric blue
-    "#FF1744", // Bright electric red
-    "#E91E63", // Bright electric magenta
     "#9C27B0", // Bright electric violet
-    "#FF9100", // Bright electric orange
+    "#FFD93D", // Bright electric yellow
     "#00BCD4", // Bright electric teal
+    "#FF1744", // Bright electric red
+    "#448AFF", // Bright electric blue
     "#8BC34A", // Bright electric lime
+    "#BB6BD9", // Bright electric purple
+    "#FF9100", // Bright electric orange
+    "#00D9FF", // Bright electric cyan
     "#FFC107", // Bright electric amber
+    "#FF69B4", // Bright electric hot pink
     "#3F51B5", // Bright electric indigo
+    "#E91E63", // Bright electric magenta
+    "#00FF88", // Bright electric green
   ];
 
   // Generate deterministic colors from the address
@@ -40,29 +40,33 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
     // Remove all leading zeros to get the unique part
     const trimmedAddress = cleanAddress.replace(/^0+/, "") || "0";
 
-    // Ensure we have enough characters by padding the trimmed address
-    const paddedAddress = trimmedAddress.padEnd(20, "0");
-
-    // Use a better hash function for more even distribution
-    const simpleHash = (str: string, seed: number = 0) => {
-      let hash = seed;
+    // Use a more robust hash function with better distribution
+    const djb2Hash = (str: string) => {
+      let hash = 5381;
       for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash + char) & 0x7fffffff; // Keep positive
-        hash = hash * 1013904223; // Large prime multiplier for better distribution
+        hash = (hash << 5) + hash + str.charCodeAt(i);
       }
       return Math.abs(hash);
     };
 
-    // Use different strategies to ensure variety and better distribution
-    const hash1 = simpleHash(paddedAddress.slice(0, 6), 17); // First part with seed
-    const hash2 = simpleHash(paddedAddress.slice(6, 12), 31); // Middle part with different seed
-    const hash3 = simpleHash(paddedAddress.slice(12), 53); // Last part with another seed
-    const hash4 = simpleHash(paddedAddress, 73); // Whole address with different seed
+    // Use different parts of the address for each color selection
+    const firstHalf = trimmedAddress.slice(
+      0,
+      Math.ceil(trimmedAddress.length / 2),
+    );
+    const secondHalf = trimmedAddress.slice(
+      Math.floor(trimmedAddress.length / 2),
+    );
+    const reverseAddress = trimmedAddress.split("").reverse().join("");
 
-    // Select colors using different hash combinations for better variety
-    const colorIndex1 = (hash1 * 7 + hash3 * 11) % colorPalette.length;
-    let colorIndex2 = (hash2 * 13 + hash4 * 17) % colorPalette.length;
+    // Generate hashes from different representations
+    const hash1 = djb2Hash(firstHalf);
+    const hash2 = djb2Hash(secondHalf);
+    const hash3 = djb2Hash(reverseAddress);
+
+    // Use simple modulo for better distribution
+    const colorIndex1 = hash1 % colorPalette.length;
+    let colorIndex2 = hash2 % colorPalette.length;
 
     // Ensure the second color is different from the first
     // Use a more robust approach that guarantees variety without blocking colors
