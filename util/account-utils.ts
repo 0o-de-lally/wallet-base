@@ -74,7 +74,10 @@ export async function createAccount(
       // Add a small delay to ensure the account is properly saved
       setTimeout(() => {
         refreshNewAccount(account.id).catch((error) => {
-          console.warn("Failed to immediately refresh new account data:", error);
+          console.warn(
+            "Failed to immediately refresh new account data:",
+            error,
+          );
         });
       }, 100); // 100ms delay
 

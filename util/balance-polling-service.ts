@@ -213,7 +213,7 @@ class BalancePollingService {
   async refreshNewAccount(accountId: string): Promise<void> {
     try {
       console.log(`refreshNewAccount called for accountId: ${accountId}`);
-      
+
       const profiles = appConfig.profiles.get();
       let targetAccount = null;
 
@@ -241,7 +241,9 @@ class BalancePollingService {
           "./account-polling"
         );
         await fetchAndUpdateAccountPollingData(client, targetAccount);
-        console.log(`Account data refresh completed for ${targetAccount.nickname || targetAccount.id}`);
+        console.log(
+          `Account data refresh completed for ${targetAccount.nickname || targetAccount.id}`,
+        );
       } else {
         console.warn("No Libra client available for immediate account refresh");
       }

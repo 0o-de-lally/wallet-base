@@ -99,7 +99,8 @@ export async function updateAccountV8Authorization(
       );
       if (accountIndex !== -1) {
         // Update the specific account using Legend State's direct property access
-        const accountPath = appConfig.profiles[profileKey].accounts[accountIndex];
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
         accountPath.is_v8_authorized.set(v8AuthData.is_v8_authorized);
         accountUpdated = true;
       }

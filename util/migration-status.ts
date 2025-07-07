@@ -98,7 +98,8 @@ export async function updateAccountMigrationStatus(
       );
       if (accountIndex !== -1) {
         // Update the specific account using Legend State's direct property access
-        const accountPath = appConfig.profiles[profileKey].accounts[accountIndex];
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
         accountPath.v8_migrated.set(migrationData.v8_migrated);
         accountUpdated = true;
       }

@@ -234,8 +234,9 @@ export const AccountItem = memo(
       const profiles = appConfig.profiles.get();
       const profile = profiles[profileName];
       if (!profile?.accounts) return null;
-      const foundAccount = profile.accounts.find((acc) => acc.id === accountId) || null;
-      
+      const foundAccount =
+        profile.accounts.find((acc) => acc.id === accountId) || null;
+
       return foundAccount;
     });
 

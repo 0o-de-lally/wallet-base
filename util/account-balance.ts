@@ -126,13 +126,14 @@ export async function updateAccountBalance(
       );
       if (accountIndex !== -1) {
         // Update the specific account using Legend State's direct property access
-        const accountPath = appConfig.profiles[profileKey].accounts[accountIndex];
-        
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
+
         // Update individual properties to trigger reactive updates
         accountPath.balance_unlocked.set(balanceData.balance_unlocked);
         accountPath.balance_total.set(balanceData.balance_total);
         accountPath.last_update.set(now);
-        
+
         // Handle error state
         if (balanceData.error) {
           accountPath.last_error.set(balanceData.error);
@@ -141,12 +142,12 @@ export async function updateAccountBalance(
           accountPath.last_error.set(undefined);
           accountPath.error_count.set(undefined);
         }
-        
+
         // Update exists_on_chain flag
         if (balanceData.exists_on_chain !== undefined) {
           accountPath.exists_on_chain.set(balanceData.exists_on_chain);
         }
-        
+
         accountUpdated = true;
       }
     });

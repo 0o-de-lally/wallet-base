@@ -15,7 +15,7 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
     const profiles = appConfig.profiles.get();
     const profile = profiles[profileName];
     const accounts = profile?.accounts || [];
-    
+
     // Return an object with the calculated totals to ensure reactivity
     // when individual account balances change
     const totalUnlocked = accounts.reduce(
@@ -33,7 +33,7 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
       totalUnlocked,
       totalBalance,
       // Include a timestamp of the last update to ensure reactivity
-      lastUpdate: Math.max(...accounts.map(acc => acc.last_update || 0), 0)
+      lastUpdate: Math.max(...accounts.map((acc) => acc.last_update || 0), 0),
     };
   });
 
