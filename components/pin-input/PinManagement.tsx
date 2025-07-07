@@ -9,6 +9,14 @@ import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputModal } from "./PinInputModal";
 import { PinCreationFlow } from "./PinCreationFlow";
+import { PinRotationFlow } from "./PinRotationFlow";
+import { PinRotationProgressModal } from "./PinRotationProgressModal";
+import { 
+  rotatePinAndReencryptData, 
+  validateOldPinCanDecryptData,
+  getAllAccountsWithStoredData,
+  type PinRotationProgress,
+} from "../../util/pin-rotation";
 
 /**
  * Screen component for PIN creation and verification.
@@ -23,18 +31,39 @@ const EnterPinScreen = memo(() => {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
   const [pinCreationVisible, setPinCreationVisible] = useState(false);
+  const [pinRotationFlowVisible, setPinRotationFlowVisible] = useState(false);
+  const [rotationProgressVisible, setRotationProgressVisible] = useState(false);
 
   // Current operation and temporary PIN storage for rotation flow
   const [currentOperation, setCurrentOperation] = useState<
     "verify" | "rotate" | "create" | null
   >(null);
   const [oldPin, setOldPin] = useState<string | null>(null);
+  const [accountsWithData, setAccountsWithData] = useState<number>(0);
+  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>({
+    total: 0,
+    completed: 0,
+    failed: [],
+  });
 
   const { showAlert } = useModal();
 
   // Check if PIN exists on component mount
   useEffect(() => {
     checkExistingPin();
+    loadAccountsWithData();
+  }, []);
+
+  /**
+   * Loads the count of accounts with stored encrypted data
+   */
+  const loadAccountsWithData = useCallback(async () => {
+    try {
+      const accounts = await getAllAccountsWithStoredData();
+      setAccountsWithData(accounts.length);
+    } catch (error) {
+      console.error("Error loading accounts with data:", error);
+    }
   }, []);
 
   /**
@@ -85,16 +114,31 @@ const EnterPinScreen = memo(() => {
       try {
         const isValid = await verifyStoredPin(oldPinValue);
 
-        if (isValid) {
-          // Store the old PIN for re-encryption later
-          setOldPin(oldPinValue);
-
-          // Close the verification modal and show PIN creation flow
-          setPinModalVisible(false);
-          setPinCreationVisible(true);
-        } else {
+        if (!isValid) {
           showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+          setIsLoading(false);
+          return;
         }
+
+        // Additionally validate that the PIN can decrypt existing data
+        if (accountsWithData > 0) {
+          const validationResult = await validateOldPinCanDecryptData(oldPinValue);
+          if (!validationResult.isValid) {
+            showAlert(
+              "PIN Validation Failed", 
+              `Cannot decrypt existing data with this PIN. ${validationResult.error || ''}`
+            );
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Store the old PIN for re-encryption later
+        setOldPin(oldPinValue);
+
+        // Close the verification modal and show PIN rotation flow
+        setPinModalVisible(false);
+        setPinRotationFlowVisible(true);
       } catch (error) {
         showAlert("Error", "Failed to verify PIN");
         console.error(error);
@@ -102,50 +146,94 @@ const EnterPinScreen = memo(() => {
         setIsLoading(false);
       }
     },
-    [showAlert],
+    [showAlert, accountsWithData],
   );
 
   /**
-   * Handles completion of PIN creation/rotation
+   * Handles completion of PIN rotation flow
+   */
+  const handlePinRotationComplete = useCallback(
+    async (success: boolean, newPin?: string) => {
+      setPinRotationFlowVisible(false);
+
+      if (success && oldPin && newPin) {
+        try {
+          // Show progress modal
+          setRotationProgressVisible(true);
+          
+          const result = await rotatePinAndReencryptData(
+            oldPin,
+            newPin,
+            (progress) => {
+              setRotationProgress(progress);
+            }
+          );
+
+          setRotationProgressVisible(false);
+
+          if (result.success) {
+            showAlert(
+              "Success",
+              `PIN updated successfully! Re-encrypted ${result.rotatedCount} accounts.`
+            );
+          } else {
+            const failedMessage = result.failedAccounts.length > 0 
+              ? ` ${result.failedAccounts.length} accounts failed to re-encrypt.`
+              : '';
+            showAlert(
+              "Warning",
+              `PIN updated but there were issues with data re-encryption.${failedMessage} ${result.error || ''}`
+            );
+          }
+
+          // Reload account data count
+          await loadAccountsWithData();
+        } catch (error) {
+          setRotationProgressVisible(false);
+          showAlert(
+            "Error",
+            "Failed to complete PIN rotation"
+          );
+          console.error(error);
+        }
+
+        // Update pin exists state
+        setPinExists(true);
+      }
+
+      // Reset the operation
+      setCurrentOperation(null);
+      setOldPin(null);
+    },
+    [oldPin, showAlert, loadAccountsWithData],
+  );
+
+  /**
+   * Handles cancellation of PIN rotation flow  
+   */
+  const handlePinRotationCancel = useCallback(() => {
+    setPinRotationFlowVisible(false);
+    setCurrentOperation(null);
+    setOldPin(null);
+  }, []);
+
+  /**
+   * Handles completion of PIN creation (non-rotation)
    */
   const handlePinCreationComplete = useCallback(
     async (success: boolean) => {
       setPinCreationVisible(false);
 
       if (success) {
-        // If this was a rotation, re-encrypt all secure data
-        if (currentOperation === "rotate" && oldPin) {
-          try {
-            // Get the newly created PIN to re-encrypt data
-            const savedPin = await getValue("user_pin");
-            if (savedPin) {
-              showAlert(
-                "Success",
-                "PIN updated successfully. Please note that existing encrypted data may need to be re-encrypted manually.",
-              );
-            }
-          } catch (error) {
-            showAlert(
-              "Warning",
-              "PIN updated but there was an issue with data re-encryption",
-            );
-            console.error(error);
-          }
-        }
-
         // Update pin exists state
         setPinExists(true);
-
-        // Reset the operation
-        setCurrentOperation(null);
-        setOldPin(null);
-      } else {
-        // On failure, reset operation
-        setCurrentOperation(null);
-        setOldPin(null);
+        showAlert("Success", "PIN created successfully!");
       }
+
+      // Reset the operation
+      setCurrentOperation(null);
     },
-    [currentOperation, oldPin, showAlert],
+    [showAlert],
   );
 
   /**
@@ -180,6 +268,17 @@ const EnterPinScreen = memo(() => {
     setCurrentOperation("rotate");
     setPinModalVisible(true);
   }, []);
+
+  /**
+   * Gets the rotation warning message based on accounts with data
+   */
+  const getRotationMessage = useCallback(() => {
+    const baseMessage = "You are about to change your PIN.";
+    if (accountsWithData > 0) {
+      return `${baseMessage} This will automatically re-encrypt all secure data for ${accountsWithData} account${accountsWithData > 1 ? 's' : ''}. Continue?`;
+    }
+    return `${baseMessage} Continue?`;
+  }, [accountsWithData]);
 
   /**
    * Initiates the PIN creation process
@@ -243,14 +342,28 @@ const EnterPinScreen = memo(() => {
         visible={pinCreationVisible}
         onComplete={handlePinCreationComplete}
         onCancel={handlePinCreationCancel}
-        showSuccessAlert={currentOperation !== "rotate"}
+        showSuccessAlert={true}
+      />
+
+      {/* PIN Rotation Flow */}
+      <PinRotationFlow
+        visible={pinRotationFlowVisible}
+        onComplete={handlePinRotationComplete}
+        onCancel={handlePinRotationCancel}
+      />
+
+      {/* PIN Rotation Progress Modal */}
+      <PinRotationProgressModal
+        visible={rotationProgressVisible}
+        progress={rotationProgress}
+        onClose={() => setRotationProgressVisible(false)}
       />
 
       {/* Confirmation Modal for PIN Rotation */}
       <ConfirmationModal
         visible={rotatePinModalVisible}
         title="Rotate PIN"
-        message="You are about to change your PIN. This will require re-encrypting all your secure data. Continue?"
+        message={getRotationMessage()}
         confirmText="Continue"
         onConfirm={confirmRotatePin}
         onCancel={() => setRotatePinModalVisible(false)}
