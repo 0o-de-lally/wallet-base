@@ -179,7 +179,9 @@ const FullAccountView = ({
     <View style={styles.accountActionsRow}>
       <ViewOnlyIcon account={account} iconSize={20} />
 
-      {account.exists_on_chain !== false && (
+      {account.exists_on_chain !== false && 
+       account.v8_migrated !== false && 
+       account.is_v8_authorized !== false && (
         <TouchableOpacity
           style={styles.iconButton}
           onPress={navigateToTransactionHub}

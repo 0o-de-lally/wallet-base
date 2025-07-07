@@ -53,7 +53,7 @@ export const Identicon = memo(({ address, style }: IdenticonProps) => {
     const firstHalf = trimmedAddress.slice(0, Math.ceil(trimmedAddress.length / 2));
     const secondHalf = trimmedAddress.slice(Math.floor(trimmedAddress.length / 2));
     const reverseAddress = trimmedAddress.split('').reverse().join('');
-    
+
     // Generate hashes from different representations
     const hash1 = djb2Hash(firstHalf);
     const hash2 = djb2Hash(secondHalf);
