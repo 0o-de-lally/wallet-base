@@ -91,21 +91,17 @@ export async function updateAccountV8Authorization(
     const profiles = appConfig.profiles.get();
     let accountUpdated = false;
 
-    // Find and update the account in the profile
+    // Find and update the account in the profile using proper Legend State pattern
     Object.keys(profiles).forEach((profileKey) => {
       const profile = profiles[profileKey];
       const accountIndex = profile.accounts.findIndex(
         (acc) => acc.id === accountId,
       );
       if (accountIndex !== -1) {
-        const currentAccount = profile.accounts[accountIndex];
-
-        profile.accounts[accountIndex] = {
-          ...currentAccount,
-          is_v8_authorized: v8AuthData.is_v8_authorized,
-        };
-        // Update the profile in storage
-        appConfig.profiles[profileKey].set(profile);
+        // Update the specific account using Legend State's direct property access
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
+        accountPath.is_v8_authorized.set(v8AuthData.is_v8_authorized);
         accountUpdated = true;
       }
     });

@@ -126,7 +126,7 @@ const AccountList = memo(
           .map((account) => (
             <AccountItem
               key={account.id}
-              account={account}
+              accountId={account.id}
               profileName={profileName}
               isActive={account.id === activeAccountId}
               onSetActive={handleSetActiveAccount}

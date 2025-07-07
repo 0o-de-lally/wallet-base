@@ -43,10 +43,7 @@ export async function fetchAccountPollingData(
     await client.account.getAccountInfo({
       accountAddress: accountAddress,
     });
-    console.log(`Account ${accountAddress} exists on chain`);
-  } catch (error) {
-    console.log(`Account ${accountAddress} does not exist on chain:`, error);
-
+  } catch {
     // If account doesn't exist, return data with exists_on_chain: false
     return {
       balance: {
@@ -121,10 +118,6 @@ export async function fetchAndUpdateAccountPollingData(
   }
 
   try {
-    console.log(
-      `Fetching polling data for account ${account.nickname || account.id}`,
-    );
-
     const pollingData = await fetchAccountPollingData(
       client,
       account.account_address,
@@ -190,10 +183,6 @@ export async function fetchAndUpdateProfilePollingData(
   if (accountsToFetch.length !== accounts.length) {
     console.debug(
       `Fetching polling data for ${accountsToFetch.length}/${accounts.length} accounts in profile ${profileName} (${accounts.length - accountsToFetch.length} skipped due to errors)`,
-    );
-  } else {
-    console.log(
-      `Fetching polling data for ${accountsToFetch.length} accounts in profile ${profileName}`,
     );
   }
 
