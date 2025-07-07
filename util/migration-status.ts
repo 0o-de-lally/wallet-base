@@ -90,21 +90,16 @@ export async function updateAccountMigrationStatus(
     const profiles = appConfig.profiles.get();
     let accountUpdated = false;
 
-    // Find and update the account in the profile
+    // Find and update the account in the profile using proper Legend State pattern
     Object.keys(profiles).forEach((profileKey) => {
       const profile = profiles[profileKey];
       const accountIndex = profile.accounts.findIndex(
         (acc) => acc.id === accountId,
       );
       if (accountIndex !== -1) {
-        const currentAccount = profile.accounts[accountIndex];
-
-        profile.accounts[accountIndex] = {
-          ...currentAccount,
-          v8_migrated: migrationData.v8_migrated,
-        };
-        // Update the profile in storage
-        appConfig.profiles[profileKey].set(profile);
+        // Update the specific account using Legend State's direct property access
+        const accountPath = appConfig.profiles[profileKey].accounts[accountIndex];
+        accountPath.v8_migrated.set(migrationData.v8_migrated);
         accountUpdated = true;
       }
     });

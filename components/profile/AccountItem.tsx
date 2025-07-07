@@ -1,9 +1,10 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSelector } from "@legendapp/state/react";
 import { styles, colors } from "../../styles/styles";
 import { formatCurrency, shortenAddress } from "../../util/format-utils";
-import type { AccountState } from "../../util/app-config-store";
+import { appConfig, type AccountState } from "../../util/app-config-store";
 import { router } from "expo-router";
 import { retryAccountBalance } from "../../util/balance-polling-service";
 import { reportErrorAuto } from "../../util/error-utils";
@@ -211,7 +212,7 @@ const FullAccountView = ({
 );
 
 export interface AccountItemProps {
-  account: AccountState;
+  accountId: string;
   profileName: string;
   isActive?: boolean;
   onSetActive?: (accountId: string) => void;
@@ -221,13 +222,37 @@ export interface AccountItemProps {
 
 export const AccountItem = memo(
   ({
-    account,
+    accountId,
     profileName,
     isActive,
     onSetActive,
     compact = false,
     isSwitching = false,
   }: AccountItemProps) => {
+    // Reactively get account data from the store
+    const account = useSelector(() => {
+      const profiles = appConfig.profiles.get();
+      const profile = profiles[profileName];
+      if (!profile?.accounts) return null;
+      const foundAccount = profile.accounts.find((acc) => acc.id === accountId) || null;
+      
+      // Debug logging
+      if (foundAccount) {
+        console.log(`AccountItem useSelector - Account ${accountId} balance:`, {
+          unlocked: foundAccount.balance_unlocked,
+          total: foundAccount.balance_total,
+          lastUpdate: foundAccount.last_update
+        });
+      }
+      
+      return foundAccount;
+    });
+
+    // Early return if account not found
+    if (!account) {
+      return null;
+    }
+
     const navigateToAccountDetails = () => {
       router.navigate({
         pathname: "./account-details",

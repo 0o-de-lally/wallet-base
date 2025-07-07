@@ -205,6 +205,51 @@ class BalancePollingService {
       reportErrorAuto("retryAccount", error, { accountId });
     }
   }
+
+  /**
+   * Immediately refresh account data for a newly added account
+   * This is used to avoid waiting for the regular polling cycle
+   */
+  async refreshNewAccount(accountId: string): Promise<void> {
+    try {
+      console.log(`refreshNewAccount called for accountId: ${accountId}`);
+      
+      const profiles = appConfig.profiles.get();
+      let targetAccount = null;
+
+      // Find the account
+      for (const profile of Object.values(profiles)) {
+        const account = profile.accounts.find((acc) => acc.id === accountId);
+        if (account) {
+          targetAccount = account;
+          break;
+        }
+      }
+
+      if (!targetAccount) {
+        console.warn(`Account ${accountId} not found for immediate refresh`);
+        return;
+      }
+
+      console.log(
+        `Immediately refreshing account data for newly added account: ${targetAccount.nickname || targetAccount.id}`,
+      );
+
+      const client = getLibraClient();
+      if (client) {
+        const { fetchAndUpdateAccountPollingData } = await import(
+          "./account-polling"
+        );
+        await fetchAndUpdateAccountPollingData(client, targetAccount);
+        console.log(`Account data refresh completed for ${targetAccount.nickname || targetAccount.id}`);
+      } else {
+        console.warn("No Libra client available for immediate account refresh");
+      }
+    } catch (error) {
+      console.error("Error in refreshNewAccount:", error);
+      reportErrorAuto("refreshNewAccount", error, { accountId });
+    }
+  }
 }
 
 // Create a singleton instance
@@ -214,5 +259,7 @@ const balancePollingService = new BalancePollingService();
 export const startBalancePolling = () => balancePollingService.start();
 export const retryAccountBalance = (accountId: string) =>
   balancePollingService.retryAccount(accountId);
+export const refreshNewAccount = (accountId: string) =>
+  balancePollingService.refreshNewAccount(accountId);
 
 // Removed unused exports: stopBalancePolling, restartBalancePolling, triggerBalancePoll, isBalancePollingRunning, balancePollingService

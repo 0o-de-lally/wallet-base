@@ -8,6 +8,7 @@ import {
 import type { AccountState } from "./app-config-store";
 import { AccountAddress } from "open-libra-sdk";
 import { refreshSetupStatus } from "./setup-state";
+import { refreshNewAccount } from "./balance-polling-service";
 
 /**
  * Creates a new account in the specified profile
@@ -61,6 +62,8 @@ export async function createAccount(
     const success = addAccountToProfile(profileName, account);
 
     if (success) {
+      console.log(`Account created successfully with ID: ${account.id}`);
+      
       // Set as active account if there is no active account yet
       if (appConfig.activeAccountId.get() === null) {
         setActiveAccount(account.id);
@@ -68,6 +71,15 @@ export async function createAccount(
 
       // Refresh setup status to trigger reactive updates
       refreshSetupStatus();
+
+      // Immediately refresh the account data to avoid waiting for polling
+      // Add a small delay to ensure the account is properly saved
+      console.log(`Triggering immediate refresh for account: ${account.id}`);
+      setTimeout(() => {
+        refreshNewAccount(account.id).catch((error) => {
+          console.warn("Failed to immediately refresh new account data:", error);
+        });
+      }, 100); // 100ms delay
 
       return {
         success: true,
