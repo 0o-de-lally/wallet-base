@@ -121,7 +121,7 @@ export async function rotatePinAndReencryptData(
     // Re-encrypt each account's data
     for (const account of accountsWithData) {
       try {
-        progress.current = account.nickname || account.accountId;
+        progress.current = account.accountAddress;
         onProgress?.(progress);
 
         const success = await reencryptAccountData(

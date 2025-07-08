@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { getValue } from "../../util/secure-store";
 import { verifyStoredPin } from "../../util/pin-security";
-import { styles } from "../../styles/styles";
+import { shortenAddress } from "../../util/format-utils";
+import { styles, namedColors } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { SectionContainer } from "../common/SectionContainer";
@@ -10,13 +12,142 @@ import { ActionButton } from "../common/ActionButton";
 import { PinInputModal } from "./PinInputModal";
 import { PinCreationFlow } from "./PinCreationFlow";
 import { PinRotationFlow } from "./PinRotationFlow";
-import { PinRotationProgressModal } from "./PinRotationProgressModal";
 import {
   rotatePinAndReencryptData,
   validateOldPinCanDecryptData,
   getAllAccountsWithStoredData,
   type PinRotationProgress,
 } from "../../util/pin-rotation";
+
+/**
+ * Inline PIN rotation progress component
+ */
+const PinRotationInlineProgress: React.FC<{
+  progress: PinRotationProgress;
+}> = ({ progress }) => {
+  const progressPercentage =
+    progress.total > 0
+      ? Math.round((progress.completed / progress.total) * 100)
+      : 100; // If total is 0, we're complete
+
+  const isComplete =
+    progress.total === 0 || progress.completed + progress.failed.length >= progress.total;
+
+  return (
+    <View style={{ paddingVertical: 16, paddingHorizontal: 4 }}>
+      <Text style={[styles.description, { marginBottom: 16, textAlign: "center" }]}>
+        {isComplete
+          ? "Your PIN has been updated and data re-encrypted."
+          : "Please wait while we re-encrypt your account data with the new PIN."}
+      </Text>
+
+      {!isComplete && (
+        <View style={{ alignItems: "center", marginVertical: 12 }}>
+          <ActivityIndicator size="small" color={namedColors.blue} />
+        </View>
+      )}
+
+      {/* Progress bar */}
+      <View
+        style={{
+          height: 8,
+          backgroundColor: namedColors.mediumGray,
+          borderRadius: 4,
+          marginBottom: 12,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            height: "100%",
+            backgroundColor: progress.failed.length > 0 ? namedColors.red : namedColors.blue,
+            borderRadius: 4,
+            width: `${progressPercentage}%`,
+            minWidth: progressPercentage > 0 ? 4 : 0,
+          }}
+        />
+      </View>
+
+      {/* Progress text */}
+      <Text style={[styles.description, { textAlign: "center", fontSize: 14 }]}>
+        {progress.completed + progress.failed.length} of {progress.total}{" "}
+        account{progress.total !== 1 ? "s" : ""} processed ({progressPercentage}%)
+      </Text>
+
+      {/* Current account being processed */}
+      {progress.current && !isComplete && (
+        <Text
+          style={[
+            styles.description,
+            { textAlign: "center", marginTop: 8, fontStyle: "italic", fontSize: 12 },
+          ]}
+        >
+          Processing account: {shortenAddress(progress.current)}
+        </Text>
+      )}
+
+      {/* Summary when complete */}
+      {isComplete && (
+        <View style={{ marginTop: 16, paddingHorizontal: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={namedColors.green}
+              style={{ marginRight: 8, verticalAlign: "middle" }}
+            />
+            <Text style={[styles.description, { color: namedColors.green, verticalAlign: "middle" }]}>
+              Successfully re-encrypted: {progress.completed} account{progress.completed !== 1 ? "s" : ""}
+            </Text>
+          </View>
+
+          {progress.failed.length > 0 && (
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+              <Ionicons
+                name="warning"
+                size={20}
+                color={namedColors.red}
+                style={{ marginRight: 8, marginTop: -1 }}
+              />
+              <Text
+                style={[
+                  styles.description,
+                  {
+                    color: namedColors.red,
+                  },
+                ]}
+              >
+                Failed to re-encrypt: {progress.failed.length} account{progress.failed.length !== 1 ? "s" : ""}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Warning about failed accounts */}
+      {isComplete && progress.failed.length > 0 && (
+        <View
+          style={{
+            backgroundColor: namedColors.redOverlay,
+            padding: 12,
+            borderRadius: 8,
+            marginTop: 16,
+            borderLeftWidth: 4,
+            borderLeftColor: namedColors.red,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+            <Ionicons name="alert-circle" size={16} color={namedColors.red} style={{ marginRight: 8, marginTop: 2 }} />
+            <Text style={[styles.description, { fontSize: 12, lineHeight: 18, flex: 1 }]}>
+              Some accounts could not be re-encrypted automatically. You may
+              need to re-enter and save their recovery phrases manually.
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
 
 /**
  * Screen component for PIN creation and verification.
@@ -32,7 +163,7 @@ const EnterPinScreen = memo(() => {
   const [rotatePinModalVisible, setRotatePinModalVisible] = useState(false);
   const [pinCreationVisible, setPinCreationVisible] = useState(false);
   const [pinRotationFlowVisible, setPinRotationFlowVisible] = useState(false);
-  const [rotationProgressVisible, setRotationProgressVisible] = useState(false);
+  const [showRotationProgress, setShowRotationProgress] = useState(false);
 
   // Current operation and temporary PIN storage for rotation flow
   const [currentOperation, setCurrentOperation] = useState<
@@ -47,7 +178,6 @@ const EnterPinScreen = memo(() => {
       failed: [],
     },
   );
-
   const { showAlert } = useModal();
 
   // Check if PIN exists on component mount
@@ -172,31 +302,20 @@ const EnterPinScreen = memo(() => {
             oldPin,
             newPin,
             (progress) => {
-              setRotationProgress(progress);
-              // Show modal when we have accounts to process
-              if (progress.total > 0) {
-                setRotationProgressVisible(true);
-              }
-            },
-          );
-
-          // If we have accounts, show the final state briefly
-          if (result.rotatedCount > 0 || result.failedAccounts.length > 0) {
-            // Keep the modal open for a moment to show completion
-            setTimeout(() => {
-              setRotationProgressVisible(false);
-            }, 2000);
-          } else {
-            // No accounts were processed, close immediately
-            setRotationProgressVisible(false);
+              setRotationProgress(progress);          // Show progress when we have accounts to process
+          if (progress.total > 0) {
+            setShowRotationProgress(true);
           }
+        },
+      );
 
-          if (result.success) {
-            showAlert(
-              "Success",
-              `PIN updated successfully! Re-encrypted ${result.rotatedCount} accounts.`,
-            );
-          } else {
+      // Hide progress immediately if no accounts were processed
+      if (result.rotatedCount === 0 && result.failedAccounts.length === 0) {
+        setShowRotationProgress(false);
+      }
+
+          // Only show error alerts, not success since progress display shows success
+          if (!result.success) {
             const failedMessage =
               result.failedAccounts.length > 0
                 ? ` ${result.failedAccounts.length} accounts failed to re-encrypt.`
@@ -210,7 +329,7 @@ const EnterPinScreen = memo(() => {
           // Reload account data count
           await loadAccountsWithData();
         } catch (error) {
-          setRotationProgressVisible(false);
+          setShowRotationProgress(false);
           showAlert("Error", "Failed to complete PIN rotation");
           console.error(error);
         }
@@ -264,6 +383,13 @@ const EnterPinScreen = memo(() => {
   }, []);
 
   /**
+   * Handles dismissing the PIN rotation progress display
+   */
+  const handleDismissProgress = useCallback(() => {
+    setShowRotationProgress(false);
+  }, []);
+
+  /**
    * Initiates the PIN verification process
    */
   const startVerifyPin = useCallback(() => {
@@ -308,7 +434,35 @@ const EnterPinScreen = memo(() => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>PIN Management</Text>
+
+      {/* Show PIN rotation progress inline when active */}
+      {showRotationProgress && (
+        <View style={{ position: "relative" }}>
+          {/* Dismiss button - only shown when complete */}
+          {(rotationProgress.total === 0 || rotationProgress.completed + rotationProgress.failed.length >= rotationProgress.total) && (
+            <TouchableOpacity
+              style={{ position: "absolute", top: 8, right: 8, zIndex: 1, padding: 8 }}
+              onPress={handleDismissProgress}
+              accessibilityLabel="Dismiss progress"
+              accessibilityHint="Close the PIN rotation progress display"
+            >
+              <Ionicons
+                name="close"
+                size={20}
+                color={namedColors.lightMediumGray}
+              />
+            </TouchableOpacity>
+          )}
+
+          <SectionContainer title={
+            rotationProgress.total === 0 || rotationProgress.completed + rotationProgress.failed.length >= rotationProgress.total
+              ? "PIN Rotation Complete"
+              : "PIN Rotation in Progress"
+          }>
+            <PinRotationInlineProgress progress={rotationProgress} />
+          </SectionContainer>
+        </View>
+      )}
 
       {!pinExists ? (
         <SectionContainer title="Create PIN">
@@ -324,13 +478,13 @@ const EnterPinScreen = memo(() => {
             <ActionButton
               text="Verify PIN"
               onPress={startVerifyPin}
-              disabled={isLoading}
+              disabled={isLoading || showRotationProgress}
               accessibilityHint="Verify your PIN is correct"
             />
             <ActionButton
               text="Rotate PIN"
               onPress={startRotatePin}
-              disabled={isLoading}
+              disabled={isLoading || showRotationProgress}
               accessibilityHint="Change your PIN"
             />
           </View>
@@ -368,13 +522,6 @@ const EnterPinScreen = memo(() => {
         visible={pinRotationFlowVisible}
         onComplete={handlePinRotationComplete}
         onCancel={handlePinRotationCancel}
-      />
-
-      {/* PIN Rotation Progress Modal */}
-      <PinRotationProgressModal
-        visible={rotationProgressVisible}
-        progress={rotationProgress}
-        onClose={() => setRotationProgressVisible(false)}
       />
 
       {/* Confirmation Modal for PIN Rotation */}
