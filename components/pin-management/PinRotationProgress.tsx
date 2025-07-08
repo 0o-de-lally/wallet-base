@@ -164,7 +164,6 @@ const CompletionSummary: React.FC<{
       />
       <Text
         style={[
-          styles.description,
           { color: namedColors.green, verticalAlign: "middle" },
         ]}
       >
