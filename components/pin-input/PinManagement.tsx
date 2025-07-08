@@ -31,11 +31,14 @@ const PinRotationInlineProgress: React.FC<{
       : 100; // If total is 0, we're complete
 
   const isComplete =
-    progress.total === 0 || progress.completed + progress.failed.length >= progress.total;
+    progress.total === 0 ||
+    progress.completed + progress.failed.length >= progress.total;
 
   return (
     <View style={{ paddingVertical: 16, paddingHorizontal: 4 }}>
-      <Text style={[styles.description, { marginBottom: 16, textAlign: "center" }]}>
+      <Text
+        style={[styles.description, { marginBottom: 16, textAlign: "center" }]}
+      >
         {isComplete
           ? "Your PIN has been updated and data re-encrypted."
           : "Please wait while we re-encrypt your account data with the new PIN."}
@@ -60,7 +63,8 @@ const PinRotationInlineProgress: React.FC<{
         <View
           style={{
             height: "100%",
-            backgroundColor: progress.failed.length > 0 ? namedColors.red : namedColors.blue,
+            backgroundColor:
+              progress.failed.length > 0 ? namedColors.red : namedColors.blue,
             borderRadius: 4,
             width: `${progressPercentage}%`,
             minWidth: progressPercentage > 0 ? 4 : 0,
@@ -71,7 +75,8 @@ const PinRotationInlineProgress: React.FC<{
       {/* Progress text */}
       <Text style={[styles.description, { textAlign: "center", fontSize: 14 }]}>
         {progress.completed + progress.failed.length} of {progress.total}{" "}
-        account{progress.total !== 1 ? "s" : ""} processed ({progressPercentage}%)
+        account{progress.total !== 1 ? "s" : ""} processed ({progressPercentage}
+        %)
       </Text>
 
       {/* Current account being processed */}
@@ -79,7 +84,12 @@ const PinRotationInlineProgress: React.FC<{
         <Text
           style={[
             styles.description,
-            { textAlign: "center", marginTop: 8, fontStyle: "italic", fontSize: 12 },
+            {
+              textAlign: "center",
+              marginTop: 8,
+              fontStyle: "italic",
+              fontSize: 12,
+            },
           ]}
         >
           Processing account: {shortenAddress(progress.current)}
@@ -89,20 +99,38 @@ const PinRotationInlineProgress: React.FC<{
       {/* Summary when complete */}
       {isComplete && (
         <View style={{ marginTop: 16, paddingHorizontal: 8 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
             <Ionicons
               name="checkmark-circle"
               size={20}
               color={namedColors.green}
               style={{ marginRight: 8, verticalAlign: "middle" }}
             />
-            <Text style={[styles.description, { color: namedColors.green, verticalAlign: "middle" }]}>
-              Successfully re-encrypted: {progress.completed} account{progress.completed !== 1 ? "s" : ""}
+            <Text
+              style={[
+                styles.description,
+                { color: namedColors.green, verticalAlign: "middle" },
+              ]}
+            >
+              Successfully re-encrypted: {progress.completed} account
+              {progress.completed !== 1 ? "s" : ""}
             </Text>
           </View>
 
           {progress.failed.length > 0 && (
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
               <Ionicons
                 name="warning"
                 size={20}
@@ -117,7 +145,8 @@ const PinRotationInlineProgress: React.FC<{
                   },
                 ]}
               >
-                Failed to re-encrypt: {progress.failed.length} account{progress.failed.length !== 1 ? "s" : ""}
+                Failed to re-encrypt: {progress.failed.length} account
+                {progress.failed.length !== 1 ? "s" : ""}
               </Text>
             </View>
           )}
@@ -137,8 +166,18 @@ const PinRotationInlineProgress: React.FC<{
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-            <Ionicons name="alert-circle" size={16} color={namedColors.red} style={{ marginRight: 8, marginTop: 2 }} />
-            <Text style={[styles.description, { fontSize: 12, lineHeight: 18, flex: 1 }]}>
+            <Ionicons
+              name="alert-circle"
+              size={16}
+              color={namedColors.red}
+              style={{ marginRight: 8, marginTop: 2 }}
+            />
+            <Text
+              style={[
+                styles.description,
+                { fontSize: 12, lineHeight: 18, flex: 1 },
+              ]}
+            >
               Some accounts could not be re-encrypted automatically. You may
               need to re-enter and save their recovery phrases manually.
             </Text>
@@ -302,17 +341,17 @@ const EnterPinScreen = memo(() => {
             oldPin,
             newPin,
             (progress) => {
-              setRotationProgress(progress);          // Show progress when we have accounts to process
-          if (progress.total > 0) {
-            setShowRotationProgress(true);
-          }
-        },
-      );
+              setRotationProgress(progress); // Show progress when we have accounts to process
+              if (progress.total > 0) {
+                setShowRotationProgress(true);
+              }
+            },
+          );
 
-      // Hide progress immediately if no accounts were processed
-      if (result.rotatedCount === 0 && result.failedAccounts.length === 0) {
-        setShowRotationProgress(false);
-      }
+          // Hide progress immediately if no accounts were processed
+          if (result.rotatedCount === 0 && result.failedAccounts.length === 0) {
+            setShowRotationProgress(false);
+          }
 
           // Only show error alerts, not success since progress display shows success
           if (!result.success) {
@@ -434,14 +473,21 @@ const EnterPinScreen = memo(() => {
 
   return (
     <View style={styles.container}>
-
       {/* Show PIN rotation progress inline when active */}
       {showRotationProgress && (
         <View style={{ position: "relative" }}>
           {/* Dismiss button - only shown when complete */}
-          {(rotationProgress.total === 0 || rotationProgress.completed + rotationProgress.failed.length >= rotationProgress.total) && (
+          {(rotationProgress.total === 0 ||
+            rotationProgress.completed + rotationProgress.failed.length >=
+              rotationProgress.total) && (
             <TouchableOpacity
-              style={{ position: "absolute", top: 8, right: 8, zIndex: 1, padding: 8 }}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                padding: 8,
+              }}
               onPress={handleDismissProgress}
               accessibilityLabel="Dismiss progress"
               accessibilityHint="Close the PIN rotation progress display"
@@ -454,11 +500,15 @@ const EnterPinScreen = memo(() => {
             </TouchableOpacity>
           )}
 
-          <SectionContainer title={
-            rotationProgress.total === 0 || rotationProgress.completed + rotationProgress.failed.length >= rotationProgress.total
-              ? "PIN Rotation Complete"
-              : "PIN Rotation in Progress"
-          }>
+          <SectionContainer
+            title={
+              rotationProgress.total === 0 ||
+              rotationProgress.completed + rotationProgress.failed.length >=
+                rotationProgress.total
+                ? "PIN Rotation Complete"
+                : "PIN Rotation in Progress"
+            }
+          >
             <PinRotationInlineProgress progress={rotationProgress} />
           </SectionContainer>
         </View>
