@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { verifyStoredPin } from "../../../util/pin-security";
-import { 
-  rotatePinAndReencryptData, 
+import {
+  rotatePinAndReencryptData,
   validateOldPinCanDecryptData,
-  type PinRotationProgress 
+  type PinRotationProgress,
 } from "../../../util/pin-rotation";
 import { useModal } from "../../../context/ModalContext";
 
@@ -11,12 +11,14 @@ import { useModal } from "../../../context/ModalContext";
  * Custom hook for handling PIN rotation logic
  */
 export const usePinRotation = () => {
-  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>({
-    total: 0,
-    completed: 0,
-    failed: [],
-  });
-  
+  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>(
+    {
+      total: 0,
+      completed: 0,
+      failed: [],
+    },
+  );
+
   const { showAlert } = useModal();
 
   /**
@@ -36,7 +38,7 @@ export const usePinRotation = () => {
         console.error(error);
       }
     },
-    [showAlert]
+    [showAlert],
   );
 
   /**
@@ -70,7 +72,7 @@ export const usePinRotation = () => {
         return false;
       }
     },
-    [showAlert]
+    [showAlert],
   );
 
   /**
@@ -78,9 +80,9 @@ export const usePinRotation = () => {
    */
   const executeRotation = useCallback(
     async (
-      oldPin: string, 
-      newPin: string, 
-      onProgressUpdate: (showProgress: boolean) => void
+      oldPin: string,
+      newPin: string,
+      onProgressUpdate: (showProgress: boolean) => void,
     ): Promise<{ success: boolean; error?: string }> => {
       try {
         // Initialize progress state
@@ -122,13 +124,14 @@ export const usePinRotation = () => {
         return { success: result.success, error: result.error };
       } catch (error) {
         onProgressUpdate(false);
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         showAlert("Error", "Failed to complete PIN rotation");
         console.error(error);
         return { success: false, error: errorMessage };
       }
     },
-    [showAlert]
+    [showAlert],
   );
 
   /**

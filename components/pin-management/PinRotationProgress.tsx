@@ -14,10 +14,9 @@ interface PinRotationProgressDisplayProps {
 /**
  * Component that displays the progress of PIN rotation and data re-encryption
  */
-export const PinRotationProgressDisplay: React.FC<PinRotationProgressDisplayProps> = ({
-  progress,
-  onDismiss,
-}) => {
+export const PinRotationProgressDisplay: React.FC<
+  PinRotationProgressDisplayProps
+> = ({ progress, onDismiss }) => {
   const isComplete =
     progress.total === 0 ||
     progress.completed + progress.failed.length >= progress.total;
@@ -48,9 +47,7 @@ export const PinRotationProgressDisplay: React.FC<PinRotationProgressDisplayProp
 
       <SectionContainer
         title={
-          isComplete
-            ? "PIN Rotation Complete"
-            : "PIN Rotation in Progress"
+          isComplete ? "PIN Rotation Complete" : "PIN Rotation in Progress"
         }
       >
         <InlineProgressContent progress={progress} />
@@ -137,14 +134,10 @@ const InlineProgressContent: React.FC<{
       )}
 
       {/* Summary when complete */}
-      {isComplete && (
-        <CompletionSummary progress={progress} />
-      )}
+      {isComplete && <CompletionSummary progress={progress} />}
 
       {/* Warning about failed accounts */}
-      {isComplete && progress.failed.length > 0 && (
-        <FailureWarning />
-      )}
+      {isComplete && progress.failed.length > 0 && <FailureWarning />}
     </View>
   );
 };
@@ -232,13 +225,10 @@ const FailureWarning: React.FC = () => (
         style={{ marginRight: 8, marginTop: 2 }}
       />
       <Text
-        style={[
-          styles.description,
-          { fontSize: 12, lineHeight: 18, flex: 1 },
-        ]}
+        style={[styles.description, { fontSize: 12, lineHeight: 18, flex: 1 }]}
       >
-        Some accounts could not be re-encrypted automatically. You may
-        need to re-enter and save their recovery phrases manually.
+        Some accounts could not be re-encrypted automatically. You may need to
+        re-enter and save their recovery phrases manually.
       </Text>
     </View>
   </View>

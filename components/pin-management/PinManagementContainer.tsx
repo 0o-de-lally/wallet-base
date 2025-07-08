@@ -27,7 +27,7 @@ const PinManagementContainer = memo(() => {
     pinCreationVisible,
     pinRotationFlowVisible,
     showRotationProgress,
-    
+
     // Actions
     setLoading,
     setPinExists,
@@ -60,7 +60,7 @@ const PinManagementContainer = memo(() => {
         updateModalState({ pinModalVisible: false });
       }
     },
-    [handleVerifyPin, setLoading, updateModalState]
+    [handleVerifyPin, setLoading, updateModalState],
   );
 
   /**
@@ -76,16 +76,16 @@ const PinManagementContainer = memo(() => {
           // Store the old PIN for re-encryption later
           setOldPin(oldPinValue);
           // Close the verification modal and show PIN rotation flow
-          updateModalState({ 
-            pinModalVisible: false, 
-            pinRotationFlowVisible: true 
+          updateModalState({
+            pinModalVisible: false,
+            pinRotationFlowVisible: true,
           });
         }
       } finally {
         setLoading(false);
       }
     },
-    [validateOldPin, accountsWithData, setOldPin, updateModalState, setLoading]
+    [validateOldPin, accountsWithData, setOldPin, updateModalState, setLoading],
   );
 
   /**
@@ -96,10 +96,8 @@ const PinManagementContainer = memo(() => {
       updateModalState({ pinRotationFlowVisible: false });
 
       if (success && oldPin && newPin) {
-        const result = await executeRotation(
-          oldPin,
-          newPin,
-          (showProgress) => updateModalState({ showRotationProgress: showProgress })
+        const result = await executeRotation(oldPin, newPin, (showProgress) =>
+          updateModalState({ showRotationProgress: showProgress }),
         );
 
         if (result.success) {
@@ -115,7 +113,15 @@ const PinManagementContainer = memo(() => {
       setCurrentOperation(null);
       setOldPin(null);
     },
-    [oldPin, executeRotation, updateModalState, loadAccountsWithData, setPinExists, setCurrentOperation, setOldPin]
+    [
+      oldPin,
+      executeRotation,
+      updateModalState,
+      loadAccountsWithData,
+      setPinExists,
+      setCurrentOperation,
+      setOldPin,
+    ],
   );
 
   /**
@@ -143,7 +149,7 @@ const PinManagementContainer = memo(() => {
       // Reset the operation
       setCurrentOperation(null);
     },
-    [updateModalState, setPinExists, showAlert, setCurrentOperation]
+    [updateModalState, setPinExists, showAlert, setCurrentOperation],
   );
 
   /**
@@ -181,9 +187,9 @@ const PinManagementContainer = memo(() => {
    * Confirms PIN rotation after warning dialog
    */
   const confirmRotatePin = useCallback(() => {
-    updateModalState({ 
+    updateModalState({
       rotatePinModalVisible: false,
-      pinModalVisible: true 
+      pinModalVisible: true,
     });
     setCurrentOperation("rotate");
   }, [updateModalState, setCurrentOperation]);
@@ -221,7 +227,9 @@ const PinManagementContainer = memo(() => {
         visible={pinModalVisible}
         onClose={() => updateModalState({ pinModalVisible: false })}
         onPinAction={
-          currentOperation === "rotate" ? handleOldPinVerified : handlePinVerification
+          currentOperation === "rotate"
+            ? handleOldPinVerified
+            : handlePinVerification
         }
         purpose="retrieve"
         actionTitle={

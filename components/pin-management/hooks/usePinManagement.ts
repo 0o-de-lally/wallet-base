@@ -37,7 +37,7 @@ export const usePinManagement = () => {
   const checkExistingPin = useCallback(async () => {
     try {
       const savedPin = await getValue("user_pin");
-      setState(prev => ({ ...prev, pinExists: savedPin !== null }));
+      setState((prev) => ({ ...prev, pinExists: savedPin !== null }));
     } catch (error) {
       console.error("Error checking existing PIN:", error);
     }
@@ -49,7 +49,7 @@ export const usePinManagement = () => {
   const loadAccountsWithData = useCallback(async () => {
     try {
       const accounts = await getAllAccountsWithStoredData();
-      setState(prev => ({ ...prev, accountsWithData: accounts.length }));
+      setState((prev) => ({ ...prev, accountsWithData: accounts.length }));
     } catch (error) {
       console.error("Error loading accounts with data:", error);
     }
@@ -59,42 +59,45 @@ export const usePinManagement = () => {
    * Sets loading state
    */
   const setLoading = useCallback((isLoading: boolean) => {
-    setState(prev => ({ ...prev, isLoading }));
+    setState((prev) => ({ ...prev, isLoading }));
   }, []);
 
   /**
    * Updates the PIN exists state
    */
   const setPinExists = useCallback((pinExists: boolean) => {
-    setState(prev => ({ ...prev, pinExists }));
+    setState((prev) => ({ ...prev, pinExists }));
   }, []);
 
   /**
    * Sets the current operation
    */
-  const setCurrentOperation = useCallback((operation: PinManagementState['currentOperation']) => {
-    setState(prev => ({ ...prev, currentOperation: operation }));
-  }, []);
+  const setCurrentOperation = useCallback(
+    (operation: PinManagementState["currentOperation"]) => {
+      setState((prev) => ({ ...prev, currentOperation: operation }));
+    },
+    [],
+  );
 
   /**
    * Sets the old PIN for rotation
    */
   const setOldPin = useCallback((oldPin: string | null) => {
-    setState(prev => ({ ...prev, oldPin }));
+    setState((prev) => ({ ...prev, oldPin }));
   }, []);
 
   /**
    * Updates modal visibility states
    */
   const updateModalState = useCallback((updates: Partial<PinModalState>) => {
-    setModalState(prev => ({ ...prev, ...updates }));
+    setModalState((prev) => ({ ...prev, ...updates }));
   }, []);
 
   /**
    * Resets all state to initial values
    */
   const resetState = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       currentOperation: null,
       oldPin: null,
@@ -113,7 +116,7 @@ export const usePinManagement = () => {
     // State
     ...state,
     ...modalState,
-    
+
     // Actions
     setLoading,
     setPinExists,
