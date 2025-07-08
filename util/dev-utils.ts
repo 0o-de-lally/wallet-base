@@ -1,6 +1,7 @@
 import { appConfig } from "./app-config-store";
 import { deleteValue } from "./secure-store";
 import { refreshSetupStatus } from "./setup-state";
+import { debugStorageKeys } from "./pin-rotation";
 
 /**
  * Development utility to reset the app to first-time user state
@@ -50,4 +51,11 @@ export function logAppState(): void {
   console.log("Active Account ID:", activeAccountId);
   console.log("Profiles data:", JSON.stringify(profiles, null, 2));
   console.log("========================");
+}
+
+/**
+ * Development utility to debug storage keys for PIN rotation
+ */
+export async function debugPinRotationStorage(): Promise<void> {
+  await debugStorageKeys();
 }
