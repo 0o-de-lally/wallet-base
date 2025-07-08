@@ -162,11 +162,7 @@ const CompletionSummary: React.FC<{
         color={namedColors.green}
         style={{ marginRight: 8, verticalAlign: "middle" }}
       />
-      <Text
-        style={[
-          { color: namedColors.green, verticalAlign: "middle" },
-        ]}
-      >
+      <Text style={[{ color: namedColors.green, verticalAlign: "middle" }]}>
         Successfully re-encrypted: {progress.completed} account
         {progress.completed !== 1 ? "s" : ""}
       </Text>

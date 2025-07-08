@@ -81,18 +81,17 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
   const createPin = useCallback(async () => {
     if (!validatePin(pin) || !validatePin(confirmPin)) {
       setError("PIN must be exactly 6 digits");
+      setIsCreating(false);
       return;
     }
 
     if (pin !== confirmPin) {
       setError("PINs do not match");
+      setIsCreating(false);
       return;
     }
 
     try {
-      setIsCreating(true);
-      setError(null);
-
       // Hash the PIN and store it
       const hashedPin = await hashPin(pin);
       await saveValue("user_pin", JSON.stringify(hashedPin));
@@ -121,6 +120,14 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
     setConfirmPin("");
     setError(null);
   }, []);
+
+  const handleCreatePin = useCallback(() => {
+    setIsCreating(true);
+    setError(null);
+    createPin().catch(() => {
+      setIsCreating(false);
+    });
+  }, [createPin]);
 
   const renderCreateStep = () => (
     <>
@@ -186,7 +193,7 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
 
         <ActionButton
           text="Rotate PIN"
-          onPress={createPin}
+          onPress={handleCreatePin}
           isLoading={isCreating}
           disabled={isCreating || confirmPin.length !== 6}
           accessibilityLabel="Confirm PIN rotation"
