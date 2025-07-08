@@ -1,4 +1,4 @@
-export type PinOperation = "verify" | "rotate" | "create" | null;
+type PinOperation = "verify" | "rotate" | "create" | null;
 
 export interface PinManagementState {
   isLoading: boolean;
