@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { View } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
-import EnterPinScreen from "../components/pin-input/PinManagement";
+import EnterPinScreen from "../components/pin-management";
 import { SetupGuard } from "../components/auth/SetupGuard";
 import { Stack } from "expo-router";
 
