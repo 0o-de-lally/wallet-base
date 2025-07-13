@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "walletbase",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "backgroundColor": "#1a1a1f",
