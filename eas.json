@@ -6,21 +6,38 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "bun",
+      "bun": {
+        "installCommand": "bun install"
+      }
     },
     "ios-simulator": {
       "extends": "development",
       "ios": {
         "simulator": true
+      },
+      "node": "bun",
+      "bun": {
+        "installCommand": "bun install"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "node": "bun",
+      "bun": {
+        "installCommand": "bun install"
       }
     },
-    "production": {},
+    "production": {
+      "node": "bun",
+      "bun": {
+        "installCommand": "bun install"
+      }
+    },
     "build-and-maestro-test": {
       "distribution": "internal",
       "withoutCredentials": true,
@@ -28,6 +45,10 @@
       "android": {
         "buildType": "apk",
         "image": "latest"
+      },
+      "node": "bun",
+      "bun": {
+        "installCommand": "bun install"
       }
     }
   },
