@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "walletbase",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "backgroundColor": "#1a1a1f",
@@ -19,10 +19,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.olcarpe.walletbase",
-
+      "buildNumber": "2",
+      "bundleIdentifier": "com.olcarpe.walletbase.beta",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "This app uses Face ID to secure your wallet credentials."
+        "NSFaceIDUsageDescription": "This app uses Face ID to secure your wallet credentials.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
