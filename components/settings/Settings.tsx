@@ -126,21 +126,22 @@ export const Settings: React.FC<SettingsProps> = observer(
               </View>
             )}
             <ActionButton
-              text="Manage Profiles"
-              onPress={() => navigateToScreen("/profiles")}
-              accessibilityLabel="View and manage accounts"
+              text="Add Signing Account"
+              onPress={() => navigateToScreen("/recover-account")}
+              style={{ marginTop: 10 }}
+              accessibilityLabel="Recover an existing account"
             />
             <ActionButton
-              text="Add Read-Only Account"
+              text="Add View-Only Account"
               onPress={() => navigateToScreen("/create-account")}
               style={{ marginTop: 10 }}
               accessibilityLabel="Add a new view-only account"
             />
             <ActionButton
-              text="Recover Account"
-              onPress={() => navigateToScreen("/recover-account")}
+              text="Manage Profiles"
               style={{ marginTop: 10 }}
-              accessibilityLabel="Recover an existing account"
+              onPress={() => navigateToScreen("/profiles")}
+              accessibilityLabel="View and manage accounts"
             />
           </SectionContainer>
 
@@ -179,12 +180,6 @@ export const Settings: React.FC<SettingsProps> = observer(
               onPress={() => navigateToScreen("/error-logs")}
               style={{ marginTop: 10 }}
               accessibilityLabel="View debug and error logs"
-            />
-            <ActionButton
-              text="Generate Wallet Mnemonic"
-              onPress={() => navigateToScreen("/mnemonic-generator")}
-              style={{ marginTop: 10 }}
-              accessibilityLabel="Generate a new wallet mnemonic phrase"
             />
           </SectionContainer>
 

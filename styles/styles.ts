@@ -77,7 +77,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     backgroundColor: colors.background,
-    paddingBottom: 20, // Extra space at bottom for better scroll experience
+    paddingBottom: 40, // Extra space at bottom for better scroll experience
   },
   content: {
     justifyContent: "center",
@@ -146,8 +146,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: colors.textPrimary,
-    // marginBottom: 8,
-    paddingBottom: 8,
+    paddingBottom: 16,
     textTransform: "uppercase",
   },
   label: {
@@ -238,6 +237,7 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     elevation: 0,
+    minWidth: 120, // Minimum width instead of fixed 100%
   },
   buttonText: {
     color: colors.primary,
@@ -430,6 +430,20 @@ export const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderTopColor: colors.outlineBold,
     alignItems: "center",
+  },
+  dangerContainer: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: 8,
+    backgroundColor: colors.cardBg,
+    marginVertical: 8,
+  },
+  dangerDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   expandedContent: {
     padding: 12,

@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
-import { View, StatusBar, Text, ScrollView } from "react-native";
+import { View, StatusBar, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { styles } from "../styles/styles";
-import RecoverAccountForm from "../components/profile/RecoverAccountForm";
+import RecoverAccountForm from "../components/account-recovery/RecoverAccountForm";
 import { SetupGuard } from "../components/auth/SetupGuard";
 import { router } from "expo-router";
 
@@ -18,7 +18,7 @@ export default function RecoverAccountScreen() {
       <View style={styles.root}>
         <Stack.Screen
           options={{
-            title: "Recover Account",
+            title: "Add Account",
             headerBackTitle: "Back",
           }}
         />
@@ -39,12 +39,6 @@ const RecoverAccountContent = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Recover Account</Text>
-        <Text style={styles.description}>
-          Restore an account from your 24-word recovery phrase. The account will
-          be added to your wallet and you can assign a nickname to it.
-        </Text>
-
         <RecoverAccountForm onComplete={handleComplete} />
       </View>
     </ScrollView>

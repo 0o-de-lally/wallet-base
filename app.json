@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "wallet-test",
+    "name": "Carpe",
     "slug": "wallet-base",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -29,7 +29,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#1a1a1f"
+        "backgroundColor": "#ffffff"
       },
       "package": "app.carpe.wallet_base",
       "permissions": [

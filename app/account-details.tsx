@@ -4,6 +4,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { styles } from "../styles/styles";
 import { AccountStateStatus } from "../components/profile/AccountStateStatus";
 import { HistoricalTransactions } from "../components/transaction/HistoricalTransactions";
+import { AccountNotFoundCard } from "../components/transaction/AccountNotFoundCard";
 import { appConfig, type AccountState } from "../util/app-config-store";
 import { shortenAddress } from "../util/format-utils";
 
@@ -57,8 +58,20 @@ export default function AccountDetailsScreen() {
         {accountNickname ? `• ${accountNickname}` : ""}
       </Text>
 
-      {/* Account Authorization Status */}
-      {account && <AccountStateStatus account={account} />}
+      {/* Account Authorization Status - only show if account exists on chain */}
+      {account && account.exists_on_chain !== false && (
+        <AccountStateStatus account={account} />
+      )}
+    </View>
+  );
+
+  const renderHeaderForNotFound = () => (
+    <View>
+      <Text style={styles.sectionTitle}>
+        {profileName} •{" "}
+        {account ? shortenAddress(account.account_address, 4, 4) : "Loading..."}
+        {accountNickname ? `• ${accountNickname}` : ""}
+      </Text>
     </View>
   );
 
@@ -72,12 +85,19 @@ export default function AccountDetailsScreen() {
       />
       <View style={styles.safeAreaView}>
         {account ? (
-          <HistoricalTransactions
-            accountAddress={account.account_address}
-            headerComponent={renderHeader}
-            onRefresh={onRefresh}
-            refreshing={isRefreshing}
-          />
+          account.exists_on_chain === false ? (
+            <View style={styles.container}>
+              {renderHeaderForNotFound()}
+              <AccountNotFoundCard accountAddress={account.account_address} />
+            </View>
+          ) : (
+            <HistoricalTransactions
+              accountAddress={account.account_address}
+              headerComponent={renderHeader}
+              onRefresh={onRefresh}
+              refreshing={isRefreshing}
+            />
+          )
         ) : (
           <View style={styles.container}>
             <Text style={styles.sectionTitle}>Loading...</Text>

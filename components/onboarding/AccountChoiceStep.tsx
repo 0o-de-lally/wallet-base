@@ -1,6 +1,7 @@
-import React from "react";
-import { Text } from "react-native";
-import { styles } from "../../styles/styles";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { styles, colors } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { ActionButton } from "../common/ActionButton";
 
@@ -13,25 +14,101 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
   onAccountChoice,
   onResetApp,
 }) => {
+  const [selectedChoice, setSelectedChoice] = useState<
+    "create" | "recover" | null
+  >(null);
+
+  const renderChoiceOption = (
+    choice: "create" | "recover",
+    title: string,
+    description: string,
+    icon: string,
+  ) => {
+    const isSelected = selectedChoice === choice;
+
+    return (
+      <TouchableOpacity
+        key={choice}
+        style={[
+          styles.inputContainer,
+          {
+            borderColor: isSelected ? colors.primary : colors.border,
+            backgroundColor: isSelected ? colors.blueLight : colors.background,
+            marginBottom: 12,
+            padding: 16,
+            borderWidth: 1,
+            borderRadius: 3,
+          },
+        ]}
+        onPress={() => {
+          setSelectedChoice(choice);
+          onAccountChoice(choice);
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Ionicons
+            name={icon as keyof typeof Ionicons.glyphMap}
+            size={24}
+            color={isSelected ? colors.primary : colors.textPrimary}
+            style={{ marginRight: 12 }}
+          />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={[
+                styles.label,
+                {
+                  color: isSelected ? colors.primary : colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: "600",
+                },
+              ]}
+            >
+              {title}
+            </Text>
+            <Text
+              style={[
+                styles.description,
+                {
+                  color: isSelected ? colors.primary : colors.textSecondary,
+                  marginTop: 4,
+                  marginBottom: 0,
+                },
+              ]}
+            >
+              {description}
+            </Text>
+          </View>
+          {isSelected && (
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.primary}
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <SectionContainer title="Account Setup">
-      <Text style={styles.resultValue}>
+    <SectionContainer>
+      <Text style={[styles.resultValue, { marginBottom: 24 }]}>
         Great! Your PIN is set up. Now let&apos;s add your first account:
       </Text>
 
-      <ActionButton
-        text="Create New Account"
-        onPress={() => onAccountChoice("create")}
-        style={styles.buttonSpacingDefault}
-        accessibilityLabel="Create a new account"
-      />
+      {renderChoiceOption(
+        "recover",
+        "Create/Add Signing Account",
+        "Create or recover an account to sign transactions",
+        "key",
+      )}
 
-      <ActionButton
-        text="Recover Existing Account"
-        onPress={() => onAccountChoice("recover")}
-        style={styles.buttonSpacingSmall}
-        accessibilityLabel="Recover an existing account"
-      />
+      {renderChoiceOption(
+        "create",
+        "Add View-Only Account",
+        "Observe account activity without signing transactions",
+        "eye-outline",
+      )}
 
       <Text
         style={[

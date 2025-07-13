@@ -6,6 +6,7 @@ import { categorizeError, reportError } from "./error-utils";
 export interface BalanceData {
   balance_unlocked: number;
   balance_total: number;
+  exists_on_chain?: boolean; // Whether the account exists on chain
   error?: string;
   error_type?: "network" | "api" | "timeout" | "unknown";
 }
@@ -27,8 +28,6 @@ export async function fetchAccountBalance(
 
     // Call the view function
     const result = await client.viewJson(payload);
-
-    console.log("Balance API response for", accountAddress, ":", result);
 
     // Handle different possible response formats
     let balance_unlocked = 0;
@@ -70,6 +69,7 @@ export async function fetchAccountBalance(
       return {
         balance_unlocked,
         balance_total,
+        exists_on_chain: true,
       };
     } else {
       throw new Error(
@@ -81,16 +81,25 @@ export async function fetchAccountBalance(
     const errorMessage =
       error instanceof Error ? error.message : "Failed to fetch balance";
 
+    // Check if this is a 404 error indicating the account doesn't exist on chain
+    const isAccountNotFound =
+      errorMessage.includes("404") ||
+      errorMessage.includes("not found") ||
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("Account not found");
+
     // Use the error reporting system instead of console logging
     reportError(shouldLog ? "warn" : "debug", "fetchAccountBalance", error, {
       accountAddress,
       type,
+      isAccountNotFound,
     });
 
     // Return error state instead of throwing
     return {
       balance_unlocked: 0,
       balance_total: 0,
+      exists_on_chain: isAccountNotFound ? false : undefined,
       error: errorMessage,
       error_type: type,
     };
@@ -109,28 +118,36 @@ export async function updateAccountBalance(
     const now = Date.now();
     let accountUpdated = false;
 
-    // Find and update the account in the profile
+    // Find and update the account in the profile using proper Legend State pattern
     Object.keys(profiles).forEach((profileKey) => {
       const profile = profiles[profileKey];
       const accountIndex = profile.accounts.findIndex(
         (acc) => acc.id === accountId,
       );
       if (accountIndex !== -1) {
-        const currentAccount = profile.accounts[accountIndex];
+        // Update the specific account using Legend State's direct property access
+        const accountPath =
+          appConfig.profiles[profileKey].accounts[accountIndex];
 
-        profile.accounts[accountIndex] = {
-          ...currentAccount,
-          balance_unlocked: balanceData.balance_unlocked,
-          balance_total: balanceData.balance_total,
-          last_update: now,
-          // Handle error state
-          last_error: balanceData.error || undefined,
-          error_count: balanceData.error
-            ? (currentAccount.error_count || 0) + 1
-            : undefined, // Clear error count on successful update
-        };
-        // Update the profile in storage
-        appConfig.profiles[profileKey].set(profile);
+        // Update individual properties to trigger reactive updates
+        accountPath.balance_unlocked.set(balanceData.balance_unlocked);
+        accountPath.balance_total.set(balanceData.balance_total);
+        accountPath.last_update.set(now);
+
+        // Handle error state
+        if (balanceData.error) {
+          accountPath.last_error.set(balanceData.error);
+          accountPath.error_count.set((accountPath.error_count.get() || 0) + 1);
+        } else {
+          accountPath.last_error.set(undefined);
+          accountPath.error_count.set(undefined);
+        }
+
+        // Update exists_on_chain flag
+        if (balanceData.exists_on_chain !== undefined) {
+          accountPath.exists_on_chain.set(balanceData.exists_on_chain);
+        }
+
         accountUpdated = true;
       }
     });
