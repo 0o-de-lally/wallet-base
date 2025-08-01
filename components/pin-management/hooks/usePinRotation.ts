@@ -25,17 +25,20 @@ export const usePinRotation = () => {
    * Handles PIN verification when starting rotation
    */
   const handleVerifyPin = useCallback(
-    async (pin: string): Promise<void> => {
+async (pin: string): Promise<boolean> => {
       try {
         const isValid = await verifyStoredPin(pin);
-        if (isValid) {
+if (isValid) {
           showAlert("Success", "PIN verified successfully");
+          return true;
         } else {
           showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+          return false;
         }
       } catch (error) {
-        showAlert("Error", "Failed to verify PIN");
+showAlert("Error", "Failed to verify PIN");
         console.error(error);
+        return false;
       }
     },
     [showAlert],

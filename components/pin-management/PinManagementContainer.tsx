@@ -50,11 +50,11 @@ const PinManagementContainer = memo(() => {
   /**
    * Handles PIN verification for the verify operation
    */
-  const handlePinVerification = useCallback(
-    async (pin: string): Promise<void> => {
+const handlePinVerification = useCallback(
+    async (pin: string): Promise<boolean> => {
       setLoading(true);
       try {
-        await handleVerifyPin(pin);
+        return await handleVerifyPin(pin);
       } finally {
         setLoading(false);
         updateModalState({ pinModalVisible: false });
@@ -66,8 +66,8 @@ const PinManagementContainer = memo(() => {
   /**
    * Handles old PIN verification for rotation
    */
-  const handleOldPinVerified = useCallback(
-    async (oldPinValue: string): Promise<void> => {
+const handleOldPinVerified = useCallback(
+    async (oldPinValue: string): Promise<boolean> => {
       setLoading(true);
 
       try {
@@ -81,6 +81,7 @@ const PinManagementContainer = memo(() => {
             pinRotationFlowVisible: true,
           });
         }
+        return isValid;
       } finally {
         setLoading(false);
       }

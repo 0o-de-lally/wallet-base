@@ -154,28 +154,28 @@ export function useSecureStorage(initialAccountId?: string) {
     setPinModalVisible(true);
   };
 
-  const saveSecurelyWithPin = async (pin: string) => {
+const saveSecurelyWithPin = async (pin: string): Promise<boolean> => {
     if (!value.trim()) {
-      showAlert("Error", "Please enter a value to store");
+reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("Please enter a value to store"));
       setPinModalVisible(false);
-      return;
+      return false;
     }
 
     if (!currentAccountId) {
-      showAlert("Error", "No account selected");
+reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("No account selected"));
       setPinModalVisible(false);
-      return;
+      return false;
     }
 
     try {
       setIsLoading(true);
 
       // First verify this is really the user's PIN
-      const isValid = await verifyStoredPin(pin);
+const isValid = await verifyStoredPin(pin);
       if (!isValid) {
-        showAlert("Error", "Invalid PIN");
+        reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("Invalid PIN"));
         setPinModalVisible(false); // Close PIN modal on failure
-        return;
+        return false;
       }
 
       // Use the pin-security utilities to encrypt data
@@ -198,17 +198,18 @@ export function useSecureStorage(initialAccountId?: string) {
       setRevealStatus(null);
 
       // Close PIN modal on success
-      setPinModalVisible(false);
+setPinModalVisible(false);
+      return true;
     } catch (error) {
-      showAlert("Error", "Failed to save encrypted value");
-      console.error(error);
+reportErrorAuto("useSecureStorage.saveSecurelyWithPin", error);
       setPinModalVisible(false); // Close PIN modal on error
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const scheduleRevealWithPin = async (pin: string) => {
+const scheduleRevealWithPin = async (pin: string): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -218,10 +219,10 @@ export function useSecureStorage(initialAccountId?: string) {
 
       // First verify this is really the user's PIN
       const isValid = await verifyStoredPin(pin);
-      if (!isValid) {
-        showAlert("Error", "Invalid PIN");
+if (!isValid) {
+        reportErrorAuto("useSecureStorage.scheduleRevealWithPin", new Error("Invalid PIN"));
         setPinModalVisible(false); // Close the PIN modal on failure
-        return; // Important: Return early to prevent scheduling with invalid PIN
+        return false;
       }
 
       // Schedule a reveal for the current account
@@ -236,26 +237,28 @@ export function useSecureStorage(initialAccountId?: string) {
         expiresIn: REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs,
       });
 
-      setPinModalVisible(false);
+setPinModalVisible(false);
 
       if (result) {
         showAlert(
           "Success",
           `Reveal scheduled. You can reveal the data after the waiting period.`,
         );
+        return true;
       } else {
-        showAlert("Error", "Failed to schedule reveal");
+        reportErrorAuto("useSecureStorage.scheduleRevealWithPin", new Error("Failed to schedule reveal"));
+        return false;
       }
     } catch (error) {
-      showAlert("Error", "Failed to schedule reveal");
-      console.error(error);
+reportErrorAuto("useSecureStorage.scheduleRevealWithPin", error);
       setPinModalVisible(false); // Close PIN modal on error
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const executeRevealWithPin = async (pin: string) => {
+const executeRevealWithPin = async (pin: string): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -266,68 +269,65 @@ export function useSecureStorage(initialAccountId?: string) {
       // Check if reveal is available
       const status = checkRevealStatus(currentAccountId);
       if (!status || !status.available || status.expired) {
-        showAlert(
-          "Error",
-          status && status.expired
-            ? "Reveal window has expired. Please schedule again."
-            : "No reveal scheduled or still in waiting period.",
-        );
+const errorMessage = status && status.expired
+          ? "Reveal window has expired. Please schedule again."
+          : "No reveal scheduled or still in waiting period.";
+        reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error(errorMessage));
         setPinModalVisible(false); // Close PIN modal on status error
-        return;
+        return false;
       }
 
       const key = getStorageKey(currentAccountId);
       const encryptedBase64 = await getValue(key);
 
       if (encryptedBase64 === null) {
-        setStoredValue(null);
-        showAlert("Error", "No value found");
+setStoredValue(null);
+        reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error("No value found"));
         setPinModalVisible(false); // Close PIN modal on data error
-        return;
+        return false;
       }
 
       // Use pin-security utility to decrypt
       const decryptResult = await secureDecryptWithPin(encryptedBase64, pin);
 
       if (!decryptResult) {
-        setStoredValue(null);
-        showAlert(
-          "Error",
-          "Failed to decrypt. Incorrect PIN or corrupted data.",
-        );
+setStoredValue(null);
+        reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error("Failed to decrypt. Incorrect PIN or corrupted data."));
         setPinModalVisible(false); // Close PIN modal on failure
-        return;
+        return false;
       }
 
       if (!decryptResult.verified) {
         // Wrong PIN was used - do not display any data
-        setStoredValue(null);
-        showAlert("Error", "Incorrect PIN. Unable to decrypt data.");
+setStoredValue(null);
+        reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error("Incorrect PIN. Unable to decrypt data."));
         setPinModalVisible(false); // Close PIN modal on failure
-        return;
+        return false;
       }
 
       // Set the revealed value - the useEffect will handle setting up auto-hide
       setStoredValue(decryptResult.value);
 
       // After successful reveal, cancel the scheduling (it's been used)
-      cancelReveal(currentAccountId);
+cancelReveal(currentAccountId);
       setPinModalVisible(false);
+      return true;
     } catch (error) {
       // Safely handle any uncaught errors
       console.warn(
         "Reveal process failed:",
         error instanceof Error ? error.message : "Unknown error",
       );
-      showAlert("Error", "Failed to retrieve or decrypt value");
+reportErrorAuto("useSecureStorage.executeRevealWithPin", error);
       setStoredValue(null);
       setPinModalVisible(false); // Close PIN modal on failure
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const deleteSecurely = async () => {
+const deleteSecurely = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -346,18 +346,19 @@ export function useSecureStorage(initialAccountId?: string) {
       cancelReveal(currentAccountId);
       setRevealStatus(null);
 
-      showAlert("Success", "Value deleted");
+showAlert("Success", "Value deleted");
       setPinModalVisible(false); // Close PIN modal on success
+      return true;
     } catch (error) {
-      showAlert("Error", "Failed to delete value");
-      console.error(error);
+reportErrorAuto("useSecureStorage.deleteSecurely", error);
       setPinModalVisible(false); // Close PIN modal on error
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const clearAccountDataWithPin = async (pin: string) => {
+const clearAccountDataWithPin = async (pin: string): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -367,10 +368,10 @@ export function useSecureStorage(initialAccountId?: string) {
 
       // First verify this is really the user's PIN
       const isValid = await verifyStoredPin(pin);
-      if (!isValid) {
-        showAlert("Error", "Invalid PIN");
+if (!isValid) {
+        reportErrorAuto("useSecureStorage.clearAccountDataWithPin", new Error("Invalid PIN"));
         setPinModalVisible(false);
-        return;
+        return false;
       }
 
       // Clear the specific account's data
@@ -388,53 +389,57 @@ export function useSecureStorage(initialAccountId?: string) {
       setValue("");
       setRevealStatus(null);
 
-      setPinModalVisible(false);
+setPinModalVisible(false);
       showAlert("Success", "Account data cleared successfully");
+      return true;
     } catch (error) {
-      showAlert("Error", "Failed to clear account data");
-      console.error(error);
+reportErrorAuto("useSecureStorage.clearAccountDataWithPin", error);
       setPinModalVisible(false);
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePinAction = useCallback(
-    async (pin: string) => {
+async (pin: string): Promise<boolean> => {
       console.log(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
-        showAlert("Error", "PIN is required");
+reportErrorAuto("useSecureStorage.handlePinAction", new Error("PIN is required"));
         setPinModalVisible(false); // Close modal on validation error
         setCurrentAction(null); // Reset action to prevent re-opening
-        return;
+        return false;
       }
 
       try {
         // Handle different PIN action types
-        if (currentAction === "save") {
-          await saveSecurelyWithPin(pin);
+if (currentAction === "save") {
+          return await saveSecurelyWithPin(pin);
         } else if (currentAction === "delete") {
-          await deleteSecurely();
+          return await deleteSecurely();
         } else if (currentAction === "schedule_reveal") {
-          await scheduleRevealWithPin(pin);
+          return await scheduleRevealWithPin(pin);
         } else if (currentAction === "execute_reveal") {
-          await executeRevealWithPin(pin);
+          return await executeRevealWithPin(pin);
         } else if (currentAction === "clear_all") {
-          await clearAccountDataWithPin(pin);
+          return await clearAccountDataWithPin(pin);
         } else {
-          console.error(`Unknown pin action: ${currentAction}`);
-          showAlert("Error", "Unknown action requested");
+          const errorMessage = `Unknown pin action: ${currentAction}`;
+          reportErrorAuto("useSecureStorage.handlePinAction", new Error(errorMessage));
           setPinModalVisible(false); // Close modal on unknown action
           setCurrentAction(null); // Reset action to prevent re-opening
+          return false;
         }
 
         // Reset action after successful completion
-        setCurrentAction(null);
+setCurrentAction(null);
+        return true;
       } catch (error) {
         console.error(`Error in handlePinAction:`, error);
-        showAlert("Error", "Failed to process your request");
+reportErrorAuto("useSecureStorage.handlePinAction", error);
         setPinModalVisible(false); // Close modal on unexpected error
         setCurrentAction(null); // Reset action to prevent re-opening
+        return false;
       }
     },
     [currentAction, showAlert, value],
