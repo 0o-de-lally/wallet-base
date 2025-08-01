@@ -38,7 +38,7 @@ const CreateAccountContent = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.content}>
         <Text style={styles.title}>Create New Account</Text>
         <Text style={styles.description}>
