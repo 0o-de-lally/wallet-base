@@ -37,6 +37,9 @@ export function useSecureStorage(initialAccountId?: string) {
     initialAccountId || null,
   );
 
+  // Track the last PIN operation result
+  const [lastPinOperationSuccess, setLastPinOperationSuccess] = useState<boolean | null>(null);
+
   // Add timer ref for auto-hiding the value
   // Cross environment issues with TimeoutTypes
   const autoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -151,6 +154,7 @@ export function useSecureStorage(initialAccountId?: string) {
     );
     setCurrentAction(action);
     setCurrentAccountId(accountId);
+    setLastPinOperationSuccess(null); // Reset previous operation result
     setPinModalVisible(true);
   };
 
@@ -171,10 +175,10 @@ reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("No account se
       setIsLoading(true);
 
       // First verify this is really the user's PIN
-const isValid = await verifyStoredPin(pin);
+      const isValid = await verifyStoredPin(pin);
       if (!isValid) {
         reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("Invalid PIN"));
-        setPinModalVisible(false); // Close PIN modal on failure
+        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
@@ -219,9 +223,9 @@ const scheduleRevealWithPin = async (pin: string): Promise<boolean> => {
 
       // First verify this is really the user's PIN
       const isValid = await verifyStoredPin(pin);
-if (!isValid) {
+      if (!isValid) {
         reportErrorAuto("useSecureStorage.scheduleRevealWithPin", new Error("Invalid PIN"));
-        setPinModalVisible(false); // Close the PIN modal on failure
+        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
@@ -402,43 +406,54 @@ reportErrorAuto("useSecureStorage.clearAccountDataWithPin", error);
   };
 
   const handlePinAction = useCallback(
-async (pin: string): Promise<boolean> => {
+    async (pin: string): Promise<boolean> => {
       console.log(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
-reportErrorAuto("useSecureStorage.handlePinAction", new Error("PIN is required"));
+        reportErrorAuto("useSecureStorage.handlePinAction", new Error("PIN is required"));
         setPinModalVisible(false); // Close modal on validation error
         setCurrentAction(null); // Reset action to prevent re-opening
+        setLastPinOperationSuccess(false); // Track failure
         return false;
       }
 
       try {
+        let result = false;
+        
         // Handle different PIN action types
-if (currentAction === "save") {
-          return await saveSecurelyWithPin(pin);
+        if (currentAction === "save") {
+          result = await saveSecurelyWithPin(pin);
         } else if (currentAction === "delete") {
-          return await deleteSecurely();
+          result = await deleteSecurely();
         } else if (currentAction === "schedule_reveal") {
-          return await scheduleRevealWithPin(pin);
+          result = await scheduleRevealWithPin(pin);
         } else if (currentAction === "execute_reveal") {
-          return await executeRevealWithPin(pin);
+          result = await executeRevealWithPin(pin);
         } else if (currentAction === "clear_all") {
-          return await clearAccountDataWithPin(pin);
+          result = await clearAccountDataWithPin(pin);
         } else {
           const errorMessage = `Unknown pin action: ${currentAction}`;
           reportErrorAuto("useSecureStorage.handlePinAction", new Error(errorMessage));
           setPinModalVisible(false); // Close modal on unknown action
           setCurrentAction(null); // Reset action to prevent re-opening
+          setLastPinOperationSuccess(false); // Track failure
           return false;
         }
 
-        // Reset action after successful completion
-setCurrentAction(null);
-        return true;
+        // Track the operation result
+        setLastPinOperationSuccess(result);
+
+        // Reset action only after successful completion
+        if (result) {
+          setCurrentAction(null);
+        }
+        
+        return result;
       } catch (error) {
         console.error(`Error in handlePinAction:`, error);
-reportErrorAuto("useSecureStorage.handlePinAction", error);
+        reportErrorAuto("useSecureStorage.handlePinAction", error);
         setPinModalVisible(false); // Close modal on unexpected error
         setCurrentAction(null); // Reset action to prevent re-opening
+        setLastPinOperationSuccess(false); // Track failure
         return false;
       }
     },
@@ -517,6 +532,7 @@ reportErrorAuto("useSecureStorage.handlePinAction", error);
   const handlePinModalClose = useCallback(() => {
     setPinModalVisible(false);
     setCurrentAction(null); // Reset action to prevent re-opening
+    // Note: We don't reset lastPinOperationSuccess here so callers can check the result
   }, []);
 
   return {
@@ -539,5 +555,6 @@ reportErrorAuto("useSecureStorage.handlePinAction", error);
     revealStatus,
     clearRevealedValue,
     checkHasStoredData,
+    lastPinOperationSuccess, // Export the PIN operation result
   };
 }
