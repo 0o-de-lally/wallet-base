@@ -104,6 +104,7 @@ export const AccountSettings = memo(
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.sectionTitle}>
           {profileName} •{" "}

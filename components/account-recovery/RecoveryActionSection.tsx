@@ -9,9 +9,11 @@ interface RecoveryActionSectionProps {
   isChainVerified: boolean;
   isLoading: boolean;
   canRecover: boolean;
+  canRetryMnemonicSave?: boolean;
   mode: AccountMode;
   onNicknameChange: (nickname: string) => void;
   onRecoverAccount: () => void;
+  onRetryMnemonicSave?: () => void;
 }
 
 export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
@@ -20,9 +22,11 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
   isChainVerified,
   isLoading,
   canRecover,
+  canRetryMnemonicSave = false,
   mode,
   onNicknameChange,
   onRecoverAccount,
+  onRetryMnemonicSave,
 }) => {
   const getButtonText = () => {
     if (mode === "recover" && !isChainVerified) {
@@ -61,6 +65,19 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
         accessibilityHint={getAccessibilityHint()}
         style={{ width: "100%", marginHorizontal: 0 }}
       />
+
+      {canRetryMnemonicSave && onRetryMnemonicSave && (
+        <ActionButton
+          text="Retry Saving Recovery Phrase"
+          onPress={onRetryMnemonicSave}
+          disabled={isLoading}
+          isLoading={isLoading}
+          accessibilityLabel="Retry saving recovery phrase"
+          accessibilityHint="Attempt to save the recovery phrase again after PIN failure"
+          style={{ width: "100%", marginHorizontal: 0, marginTop: 12 }}
+          variant="secondary"
+        />
+      )}
     </>
   );
 };
