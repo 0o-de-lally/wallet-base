@@ -101,6 +101,8 @@ export const useRecoveryLogic = (
         // Reset the save state so user can retry
         actions.setSaveInitiated(false);
         // The account is still created, so they can try to save the mnemonic again
+      } else {
+        console.log("PIN operation result still pending, lastPinOperationSuccess is:", secureStorage.lastPinOperationSuccess);
       }
       // If lastPinOperationSuccess is null, we're still waiting for the result
     }
@@ -290,6 +292,7 @@ export const useRecoveryLogic = (
   }, [actions]);
 
   const handleSuccess = useCallback(() => {
+    console.log("handleSuccess called - closing success modal and navigating");
     actions.setSuccessModalVisible(false);
     resetForm();
     onComplete();

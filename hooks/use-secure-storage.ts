@@ -201,8 +201,7 @@ reportErrorAuto("useSecureStorage.saveSecurelyWithPin", new Error("No account se
       cancelReveal(currentAccountId);
       setRevealStatus(null);
 
-      // Close PIN modal on success
-setPinModalVisible(false);
+      // Success! The PIN modal will auto-close due to autoCloseOnSuccess=true
       return true;
     } catch (error) {
 reportErrorAuto("useSecureStorage.saveSecurelyWithPin", error);
@@ -241,7 +240,7 @@ const scheduleRevealWithPin = async (pin: string): Promise<boolean> => {
         expiresIn: REVEAL_CONFIG.waitingPeriodMs + REVEAL_CONFIG.revealWindowMs,
       });
 
-setPinModalVisible(false);
+      // Success! The PIN modal will auto-close due to autoCloseOnSuccess=true
 
       if (result) {
         showAlert(
@@ -295,17 +294,17 @@ setStoredValue(null);
       const decryptResult = await secureDecryptWithPin(encryptedBase64, pin);
 
       if (!decryptResult) {
-setStoredValue(null);
+        setStoredValue(null);
         reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error("Failed to decrypt. Incorrect PIN or corrupted data."));
-        setPinModalVisible(false); // Close PIN modal on failure
+        // Don't close the modal here - let PinInputModal handle the error display for PIN issues
         return false;
       }
 
       if (!decryptResult.verified) {
         // Wrong PIN was used - do not display any data
-setStoredValue(null);
+        setStoredValue(null);
         reportErrorAuto("useSecureStorage.executeRevealWithPin", new Error("Incorrect PIN. Unable to decrypt data."));
-        setPinModalVisible(false); // Close PIN modal on failure
+        // Don't close the modal here - let PinInputModal handle the error display for incorrect PIN
         return false;
       }
 
@@ -313,8 +312,8 @@ setStoredValue(null);
       setStoredValue(decryptResult.value);
 
       // After successful reveal, cancel the scheduling (it's been used)
-cancelReveal(currentAccountId);
-      setPinModalVisible(false);
+      cancelReveal(currentAccountId);
+      // Success! The PIN modal will auto-close due to autoCloseOnSuccess=true
       return true;
     } catch (error) {
       // Safely handle any uncaught errors
@@ -350,8 +349,8 @@ const deleteSecurely = async (): Promise<boolean> => {
       cancelReveal(currentAccountId);
       setRevealStatus(null);
 
-showAlert("Success", "Value deleted");
-      setPinModalVisible(false); // Close PIN modal on success
+      showAlert("Success", "Value deleted");
+      // Success! The PIN modal will auto-close due to autoCloseOnSuccess=true
       return true;
     } catch (error) {
 reportErrorAuto("useSecureStorage.deleteSecurely", error);
@@ -372,9 +371,9 @@ const clearAccountDataWithPin = async (pin: string): Promise<boolean> => {
 
       // First verify this is really the user's PIN
       const isValid = await verifyStoredPin(pin);
-if (!isValid) {
+      if (!isValid) {
         reportErrorAuto("useSecureStorage.clearAccountDataWithPin", new Error("Invalid PIN"));
-        setPinModalVisible(false);
+        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
@@ -393,8 +392,8 @@ if (!isValid) {
       setValue("");
       setRevealStatus(null);
 
-setPinModalVisible(false);
       showAlert("Success", "Account data cleared successfully");
+      // Success! The PIN modal will auto-close due to autoCloseOnSuccess=true
       return true;
     } catch (error) {
 reportErrorAuto("useSecureStorage.clearAccountDataWithPin", error);
