@@ -21,11 +21,11 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 }) => {
   const { state, actions, profileNames, hasMultipleProfiles, secureStorage } =
     useRecoveryState();
-  const { 
-    verifyOnChain, 
-    handleRecoverAccount, 
+  const {
+    verifyOnChain,
+    handleRecoverAccount,
     handleRetryMnemonicSave,
-    handleSuccess, 
+    handleSuccess,
     canRecover,
     canRetryMnemonicSave,
   } = useRecoveryLogic(state, actions, secureStorage, onComplete);
@@ -154,6 +154,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
           isChainVerified={state.isChainVerified}
           isVerifyingChain={state.isVerifyingChain}
           onVerifyOnChain={handleVerifyOnChain}
+          mode={state.mode}
         />
       )}
 

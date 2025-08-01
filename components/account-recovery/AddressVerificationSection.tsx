@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles, colors } from "../../styles/styles";
 import { FormInput } from "../common/FormInput";
 import { ActionButton } from "../common/ActionButton";
+import { ProgressIndicator } from "../common/ProgressIndicator";
 import { AccountAddress } from "open-libra-sdk";
 
 interface AddressVerificationSectionProps {
@@ -12,6 +13,7 @@ interface AddressVerificationSectionProps {
   isChainVerified: boolean;
   isVerifyingChain: boolean;
   onVerifyOnChain: () => void;
+  mode?: "create" | "recover"; // Add mode to determine behavior
 }
 
 export const AddressVerificationSection: React.FC<
@@ -22,6 +24,7 @@ export const AddressVerificationSection: React.FC<
   isChainVerified,
   isVerifyingChain,
   onVerifyOnChain,
+  mode = "create", // Default to create mode for backward compatibility
 }) => {
   if (!derivedAddress) {
     return null;
@@ -30,14 +33,14 @@ export const AddressVerificationSection: React.FC<
   return (
     <>
       <FormInput
-        label="Derived Address:"
+        label="Derived Address"
         value={derivedAddress.toStringLong()}
         onChangeText={() => {}} // Read-only
         placeholder="Address will appear here"
         disabled={true}
       />
 
-      {!isChainVerified && (
+      {!isChainVerified && mode === "create" && (
         <View style={styles.inputContainer}>
           <Text style={styles.label}>
             Verify the mnemonic by connecting to the blockchain. This works for
@@ -54,6 +57,17 @@ export const AddressVerificationSection: React.FC<
         </View>
       )}
 
+      {!isChainVerified && mode === "recover" && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Chain Verification</Text>
+          <ProgressIndicator
+            text="Verifying account on blockchain..."
+            accessibilityLabel="Verifying blockchain account"
+            accessibilityHint="Connecting to blockchain to verify the account status"
+          />
+        </View>
+      )}
+
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -64,14 +78,18 @@ export const AddressVerificationSection: React.FC<
               style={{ marginRight: 8 }}
             />
             <Text style={[styles.label, { color: colors.success }]}>
-              Chain verification successful!
+              Chain verification successful
+            </Text>
+          </View>
+          <View>
+            <Text style={[styles.description]}>
               {chainAddress?.toStringLong() === derivedAddress?.toStringLong()
                 ? " (Account verified or new)"
                 : " (Account found with rotated keys)"}
             </Text>
           </View>
           <FormInput
-            label="Actual Chain Address:"
+            label="Actual Chain Address"
             value={chainAddress.toStringLong()}
             onChangeText={() => {}} // Read-only
             placeholder="Verified address"

@@ -12,12 +12,12 @@ interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
   purpose:
-  | "save"
-  | "retrieve"
-  | "delete"
-  | "schedule_reveal"
-  | "execute_reveal"
-  | "clear_all";
+    | "save"
+    | "retrieve"
+    | "delete"
+    | "schedule_reveal"
+    | "execute_reveal"
+    | "clear_all";
   // Callbacks for different PIN operations - only one will be called based on purpose
   onPinAction: PinActionCallback;
   actionTitle?: string;

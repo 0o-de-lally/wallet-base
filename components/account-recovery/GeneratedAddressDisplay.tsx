@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import { AccountAddress } from "open-libra-sdk";
 import { CopyButton } from "../common/CopyButton";
+import { ProgressIndicator } from "../common/ProgressIndicator";
 import { styles } from "../../styles/styles";
 
 interface GeneratedAddressDisplayProps {
@@ -40,11 +41,11 @@ export const GeneratedAddressDisplay: React.FC<
       </View>
 
       {isDeriving ? (
-        <View style={[styles.input, { padding: 16 }]}>
-          <Text style={[styles.resultValue, { fontStyle: "italic" }]}>
-            Deriving address...
-          </Text>
-        </View>
+        <ProgressIndicator
+          text="Deriving keys from mnemonic..."
+          accessibilityLabel="Deriving account address"
+          accessibilityHint="Generating account address from the provided mnemonic phrase"
+        />
       ) : derivedAddress ? (
         <View style={[styles.input, { padding: 16 }]}>
           <Text style={[styles.resultValue, { fontFamily: "monospace" }]}>

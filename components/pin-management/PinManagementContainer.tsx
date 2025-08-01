@@ -50,7 +50,7 @@ const PinManagementContainer = memo(() => {
   /**
    * Handles PIN verification for the verify operation
    */
-const handlePinVerification = useCallback(
+  const handlePinVerification = useCallback(
     async (pin: string): Promise<boolean> => {
       setLoading(true);
       try {
@@ -66,7 +66,7 @@ const handlePinVerification = useCallback(
   /**
    * Handles old PIN verification for rotation
    */
-const handleOldPinVerified = useCallback(
+  const handleOldPinVerified = useCallback(
     async (oldPinValue: string): Promise<boolean> => {
       setLoading(true);
 

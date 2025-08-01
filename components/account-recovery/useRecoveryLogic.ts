@@ -50,7 +50,7 @@ export const useRecoveryLogic = (
         actions.setError(null);
 
         const clientUrl = getLibraClientUrl();
-        
+
         // Validate the mnemonic by creating a wallet
         // This should throw an error if the mnemonic is invalid
         const wallet = LibraWallet.fromMnemonic(
@@ -77,7 +77,86 @@ export const useRecoveryLogic = (
     };
 
     deriveAddress();
-  }, [state.isVerifiedMnemonic, state.mnemonic, actions]); // Removed state.isDeriving to prevent loops
+  }, [state.isVerifiedMnemonic, state.mnemonic, actions]);
+
+  // Auto-verify on chain for recovery mode after address is derived
+  useEffect(() => {
+    if (
+      state.mode === "recover" &&
+      state.derivedAddress &&
+      !state.isChainVerified &&
+      !state.isVerifyingChain &&
+      state.isVerifiedMnemonic &&
+      state.mnemonic.trim()
+    ) {
+      console.log("Auto-triggering chain verification for recovery mode");
+      // Use a small delay to ensure the UI is ready
+      const timer = setTimeout(() => {
+        actions.setIsVerifyingChain(true);
+        // Call the verification logic directly
+        const performAutoVerification = async () => {
+          try {
+            const clientUrl = getLibraClientUrl();
+            const wallet = LibraWallet.fromMnemonic(
+              state.mnemonic.trim(),
+              Network.MAINNET,
+              clientUrl,
+            );
+
+            const walletAddress = wallet.getAddress();
+
+            if (
+              !state.derivedAddress ||
+              walletAddress.toStringLong() !==
+                state.derivedAddress.toStringLong()
+            ) {
+              throw new Error(
+                "Mnemonic validation failed: derived address mismatch",
+              );
+            }
+
+            try {
+              await wallet.syncOnchain();
+              const actualAddress = wallet.getAddress();
+              actions.setChainAddress(actualAddress);
+              actions.setIsChainVerified(true);
+              actions.setError(null);
+            } catch (syncError) {
+              console.log(
+                "Chain sync failed, but mnemonic is valid:",
+                syncError,
+              );
+              actions.setChainAddress(walletAddress);
+              actions.setIsChainVerified(true);
+              actions.setError(null);
+            }
+          } catch (err) {
+            console.error("Auto chain verification failed:", err);
+            actions.setIsChainVerified(false);
+            const errorMessage =
+              err instanceof Error
+                ? `Invalid mnemonic: ${err.message}`
+                : "Invalid mnemonic phrase";
+            actions.setError(errorMessage);
+          } finally {
+            actions.setIsVerifyingChain(false);
+          }
+        };
+
+        performAutoVerification();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [
+    state.mode,
+    state.derivedAddress,
+    state.isChainVerified,
+    state.isVerifyingChain,
+    state.isVerifiedMnemonic,
+    state.mnemonic,
+    actions,
+  ]);
 
   // Show success modal after PIN process completes successfully
   useEffect(() => {
@@ -90,19 +169,24 @@ export const useRecoveryLogic = (
       !state.successModalVisible
     ) {
       console.log("PIN process complete, checking result...");
-      
+
       // Check if the PIN operation was successful
       if (secureStorage.lastPinOperationSuccess === true) {
         console.log("PIN operation successful, showing success modal");
         actions.setSuccessModalVisible(true);
       } else if (secureStorage.lastPinOperationSuccess === false) {
         console.log("PIN operation failed, allowing retry");
-        actions.setError("Failed to save recovery phrase. The account was created but the recovery phrase could not be saved. Please try saving it again.");
+        actions.setError(
+          "Failed to save recovery phrase. The account was created but the recovery phrase could not be saved. Please try saving it again.",
+        );
         // Reset the save state so user can retry
         actions.setSaveInitiated(false);
         // The account is still created, so they can try to save the mnemonic again
       } else {
-        console.log("PIN operation result still pending, lastPinOperationSuccess is:", secureStorage.lastPinOperationSuccess);
+        console.log(
+          "PIN operation result still pending, lastPinOperationSuccess is:",
+          secureStorage.lastPinOperationSuccess,
+        );
       }
       // If lastPinOperationSuccess is null, we're still waiting for the result
     }
@@ -158,9 +242,11 @@ export const useRecoveryLogic = (
 
       // Get the address from the wallet to verify it matches our derived address
       const walletAddress = wallet.getAddress();
-      
+
       // The wallet address should match our derived address
-      if (walletAddress.toStringLong() !== state.derivedAddress.toStringLong()) {
+      if (
+        walletAddress.toStringLong() !== state.derivedAddress.toStringLong()
+      ) {
         throw new Error("Mnemonic validation failed: derived address mismatch");
       }
 
@@ -178,7 +264,7 @@ export const useRecoveryLogic = (
         // 2. Network issues (valid)
         // 3. Account exists but with rotated keys (valid)
         console.log("Chain sync failed, but mnemonic is valid:", syncError);
-        
+
         // For a valid mnemonic that doesn't sync, we still consider it verified
         // since it could be a new account or network issue
         actions.setChainAddress(walletAddress);
@@ -206,22 +292,8 @@ export const useRecoveryLogic = (
       return;
     }
 
-    // Additional validation: ensure mnemonic is still valid before saving
-    if (state.mnemonic.trim() && state.mode === "recover") {
-      try {
-        const clientUrl = getLibraClientUrl();
-        // This should throw if the mnemonic is invalid
-        LibraWallet.fromMnemonic(
-          state.mnemonic.trim(),
-          Network.MAINNET,
-          clientUrl,
-        );
-      } catch (err) {
-        console.error("Final mnemonic validation failed:", err);
-        actions.setError("Invalid mnemonic phrase. Please check your recovery phrase and try again.");
-        return;
-      }
-    }
+    // Note: No need for additional mnemonic validation here since it has already been
+    // validated in the MnemonicInput component, address derivation, and chain verification
 
     actions.setIsLoading(true);
     actions.setError(null);
@@ -243,7 +315,7 @@ export const useRecoveryLogic = (
           console.log("Saving mnemonic for account:", result.account.id);
           actions.setSaveInitiated(true);
 
-          // Don't show success modal yet - wait for PIN process to complete
+          // Show PIN modal immediately - the mnemonic has already been validated
           // The PIN modal will be shown by the secure storage hook
           secureStorage.handleSaveWithValue(result.account.id, state.mnemonic);
         } else {
@@ -301,7 +373,10 @@ export const useRecoveryLogic = (
   // Handler for retrying mnemonic save after PIN failure
   const handleRetryMnemonicSave = useCallback(() => {
     if (state.createdAccountId && state.mnemonic.trim()) {
-      console.log("Retrying mnemonic save for account:", state.createdAccountId);
+      console.log(
+        "Retrying mnemonic save for account:",
+        state.createdAccountId,
+      );
       actions.setSaveInitiated(true);
       actions.setError(null);
       secureStorage.handleSaveWithValue(state.createdAccountId, state.mnemonic);
@@ -318,7 +393,7 @@ export const useRecoveryLogic = (
     !accountExistsInProfile();
 
   // Allow retry if account was created but mnemonic save failed
-  const canRetryMnemonicSave = 
+  const canRetryMnemonicSave =
     state.accountCreated &&
     !state.saveInitiated &&
     state.mnemonic.trim() &&
