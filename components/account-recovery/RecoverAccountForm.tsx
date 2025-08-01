@@ -21,8 +21,14 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
 }) => {
   const { state, actions, profileNames, hasMultipleProfiles, secureStorage } =
     useRecoveryState();
-  const { verifyOnChain, handleRecoverAccount, handleSuccess, canRecover } =
-    useRecoveryLogic(state, actions, secureStorage, onComplete);
+  const {
+    verifyOnChain,
+    handleRecoverAccount,
+    handleRetryMnemonicSave,
+    handleSuccess,
+    canRecover,
+    canRetryMnemonicSave,
+  } = useRecoveryLogic(state, actions, secureStorage, onComplete);
 
   // Update selected profile if initial profile changes
   useEffect(() => {
@@ -148,6 +154,7 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
           isChainVerified={state.isChainVerified}
           isVerifyingChain={state.isVerifyingChain}
           onVerifyOnChain={handleVerifyOnChain}
+          mode={state.mode}
         />
       )}
 
@@ -157,9 +164,11 @@ const RecoverAccountForm: React.FC<RecoverAccountFormProps> = ({
         isChainVerified={state.isChainVerified}
         isLoading={state.isLoading}
         canRecover={canRecover || false}
+        canRetryMnemonicSave={canRetryMnemonicSave || false}
         mode={state.mode}
         onNicknameChange={actions.setNickname}
         onRecoverAccount={handleRecoverAccount}
+        onRetryMnemonicSave={handleRetryMnemonicSave}
       />
 
       <RecoveryModals

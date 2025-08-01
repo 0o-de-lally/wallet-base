@@ -6,7 +6,7 @@ import { PinInputField } from "./PinInputField";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
 
 // Define callback types for PIN operations
-type PinActionCallback = (pin: string) => Promise<void>;
+type PinActionCallback = (pin: string) => Promise<boolean>;
 
 interface PinInputModalProps {
   visible: boolean;
@@ -41,8 +41,16 @@ export const PinInputModal = memo(
         if (typeof onPinAction === "function") {
           try {
             console.log(`Executing onPinAction for purpose: ${purpose}`);
-            await onPinAction(pin);
-            console.log(`Completed onPinAction for purpose: ${purpose}`);
+            const wasSuccessful = await onPinAction(pin);
+
+            if (wasSuccessful) {
+              console.log(`Completed onPinAction for purpose: ${purpose}`);
+            } else {
+              console.log(
+                `PIN action failed for purpose: ${purpose} (e.g., incorrect PIN)`,
+              );
+            }
+            return wasSuccessful;
           } catch (error) {
             console.error(
               `Error in onPinAction for purpose "${purpose}":`,
@@ -70,6 +78,9 @@ export const PinInputModal = memo(
           setTimeout(() => {
             onClose();
           }, 2000);
+
+          // Return false as the action was not successful
+          return false;
         }
       },
       [
@@ -112,11 +123,15 @@ export const PinInputModal = memo(
         setPinValue("");
 
         // Use the safe version that checks for function existence
-        await safeOnPinAction(currentPin);
+        const wasSuccessful = await safeOnPinAction(currentPin);
 
         // Close the modal after successful action only if autoCloseOnSuccess is true
-        if (autoCloseOnSuccess) {
-          onClose();
+        if (wasSuccessful) {
+          if (autoCloseOnSuccess) {
+            onClose();
+          }
+        } else {
+          setError("Incorrect PIN. Please try again.");
         }
       } catch (error) {
         console.error("Error processing PIN:", error);

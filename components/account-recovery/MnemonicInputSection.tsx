@@ -1,7 +1,6 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import { styles, namedColors } from "../../styles/styles";
 import { MnemonicInput } from "../common/MnemonicInput";
+import { ProgressIndicator } from "../common/ProgressIndicator";
 
 interface MnemonicInputSectionProps {
   mnemonic: string;
@@ -21,7 +20,7 @@ export const MnemonicInputSection: React.FC<MnemonicInputSectionProps> = ({
   return (
     <>
       <MnemonicInput
-        label="Recovery Phrase:"
+        label="Recovery Phrase"
         value={mnemonic}
         onChangeText={onMnemonicChange}
         onValidationChange={onMnemonicValidation}
@@ -32,19 +31,11 @@ export const MnemonicInputSection: React.FC<MnemonicInputSectionProps> = ({
       />
 
       {isDeriving && (
-        <View style={styles.inputContainer}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: 8,
-            }}
-          >
-            <ActivityIndicator size="small" color={namedColors.blue} />
-            <Text style={[styles.label]}>Deriving keys from mnemonic...</Text>
-          </View>
-        </View>
+        <ProgressIndicator
+          text="Deriving keys from mnemonic..."
+          accessibilityLabel="Deriving account keys"
+          accessibilityHint="Processing the mnemonic phrase to derive account keys"
+        />
       )}
     </>
   );

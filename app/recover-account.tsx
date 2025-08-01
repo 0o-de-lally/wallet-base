@@ -37,7 +37,7 @@ const RecoverAccountContent = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.content}>
         <RecoverAccountForm onComplete={handleComplete} />
       </View>

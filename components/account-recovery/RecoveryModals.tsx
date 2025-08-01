@@ -42,7 +42,7 @@ export const RecoveryModals: React.FC<RecoveryModalsProps> = ({
         onClose={secureStorage.handlePinModalClose}
         purpose="save"
         onPinAction={secureStorage.handlePinAction}
-        actionTitle="Secure Mnemonic"
+        actionTitle="Encrypt Mnemonic"
         actionSubtitle="Enter your PIN to securely save the recovery mnemonic"
       />
     </>
