@@ -12,12 +12,12 @@ interface PinInputModalProps {
   visible: boolean;
   onClose: () => void;
   purpose:
-    | "save"
-    | "retrieve"
-    | "delete"
-    | "schedule_reveal"
-    | "execute_reveal"
-    | "clear_all";
+  | "save"
+  | "retrieve"
+  | "delete"
+  | "schedule_reveal"
+  | "execute_reveal"
+  | "clear_all";
   // Callbacks for different PIN operations - only one will be called based on purpose
   onPinAction: PinActionCallback;
   actionTitle?: string;
@@ -38,20 +38,13 @@ export const PinInputModal = memo(
     // Ensure onPinAction is always a function even if undefined is passed
     const safeOnPinAction = useCallback(
       async (pin: string) => {
-if (typeof onPinAction === "function") {
+        if (typeof onPinAction === "function") {
           try {
             console.log(`Executing onPinAction for purpose: ${purpose}`);
-        const wasSuccessful = await onPinAction(pin);
+            const wasSuccessful = await onPinAction(pin);
 
             if (wasSuccessful) {
               console.log(`Completed onPinAction for purpose: ${purpose}`);
-            } else {
-              console.log(
-                `PIN action failed for purpose: ${purpose} (e.g., incorrect PIN)`,
-              );
-            }
-            return wasSuccessful;
-`Completed onPinAction for purpose: ${purpose}`);
             } else {
               console.log(
                 `PIN action failed for purpose: ${purpose} (e.g., incorrect PIN)`,
@@ -88,6 +81,7 @@ if (typeof onPinAction === "function") {
 
           // Return false as the action was not successful
           return false;
+        }
       },
       [
         onPinAction,
@@ -129,7 +123,7 @@ if (typeof onPinAction === "function") {
         setPinValue("");
 
         // Use the safe version that checks for function existence
-const wasSuccessful = await safeOnPinAction(currentPin);
+        const wasSuccessful = await safeOnPinAction(currentPin);
 
         // Close the modal after successful action only if autoCloseOnSuccess is true
         if (wasSuccessful) {
