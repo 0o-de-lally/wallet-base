@@ -137,6 +137,7 @@ export const TransactionHub = memo(
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.resultValue}>Loading account details...</Text>
         </ScrollView>
@@ -147,6 +148,7 @@ export const TransactionHub = memo(
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.inputContainer, { marginBottom: 20 }]}>
           <Text style={[styles.label, { fontSize: 18, fontWeight: "bold" }]}>

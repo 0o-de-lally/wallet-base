@@ -150,6 +150,7 @@ const SmartAccountList = observer(
         <ScrollView
           style={styles.containerWithHeader}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
           <AccountList
             profileName={displayProfile.name}

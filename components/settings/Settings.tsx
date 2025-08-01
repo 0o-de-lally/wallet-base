@@ -82,6 +82,7 @@ export const Settings: React.FC<SettingsProps> = observer(
         <ScrollView
           style={styles.containerWithHeader}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Account Management */}
           <SectionContainer title="Account Management" style={styles.listItem}>

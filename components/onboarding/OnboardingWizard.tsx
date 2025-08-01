@@ -147,6 +147,7 @@ export const OnboardingWizard: React.FC = observer(() => {
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>Wallet Setup</Text>
           <SectionContainer title="Checking Setup Status">
@@ -162,6 +163,7 @@ export const OnboardingWizard: React.FC = observer(() => {
   return (
     <View style={styles.safeAreaView}>
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
       >

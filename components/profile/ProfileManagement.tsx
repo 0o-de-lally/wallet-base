@@ -124,6 +124,7 @@ const ProfileManagement: React.FC = observer(() => {
       style={styles.container}
       accessible={true}
       accessibilityLabel="Profile management screen"
+      keyboardShouldPersistTaps="handled"
     >
       {/* <Text style={styles.title}>Profile Management</Text> */}
 
