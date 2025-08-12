@@ -57,10 +57,16 @@ export const V8Migration = memo(
 
     return (
       <SectionContainer title="Founder Migration">
-        <View style={[styles.inputContainer, { marginBottom: 16 }]}>
-          <View style={styles.viewOnlyHeader}>
-            <Ionicons name="warning-outline" size={20} color="#ff6b00" />
-            <Text style={[styles.label, { color: "#ff6b00", marginLeft: 8 }]}>
+        <View style={[styles.inputContainer, styles.warningContainer]}>
+          <View style={styles.iconTextHeader}>
+            <Ionicons name="warning-outline" size={20} color="#FCA5A5" />
+            <Text
+              style={[
+                styles.label,
+                styles.iconTextLabel,
+                styles.iconTextLabelDanger,
+              ]}
+            >
               Migration Required
             </Text>
           </View>
@@ -92,16 +98,22 @@ export const V8Migration = memo(
         </View>
 
         {migrationError && (
-          <View style={[styles.inputContainer, { marginTop: 16 }]}>
+          <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
             <Text style={styles.errorText}>{migrationError}</Text>
           </View>
         )}
 
         {!account.is_key_stored && (
           <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
-            <View style={styles.viewOnlyHeader}>
-              <Ionicons name="eye-outline" size={20} color="#ff9500" />
-              <Text style={[styles.label, styles.viewOnlyIcon]}>
+            <View style={styles.iconTextHeader}>
+              <Ionicons name="eye-outline" size={20} color="#FCA5A5" />
+              <Text
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
+              >
                 View-Only Account
               </Text>
             </View>

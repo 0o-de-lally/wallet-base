@@ -64,7 +64,7 @@ const RootLayout = observer(() => {
       }
 
       const result = await authenticateAsync({
-        promptMessage: "Authenticate to access your wallet",
+        promptMessage: "Authenticate",
         fallbackLabel: "Use passcode",
         cancelLabel: "Cancel",
         disableDeviceFallback: false,
