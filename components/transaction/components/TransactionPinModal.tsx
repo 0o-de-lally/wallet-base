@@ -9,7 +9,7 @@ interface TransactionPinModalProps {
   onClose: () => void;
   onPinSubmit: (pin: string) => Promise<void>;
   isLoading?: boolean;
-  operationType?: "transfer" | "v8_rejoin" | null;
+  operationType?: "transfer" | "v8_rejoin" | "vouch" | null;
 }
 
 export const TransactionPinModal = memo(
@@ -29,6 +29,8 @@ export const TransactionPinModal = memo(
           return "Authorize Transfer";
         case "v8_rejoin":
           return "Authorize V8 Migration";
+        case "vouch":
+          return "Authorize Vouch";
         default:
           return "Verify PIN";
       }
@@ -40,6 +42,8 @@ export const TransactionPinModal = memo(
           return "Enter your PIN to access private key for transfer signing";
         case "v8_rejoin":
           return "Enter your PIN to access private key for V8 migration transaction";
+        case "vouch":
+          return "Enter your PIN to access private key for vouching transaction";
         default:
           return "Enter your PIN to access private key for transaction signing";
       }

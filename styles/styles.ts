@@ -783,18 +783,49 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  // Icon + Text combination styles (reusable)
+  iconTextHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    minHeight: 24, // Ensure consistent height for proper alignment
+  },
+  iconTextLabel: {
+    marginLeft: 8,
+    marginBottom: 0, // Override label's marginBottom
+    lineHeight: 20, // Match icon size for better alignment
+  },
+  // Color variants for iconTextLabel
+  iconTextLabelPrimary: {
+    color: colors.primary,
+  },
+  iconTextLabelDanger: {
+    color: colors.danger,
+  },
+  iconTextLabelSuccess: {
+    color: colors.success,
+  },
+
+  // Warning styles with icon
+  warningContainer: {
+    marginBottom: 16,
+  },
+  warningIcon: {
+    marginLeft: 8,
+    marginBottom: 0, // Override label's marginBottom
+    color: colors.danger,
+    lineHeight: 20, // Match icon size for better alignment
+  },
+
   // View-only account warning styles
   viewOnlyContainer: {
     marginTop: 16,
   },
-  viewOnlyHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
   viewOnlyIcon: {
     marginLeft: 8,
+    marginBottom: 0, // Override label's marginBottom
     color: colors.danger,
+    lineHeight: 20, // Match icon size for better alignment
   },
 
   // Transaction history styles
