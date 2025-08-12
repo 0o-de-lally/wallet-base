@@ -33,6 +33,7 @@ export const TransactionHub = memo(
   ({ accountId, profileName }: TransactionHubProps) => {
     const [account, setAccount] = useState<AccountState | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [vouchRefreshKey, setVouchRefreshKey] = useState(0);
 
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
@@ -69,6 +70,8 @@ export const TransactionHub = memo(
         onVouchComplete: useCallback(() => {
           setPendingVouchData(null);
           setCurrentOperation(null);
+          // Trigger vouch data refresh
+          setVouchRefreshKey((prev) => prev + 1);
         }, []),
       });
 
@@ -208,6 +211,7 @@ export const TransactionHub = memo(
               showAlert={showAlert}
               isLoading={isVouchLoading}
               onClearForm={handleClearAll}
+              refreshKey={vouchRefreshKey}
             />
           </>
         )}

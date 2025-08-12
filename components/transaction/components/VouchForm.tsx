@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo, useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/styles";
 import { SectionContainer } from "../../common/SectionContainer";
@@ -26,6 +26,7 @@ interface VouchFormProps {
   isLoading: boolean;
   onClearForm?: () => void;
   isV8Authorized?: boolean;
+  refreshKey?: number; // Add optional refresh key to force data reload
 }
 
 export const VouchForm = memo(
@@ -35,11 +36,14 @@ export const VouchForm = memo(
     isLoading,
     onClearForm,
     isV8Authorized = true,
+    refreshKey,
   }: VouchFormProps) => {
     const [recipientAddress, setRecipientAddress] = useState("");
     const [vouchError, setVouchError] = useState<string | null>(null);
     const [vouchInfo, setVouchInfo] = useState<VouchInfo | null>(null);
     const [loadingVouchInfo, setLoadingVouchInfo] = useState(false);
+    const [showReceivedVouches, setShowReceivedVouches] = useState(false);
+    const [showGivenVouches, setShowGivenVouches] = useState(false);
 
     // Function to load vouch information
     const loadVouchInfo = useCallback(async () => {
@@ -52,6 +56,11 @@ export const VouchForm = memo(
           client,
           account.account_address,
         );
+        console.log("VouchForm received data:", {
+          received_count: data.received_vouches.length,
+          given_count: data.given_vouches.length,
+          data,
+        });
         setVouchInfo(data);
       } catch (error) {
         console.warn("Failed to load vouch info:", error);
@@ -65,10 +74,23 @@ export const VouchForm = memo(
       loadVouchInfo();
     }, [loadVouchInfo]);
 
-    // Refresh vouch info when not loading (after successful transaction)
+    // Refresh when refreshKey changes (after successful transaction)
     useEffect(() => {
-      if (!isLoading && vouchInfo) {
+      if (refreshKey !== undefined) {
         loadVouchInfo();
+      }
+    }, [refreshKey, loadVouchInfo]);
+
+    // Refresh vouch info when not loading (after successful transaction)
+    // This will trigger whenever isLoading changes from true to false
+    useEffect(() => {
+      if (!isLoading) {
+        // Small delay to ensure transaction has been processed on chain
+        const refreshTimer = setTimeout(() => {
+          loadVouchInfo();
+        }, 1000);
+
+        return () => clearTimeout(refreshTimer);
       }
     }, [isLoading, loadVouchInfo]);
 
@@ -129,7 +151,7 @@ export const VouchForm = memo(
     }, [onClearForm]);
 
     return (
-      <SectionContainer title="Vouch for Account">
+      <SectionContainer title="Vouch">
         {!isV8Authorized && (
           <View style={[styles.inputContainer, styles.warningContainer]}>
             <View style={styles.iconTextHeader}>
@@ -164,29 +186,60 @@ export const VouchForm = memo(
             <Text style={styles.resultValue}>Loading vouch information...</Text>
           ) : vouchInfo ? (
             <View>
-              <Text style={styles.resultValue}>
-                Received Vouches: {vouchInfo.received_vouches.length}
-              </Text>
-              {vouchInfo.received_vouches.length > 0 && (
-                <View style={{ marginTop: 4 }}>
-                  {vouchInfo.received_vouches.slice(0, 3).map((addr, index) => (
+              <TouchableOpacity 
+                onPress={() => setShowReceivedVouches(!showReceivedVouches)}
+                style={{ marginBottom: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`${showReceivedVouches ? 'Hide' : 'Show'} received vouches list`}
+              >
+                <Text style={styles.resultValue}>
+                  Received Vouches: {vouchInfo.received_vouches.length}
+                </Text>
+              </TouchableOpacity>
+              {showReceivedVouches && vouchInfo.received_vouches.length > 0 && (
+                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                  {vouchInfo.received_vouches.slice(0, 10).map((addr, index) => (
                     <Text
                       key={index}
-                      style={[styles.description, { fontSize: 12 }]}
+                      style={[styles.description, { fontSize: 12, marginLeft: 16 }]}
                     >
                       • {shortenAddress(addr)}
                     </Text>
                   ))}
-                  {vouchInfo.received_vouches.length > 3 && (
-                    <Text style={[styles.description, { fontSize: 12 }]}>
-                      ... and {vouchInfo.received_vouches.length - 3} more
+                  {vouchInfo.received_vouches.length > 10 && (
+                    <Text style={[styles.description, { fontSize: 12, marginLeft: 16 }]}>
+                      ... and {vouchInfo.received_vouches.length - 10} more
                     </Text>
                   )}
                 </View>
               )}
-              <Text style={styles.resultValue}>
-                Given Vouches: {vouchInfo.given_vouches.length}
-              </Text>
+              <TouchableOpacity 
+                onPress={() => setShowGivenVouches(!showGivenVouches)}
+                style={{ marginBottom: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`${showGivenVouches ? 'Hide' : 'Show'} given vouches list`}
+              >
+                <Text style={styles.resultValue}>
+                  Given Vouches: {vouchInfo.given_vouches.length}
+                </Text>
+              </TouchableOpacity>
+              {showGivenVouches && vouchInfo.given_vouches.length > 0 && (
+                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                  {vouchInfo.given_vouches.slice(0, 10).map((addr, index) => (
+                    <Text
+                      key={index}
+                      style={[styles.description, { fontSize: 12, marginLeft: 16 }]}
+                    >
+                      • {shortenAddress(addr)}
+                    </Text>
+                  ))}
+                  {vouchInfo.given_vouches.length > 10 && (
+                    <Text style={[styles.description, { fontSize: 12, marginLeft: 16 }]}>
+                      ... and {vouchInfo.given_vouches.length - 10} more
+                    </Text>
+                  )}
+                </View>
+              )}
               {vouchInfo.error && (
                 <Text style={[styles.errorText, { fontSize: 12 }]}>
                   {vouchInfo.error}

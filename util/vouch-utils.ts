@@ -40,9 +40,17 @@ export async function fetchAccountVouchData(
     // Parse received vouches
     let received_vouches: string[] = [];
     if (Array.isArray(receivedResult)) {
-      received_vouches = receivedResult.filter(
-        (addr) => typeof addr === "string",
-      );
+      // Handle nested array format: [["addr1", "addr2", ...]]
+      if (receivedResult.length > 0 && Array.isArray(receivedResult[0])) {
+        received_vouches = receivedResult[0].filter(
+          (addr) => typeof addr === "string",
+        );
+      } else {
+        // Handle flat array format: ["addr1", "addr2", ...]
+        received_vouches = receivedResult.filter(
+          (addr) => typeof addr === "string",
+        );
+      }
     } else if (typeof receivedResult === "string") {
       received_vouches = [receivedResult];
     }
@@ -50,10 +58,25 @@ export async function fetchAccountVouchData(
     // Parse given vouches
     let given_vouches: string[] = [];
     if (Array.isArray(givenResult)) {
-      given_vouches = givenResult.filter((addr) => typeof addr === "string");
+      // Handle nested array format: [["addr1", "addr2", ...]]
+      if (givenResult.length > 0 && Array.isArray(givenResult[0])) {
+        given_vouches = givenResult[0].filter(
+          (addr) => typeof addr === "string",
+        );
+      } else {
+        // Handle flat array format: ["addr1", "addr2", ...]
+        given_vouches = givenResult.filter((addr) => typeof addr === "string");
+      }
     } else if (typeof givenResult === "string") {
       given_vouches = [givenResult];
     }
+
+    console.log("Parsed vouch data:", {
+      received_count: received_vouches.length,
+      given_count: given_vouches.length,
+      received_vouches: received_vouches.slice(0, 3), // Log first 3 for debugging
+      given_vouches: given_vouches.slice(0, 3), // Log first 3 for debugging
+    });
 
     return {
       received_vouches,
