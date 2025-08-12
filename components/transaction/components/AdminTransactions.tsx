@@ -13,6 +13,7 @@ interface AdminTransactionsProps {
   onRequestMnemonic: (operation: "v8_rejoin") => void;
   showAlert: (title: string, message: string) => void;
   isLoading: boolean;
+  isV8Authorized?: boolean;
 }
 
 export const AdminTransactions = memo(
@@ -22,6 +23,7 @@ export const AdminTransactions = memo(
     onRequestMnemonic,
     showAlert,
     isLoading,
+    isV8Authorized = true,
   }: AdminTransactionsProps) => {
     const [adminTransactionError, setAdminTransactionError] = useState<
       string | null
@@ -59,10 +61,28 @@ export const AdminTransactions = memo(
 
     return (
       <SectionContainer title="Admin Transactions">
-        <Text style={styles.label}>V8 Migration</Text>
-        <Text style={styles.description}>
-          This will update your account to the new V8 state.
-        </Text>
+        {!isV8Authorized && (
+          <View style={[styles.inputContainer, { marginBottom: 16 }]}>
+            <View style={styles.viewOnlyHeader}>
+              <Ionicons name="warning-outline" size={20} color="#ff6b00" />
+              <Text style={[styles.label, { color: "#ff6b00", marginLeft: 8 }]}>
+                V8 Migration Required
+              </Text>
+            </View>
+            <Text style={styles.description}>
+              Your account needs to be migrated to V8. Other admin transactions are not available until migration is complete.
+            </Text>
+            <ActionButton
+              text="Migrate"
+              onPress={handleV8Rejoin}
+              isLoading={isLoading}
+              disabled={isLoading || !account.is_key_stored}
+              accessibilityLabel="Execute V8 network migration transaction"
+            />
+          </View>
+
+
+        )}
 
         {adminTransactionError && (
           <View>
@@ -70,15 +90,6 @@ export const AdminTransactions = memo(
           </View>
         )}
 
-        <View style={styles.buttonContainer}>
-          <ActionButton
-            text="Migrate"
-            onPress={handleV8Rejoin}
-            isLoading={isLoading}
-            disabled={isLoading || !account.is_key_stored}
-            accessibilityLabel="Execute V8 network migration transaction"
-          />
-        </View>
 
         {!account.is_key_stored && (
           <View style={[styles.inputContainer, styles.viewOnlyContainer]}>

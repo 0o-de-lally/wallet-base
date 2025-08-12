@@ -163,18 +163,17 @@ export const TransactionHub = memo(
           showAlert={showAlert}
           isLoading={isTransferLoading}
           onClearForm={handleClearAll}
+          isV8Authorized={account.is_v8_authorized !== false}
         />
 
-        {/* Only show AdminTransactions if account has NOT migrated to V8 */}
-        {account && account.v8_migrated !== true && (
-          <AdminTransactions
-            account={account}
-            accountId={accountId}
-            onRequestMnemonic={handleRequestMnemonic}
-            showAlert={showAlert}
-            isLoading={isAdminLoading}
-          />
-        )}
+        <AdminTransactions
+          account={account}
+          accountId={accountId}
+          onRequestMnemonic={handleRequestMnemonic}
+          showAlert={showAlert}
+          isLoading={isAdminLoading}
+          isV8Authorized={account.is_v8_authorized !== false}
+        />
 
         <TransactionPinModal
           visible={pinModalVisible}
