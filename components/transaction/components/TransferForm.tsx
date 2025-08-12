@@ -21,6 +21,7 @@ interface TransferFormProps {
   showAlert: (title: string, message: string) => void;
   isLoading: boolean;
   onClearForm?: () => void;
+  isV8Authorized?: boolean;
 }
 
 export const TransferForm = memo(
@@ -31,6 +32,7 @@ export const TransferForm = memo(
     showAlert,
     isLoading,
     onClearForm,
+    isV8Authorized = true,
   }: TransferFormProps) => {
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState("");
@@ -127,6 +129,27 @@ export const TransferForm = memo(
 
     return (
       <SectionContainer title="Send Transfer">
+        {!isV8Authorized && (
+          <View style={[styles.inputContainer, styles.warningContainer]}>
+            <View style={styles.iconTextHeader}>
+              <Ionicons name="warning-outline" size={20} color="#ff6b00" />
+              <Text
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
+              >
+                V8 Authorization Required
+              </Text>
+            </View>
+            <Text style={styles.description}>
+              Transfer functionality is disabled until V8 authorization is
+              complete. Please complete the V8 authorization first.
+            </Text>
+          </View>
+        )}
+
         <Text style={styles.description}>
           Send Libra tokens to another account. Make sure you have the correct
           recipient address.
@@ -144,7 +167,7 @@ export const TransferForm = memo(
           value={recipientAddress}
           onChangeText={setRecipientAddress}
           placeholder="0x1234..."
-          disabled={isLoading}
+          disabled={isLoading || !isV8Authorized}
         />
 
         <FormInput
@@ -153,7 +176,7 @@ export const TransferForm = memo(
           onChangeText={setAmount}
           placeholder="0.00"
           keyboardType="numeric"
-          disabled={isLoading}
+          disabled={isLoading || !isV8Authorized}
         />
 
         {transactionError && (
@@ -167,7 +190,7 @@ export const TransferForm = memo(
             text="Send Transfer"
             onPress={handleTransfer}
             isLoading={isLoading}
-            disabled={isLoading || !account.is_key_stored}
+            disabled={isLoading || !account.is_key_stored || !isV8Authorized}
             accessibilityLabel="Send transfer to recipient"
           />
 
@@ -175,23 +198,21 @@ export const TransferForm = memo(
             text="Clear Form"
             onPress={clearForm}
             variant="secondary"
-            disabled={isLoading}
+            disabled={isLoading || !isV8Authorized}
             accessibilityLabel="Clear transfer form"
           />
         </View>
 
         {!account.is_key_stored && (
-          <View style={[styles.inputContainer, { marginTop: 16 }]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+          <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
+            <View style={styles.iconTextHeader}>
               <Ionicons name="eye-outline" size={20} color={colors.danger} />
               <Text
-                style={[styles.label, { marginLeft: 8, color: colors.danger }]}
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
               >
                 View-Only Account
               </Text>
