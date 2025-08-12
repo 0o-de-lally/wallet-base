@@ -180,21 +180,19 @@ const FullAccountView = ({
     <View style={styles.accountActionsRow}>
       <ViewOnlyIcon account={account} iconSize={20} />
 
-      {account.exists_on_chain !== false &&
-        account.v8_migrated !== false &&
-        account.is_v8_authorized !== false && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={navigateToTransactionHub}
-            accessibilityLabel={`Transaction hub for ${account.nickname}`}
-          >
-            <Ionicons
-              name="send-outline"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
+      {account.exists_on_chain !== false && (
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={navigateToTransactionHub}
+          accessibilityLabel={`Transaction hub for ${account.nickname}`}
+        >
+          <Ionicons
+            name="send-outline"
+            size={20}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.iconButton}

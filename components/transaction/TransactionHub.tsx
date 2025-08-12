@@ -8,7 +8,7 @@ import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
 import { shortenAddress } from "../../util/format-utils";
 import { TransferForm } from "./components/TransferForm";
-import { AdminTransactions } from "./components/AdminTransactions";
+import { V8Migration } from "./components/V8Migration";
 import { TransactionPinModal } from "./components/TransactionPinModal";
 import { useTransactionExecutor } from "./components/TransactionExecutor";
 
@@ -29,7 +29,7 @@ export const TransactionHub = memo(
 
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
-    const [isAdminLoading, setIsAdminLoading] = useState(false);
+    const [isMigrationLoading, setIsMigrationLoading] = useState(false);
 
     // Operation state
     const [currentOperation, setCurrentOperation] = useState<
@@ -51,6 +51,8 @@ export const TransactionHub = memo(
       }, []),
       onAdminTransactionComplete: useCallback(() => {
         setCurrentOperation(null);
+        // Reload account data after successful migration
+        // to update the V8 authorization status
       }, []),
     });
 
@@ -65,7 +67,7 @@ export const TransactionHub = memo(
             () => {},
           );
         } else if (currentOperation === "v8_rejoin") {
-          executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
+          executeV8Rejoin(mnemonic, setIsMigrationLoading, () => {});
         }
       },
       [currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin],
@@ -156,23 +158,26 @@ export const TransactionHub = memo(
           </Text>
         </View>
 
-        <TransferForm
-          account={account}
-          accountId={accountId}
-          onRequestMnemonic={handleRequestMnemonic}
-          showAlert={showAlert}
-          isLoading={isTransferLoading}
-          onClearForm={handleClearAll}
-        />
-
-        {/* Only show AdminTransactions if account has NOT migrated to V8 */}
-        {account && account.v8_migrated !== true && (
-          <AdminTransactions
+        {/* Only show TransferForm for V8-authorized accounts */}
+        {account.is_v8_authorized !== false && (
+          <TransferForm
             account={account}
             accountId={accountId}
             onRequestMnemonic={handleRequestMnemonic}
             showAlert={showAlert}
-            isLoading={isAdminLoading}
+            isLoading={isTransferLoading}
+            onClearForm={handleClearAll}
+          />
+        )}
+
+        {/* Only show V8Migration component for non-V8 authorized accounts */}
+        {account.is_v8_authorized === false && (
+          <V8Migration
+            account={account}
+            accountId={accountId}
+            onRequestMnemonic={handleRequestMnemonic}
+            showAlert={showAlert}
+            isLoading={isMigrationLoading}
           />
         )}
 
