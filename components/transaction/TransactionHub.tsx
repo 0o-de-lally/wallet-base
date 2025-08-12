@@ -167,7 +167,6 @@ export const TransactionHub = memo(
             showAlert={showAlert}
             isLoading={isTransferLoading}
             onClearForm={handleClearAll}
-            isV8Authorized={true}
           />
         )}
 
