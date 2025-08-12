@@ -1,7 +1,7 @@
 {
   "name": "wallet-test",
   "main": "expo-router/entry",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "start": "bun install && expo start --clear",
     "android": "expo run:android",
