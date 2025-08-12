@@ -6,7 +6,7 @@ import { SectionContainer } from "../../common/SectionContainer";
 import { FormInput } from "../../common/FormInput";
 import { ActionButton } from "../../common/ActionButton";
 import { addressFromString, type AccountAddress } from "open-libra-sdk";
-import { formatLibraAmount, shortenAddress } from "../../../util/format-utils";
+import { shortenAddress } from "../../../util/format-utils";
 import { getLibraClient } from "../../../util/libra-client";
 import {
   fetchAccountVouchData,
@@ -41,28 +41,36 @@ export const VouchForm = memo(
     const [vouchInfo, setVouchInfo] = useState<VouchInfo | null>(null);
     const [loadingVouchInfo, setLoadingVouchInfo] = useState(false);
 
-    // Load vouch information when component mounts
-    useEffect(() => {
-      const loadVouchInfo = async () => {
-        if (!account.account_address) return;
+    // Function to load vouch information
+    const loadVouchInfo = useCallback(async () => {
+      if (!account.account_address) return;
 
-        setLoadingVouchInfo(true);
-        try {
-          const client = getLibraClient();
-          const data = await fetchAccountVouchData(
-            client,
-            account.account_address,
-          );
-          setVouchInfo(data);
-        } catch (error) {
-          console.warn("Failed to load vouch info:", error);
-        } finally {
-          setLoadingVouchInfo(false);
-        }
-      };
-
-      loadVouchInfo();
+      setLoadingVouchInfo(true);
+      try {
+        const client = getLibraClient();
+        const data = await fetchAccountVouchData(
+          client,
+          account.account_address,
+        );
+        setVouchInfo(data);
+      } catch (error) {
+        console.warn("Failed to load vouch info:", error);
+      } finally {
+        setLoadingVouchInfo(false);
+      }
     }, [account.account_address]);
+
+    // Load vouch information when component mounts and after transactions
+    useEffect(() => {
+      loadVouchInfo();
+    }, [loadVouchInfo]);
+
+    // Refresh vouch info when not loading (after successful transaction)
+    useEffect(() => {
+      if (!isLoading && vouchInfo) {
+        loadVouchInfo();
+      }
+    }, [isLoading, loadVouchInfo]);
 
     // Handle form validation
     const validateVouchForm = useCallback(() => {
@@ -192,13 +200,6 @@ export const VouchForm = memo(
           )}
         </View>
 
-        <View style={[styles.inputContainer, { marginBottom: 16 }]}>
-          <Text style={styles.label}>Available Balance</Text>
-          <Text style={styles.resultValue}>
-            {formatLibraAmount(account.balance_unlocked)} LBR
-          </Text>
-        </View>
-
         <FormInput
           label="Recipient Address"
           value={recipientAddress}
@@ -225,7 +226,6 @@ export const VouchForm = memo(
             text="Clear"
             onPress={clearForm}
             disabled={isLoading}
-            style={{ marginTop: 10 }}
             accessibilityLabel="Clear the vouch form"
           />
         </View>
