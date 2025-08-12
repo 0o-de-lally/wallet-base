@@ -129,7 +129,7 @@ export const VouchForm = memo(
 
       const inputAddress = recipientAddress.trim().toLowerCase();
       const isAlreadyVouched = vouchInfo.given_vouches.some(
-        (addr) => addr.toLowerCase() === inputAddress
+        (addr) => addr.toLowerCase() === inputAddress,
       );
 
       if (isAlreadyVouched) {
@@ -208,7 +208,7 @@ export const VouchForm = memo(
                 onPress={() => setShowReceivedVouches(!showReceivedVouches)}
                 style={{ marginBottom: 8 }}
                 accessibilityRole="button"
-                accessibilityLabel={`${showReceivedVouches ? 'Hide' : 'Show'} received vouches list`}
+                accessibilityLabel={`${showReceivedVouches ? "Hide" : "Show"} received vouches list`}
               >
                 <Text style={styles.resultValue}>
                   Received Vouches: {vouchInfo.received_vouches.length}
@@ -216,16 +216,26 @@ export const VouchForm = memo(
               </TouchableOpacity>
               {showReceivedVouches && vouchInfo.received_vouches.length > 0 && (
                 <View style={{ marginTop: 4, marginBottom: 8 }}>
-                  {vouchInfo.received_vouches.slice(0, 10).map((addr, index) => (
-                    <Text
-                      key={index}
-                      style={[styles.description, { fontSize: 12, marginLeft: 16 }]}
-                    >
-                      • {shortenAddress(addr)}
-                    </Text>
-                  ))}
+                  {vouchInfo.received_vouches
+                    .slice(0, 10)
+                    .map((addr, index) => (
+                      <Text
+                        key={index}
+                        style={[
+                          styles.description,
+                          { fontSize: 12, marginLeft: 16 },
+                        ]}
+                      >
+                        • {shortenAddress(addr)}
+                      </Text>
+                    ))}
                   {vouchInfo.received_vouches.length > 10 && (
-                    <Text style={[styles.description, { fontSize: 12, marginLeft: 16 }]}>
+                    <Text
+                      style={[
+                        styles.description,
+                        { fontSize: 12, marginLeft: 16 },
+                      ]}
+                    >
                       ... and {vouchInfo.received_vouches.length - 10} more
                     </Text>
                   )}
@@ -235,7 +245,7 @@ export const VouchForm = memo(
                 onPress={() => setShowGivenVouches(!showGivenVouches)}
                 style={{ marginBottom: 8 }}
                 accessibilityRole="button"
-                accessibilityLabel={`${showGivenVouches ? 'Hide' : 'Show'} given vouches list`}
+                accessibilityLabel={`${showGivenVouches ? "Hide" : "Show"} given vouches list`}
               >
                 <Text style={styles.resultValue}>
                   Given Vouches: {vouchInfo.given_vouches.length}
@@ -246,13 +256,21 @@ export const VouchForm = memo(
                   {vouchInfo.given_vouches.slice(0, 10).map((addr, index) => (
                     <Text
                       key={index}
-                      style={[styles.description, { fontSize: 12, marginLeft: 16 }]}
+                      style={[
+                        styles.description,
+                        { fontSize: 12, marginLeft: 16 },
+                      ]}
                     >
                       • {shortenAddress(addr)}
                     </Text>
                   ))}
                   {vouchInfo.given_vouches.length > 10 && (
-                    <Text style={[styles.description, { fontSize: 12, marginLeft: 16 }]}>
+                    <Text
+                      style={[
+                        styles.description,
+                        { fontSize: 12, marginLeft: 16 },
+                      ]}
+                    >
                       ... and {vouchInfo.given_vouches.length - 10} more
                     </Text>
                   )}
@@ -281,8 +299,20 @@ export const VouchForm = memo(
 
         {/* Show duplicate vouch warning */}
         {getDuplicateVouchWarning() && (
-          <View style={[styles.inputContainer, { backgroundColor: '#fff3cd', borderColor: '#ffeaa7', borderWidth: 1, borderRadius: 8 }]}>
-            <Text style={[styles.description, { color: '#856404', fontSize: 13 }]}>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: "#fff3cd",
+                borderColor: "#ffeaa7",
+                borderWidth: 1,
+                borderRadius: 8,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.description, { color: "#856404", fontSize: 13 }]}
+            >
               {getDuplicateVouchWarning()}
             </Text>
           </View>
