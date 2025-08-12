@@ -70,7 +70,8 @@ export const AdminTransactions = memo(
               </Text>
             </View>
             <Text style={styles.description}>
-              Your account needs to be migrated to V8. Other admin transactions are not available until migration is complete.
+              Your account needs to be migrated to V8. Other admin transactions
+              are not available until migration is complete.
             </Text>
             <ActionButton
               text="Migrate"
@@ -80,8 +81,6 @@ export const AdminTransactions = memo(
               accessibilityLabel="Execute V8 network migration transaction"
             />
           </View>
-
-
         )}
 
         {adminTransactionError && (
@@ -89,7 +88,6 @@ export const AdminTransactions = memo(
             <Text style={styles.errorText}>{adminTransactionError}</Text>
           </View>
         )}
-
 
         {!account.is_key_stored && (
           <View style={[styles.inputContainer, styles.viewOnlyContainer]}>

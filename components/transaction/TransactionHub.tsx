@@ -8,6 +8,7 @@ import { appConfig, type AccountState } from "../../util/app-config-store";
 import { type AccountAddress } from "open-libra-sdk";
 import { shortenAddress } from "../../util/format-utils";
 import { TransferForm } from "./components/TransferForm";
+import { VouchForm } from "./components/VouchForm";
 import { AdminTransactions } from "./components/AdminTransactions";
 import { TransactionPinModal } from "./components/TransactionPinModal";
 import { useTransactionExecutor } from "./components/TransactionExecutor";
@@ -22,6 +23,10 @@ interface TransferData {
   amount: number;
 }
 
+interface VouchData {
+  recipient: AccountAddress;
+}
+
 export const TransactionHub = memo(
   ({ accountId, profileName }: TransactionHubProps) => {
     const [account, setAccount] = useState<AccountState | null>(null);
@@ -30,29 +35,38 @@ export const TransactionHub = memo(
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(false);
+    const [isVouchLoading, setIsVouchLoading] = useState(false);
 
     // Operation state
     const [currentOperation, setCurrentOperation] = useState<
-      "transfer" | "v8_rejoin" | null
+      "transfer" | "v8_rejoin" | "vouch" | null
     >(null);
     const [pendingTransferData, setPendingTransferData] =
       useState<TransferData | null>(null);
+    const [pendingVouchData, setPendingVouchData] = useState<VouchData | null>(
+      null,
+    );
 
     const { showAlert } = useModal();
 
     // Transaction executor
-    const { executeTransfer, executeV8Rejoin } = useTransactionExecutor({
-      account: account!,
-      accountId,
-      showAlert,
-      onTransferComplete: useCallback(() => {
-        setPendingTransferData(null);
-        setCurrentOperation(null);
-      }, []),
-      onAdminTransactionComplete: useCallback(() => {
-        setCurrentOperation(null);
-      }, []),
-    });
+    const { executeTransfer, executeV8Rejoin, executeVouch } =
+      useTransactionExecutor({
+        account: account!,
+        accountId,
+        showAlert,
+        onTransferComplete: useCallback(() => {
+          setPendingTransferData(null);
+          setCurrentOperation(null);
+        }, []),
+        onAdminTransactionComplete: useCallback(() => {
+          setCurrentOperation(null);
+        }, []),
+        onVouchComplete: useCallback(() => {
+          setPendingVouchData(null);
+          setCurrentOperation(null);
+        }, []),
+      });
 
     // Handle mnemonic retrieval for transactions
     const handleMnemonicRetrieved = useCallback(
@@ -66,9 +80,18 @@ export const TransactionHub = memo(
           );
         } else if (currentOperation === "v8_rejoin") {
           executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
+        } else if (currentOperation === "vouch" && pendingVouchData) {
+          executeVouch(mnemonic, pendingVouchData, setIsVouchLoading, () => {});
         }
       },
-      [currentOperation, pendingTransferData, executeTransfer, executeV8Rejoin],
+      [
+        currentOperation,
+        pendingTransferData,
+        pendingVouchData,
+        executeTransfer,
+        executeV8Rejoin,
+        executeVouch,
+      ],
     );
 
     const {
@@ -116,10 +139,15 @@ export const TransactionHub = memo(
 
     // Handle mnemonic requests from components
     const handleRequestMnemonic = useCallback(
-      (operation: "transfer" | "v8_rejoin", data?: TransferData) => {
+      (
+        operation: "transfer" | "v8_rejoin" | "vouch",
+        data?: TransferData | VouchData,
+      ) => {
         setCurrentOperation(operation);
-        if (operation === "transfer" && data) {
-          setPendingTransferData(data);
+        if (operation === "transfer" && data && "to" in data) {
+          setPendingTransferData(data as TransferData);
+        } else if (operation === "vouch" && data && "recipient" in data) {
+          setPendingVouchData(data as VouchData);
         }
         requestMnemonicWithPin();
       },
@@ -129,6 +157,7 @@ export const TransactionHub = memo(
     // Clear all operations
     const handleClearAll = useCallback(() => {
       setPendingTransferData(null);
+      setPendingVouchData(null);
       setCurrentOperation(null);
     }, []);
 
@@ -162,6 +191,16 @@ export const TransactionHub = memo(
           onRequestMnemonic={handleRequestMnemonic}
           showAlert={showAlert}
           isLoading={isTransferLoading}
+          onClearForm={handleClearAll}
+          isV8Authorized={account.is_v8_authorized !== false}
+        />
+
+        <VouchForm
+          account={account}
+          accountId={accountId}
+          onRequestMnemonic={handleRequestMnemonic}
+          showAlert={showAlert}
+          isLoading={isVouchLoading}
           onClearForm={handleClearAll}
           isV8Authorized={account.is_v8_authorized !== false}
         />

@@ -11,12 +11,17 @@ interface TransferData {
   amount: number;
 }
 
+interface VouchData {
+  recipient: AccountAddress;
+}
+
 interface TransactionExecutorProps {
   account: AccountState;
   accountId: string;
   showAlert: (title: string, message: string) => void;
   onTransferComplete?: () => void;
   onAdminTransactionComplete?: () => void;
+  onVouchComplete?: () => void;
 }
 
 export const useTransactionExecutor = ({
@@ -25,6 +30,7 @@ export const useTransactionExecutor = ({
   showAlert,
   onTransferComplete,
   onAdminTransactionComplete,
+  onVouchComplete,
 }: TransactionExecutorProps) => {
   // Execute transfer transaction
   const executeTransfer = useCallback(
@@ -154,8 +160,74 @@ export const useTransactionExecutor = ({
     [account, accountId, showAlert, onAdminTransactionComplete],
   );
 
+  // Execute vouch transaction
+  const executeVouch = useCallback(
+    async (
+      mnemonic: string,
+      vouchData: VouchData,
+      setIsLoading: (loading: boolean) => void,
+      setError: (error: string | null) => void,
+    ) => {
+      if (!vouchData || !account) {
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Create wallet from mnemonic
+        const clientUrl = getLibraClientUrl();
+        const wallet = LibraWallet.fromMnemonic(
+          mnemonic.trim(),
+          Network.MAINNET,
+          clientUrl,
+        );
+
+        // Sync wallet state with blockchain
+        await wallet.syncOnchain();
+
+        // Build vouch transaction using the entry function
+        // 0x1::vouch::vouch_for takes one argument: the recipient address
+        const tx = await wallet.buildTransaction(
+          "0x1::vouch::vouch_for",
+          [vouchData.recipient.toStringLong()], // Recipient address as argument
+        );
+
+        // Sign and submit transaction
+        const result = await wallet.signSubmitWait(tx);
+
+        if (result.success) {
+          showAlert(
+            "Vouch Successful",
+            `Successfully vouched for ${shortenAddress(vouchData.recipient.toStringLong())}\n\nTransaction Hash: ${result.hash?.substring(0, 20)}...`,
+          );
+
+          onVouchComplete?.();
+        } else {
+          const errorMsg = result.vm_status || "Transaction failed";
+          setError(`Vouch failed: ${errorMsg}`);
+          showAlert("Vouch Failed", `Transaction failed: ${errorMsg}`);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        setError(`Vouch failed: ${errorMessage}`);
+        showAlert("Vouch Failed", `Vouch failed: ${errorMessage}`);
+        reportErrorAuto("TransactionExecutor.executeVouch", error, {
+          accountId,
+          recipient: vouchData.recipient.toStringLong(),
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [account, accountId, showAlert, onVouchComplete],
+  );
+
   return {
     executeTransfer,
     executeV8Rejoin,
+    executeVouch,
   };
 };
