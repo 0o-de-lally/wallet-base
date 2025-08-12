@@ -9,7 +9,7 @@ import { type AccountAddress } from "open-libra-sdk";
 import { shortenAddress } from "../../util/format-utils";
 import { TransferForm } from "./components/TransferForm";
 import { VouchForm } from "./components/VouchForm";
-import { AdminTransactions } from "./components/AdminTransactions";
+import { V8Migration } from "./components/V8Migration";
 import { TransactionPinModal } from "./components/TransactionPinModal";
 import { useTransactionExecutor } from "./components/TransactionExecutor";
 
@@ -34,7 +34,7 @@ export const TransactionHub = memo(
 
     // Transaction state
     const [isTransferLoading, setIsTransferLoading] = useState(false);
-    const [isAdminLoading, setIsAdminLoading] = useState(false);
+    const [isMigrationLoading, setIsMigrationLoading] = useState(false);
     const [isVouchLoading, setIsVouchLoading] = useState(false);
 
     // Operation state
@@ -61,6 +61,8 @@ export const TransactionHub = memo(
         }, []),
         onAdminTransactionComplete: useCallback(() => {
           setCurrentOperation(null);
+          // Reload account data after successful migration
+          // to update the V8 authorization status
         }, []),
         onVouchComplete: useCallback(() => {
           setPendingVouchData(null);
@@ -79,7 +81,7 @@ export const TransactionHub = memo(
             () => {},
           );
         } else if (currentOperation === "v8_rejoin") {
-          executeV8Rejoin(mnemonic, setIsAdminLoading, () => {});
+          executeV8Rejoin(mnemonic, setIsMigrationLoading, () => {});
         } else if (currentOperation === "vouch" && pendingVouchData) {
           executeVouch(mnemonic, pendingVouchData, setIsVouchLoading, () => {});
         }
@@ -185,34 +187,39 @@ export const TransactionHub = memo(
           </Text>
         </View>
 
-        <TransferForm
-          account={account}
-          accountId={accountId}
-          onRequestMnemonic={handleRequestMnemonic}
-          showAlert={showAlert}
-          isLoading={isTransferLoading}
-          onClearForm={handleClearAll}
-          isV8Authorized={account.is_v8_authorized !== false}
-        />
+        {/* Show TransferForm and VouchForm for V8-authorized accounts */}
+        {account.is_v8_authorized !== false && (
+          <>
+            <TransferForm
+              account={account}
+              accountId={accountId}
+              onRequestMnemonic={handleRequestMnemonic}
+              showAlert={showAlert}
+              isLoading={isTransferLoading}
+              onClearForm={handleClearAll}
+            />
 
-        <VouchForm
-          account={account}
-          accountId={accountId}
-          onRequestMnemonic={handleRequestMnemonic}
-          showAlert={showAlert}
-          isLoading={isVouchLoading}
-          onClearForm={handleClearAll}
-          isV8Authorized={account.is_v8_authorized !== false}
-        />
+            <VouchForm
+              account={account}
+              accountId={accountId}
+              onRequestMnemonic={handleRequestMnemonic}
+              showAlert={showAlert}
+              isLoading={isVouchLoading}
+              onClearForm={handleClearAll}
+            />
+          </>
+        )}
 
-        <AdminTransactions
-          account={account}
-          accountId={accountId}
-          onRequestMnemonic={handleRequestMnemonic}
-          showAlert={showAlert}
-          isLoading={isAdminLoading}
-          isV8Authorized={account.is_v8_authorized !== false}
-        />
+        {/* Only show V8Migration component for non-V8 authorized accounts */}
+        {account.is_v8_authorized === false && (
+          <V8Migration
+            account={account}
+            accountId={accountId}
+            onRequestMnemonic={handleRequestMnemonic}
+            showAlert={showAlert}
+            isLoading={isMigrationLoading}
+          />
+        )}
 
         <TransactionPinModal
           visible={pinModalVisible}

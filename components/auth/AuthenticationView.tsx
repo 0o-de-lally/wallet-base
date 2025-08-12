@@ -27,11 +27,7 @@ export function AuthenticationView({
     return (
       <View style={styles.container}>
         <View style={styles.loadingContent}>
-          <Text style={styles.loadingText}>Verifying device security...</Text>
-          <Text style={styles.subText}>
-            This may take a moment while we check your device&apos;s security
-            settings.
-          </Text>
+          <Text style={styles.loadingText}>WALLET LOCKED</Text>
         </View>
       </View>
     );
