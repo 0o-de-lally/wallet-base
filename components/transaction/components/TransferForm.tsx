@@ -130,16 +130,16 @@ export const TransferForm = memo(
     return (
       <SectionContainer title="Send Transfer">
         {!isV8Authorized && (
-          <View style={[styles.inputContainer, { marginBottom: 16 }]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+          <View style={[styles.inputContainer, styles.warningContainer]}>
+            <View style={styles.iconTextHeader}>
               <Ionicons name="warning-outline" size={20} color="#ff6b00" />
-              <Text style={[styles.label, { marginLeft: 8, color: "#ff6b00" }]}>
+              <Text
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
+              >
                 V8 Authorization Required
               </Text>
             </View>
@@ -204,17 +204,15 @@ export const TransferForm = memo(
         </View>
 
         {!account.is_key_stored && (
-          <View style={[styles.inputContainer, { marginTop: 16 }]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+          <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
+            <View style={styles.iconTextHeader}>
               <Ionicons name="eye-outline" size={20} color={colors.danger} />
               <Text
-                style={[styles.label, { marginLeft: 8, color: colors.danger }]}
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
               >
                 View-Only Account
               </Text>

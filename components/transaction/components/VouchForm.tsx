@@ -123,16 +123,16 @@ export const VouchForm = memo(
     return (
       <SectionContainer title="Vouch for Account">
         {!isV8Authorized && (
-          <View style={[styles.inputContainer, { marginBottom: 16 }]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+          <View style={[styles.inputContainer, styles.warningContainer]}>
+            <View style={styles.iconTextHeader}>
               <Ionicons name="warning-outline" size={20} color="#ff6b00" />
-              <Text style={[styles.label, { marginLeft: 8, color: "#ff6b00" }]}>
+              <Text
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
+              >
                 V8 Authorization Required
               </Text>
             </View>
@@ -232,9 +232,15 @@ export const VouchForm = memo(
 
         {!account.is_key_stored && (
           <View style={[styles.inputContainer, styles.viewOnlyContainer]}>
-            <View style={styles.viewOnlyHeader}>
+            <View style={styles.iconTextHeader}>
               <Ionicons name="eye-outline" size={20} color="#ff9500" />
-              <Text style={[styles.label, styles.viewOnlyIcon]}>
+              <Text
+                style={[
+                  styles.label,
+                  styles.iconTextLabel,
+                  styles.iconTextLabelDanger,
+                ]}
+              >
                 View-Only Account
               </Text>
             </View>

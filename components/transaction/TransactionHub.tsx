@@ -1,7 +1,8 @@
 import "buffer"; // Ensure Buffer is available globally
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { styles } from "../../styles/styles";
+import { Ionicons } from "@expo/vector-icons";
+import { styles, colors } from "../../styles/styles";
 import { useModal } from "../../context/ModalContext";
 import { useTransactionPin } from "../../hooks/use-transaction-pin";
 import { appConfig, type AccountState } from "../../util/app-config-store";
@@ -12,6 +13,7 @@ import { VouchForm } from "./components/VouchForm";
 import { V8Migration } from "./components/V8Migration";
 import { TransactionPinModal } from "./components/TransactionPinModal";
 import { useTransactionExecutor } from "./components/TransactionExecutor";
+import { SectionContainer } from "../common/SectionContainer";
 
 interface TransactionHubProps {
   accountId: string;
@@ -208,6 +210,40 @@ export const TransactionHub = memo(
               onClearForm={handleClearAll}
             />
           </>
+        )}
+
+        {/* Show authorization needed message for migrated but not authorized accounts */}
+        {account.v8_migrated !== false && account.is_v8_authorized === false && (
+          <SectionContainer title="Vouches Required">
+            <View style={[styles.inputContainer, styles.warningContainer]}>
+              <View style={styles.iconTextHeader}>
+                <Ionicons name="people-outline" size={20} color={colors.primary} />
+                <Text
+                  style={[
+                    styles.label,
+                    styles.iconTextLabel,
+                    styles.iconTextLabelPrimary,
+                  ]}
+                >
+                  Anti-Bot Verification Needed
+                </Text>
+              </View>
+              <Text style={styles.description}>
+                You&apos;ve completed step 1 (migration) of the Founder activation.
+                Now you need step 2: anti-bot verification through vouching.
+              </Text>
+              <Text style={styles.label}>What You Need</Text>
+              <Text style={styles.description}>
+                • Get vouched by other verified Founder accounts
+              </Text>
+              <Text style={styles.description}>
+                • Ask friends or community members who are already V8-authorized to vouch for you
+              </Text>
+              <Text style={styles.description}>
+                • Once you receive enough vouches, you&apos;ll be V8-authorized and can access all transaction features
+              </Text>
+            </View>
+          </SectionContainer>
         )}
 
         {/* Only show V8Migration component for accounts that haven't migrated yet */}
