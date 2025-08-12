@@ -121,6 +121,24 @@ export const VouchForm = memo(
       return true;
     }, [recipientAddress, account.account_address]);
 
+    // Check for duplicate vouch warning (separate from validation)
+    const getDuplicateVouchWarning = useCallback(() => {
+      if (!recipientAddress.trim() || !vouchInfo?.given_vouches) {
+        return null;
+      }
+
+      const inputAddress = recipientAddress.trim().toLowerCase();
+      const isAlreadyVouched = vouchInfo.given_vouches.some(
+        (addr) => addr.toLowerCase() === inputAddress
+      );
+
+      if (isAlreadyVouched) {
+        return "You have already vouched for this address. You can still submit to vouch again if needed.";
+      }
+
+      return null;
+    }, [recipientAddress, vouchInfo?.given_vouches]);
+
     // Handle vouch submission
     const handleVouchSubmit = useCallback(async () => {
       if (!validateVouchForm()) {
@@ -186,7 +204,7 @@ export const VouchForm = memo(
             <Text style={styles.resultValue}>Loading vouch information...</Text>
           ) : vouchInfo ? (
             <View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowReceivedVouches(!showReceivedVouches)}
                 style={{ marginBottom: 8 }}
                 accessibilityRole="button"
@@ -213,7 +231,7 @@ export const VouchForm = memo(
                   )}
                 </View>
               )}
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowGivenVouches(!showGivenVouches)}
                 style={{ marginBottom: 8 }}
                 accessibilityRole="button"
@@ -260,6 +278,15 @@ export const VouchForm = memo(
           placeholder="0x1234..."
           disabled={isLoading || !isV8Authorized}
         />
+
+        {/* Show duplicate vouch warning */}
+        {getDuplicateVouchWarning() && (
+          <View style={[styles.inputContainer, { backgroundColor: '#fff3cd', borderColor: '#ffeaa7', borderWidth: 1, borderRadius: 8 }]}>
+            <Text style={[styles.description, { color: '#856404', fontSize: 13 }]}>
+              {getDuplicateVouchWarning()}
+            </Text>
+          </View>
+        )}
 
         {vouchError && (
           <View style={[styles.inputContainer]}>
