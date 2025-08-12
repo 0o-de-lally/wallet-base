@@ -140,12 +140,12 @@ export const TransferForm = memo(
             >
               <Ionicons name="warning-outline" size={20} color="#ff6b00" />
               <Text style={[styles.label, { marginLeft: 8, color: "#ff6b00" }]}>
-                V8 Migration Required
+                V8 Authorization Required
               </Text>
             </View>
             <Text style={styles.description}>
-              Transfer functionality is disabled until V8 migration is complete.
-              Please complete the V8 migration first.
+              Transfer functionality is disabled until V8 authorization is
+              complete. Please complete the V8 authorization first.
             </Text>
           </View>
         )}

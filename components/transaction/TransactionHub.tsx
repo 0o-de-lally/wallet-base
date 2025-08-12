@@ -210,8 +210,8 @@ export const TransactionHub = memo(
           </>
         )}
 
-        {/* Only show V8Migration component for non-V8 authorized accounts */}
-        {account.is_v8_authorized === false && (
+        {/* Only show V8Migration component for accounts that haven't migrated yet */}
+        {account.v8_migrated === false && (
           <V8Migration
             account={account}
             accountId={accountId}
