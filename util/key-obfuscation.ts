@@ -45,7 +45,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
  * @param keyType - The type of key for additional entropy (e.g., "account", "pin", "config")
  * @returns Obfuscated key name
  */
-export async function obfuscateKey(
+async function obfuscateKey(
   originalKey: string,
   keyType: string = "data",
 ): Promise<string> {
@@ -78,7 +78,7 @@ export async function obfuscateKey(
  * This is used for key recovery during migration or debugging
  * @public API - Used for debugging and manual recovery scenarios
  */
-export async function storeLegacyKeyMapping(
+async function storeLegacyKeyMapping(
   originalKey: string,
   obfuscatedKey: string,
 ): Promise<void> {
