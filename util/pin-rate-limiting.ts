@@ -153,37 +153,3 @@ export async function recordSuccessfulAttempt(): Promise<void> {
     // Don't throw - this is not critical for functionality
   }
 }
-
-/**
- * Manually resets the rate limiting (for administrative purposes)
- */
-export async function resetRateLimiting(): Promise<void> {
-  try {
-    await deleteValue(ATTEMPT_RECORD_KEY);
-    console.log("PIN rate limiting reset");
-  } catch (error) {
-    console.error("Error resetting rate limiting:", error);
-    throw error;
-  }
-}
-
-/**
- * Gets rate limiting status for display purposes
- * @internal - Currently unused but kept for potential status display
- */
-/*
-async function getRateLimitingStatus(): Promise<{
-  totalAttempts: number;
-  isActive: boolean;
-  lockoutUntil?: number;
-}> {
-  const record = await getAttemptRecord();
-  const status = await checkLockoutStatus();
-
-  return {
-    totalAttempts: record.count,
-    isActive: status.isLockedOut,
-    lockoutUntil: record.lockoutUntil,
-  };
-}
-*/

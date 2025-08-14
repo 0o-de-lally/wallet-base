@@ -1,8 +1,15 @@
 /**
  * Utility functions for error handling and logging across the application
+ * Includes production-safe logging utilities and secure logging functionality
  */
 
 import { observable } from "@legendapp/state";
+
+// Type for console log arguments
+type LogValue = string | number | boolean | object | null | undefined;
+
+// Check if we're in development mode
+const isDevelopment = __DEV__ || process.env.NODE_ENV === "development";
 
 /**
  * Error log entry interface
@@ -50,13 +57,18 @@ function getSafeErrorMessage(
   error: unknown,
   fallbackMessage = "An unexpected error occurred",
 ): string {
+  let message: string;
+
   if (error instanceof Error) {
-    return error.message;
+    message = error.message;
   } else if (typeof error === "string") {
-    return error;
+    message = error;
   } else {
-    return fallbackMessage;
+    message = fallbackMessage;
   }
+
+  // Filter sensitive data from the error message
+  return filterSensitiveString(message);
 }
 
 /**
@@ -279,4 +291,98 @@ export function getErrorLogStats(): {
     oldestTimestamp,
     newestTimestamp,
   };
+}
+
+/**
+ * Production-safe logging utilities
+ * These functions respect production environment settings and avoid exposing sensitive information
+ */
+
+/**
+ * Safe console.log that only logs in development
+ */
+export function devLog(...args: LogValue[]): void {
+  if (isDevelopment) {
+    const safeArgs = args.map(filterSensitiveValue);
+    console.log(...safeArgs);
+  }
+}
+
+/**
+ * Safe console.error that logs in development and reports in production
+ */
+export function devError(
+  context: string,
+  error: unknown,
+  ...args: LogValue[]
+): void {
+  if (isDevelopment) {
+    // Filter sensitive data from context and error message
+    const safeContext = filterSensitiveString(context);
+    const safeError = error instanceof Error
+      ? new Error(filterSensitiveString(error.message))
+      : filterSensitiveValue(error as LogValue);
+    const safeArgs = args.map(filterSensitiveValue);
+
+    console.error(safeContext, safeError, ...safeArgs);
+  } else {
+    // In production, use the error reporting system
+    reportErrorAuto(context, error);
+  }
+}
+
+/**
+ * Filter sensitive information from individual values
+ */
+function filterSensitiveValue(value: LogValue): LogValue {
+  if (typeof value === "string") {
+    return filterSensitiveString(value);
+  } else if (typeof value === "object" && value !== null) {
+    // Recursively filter object values
+    if (Array.isArray(value)) {
+      return value.map(filterSensitiveValue);
+    } else {
+      const filteredObj: Record<string, LogValue> = {};
+      for (const [k, v] of Object.entries(value)) {
+        filteredObj[k] = filterSensitiveValue(v);
+      }
+      return filteredObj;
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Filter sensitive patterns from string content
+ */
+function filterSensitiveString(str: string): string {
+  // Common patterns for sensitive data
+  const patterns = [
+    // Crypto patterns
+    { pattern: /\b[0-9a-fA-F]{64}\b/g, replacement: "[REDACTED_HASH]" }, // 64-char hex (likely hash/key)
+    { pattern: /\b[0-9a-fA-F]{40}\b/g, replacement: "[REDACTED_HASH]" }, // 40-char hex
+    { pattern: /\b[0-9a-fA-F]{32}\b/g, replacement: "[REDACTED_HASH]" }, // 32-char hex
+
+    // Mnemonic patterns (12 or 24 common words)
+    { pattern: /\b(?:[a-z]{3,8}\s+){11}[a-z]{3,8}\b/gi, replacement: "[REDACTED_MNEMONIC]" }, // 12 words
+    { pattern: /\b(?:[a-z]{3,8}\s+){23}[a-z]{3,8}\b/gi, replacement: "[REDACTED_MNEMONIC]" }, // 24 words
+
+    // Base64 encoded data (likely keys/tokens)
+    { pattern: /\b[A-Za-z0-9+/]{40,}={0,2}\b/g, replacement: "[REDACTED_BASE64]" },
+
+    // PIN patterns (4-12 digits)
+    { pattern: /\b\d{4,12}\b/g, replacement: "[REDACTED_PIN]" },
+
+    // Common sensitive keywords followed by values
+    { pattern: /(pin|password|secret|key|token|auth|signature|hash)\s*[:=]\s*\S+/gi, replacement: "$1: [REDACTED]" },
+  ];
+
+  let filteredStr = str;
+
+  for (const { pattern, replacement } of patterns) {
+    filteredStr = filteredStr.replace(pattern, replacement);
+  }
+
+  return filteredStr;
 }

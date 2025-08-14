@@ -1,5 +1,9 @@
-import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
-import { devLog, devError } from "./secure-logging";
+import {
+  getItemAsync,
+  setItemAsync,
+  deleteItemAsync,
+} from "expo-secure-store";
+import { devLog, devError } from "./error-utils";
 
 /**
  * Updates the internal keys list maintained for getAllKeys functionality

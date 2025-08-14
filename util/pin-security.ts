@@ -42,7 +42,7 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { gcm } from "@noble/ciphers/aes";
 import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
-import { getValue, saveValue } from "./secure-store";
+import { getValue } from "./secure-store";
 import {
   checkLockoutStatus,
   recordFailedAttempt,
@@ -178,7 +178,7 @@ function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str);
 }
 
-function uint8ArrayToBase64(array: Uint8Array): string {
+export function uint8ArrayToBase64(array: Uint8Array): string {
   return btoa(String.fromCharCode(...array));
 }
 
@@ -270,35 +270,35 @@ async function processWithPin<T>(
   }
 }
 
-/**
- * Stores a PIN hash securely after validating it meets requirements
- * @param pin - The PIN to store (will be cleared after use)
- * @returns Promise resolving to true if successful, false otherwise
- */
-export async function storePinHash(pin: string): Promise<boolean> {
-  return processWithPin(pin, async (securePin) => {
-    try {
-      // Hash the PIN using Scrypt
-      const hashedPin = await hashPin(securePin);
+// /**
+//  * Stores a PIN hash securely after validating it meets requirements
+//  * @param pin - The PIN to store (will be cleared after use)
+//  * @returns Promise resolving to true if successful, false otherwise
+//  */
+// export async function storePinHash(pin: string): Promise<boolean> {
+//   return processWithPin(pin, async (securePin) => {
+//     try {
+//       // Hash the PIN using Scrypt
+//       const hashedPin = await hashPin(securePin);
 
-      // Store the hash as JSON in secure storage
-      const hashedPinJson = JSON.stringify(hashedPin);
-      await saveValue("user_pin", hashedPinJson);
+//       // Store the hash as JSON in secure storage
+//       const hashedPinJson = JSON.stringify(hashedPin);
+//       await saveValue("user_pin", hashedPinJson);
 
-      return true;
-    } catch (error) {
-      console.error("Failed to store PIN hash:", error);
-      return false;
-    }
-  });
-}
+//       return true;
+//     } catch (error) {
+//       console.error("Failed to store PIN hash:", error);
+//       return false;
+//     }
+//   });
+// }
 
 /**
  * Validates a PIN against the stored hash with rate limiting
  * @param pin - The PIN to validate (will be cleared after use)
  * @returns Promise resolving to object with validation result and lockout info
  */
-export async function validatePinWithRateLimit(pin: string): Promise<{
+async function validatePinWithRateLimit(pin: string): Promise<{
   isValid: boolean;
   isLockedOut: boolean;
   remainingTime: number;
@@ -437,7 +437,3 @@ export async function secureDecryptWithPin(
     }
   });
 }
-
-// Export helper functions for compatibility
-export { stringToUint8Array, uint8ArrayToBase64, base64ToUint8Array };
-export { encryptWithPin, decryptWithPin };

@@ -157,11 +157,3 @@ export async function getAccountStorageKey(accountId: string): Promise<string> {
   const originalKey = `account_${accountId}`;
   return await obfuscateKey(originalKey, "account");
 }
-
-/**
- * Helper function to get PIN storage key with obfuscation
- * @returns Obfuscated PIN key
- */
-export async function getPinStorageKey(): Promise<string> {
-  return await obfuscateKey("user_pin", "pin");
-}
