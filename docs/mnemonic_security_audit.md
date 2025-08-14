@@ -2,7 +2,15 @@
 
 Date: 2025-08-14
 Branch: release-1.0
-Scope: Review of repository code paths that could lead to exposure or exfiltration of a user's mnemonic ("recovery phrase") or enable a sophisticated attack to extract it.
+Scope: Review of repository code paths that could lead to exposure or exfiltration of a user#### High (Security Impact: Significantly Easier Attacks)
+4. **Hardware Key Wrapping** - Prevents offline device attacks
+5. **PIN Complexity** - Increases brute force search space
+6. **Biometric Integration** - Adds authentication layer
+
+#### Medium (Security Impact: Reduces Attack Cost)
+7. **Enhanced Key Obfuscation** - Advanced key index protection
+8. **Attempt Counters** - Limits brute force attempts
+9. **Atomic Rotation** - Prevents partial state attacksic ("recovery phrase") or enable a sophisticated attack to extract it.
 
 ## Executive Summary
 Overall design: Mnemonics are stored (per account) encrypted under a 6‑digit PIN-derived key using PBKDF2(SHA-256, 10k iter, static salt) + AES-GCM (via @noble/ciphers). Storage backend is `expo-secure-store`. Retrieval requires correct PIN verification against a hashed record, then decryption, optionally gated by a "reveal scheduling" delay. Major risks center on (1) low entropy of a fixed-length numeric PIN (brute force), (2) static global salt enabling offline cracking if ciphertext & PIN hash leak, (3) potential enumeration of account keys with predictable naming, (4) insufficient anti-bruteforce / rate limiting, (5) logging & memory lifetime issues, (6) integrity token being static and increasing oracle quality, (7) lack of secure hardware binding / per-device key wrapping, (8) reveal scheduling logic enforceable only client-side, and (9) possible downgrade / replay if attacker controls local storage. Below are detailed findings and recommendations.
@@ -118,21 +126,25 @@ Recommendation: Add native module / config to enable secure window flag and blur
   - Target: 2 iterations, 64MB memory, ~100ms computation time
   - Provides 100,000x brute force cost increase
 - **Per-record salt migration**: Store random salt with each ciphertext (lazy migration)
+- **Storage key obfuscation**: Hash-based key names to prevent enumeration
+  - Eliminates predictable `account_${accountId}` patterns
+  - Increases attack cost when combined with crypto improvements
 - **Rate limiting implementation**: Exponential backoff on PIN verification attempts
 - **Remove static integrity token**: Rely solely on AES-GCM authentication tag
 - **PIN complexity increase**: Allow 8-12 digits or alphanumeric passphrases
 - **Production logging controls**: Strip debug logs and reduce error verbosity
+- **Clipboard management**: Controlled copy with automatic scrubbing
 
-### Phase 2: Hardware Integration (3-5 sprints)  
+### Phase 2: Hardware Integration (3-5 sprints)
 **Priority: High - Device Binding and Biometric Security**
 - **Hardware keystore binding**: Wrap encryption keys with device-backed keys
   - iOS: Secure Enclave integration via expo-local-authentication
   - Android: Android Keystore with StrongBox when available
 - **Biometric authentication gates**: Require biometrics for sensitive operations
 - **Device master key**: Generate and protect per-installation root key
-- **Attempt counter with hardware backing**: Store failure counts in secure keystore
+- **Attempt counter with hardware backing**: Store PIN failure counts in secure keystore
 - **Atomic key rotation**: Implement transaction-based re-encryption with rollback
-- **Key name obfuscation**: Encrypt storage key index and randomize names
+- **Enhanced key obfuscation**: Encrypt storage key index with device binding
 
 ### Phase 3: Advanced Security (Long-term)
 **Priority: Medium - Full TEE Integration and Advanced Features**
@@ -141,16 +153,16 @@ Recommendation: Add native module / config to enable secure window flag and blur
 - **Operation attestation**: Hardware-backed verification of critical operations
 - **Secret sharing**: Split mnemonic across secure store + ephemeral components
 - **Screen security**: Android FLAG_SECURE and iOS secure window protections
-- **Clipboard management**: Controlled copy with automatic scrubbing
 
 ### Implementation Priorities by Risk Level
 
 #### Critical (Security Impact: Complete Compromise)
 1. **Argon2 Implementation** - Prevents GPU-accelerated brute force
 2. **Per-Record Salt** - Eliminates rainbow table attacks
-3. **Rate Limiting** - Stops online automated attacks
+3. **Storage Key Obfuscation** - Prevents enumeration and targeted attacks
+4. **Rate Limiting** - Stops online automated attacks
 
-#### High (Security Impact: Significantly Easier Attacks)  
+#### High (Security Impact: Significantly Easier Attacks)
 4. **Hardware Key Wrapping** - Prevents offline device attacks
 5. **PIN Complexity** - Increases brute force search space
 6. **Biometric Integration** - Adds authentication layer
@@ -171,10 +183,11 @@ Recommendation: Add native module / config to enable secure window flag and blur
 |-------|----------|-------------|------------------------|
 | Weak key derivation | `util/crypto.ts` | Replace PBKDF2 with Argon2id native module; 2 iter, 64MB memory | **Critical - Phase 1** |
 | Static SALT | `util/crypto.ts` | Replace with per-entry random salt stored with ciphertext | **Critical - Phase 1** |
+| Storage key obfuscation | `util/secure-store.ts` and consumers | Derive obfuscated key names; encrypt index | **Critical - Phase 1** |
 | Integrity token | `util/crypto.ts` | Remove token & delimiter; rely on GCM failure | **Critical - Phase 1** |
 | No rate limit | `pin-security.ts`, `use-secure-storage.ts`, `use-transaction-pin.ts` | Add attempt counter & backoff before calling verify/decrypt | **Critical - Phase 1** |
 | Hardware binding | New: `util/hardware-security.ts` | Wrap DEK with device keystore; biometric authentication | **High - Phase 2** |
-| Predictable keys | `util/secure-store.ts` and consumers | Derive obfuscated key names; encrypt index | **High - Phase 2** |
+| Enhanced key obfuscation | `util/secure-store.ts` and consumers | Device-bound key index encryption | **High - Phase 2** |
 | Weak PIN policy | `pin-security.ts` | Expand validation regex; add strength meter; allow passphrases | **High - Phase 1** |
 | Logging | Multiple | Strip or guard logs; avoid logging errors with distinguishable semantics | **Medium - Phase 1** |
 | Auto-hide window | `use-secure-storage.ts` | Reduce constant & flush memory (overwrite strings) | **Medium - Phase 1** |
@@ -183,13 +196,13 @@ Recommendation: Add native module / config to enable secure window flag and blur
 ## Migration Sketch for Enhanced Security
 
 ### Per-Entry Salt + Argon2 Migration
-1. **New ciphertext format** (base64 of JSON): 
+1. **New ciphertext format** (base64 of JSON):
    ```json
    {
      "v": 3,
-     "alg": "argon2id", 
+     "alg": "argon2id",
      "s": "<b64salt>",
-     "n": "<b64nonce>", 
+     "n": "<b64nonce>",
      "c": "<b64cipher>",
      "p": {"t":2, "m":65536, "p":1}
    }
@@ -197,16 +210,16 @@ Recommendation: Add native module / config to enable secure window flag and blur
 2. **Backward compatibility**: Detect legacy formats (v1: binary, v2: JSON with PBKDF2)
 3. **Lazy migration**: On decrypt, if legacy format detected:
    - Decrypt using old algorithm
-   - Re-encrypt with Argon2 + new format  
+   - Re-encrypt with Argon2 + new format
    - Delete old entry atomically
 4. **Argon2 native module**: Implement via JSI for performance and security
 5. **Configuration validation**: Ensure parameters meet security requirements per device capability
 
-### Hardware Keystore Integration  
+### Hardware Keystore Integration
 1. **Device master key generation**:
    ```typescript
    // One-time setup per app installation
-   const deviceKey = await SecureStore.setItemAsync('device_master_key', 
+   const deviceKey = await SecureStore.setItemAsync('device_master_key',
      uint8ArrayToBase64(getRandomBytes(32)), {
        requireAuthentication: true,
        authenticationPrompt: 'Set up wallet security'
@@ -243,7 +256,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 - **Migration logic verification**: Test legacy format detection and conversion accuracy
 - **Performance benchmarking**: Ensure Argon2 parameters meet usability requirements (<200ms)
 
-### Security Property Tests  
+### Security Property Tests
 - **Brute force protection**: Verify rate limiting lockout scenarios and exponential backoff
 - **Nonce uniqueness validation**: Property test ensuring no two encrypt operations produce identical ciphertext for same input
 - **Timing consistency verification**: Rough timing test to ensure failures are standardized (mock timers/logs)
@@ -259,7 +272,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 ### Platform-Specific Tests
 - **iOS Secure Enclave integration**: Verify key generation and protection in hardware
-- **Android Keystore validation**: Test StrongBox availability and fallback behavior  
+- **Android Keystore validation**: Test StrongBox availability and fallback behavior
 - **Cross-platform compatibility**: Ensure data encrypted on one platform can be decrypted on another
 - **Device capability detection**: Test graceful degradation on older hardware
 
@@ -276,7 +289,7 @@ Even with improvements, a fully compromised device (rooted with debugger) can us
 - **Purpose**: Transforms low-entropy inputs (PINs) into high-entropy cryptographic keys
 - **Security Goal**: Resist brute force attacks through computational cost
 - **Function**: `PIN + Salt → Cryptographic Key`
-- **Characteristics**: 
+- **Characteristics**:
   - Memory-hard (requires significant RAM)
   - Time-consuming (tunable computational cost)
   - Produces fixed-size output (32 bytes for AES-256)
@@ -331,7 +344,7 @@ async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8A
     c: 10000,         // Too few iterations
     dkLen: 32
   });
-  
+
   // ✅ Good: AES-GCM encryption
   const cipher = gcm(key, nonce);
   return cipher.encrypt(data);
@@ -351,11 +364,11 @@ async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8A
     parallelism: 1,
     hashLength: 32
   });
-  
+
   // ✅ Good: Same AES-GCM encryption
   const cipher = gcm(key, nonce);
   const ciphertext = cipher.encrypt(data);
-  
+
   // Store salt with ciphertext for decryption
   return concatArrays(salt, nonce, ciphertext);
 }
@@ -475,7 +488,7 @@ const ciphertext = {
 ```typescript
 async function decrypt(ciphertext: string, pin: string) {
   const parsed = JSON.parse(ciphertext);
-  
+
   if (parsed.version === 1) {
     // Legacy PBKDF2 decryption
     return decryptLegacy(parsed, pin);
@@ -566,7 +579,7 @@ await SecureStore.setItemAsync('key', 'value', {
     requireAuthentication: true,
     authenticationPrompt: 'Authorize key generation'
   });
-  
+
   // Use master key to wrap data encryption keys
   const dataKey = getRandomBytes(32);
   const wrappedDataKey = await aesGcmEncrypt(dataKey, masterKey);
@@ -661,13 +674,13 @@ const encryptedMnemonic = await aesGcmEncrypt(mnemonic, dataKey);
 interface TeeOperations {
   // Direct encryption in TEE
   encryptInTee(data: Uint8Array, keyId: string): Promise<Uint8Array>;
-  
+
   // Hardware-backed key derivation
   deriveKeyInTee(password: Uint8Array, salt: Uint8Array): Promise<string>;
-  
+
   // Digital signatures for transactions
   signInTee(data: Uint8Array, keyId: string): Promise<Uint8Array>;
-  
+
   // Attestation
   attestKey(keyId: string): Promise<AttestationResult>;
 }
@@ -733,7 +746,7 @@ While full TEE cryptographic operations require native module development, signi
 #### Implementation Timeline
 ```
 Phase 1 (1-2 sprints): Argon2id implementation
-Phase 2 (3-5 sprints): Hardware keystore integration  
+Phase 2 (3-5 sprints): Hardware keystore integration
 Phase 3 (Long-term): Full TEE migration
 ```
 
@@ -768,7 +781,7 @@ const argon2Config = {
 ```typescript
 // Replace current PBKDF2 implementation
 async function deriveKeyWithArgon2(
-  pin: string, 
+  pin: string,
   salt: Uint8Array
 ): Promise<Uint8Array> {
   return await argon2id({
@@ -830,7 +843,7 @@ async function teeVerifyOperation(operation: string): Promise<boolean> {
 - **Keychain Services**: Biometric-protected item access
 - **LocalAuthentication**: Face ID/Touch ID integration
 
-#### Android Implementation  
+#### Android Implementation
 - **Android Keystore**: Hardware-backed key operations
 - **BiometricPrompt**: Fingerprint/face authentication
 - **StrongBox**: Hardware security module (newer devices)
