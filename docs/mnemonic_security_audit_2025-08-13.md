@@ -15,6 +15,19 @@ Scope: Review of repository code paths that could lead to exposure or exfiltrati
 
 References to "Argon2" in this document should be understood as applying to the Scrypt implementation with equivalent security parameters.
 
+## Threat Model Clarification (2025-08-14)
+Earlier language implied that an attacker could trivially obtain encrypted mnemonics (ciphertexts) from `expo-secure-store` for offline brute force. This overstates practical access in the normal (non-rooted, non-jailbroken) device model:
+
+- On iOS, SecureStore items are Keychain entries encrypted and access-controlled per app. Extraction requires either (a) a jailbroken device with elevated filesystem/keychain access, (b) an unencrypted device backup plus additional tooling and (usually) device passcode knowledge, or (c) full runtime compromise (debugger / instrumentation) while the app is running and after user unlock.
+- On Android, Expo SecureStore (backed by Android Keystore / encrypted SharedPreferences) protects values with hardware-backed keys where available. Extraction similarly requires root access or a compromised OS image. A normal sandboxed malicious app cannot enumerate or read another app's SecureStore entries.
+- Therefore, offline brute force of the wallet PIN against exfiltrated ciphertext generally presupposes a privileged compromise (root/jailbreak, forensic tool access, or on-device debugging with user cooperation). Without that, an attacker is limited to online guessing gated by rate limiting.
+
+Risk Adjustment:
+- The low-entropy 6‑digit PIN remains a weakness, but its offline exploitation is conditional on privileged compromise rather than broadly exploitable from casual backups.
+- The priority of strengthening the PIN policy and adding hardware binding is still justified (defense in depth if/when a privileged compromise occurs), but wording below has been clarified where it previously treated ciphertext access as routine.
+
+Edits below annotate affected sections instead of deleting them to preserve historical audit context.
+
 ## Executive Summary
 Overall design: Mnemonics are stored (per account) encrypted under a 6‑digit PIN-derived key using PBKDF2(SHA-256, 10k iter, static salt) + AES-GCM (via @noble/ciphers). Storage backend is `expo-secure-store`. Retrieval requires correct PIN verification against a hashed record, then decryption, optionally gated by a "reveal scheduling" delay. Major risks center on (1) low entropy of a fixed-length numeric PIN (brute force), (2) static global salt enabling offline cracking if ciphertext & PIN hash leak, (3) potential enumeration of account keys with predictable naming, (4) insufficient anti-bruteforce / rate limiting, (5) logging & memory lifetime issues, (6) integrity token being static and increasing oracle quality, (7) lack of secure hardware binding / per-device key wrapping, (8) reveal scheduling logic enforceable only client-side, and (9) possible downgrade / replay if attacker controls local storage. Below are detailed findings and recommendations.
 
@@ -57,18 +70,15 @@ Residual risk analysis in later sections should be read with these corrections i
 
 ## Findings
 
-### 1. Weak Secret Derivation From 6-Digit PIN (High)
-- PIN format enforced by `validatePin` is exactly 6 digits (1e6 possibilities). With PBKDF2 10k iterations, an offline attacker can brute force quickly on commodity hardware (≈ <1s for million PBKDF2(10k) with optimized native code / GPU).
-- Successful offline scenario: Attacker obtains `user_pin` (salt+hash) plus an encrypted mnemonic (ciphertext) from SecureStore backup / device compromise.
-- Result: PIN and mnemonic recoverable. Numeric PIN provides minimal entropy.
+### 1. Weak Secret Derivation From 6-Digit PIN (High – conditional offline impact)
+- PIN format enforced by `validatePinFormat` is exactly 6 digits (1e6 possibilities). Even with Scrypt (memory-hard), the search space is trivially enumerable.
+- Offline brute force feasibility now explicitly depends on a privileged compromise enabling extraction of both ciphertext and PIN hash (e.g., root/jailbreak, forensic access, runtime hooking). Without that, attacker is constrained to online attempts throttled by rate limiting.
+- Result if compromise occurs: PIN and mnemonic recoverable within hours (enumeration of 1e6 Scrypt operations) absent additional hardware binding or secondary factor.
 
-Recommendation: Require higher-entropy passphrase (e.g., 8+ digits or alphanumeric), allow optional biometric-gated hardware key, or add a per-account high-entropy random key (wrapped by PIN-derived key) so mnemonic encryption isn't directly brute forced from PIN alone. Increase PBKDF2 iterations (>=100k) and/or switch to Scrypt (via @noble/hashes) for memory-hard key derivation.
+Recommendation: Still expand PIN/passphrase policy (longer and/or alphanumeric), introduce optional biometric + hardware-wrapped key, and consider separating a high-entropy data-encryption key (DEK) wrapped by PIN-derived key to prevent direct brute forcing of mnemonic contents. (Historical note: Previous text referenced PBKDF2; implementation has migrated to Scrypt.)
 
-### 2. Static Global Salt For Encryption Key Derivation (High)
-- In `crypto.ts`, SALT = stringToUint8Array("WalletAppSalt123456") is constant and shared across all users. This enables building rainbow tables for all PINs across the user base.
-- A unique per-user (per PIN) salt is only applied for PIN hash in `pin-security.ts` but not for encryption key derivation.
-
-Recommendation: Generate and store a per-account random salt alongside the encrypted mnemonic (e.g., prefix ciphertext with salt+nonce). Derive key with that salt. Maintain backward migration logic.
+### 2. (Legacy) Static Global Salt For Encryption Key Derivation (Resolved)
+- Historical issue retained for context. Current implementation derives encryption keys with per-record random salt (prefixed to ciphertext) using Scrypt. Rainbow-table feasibility is mitigated. No action required beyond future version tagging.
 
 ### 3. Lack of Rate Limiting / Attempt Throttling (High)
 - Functions `verifyStoredPin` and `secureDecryptWithPin` impose no retry delay. An attacker with interactive access (malicious automation / overlay attack) can brute force PIN online rapidly.
@@ -147,8 +157,9 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 ## Attack Scenarios
 
-1. Device File Extraction + Offline Brute Force:
-   - Attacker extracts SecureStore data (rooted device or backup) containing encrypted mnemonic and `user_pin` hash. Uses static salt for encryption + per-hash salt to brute force 1M PINs swiftly, recovers mnemonic.
+1. Privileged Device Compromise + Offline Brute Force (conditional):
+  - Requires elevated access (root/jailbreak, forensic tooling, or live debugging) to extract SecureStore contents (ciphertext + `user_pin`). With that precondition met, attacker can enumerate the 1e6 PIN space under Scrypt parameters in feasible time and recover mnemonic.
+  - Without privileged compromise, attacker cannot directly read SecureStore items; attack surface is limited to online guesses subject to rate limiting.
 2. Malicious Automation (On-Device):
    - Malware injects UI events, rapidly tries PIN guesses (no lockout) until success, decrypts mnemonic and exfiltrates.
 3. Overlay Phishing:
