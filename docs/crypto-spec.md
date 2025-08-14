@@ -12,7 +12,7 @@ This document defines the cryptographic standards, operations, and implementatio
 ## Executive Summary
 
 ### Target Architecture
-- **Key Derivation**: Argon2id with memory-hard parameters
+- **Key Derivation**: Scrypt with memory-hard parameters (via @noble/hashes)
 - **Encryption**: AES-256-GCM for authenticated encryption
 - **Storage**: Hardware-backed TEE integration with device binding
 - **Authentication**: Multi-layer security (Device biometric → PIN → Hardware attestation)
@@ -23,23 +23,24 @@ This document defines the cryptographic standards, operations, and implementatio
 ### Primary Algorithms
 
 #### Key Derivation Function (KDF)
-**Algorithm**: Argon2id  
-**Standard**: RFC 9106  
-**Justification**: Memory-hard function resistant to GPU/ASIC attacks
+**Algorithm**: Scrypt  
+**Standard**: RFC 7914  
+**Library**: `@noble/hashes/scrypt`  
+**Justification**: Memory-hard function resistant to GPU/ASIC attacks, with excellent JavaScript implementation in @noble/hashes
 
 **Parameters**:
 ```typescript
-const ARGON2_CONFIG = {
-  variant: 'argon2id',     // Hybrid mode (best security)
-  timeCost: 2,             // Iterations (tunable)
-  memoryCost: 65536,       // 64MB memory usage
-  parallelism: 1,          // Single thread
-  hashLength: 32,          // 256-bit output for AES-256
-  saltLength: 16           // 128-bit salt (per-record)
+const SCRYPT_CONFIG = {
+  N: 32768,                // Cost parameter (CPU/memory cost)
+  r: 8,                    // Block size parameter  
+  p: 1,                    // Parallelization parameter
+  dkLen: 32,               // Derived key length (256 bits for AES-256)
+  maxmem: 64 * 1024 * 1024 // 64MB memory limit
 };
 ```
 
-**Security Target**: ~100ms computation time on target devices
+**Security Target**: ~100ms computation time on target devices  
+**Memory Usage**: ~32MB per derivation (N * r * 128 bytes)
 
 #### Symmetric Encryption
 **Algorithm**: AES-256-GCM  
@@ -75,7 +76,7 @@ Application Access Granted
     ↓
 [Layer 1] PIN Entry for Wallet Operations
     ↓ (SUCCESS) 
-[Layer 2] Argon2 Key Derivation
+[Layer 2] Scrypt Key Derivation
     ↓
 [Layer 3] AES Decryption of Sensitive Data
     ↓
@@ -100,7 +101,7 @@ Application Access
     ↓
 PIN (User Input)
     ↓
-Argon2id (Key Derivation)
+Scrypt (Key Derivation)
     ↓
 256-bit Encryption Key
     ↓
@@ -141,22 +142,23 @@ if (!result.success) {
 
 **Implementation**:
 ```typescript
-// Memory-hard, GPU-resistant key derivation
+// Memory-hard, GPU-resistant key derivation using @noble/hashes
+import { scrypt } from '@noble/hashes/scrypt';
+
 const salt = getRandomBytes(16);  // Per-record random salt
-const key = await argon2id({
-  password: pin,
-  salt: salt,
-  timeCost: 2,
-  memoryCost: 65536,
-  parallelism: 1,
-  hashLength: 32
+const key = scrypt(pin, salt, {
+  N: 32768,    // Cost parameter
+  r: 8,        // Block size
+  p: 1,        // Parallelization
+  dkLen: 32    // Output length
 });
 ```
 
 **Security Properties**:
-- **Memory-hard**: Requires 64MB RAM per attempt
+- **Memory-hard**: Requires ~32MB RAM per attempt (N * r * 128 bytes)
 - **GPU-resistant**: Memory bandwidth limitations prevent efficient parallelization
-- **Configurable**: Parameters adjustable for future threat landscape
+- **Tunable**: Parameters adjustable for future threat landscape
+- **JavaScript optimized**: @noble/hashes provides highly optimized implementation
 - **Per-record salt**: Eliminates rainbow table attacks
 
 ### Layer 2: Data Encryption Security
@@ -189,7 +191,7 @@ await SecureStore.setItemAsync('device_master_key', base64(masterKey), {
 });
 
 // Wrap data encryption keys
-const dataKey = await argon2id(pin, salt, config);
+const dataKey = scrypt(pin, salt, SCRYPT_CONFIG);
 const wrappedKey = await aesGcmEncrypt(dataKey, masterKey);
 ```
 
@@ -210,12 +212,13 @@ interface TeeOperations {
 ```typescript
 interface CiphertextFormat {
   version: 3;
-  algorithm: 'argon2id+aes-256-gcm';
+  algorithm: 'scrypt+aes-256-gcm';
   kdf: {
     salt: string;          // Base64-encoded 16-byte salt
-    timeCost: number;      // Argon2 time parameter
-    memoryCost: number;    // Argon2 memory parameter (KB)
-    parallelism: number;   // Argon2 parallelism parameter
+    N: number;             // Scrypt cost parameter
+    r: number;             // Scrypt block size parameter
+    p: number;             // Scrypt parallelization parameter
+    dkLen: number;         // Derived key length
   };
   encryption: {
     nonce: string;         // Base64-encoded 12-byte nonce
@@ -233,12 +236,13 @@ interface CiphertextFormat {
 ```json
 {
   "version": 3,
-  "algorithm": "argon2id+aes-256-gcm",
+  "algorithm": "scrypt+aes-256-gcm",
   "kdf": {
     "salt": "randomBase64Salt==",
-    "timeCost": 2,
-    "memoryCost": 65536,
-    "parallelism": 1
+    "N": 32768,
+    "r": 8,
+    "p": 1,
+    "dkLen": 32
   },
   "encryption": {
     "nonce": "randomBase64Nonce==",
@@ -255,14 +259,23 @@ interface CiphertextFormat {
 
 ### Core Security Components
 
-#### Argon2 Native Module Integration
-**Requirement**: Implement Argon2id via native module  
-**Platforms**: iOS (Swift), Android (Kotlin/Java)  
+#### Scrypt Implementation
+**Requirement**: Use Scrypt via @noble/hashes for key derivation  
+**Library**: `@noble/hashes/scrypt`  
+**Justification**: Excellent JavaScript performance, memory-hard properties, well-maintained  
 **Interface**:
 ```typescript
-interface Argon2Module {
-  hash(password: Uint8Array, salt: Uint8Array, config: Argon2Config): Promise<Uint8Array>;
-  verify(password: Uint8Array, hash: string): Promise<boolean>;
+import { scrypt } from '@noble/hashes/scrypt';
+
+interface ScryptConfig {
+  N: number;      // Cost parameter (power of 2)
+  r: number;      // Block size parameter
+  p: number;      // Parallelization parameter
+  dkLen: number;  // Derived key length
+}
+
+function deriveKey(password: Uint8Array, salt: Uint8Array, config: ScryptConfig): Uint8Array {
+  return scrypt(password, salt, config);
 }
 ```
 
@@ -294,7 +307,7 @@ interface Argon2Module {
 #### Threat 1: Offline Brute Force Attack
 **Scenario**: Attacker extracts encrypted data and attempts PIN cracking  
 **Prerequisites**: Attacker must first bypass device biometric authentication  
-**Mitigation**: Argon2 memory-hard function makes brute force computationally expensive (~27 hours for 1M attempts)  
+**Mitigation**: Scrypt memory-hard function makes brute force computationally expensive (~32MB memory per attempt)  
 **Additional Protection**: Device binding prevents off-device attacks
 
 #### Threat 2: Online Automated Attack
@@ -320,7 +333,7 @@ interface Argon2Module {
 
 #### Confidentiality
 - **Data**: AES-256-GCM provides semantic security
-- **Keys**: Argon2-derived keys have full entropy
+- **Keys**: Scrypt-derived keys have full entropy
 - **Storage**: Hardware-backed protection via TEE
 
 #### Integrity
@@ -341,7 +354,7 @@ interface Argon2Module {
 
 ## Performance Specifications
 
-### Argon2 Parameters
+### Scrypt Parameters
 
 #### Target Devices
 - **iOS**: iPhone 12+ (A14 Bionic and newer)
@@ -351,18 +364,21 @@ interface Argon2Module {
 ```typescript
 const DEVICE_PROFILES = {
   highEnd: {
-    timeCost: 3,
-    memoryCost: 131072,    // 128MB
+    N: 65536,              // 64K cost parameter
+    r: 8,                  // Block size
+    p: 1,                  // Single thread
     targetTime: 150        // 150ms
   },
   midRange: {
-    timeCost: 2,
-    memoryCost: 65536,     // 64MB
+    N: 32768,              // 32K cost parameter  
+    r: 8,                  // Block size
+    p: 1,                  // Single thread
     targetTime: 100        // 100ms
   },
   lowEnd: {
-    timeCost: 1,
-    memoryCost: 32768,     // 32MB
+    N: 16384,              // 16K cost parameter
+    r: 8,                  // Block size
+    p: 1,                  // Single thread
     targetTime: 80         // 80ms
   }
 };
@@ -383,7 +399,7 @@ const DEVICE_PROFILES = {
 ### Unit Tests
 ```typescript
 describe('Cryptographic Operations', () => {
-  test('Argon2 produces consistent results', () => {
+  test('Scrypt produces consistent results', () => {
     // Same input should produce same output
   });
   
@@ -438,7 +454,7 @@ describe('Security Properties', () => {
 ### Performance Tests
 ```typescript
 describe('Performance Benchmarks', () => {
-  test('Argon2 completes within target time', () => {
+  test('Scrypt completes within target time', () => {
     // Performance requirement verification
   });
   
@@ -454,19 +470,19 @@ describe('Performance Benchmarks', () => {
 ```
 util/
 ├── crypto/
-│   ├── argon2.ts           # Argon2 implementation
-│   ├── aes.ts              # AES-GCM operations
-│   ├── random.ts           # Secure random generation
-│   ├── kdf.ts              # Key derivation abstraction
-│   └── formats.ts          # Ciphertext format handling
+│   ├── scrypt.ts               # Scrypt implementation via @noble/hashes
+│   ├── aes.ts                  # AES-GCM operations
+│   ├── random.ts               # Secure random generation
+│   ├── kdf.ts                  # Key derivation abstraction
+│   └── formats.ts              # Ciphertext format handling
 ├── hardware/
-│   ├── tee.ts              # TEE integration
-│   ├── biometric.ts        # Biometric authentication
-│   └── keystore.ts         # Hardware keystore operations
+│   ├── tee.ts                  # TEE integration
+│   ├── biometric.ts            # Biometric authentication
+│   └── keystore.ts             # Hardware keystore operations
 └── security/
-    ├── pin.ts              # PIN validation and security
-    ├── rate-limit.ts       # Attempt rate limiting
-    └── migration.ts        # Legacy format migration
+    ├── pin.ts                  # PIN validation and security
+    ├── rate-limit.ts           # Attempt rate limiting
+    └── migration.ts            # Legacy format migration
 ```
 
 ### Error Handling
@@ -512,7 +528,7 @@ enum SecurityEventType {
 
 ### Cryptographic Standards Compliance
 - **FIPS 140-2**: AES implementation requirements
-- **RFC 9106**: Argon2 specification compliance
+- **RFC 7914**: Scrypt specification compliance
 - **NIST SP 800-132**: Password-based key derivation guidelines
 - **OWASP ASVS**: Application security verification standards
 
@@ -533,10 +549,11 @@ This cryptographic specification establishes a comprehensive security architectu
 The specification prioritizes both security and usability, ensuring that strong cryptographic protections do not compromise the user experience. Implementation of this architecture will position the wallet as a security leader in the mobile cryptocurrency space while maintaining the performance and reliability requirements of a production application.
 
 Key security achievements:
-- **100,000x increase** in brute force attack cost through Argon2 implementation
+- **Significant increase** in brute force attack cost through Scrypt implementation
 - **Hardware-backed device binding** preventing offline attacks
 - **Multi-layer authentication** providing defense in depth
 - **Future-proof architecture** supporting advanced TEE integration
+- **JavaScript-optimized security** via @noble/hashes implementation
 
 ---
 **Document Status**: Design Specification  

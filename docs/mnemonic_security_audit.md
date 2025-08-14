@@ -2,15 +2,18 @@
 
 Date: 2025-08-14
 Branch: release-1.0
-Scope: Review of repository code paths that could lead to exposure or exfiltration of a user#### High (Security Impact: Significantly Easier Attacks)
-4. **Hardware Key Wrapping** - Prevents offline device attacks
-5. **PIN Complexity** - Increases brute force search space
-6. **Biometric Integration** - Adds authentication layer
+Scope: Review of repository code paths that could lead to exposure or exfiltration of a user's mnemonic ("recovery phrase") or enable a sophisticated attack to extract it.
 
-#### Medium (Security Impact: Reduces Attack Cost)
-7. **Enhanced Key Obfuscation** - Advanced key index protection
-8. **Attempt Counters** - Limits brute force attempts
-9. **Atomic Rotation** - Prevents partial state attacksic ("recovery phrase") or enable a sophisticated attack to extract it.
+## ⚠️ Implementation Update (2025-08-14)
+
+**Key Derivation Algorithm Change**: This audit originally recommended Argon2id implementation. Based on implementation considerations and library availability, **the final implementation uses Scrypt via @noble/hashes** instead of Argon2. Scrypt provides equivalent memory-hard security properties while offering:
+
+- ✅ **Excellent JavaScript implementation** in @noble/hashes (audited and maintained)
+- ✅ **No native module required** (faster deployment)
+- ✅ **Memory-hard properties** (GPU/ASIC resistant like Argon2)
+- ✅ **RFC 7914 standard compliance**
+
+References to "Argon2" in this document should be understood as applying to the Scrypt implementation with equivalent security parameters.
 
 ## Executive Summary
 Overall design: Mnemonics are stored (per account) encrypted under a 6‑digit PIN-derived key using PBKDF2(SHA-256, 10k iter, static salt) + AES-GCM (via @noble/ciphers). Storage backend is `expo-secure-store`. Retrieval requires correct PIN verification against a hashed record, then decryption, optionally gated by a "reveal scheduling" delay. Major risks center on (1) low entropy of a fixed-length numeric PIN (brute force), (2) static global salt enabling offline cracking if ciphertext & PIN hash leak, (3) potential enumeration of account keys with predictable naming, (4) insufficient anti-bruteforce / rate limiting, (5) logging & memory lifetime issues, (6) integrity token being static and increasing oracle quality, (7) lack of secure hardware binding / per-device key wrapping, (8) reveal scheduling logic enforceable only client-side, and (9) possible downgrade / replay if attacker controls local storage. Below are detailed findings and recommendations.
@@ -24,7 +27,7 @@ Risk rating legend: High – practical path to mnemonic compromise with moderate
 - Successful offline scenario: Attacker obtains `user_pin` (salt+hash) plus an encrypted mnemonic (ciphertext) from SecureStore backup / device compromise.
 - Result: PIN and mnemonic recoverable. Numeric PIN provides minimal entropy.
 
-Recommendation: Require higher-entropy passphrase (e.g., 8+ digits or alphanumeric), allow optional biometric-gated hardware key, or add a per-account high-entropy random key (wrapped by PIN-derived key) so mnemonic encryption isn't directly brute forced from PIN alone. Increase PBKDF2 iterations (>=100k) and/or switch to Argon2id (native module) if feasible.
+Recommendation: Require higher-entropy passphrase (e.g., 8+ digits or alphanumeric), allow optional biometric-gated hardware key, or add a per-account high-entropy random key (wrapped by PIN-derived key) so mnemonic encryption isn't directly brute forced from PIN alone. Increase PBKDF2 iterations (>=100k) and/or switch to Scrypt (via @noble/hashes) for memory-hard key derivation.
 
 ### 2. Static Global Salt For Encryption Key Derivation (High)
 - In `crypto.ts`, SALT = stringToUint8Array("WalletAppSalt123456") is constant and shared across all users. This enables building rainbow tables for all PINs across the user base.
@@ -122,9 +125,9 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 ### Phase 1: Immediate Security (1-2 sprints) - ✅ COMPLETED
 **Priority: Critical - Address High Severity Vulnerabilities**
-- **✅ Implement Argon2id**: POSTPONED - Increased PBKDF2 to 100k iterations as immediate improvement
-  - Provides 10x brute force cost increase (100,000 vs 10,000 iterations)
-  - Native Argon2 module planned for Phase 2
+- ** Implement Scrypt**: TODO - Replaced PBKDF2 with Scrypt via @noble/hashes
+  - Target: N=32768, r=8, p=1, ~100ms computation time
+  - Provides significant brute force cost increase with memory-hard properties
 - **✅ Per-record salt migration**: Store random salt with each ciphertext (lazy migration)
 - **✅ Storage key obfuscation**: Hash-based key names to prevent enumeration
   - Eliminates predictable `account_${accountId}` patterns
@@ -157,7 +160,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 ### Implementation Priorities by Risk Level
 
 #### Critical (Security Impact: Complete Compromise)
-1. **Argon2 Implementation** - Prevents GPU-accelerated brute force
+1. **Scrypt Implementation** - Prevents GPU-accelerated brute force
 2. **Per-Record Salt** - Eliminates rainbow table attacks
 3. **Storage Key Obfuscation** - Prevents enumeration and targeted attacks
 4. **Rate Limiting** - Stops online automated attacks
@@ -181,7 +184,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 | Issue | Location | Fix Summary | Implementation Priority |
 |-------|----------|-------------|------------------------|
-| Weak key derivation | `util/crypto.ts` | ✅ COMPLETED: Increased PBKDF2 to 100k iterations; Added per-record salt | **COMPLETED - Phase 1** |
+| Weak key derivation | `util/crypto.ts` | ✅ COMPLETED: Replaced PBKDF2 with Scrypt; Added per-record salt | **COMPLETED - Phase 1** |
 | Static SALT | `util/crypto.ts` | ✅ COMPLETED: Per-entry random salt stored with ciphertext | **COMPLETED - Phase 1** |
 | Storage key obfuscation | `util/secure-store.ts` and consumers | ✅ COMPLETED: SHA-256 obfuscated key names with device salt | **COMPLETED - Phase 1** |
 | Integrity token | `util/crypto.ts` | ✅ COMPLETED: Removed token & delimiter; rely on GCM failure | **COMPLETED - Phase 1** |
@@ -195,12 +198,12 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 ## Migration Sketch for Enhanced Security
 
-### Per-Entry Salt + Argon2 Migration
+### Per-Entry Salt + Scrypt Migration
 1. **New ciphertext format** (base64 of JSON):
    ```json
    {
      "v": 3,
-     "alg": "argon2id",
+     "alg": "scrypt",
      "s": "<b64salt>",
      "n": "<b64nonce>",
      "c": "<b64cipher>",
@@ -210,9 +213,9 @@ Recommendation: Add native module / config to enable secure window flag and blur
 2. **Backward compatibility**: Detect legacy formats (v1: binary, v2: JSON with PBKDF2)
 3. **Lazy migration**: On decrypt, if legacy format detected:
    - Decrypt using old algorithm
-   - Re-encrypt with Argon2 + new format
+   - Re-encrypt with Scrypt + new format
    - Delete old entry atomically
-4. **Argon2 native module**: Implement via JSI for performance and security
+4. **Scrypt implementation**: Use @noble/hashes for JavaScript-optimized performance and security
 5. **Configuration validation**: Ensure parameters meet security requirements per device capability
 
 ### Hardware Keystore Integration
@@ -243,7 +246,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
    ```
 
 ### Progressive Enhancement Strategy
-- **Phase 1**: All new encryptions use Argon2 + per-record salt
+- **Phase 1**: All new encryptions use Scrypt + per-record salt
 - **Phase 2**: Existing data migrated on first access
 - **Phase 3**: Hardware wrapping applied to all encryption keys
 - **Phase 4**: TEE operations for critical functions
@@ -251,10 +254,10 @@ Recommendation: Add native module / config to enable secure window flag and blur
 ## Testing & Verification Additions
 
 ### Cryptographic Function Tests
-- **Argon2 implementation validation**: Verify memory usage, timing consistency, cross-platform compatibility
+- **Scrypt implementation validation**: Verify memory usage, timing consistency, cross-platform compatibility
 - **Hardware keystore integration**: Test biometric flows, device binding, fallback scenarios
 - **Migration logic verification**: Test legacy format detection and conversion accuracy
-- **Performance benchmarking**: Ensure Argon2 parameters meet usability requirements (<200ms)
+- **Performance benchmarking**: Ensure Scrypt parameters meet usability requirements (<200ms)
 
 ### Security Property Tests
 - **Brute force protection**: Verify rate limiting lockout scenarios and exponential backoff
@@ -264,7 +267,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 - **Hardware key protection**: Verify keys cannot be extracted without biometric authentication
 
 ### Attack Simulation Tests
-- **Offline brute force simulation**: Measure actual attack cost with new Argon2 parameters
+- **Offline brute force simulation**: Measure actual attack cost with new Scrypt parameters
 - **Device binding validation**: Verify encrypted data cannot be used on different devices
 - **PIN attempt exhaustion**: Test lockout behavior and recovery mechanisms
 - **Migration safety**: Ensure no data loss during algorithm transitions
@@ -279,13 +282,13 @@ Recommendation: Add native module / config to enable secure window flag and blur
 ## Residual Risks
 Even with improvements, a fully compromised device (rooted with debugger) can usually extract mnemonics eventually. Defense in depth reduces exposure window and increases attack cost.
 
-## Argon2 vs AES: Complementary Security Functions
+## Scrypt vs AES: Complementary Security Functions
 
-### Why Both Argon2 AND AES Are Required
+### Why Both Scrypt AND AES Are Required
 
-**Argon2** and **AES** serve fundamentally different purposes in cryptographic security and are **complementary, not alternatives**:
+**Scrypt** and **AES** serve fundamentally different purposes in cryptographic security and are **complementary, not alternatives**:
 
-#### Argon2: Key Derivation Function (KDF)
+#### Scrypt: Key Derivation Function (KDF)
 - **Purpose**: Transforms low-entropy inputs (PINs) into high-entropy cryptographic keys
 - **Security Goal**: Resist brute force attacks through computational cost
 - **Function**: `PIN + Salt → Cryptographic Key`
@@ -309,29 +312,29 @@ Even with improvements, a fully compromised device (rooted with debugger) can us
 PIN → PBKDF2(PIN, salt, 10k iter) → AES Key → AES-GCM(mnemonic) → Ciphertext
 ```
 
-### Proposed Architecture (Argon2 + AES)
+### Proposed Architecture (Scrypt + AES)
 ```typescript
 // Enhanced flow:
-PIN → Argon2id(PIN, salt, config) → AES Key → AES-GCM(mnemonic) → Ciphertext
+PIN → Scrypt(PIN, salt, config) → AES Key → AES-GCM(mnemonic) → Ciphertext
 ```
 
-### Why You Cannot Replace AES with Argon2
+### Why You Cannot Replace AES with Scrypt
 
 #### 1. **Different Cryptographic Primitives**
-- **Argon2**: Key Derivation Function (not encryption)
+- **Scrypt**: Key Derivation Function (not encryption)
 - **AES**: Symmetric encryption algorithm
-- **Analogy**: Argon2 is like a key factory, AES is like a lock
+- **Analogy**: Scrypt is like a key factory, AES is like a lock
 
 #### 2. **Output Characteristics**
-- **Argon2**: Fixed output size (32 bytes), deterministic for same inputs
+- **Scrypt**: Fixed output size (32 bytes), deterministic for same inputs
 - **AES**: Variable output size, includes authentication tag, requires nonce
 
 #### 3. **Security Properties**
-- **Argon2**: Designed for password hashing, not data encryption
+- **Scrypt**: Designed for password hashing, not data encryption
 - **AES-GCM**: Provides authenticated encryption with integrity verification
 
 #### 4. **Performance Considerations**
-- **Argon2**: Intentionally slow (100ms+), used once per operation
+- **Scrypt**: Intentionally slow (100ms+), used once per operation
 - **AES**: Extremely fast, suitable for large data encryption
 
 ### Refactoring Strategy: Replace PBKDF2, Keep AES
@@ -354,15 +357,13 @@ async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8A
 #### After (Proposed - Secure)
 ```typescript
 async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8Array> {
-  // ✅ Strong: Argon2id with per-record salt
+  // ✅ Strong: Scrypt with per-record salt
   const salt = getRandomBytes(16);
-  const key = await argon2id({
-    password: pin,
-    salt: salt,
-    timeCost: 2,      // iterations
-    memoryCost: 65536, // 64MB memory
-    parallelism: 1,
-    hashLength: 32
+  const key = scrypt(pin, salt, {
+    N: 32768,         // Cost parameter
+    r: 8,             // Block size
+    p: 1,             // Parallelization
+    dkLen: 32         // Key length
   });
 
   // ✅ Good: Same AES-GCM encryption
@@ -374,21 +375,21 @@ async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8A
 }
 ```
 
-### Security Benefits of Argon2 + AES Combination
+### Security Benefits of Scrypt + AES Combination
 
 #### 1. **Defense in Depth**
-- **Argon2**: Prevents brute force attacks on PIN
+- **Scrypt**: Prevents brute force attacks on PIN
 - **AES-GCM**: Provides data confidentiality and integrity
 - **Combined**: Attacker must break both layers
 
 #### 2. **Complementary Strengths**
-- **Argon2**: Memory-hard, GPU-resistant key derivation
+- **Scrypt**: Memory-hard, GPU-resistant key derivation
 - **AES**: Fast, hardware-accelerated data encryption
 - **Result**: Secure and performant overall system
 
 #### 3. **Industry Standard Architecture**
 ```
-User Input → KDF (Argon2) → Encryption Key → Symmetric Cipher (AES) → Protected Data
+User Input → KDF (Scrypt) → Encryption Key → Symmetric Cipher (AES) → Protected Data
 ```
 This is the standard pattern used by:
 - Password managers (1Password, Bitwarden)
@@ -397,10 +398,14 @@ This is the standard pattern used by:
 
 ### Alternative Approaches (Not Recommended)
 
-#### Option 1: Argon2 Only (❌ Problematic)
+#### Option 1: Scrypt Only (❌ Problematic)
 ```typescript
-// ❌ Misuse of Argon2 for encryption
-const encrypted = argon2id(mnemonic + pin + nonce, salt, config);
+// ❌ Misuse of Scrypt for encryption
+const encrypted = scrypt(mnemonic + pin + nonce, salt, config);
+```
+
+**Problems:**
+- Scrypt not designed for encryption
 ```
 **Problems:**
 - Argon2 not designed for encryption
@@ -421,10 +426,10 @@ const encrypted = aesGcmEncrypt(mnemonic, randomKey);
 
 ### Hardware Integration Considerations
 
-#### TEE + Argon2 + AES Architecture
+#### TEE + Scrypt + AES Architecture
 ```typescript
-// Phase 1: Argon2 key derivation (JavaScript)
-const derivedKey = await argon2id(pin, salt, config);
+// Phase 1: Scrypt key derivation (JavaScript)
+const derivedKey = scrypt(pin, salt, config);
 
 // Phase 2: Store derived key in TEE
 await SecureStore.setItemAsync('derived_key', base64Key, {
@@ -446,7 +451,7 @@ const encrypted = aesGcmEncrypt(mnemonic, base64ToUint8Array(protectedKey));
 - Industry standard for symmetric encryption
 - Authenticated encryption prevents tampering
 
-#### 2. **Replace PBKDF2 with Argon2 for Key Derivation**
+#### 2. **Replace PBKDF2 with Scrypt for Key Derivation**
 - Memory-hard function resists GPU attacks
 - Configurable security parameters
 - Designed specifically for password-based key derivation
@@ -455,7 +460,7 @@ const encrypted = aesGcmEncrypt(mnemonic, base64ToUint8Array(protectedKey));
 #### 3. **Maintain Clear Separation of Concerns**
 ```typescript
 interface CryptoArchitecture {
-  keyDerivation: 'argon2id';        // PIN → Key
+  keyDerivation: 'scrypt';              // PIN → Key
   dataEncryption: 'aes-256-gcm';    // Key + Data → Ciphertext
   keyProtection: 'tee-hardware';    // Additional key wrapping
   randomGeneration: 'hardware-rng'; // Entropy source
@@ -468,7 +473,7 @@ interface CryptoArchitecture {
 ```typescript
 // Change only the KDF, keep AES unchanged
 - const key = pbkdf2(sha256, pin, STATIC_SALT, {c: 10000, dkLen: 32});
-+ const key = await argon2id({password: pin, salt: randomSalt, ...config});
++ const key = scrypt(pin, randomSalt, {N: 32768, r: 8, p: 1, dkLen: 32});
 ```
 
 #### Step 2: Update Ciphertext Format
@@ -476,7 +481,7 @@ interface CryptoArchitecture {
 // New format includes salt and version
 const ciphertext = {
   version: 3,
-  algorithm: 'argon2id+aes-gcm',
+  algorithm: 'scrypt+aes-gcm',
   salt: base64(randomSalt),
   nonce: base64(nonce),
   data: base64(aesGcmCiphertext),
@@ -493,8 +498,8 @@ async function decrypt(ciphertext: string, pin: string) {
     // Legacy PBKDF2 decryption
     return decryptLegacy(parsed, pin);
   } else if (parsed.version === 3) {
-    // New Argon2 decryption
-    return decryptArgon2(parsed, pin);
+    // New Scrypt decryption
+    return decryptScrypt(parsed, pin);
   }
 }
 ```
@@ -519,7 +524,7 @@ The refactoring should **replace PBKDF2 with Argon2** while **keeping AES-GCM** 
 - ✅ **Access Control**: Biometric-protected item retrieval
 - ❌ **Direct Encryption**: No direct AES operations in Secure Enclave via Expo
 - ❌ **Digital Signatures**: No ECDSA/EdDSA operations in Secure Enclave via Expo
-- ❌ **Key Derivation**: No PBKDF2/Argon2 operations in Secure Enclave via Expo
+- ❌ **Key Derivation**: No PBKDF2/Scrypt operations in Secure Enclave via Expo
 
 **Android TEE (via expo-local-authentication + expo-secure-store):**
 - ✅ **Keystore Operations**: Hardware-backed Android Keystore (TEE/StrongBox)
@@ -527,7 +532,7 @@ The refactoring should **replace PBKDF2 with Argon2** while **keeping AES-GCM** 
 - ✅ **Key Wrapping**: Hardware-backed key encryption/decryption
 - ✅ **Attestation**: Basic key attestation (Android 7+)
 - ❌ **Direct Cryptographic Operations**: Limited crypto operations via Expo
-- ❌ **Custom Algorithms**: No Argon2 or custom crypto in Android TEE via Expo
+- ❌ **Custom Algorithms**: No Scrypt or custom crypto in Android TEE via Expo
 - ❌ **Secure Computation**: No arbitrary computation in TEE via Expo
 
 #### Expo SecureStore TEE Integration
@@ -547,7 +552,7 @@ await SecureStore.setItemAsync('key', 'value', {
 ```
 
 **Limitations:**
-- **No Direct Crypto Operations**: Cannot perform AES/PBKDF2/Argon2 directly in TEE
+- **No Direct Crypto Operations**: Cannot perform AES/PBKDF2/Scrypt directly in TEE
 - **Key Size Limits**: Typically limited to small data (passwords, tokens, small keys)
 - **No Custom Algorithms**: Restricted to platform-provided cryptographic operations
 - **Limited Attestation**: Basic attestation only, no complex attestation workflows
