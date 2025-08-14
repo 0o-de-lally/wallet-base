@@ -293,7 +293,7 @@ export async function secureEncryptWithPin(
       const pinBytes = stringToUint8Array(securePin);
 
       // Encrypt the data using the crypto module implementation
-      const encryptedBytes = await cryptoEncryptWithPin(dataBytes, pinBytes);
+      const encryptedBytes = cryptoEncryptWithPin(dataBytes, pinBytes);
 
       // Convert to base64 for storage
       return uint8ArrayToBase64(encryptedBytes);
@@ -323,7 +323,7 @@ export async function secureDecryptWithPin(
       const pinBytes = stringToUint8Array(securePin);
 
       // Decrypt with PIN using the crypto module implementation
-      const result = await cryptoDecryptWithPin(encryptedBytes, pinBytes);
+      const result = cryptoDecryptWithPin(encryptedBytes, pinBytes);
 
       if (!result) {
         return null;

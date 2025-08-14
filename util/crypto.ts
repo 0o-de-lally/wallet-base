@@ -4,36 +4,35 @@
  *
  * Security improvements:
  * - Per-record random salt (eliminates rainbow table attacks)
- * - Increased PBKDF2 iterations (100k vs 10k)
+ * - Scrypt key derivation (memory-hard, GPU-resistant)
  * - Removed static integrity token (relies on AES-GCM authentication)
  * - Cleaner error handling and logging
  */
 import { gcm } from "@noble/ciphers/aes";
-import { pbkdf2 } from "@noble/hashes/pbkdf2";
-import { sha256 } from "@noble/hashes/sha2";
+import { scrypt } from "@noble/hashes/scrypt";
 import { getRandomBytes } from "./random";
 
-// Number of iterations for PBKDF2 (increased for better security)
-const PBKDF2_ITERATIONS = 100000;
-// AES key length in bytes
-const AES_KEY_LENGTH = 32; // 256 bits
+// Scrypt parameters for secure key derivation
+const SCRYPT_CONFIG = {
+  N: 32768,    // Cost parameter (32K)
+  r: 8,        // Block size parameter
+  p: 1,        // Parallelization parameter
+  dkLen: 32    // Derived key length (256 bits)
+};
 
 /**
- * Generates a secure key from a PIN using PBKDF2 with SHA-256
+ * Generates a secure key from a PIN using Scrypt (memory-hard function)
  *
  * @param pinData - The PIN as Uint8Array
  * @param salt - The salt for key derivation as Uint8Array
- * @returns Promise resolving to a key suitable for AES encryption
+ * @returns Key suitable for AES encryption
  */
-async function generateKeyFromPin(
+function generateKeyFromPin(
   pinData: Uint8Array,
   salt: Uint8Array,
-): Promise<Uint8Array> {
-  // Use PBKDF2 for secure key derivation with provided salt
-  return pbkdf2(sha256, pinData, salt, {
-    c: PBKDF2_ITERATIONS,
-    dkLen: AES_KEY_LENGTH,
-  });
+): Uint8Array {
+  // Use Scrypt for memory-hard key derivation with provided salt
+  return scrypt(pinData, salt, SCRYPT_CONFIG);
 }
 
 /**
@@ -42,12 +41,12 @@ async function generateKeyFromPin(
  *
  * @param value - The data to encrypt as Uint8Array
  * @param pin - The PIN as Uint8Array
- * @returns Promise resolving to the encrypted data as Uint8Array (salt + nonce + ciphertext)
+ * @returns The encrypted data as Uint8Array (salt + nonce + ciphertext)
  */
-export async function encryptWithPin(
+export function encryptWithPin(
   value: Uint8Array,
   pin: Uint8Array,
-): Promise<Uint8Array> {
+): Uint8Array {
   if (!value || value.length === 0) return new Uint8Array(0);
 
   try {
@@ -55,7 +54,7 @@ export async function encryptWithPin(
     const salt = getRandomBytes(16);
 
     // Generate a key from the PIN and salt
-    const keyBytes = await generateKeyFromPin(pin, salt);
+    const keyBytes = generateKeyFromPin(pin, salt);
 
     // Generate a random nonce/IV using our random utility
     const nonce = getRandomBytes(12); // 12-byte nonce is standard for GCM
@@ -88,13 +87,13 @@ export async function encryptWithPin(
  *
  * @param encryptedValue - The encrypted data as Uint8Array (salt + nonce + ciphertext)
  * @param pin - The PIN as Uint8Array
- * @returns Promise resolving to an object with the decrypted data and verification status,
+ * @returns An object with the decrypted data and verification status,
  *          or null if decryption fails
  */
-export async function decryptWithPin(
+export function decryptWithPin(
   encryptedValue: Uint8Array,
   pin: Uint8Array,
-): Promise<{ value: Uint8Array; verified: boolean } | null> {
+): { value: Uint8Array; verified: boolean } | null {
   if (!encryptedValue || encryptedValue.length < 28) {
     // 16 (salt) + 12 (nonce) minimum
     return null;
@@ -107,7 +106,7 @@ export async function decryptWithPin(
     const ciphertext = encryptedValue.slice(28);
 
     // Generate key from PIN and extracted salt
-    const keyBytes = await generateKeyFromPin(pin, salt);
+    const keyBytes = generateKeyFromPin(pin, salt);
 
     // Create AES-GCM decipher
     const decipher = gcm(keyBytes, nonce);
@@ -116,7 +115,7 @@ export async function decryptWithPin(
     let decryptedBytes;
     try {
       decryptedBytes = decipher.decrypt(ciphertext);
-    } catch (e) {
+    } catch {
       // AES-GCM authentication failed - wrong PIN or corrupted data
       return { value: new Uint8Array(0), verified: false };
     }

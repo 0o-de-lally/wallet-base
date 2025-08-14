@@ -23,7 +23,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
     if (existingSalt) {
       return Uint8Array.from(atob(existingSalt), (c) => c.charCodeAt(0));
     }
-  } catch (error) {
+  } catch {
     console.warn("Could not retrieve existing device salt, generating new one");
   }
 

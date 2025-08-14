@@ -194,9 +194,8 @@ validation:
     - "Check that all changes have corresponding tests"
 
   post_implementation:
-    - "Run full test suite"
-    - "Verify security improvements are working as expected"
-    - "Confirm backward compatibility is maintained"
+    - "Run `bun lint` to check for lint errors"
+    - "Run `bun format` to check for format errors"
     - "Validate that all documentation is updated"
 
 error_handling:

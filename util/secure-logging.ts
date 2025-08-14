@@ -7,13 +7,16 @@
 
 import { reportErrorAuto } from "./error-utils";
 
+// Type for console log arguments
+type LogValue = string | number | boolean | object | null | undefined;
+
 // Check if we're in development mode
 const isDevelopment = __DEV__ || process.env.NODE_ENV === "development";
 
 /**
  * Safe console.log that only logs in development
  */
-export function devLog(...args: any[]): void {
+export function devLog(...args: LogValue[]): void {
   if (isDevelopment) {
     console.log(...args);
   }
@@ -22,7 +25,7 @@ export function devLog(...args: any[]): void {
 /**
  * Safe console.warn that only logs in development
  */
-export function devWarn(...args: any[]): void {
+export function devWarn(...args: LogValue[]): void {
   if (isDevelopment) {
     console.warn(...args);
   }
@@ -31,7 +34,7 @@ export function devWarn(...args: any[]): void {
 /**
  * Safe console.error that logs in development and reports in production
  */
-export function devError(context: string, error: any, ...args: any[]): void {
+export function devError(context: string, error: unknown, ...args: LogValue[]): void {
   if (isDevelopment) {
     console.error(context, error, ...args);
   } else {
@@ -45,7 +48,7 @@ export function devError(context: string, error: any, ...args: any[]): void {
  */
 export function securityLog(
   message: string,
-  context?: Record<string, any>,
+  context?: Record<string, LogValue>,
 ): void {
   if (isDevelopment) {
     // Filter out potentially sensitive keys
@@ -58,8 +61,8 @@ export function securityLog(
  * Filter out sensitive data from log context
  */
 function filterSensitiveData(
-  context: Record<string, any>,
-): Record<string, any> {
+  context: Record<string, LogValue>,
+): Record<string, LogValue> {
   const sensitiveKeys = [
     "pin",
     "password",
@@ -69,7 +72,7 @@ function filterSensitiveData(
     "key",
     "secret",
   ];
-  const filtered: Record<string, any> = {};
+  const filtered: Record<string, LogValue> = {};
 
   for (const [key, value] of Object.entries(context)) {
     const lowerKey = key.toLowerCase();
@@ -96,7 +99,7 @@ export function perfLog(operation: string, startTime: number): void {
 /**
  * Audit logging for security events
  */
-export function auditLog(event: string, context?: Record<string, any>): void {
+export function auditLog(event: string, context?: Record<string, LogValue>): void {
   const safeContext = context ? filterSensitiveData(context) : undefined;
 
   if (isDevelopment) {

@@ -189,13 +189,13 @@ export async function testCryptoImplementation(): Promise<TestResult> {
     const pinBytes = stringToUint8Array(testPin);
 
     // Encrypt
-    const encrypted = await encryptWithPin(dataBytes, pinBytes);
+    const encrypted = encryptWithPin(dataBytes, pinBytes);
 
     // Check format: should be salt(16) + nonce(12) + ciphertext
     const hasCorrectFormat = encrypted.length >= 28; // minimum size
 
     // Decrypt with correct PIN
-    const decrypted = await decryptWithPin(encrypted, pinBytes);
+    const decrypted = decryptWithPin(encrypted, pinBytes);
     const correctDecryption =
       decrypted &&
       decrypted.verified &&
@@ -203,11 +203,11 @@ export async function testCryptoImplementation(): Promise<TestResult> {
 
     // Try decrypt with wrong PIN
     const wrongPinBytes = stringToUint8Array("wrongpin");
-    const wrongDecrypted = await decryptWithPin(encrypted, wrongPinBytes);
+    const wrongDecrypted = decryptWithPin(encrypted, wrongPinBytes);
     const wrongPinRejected = !wrongDecrypted || !wrongDecrypted.verified;
 
     // Test multiple encryptions produce different outputs (due to random salt/nonce)
-    const encrypted2 = await encryptWithPin(dataBytes, pinBytes);
+    const encrypted2 = encryptWithPin(dataBytes, pinBytes);
     const differentOutputs =
       uint8ArrayToBase64(encrypted) !== uint8ArrayToBase64(encrypted2);
 
@@ -347,15 +347,17 @@ export async function validatePhase1Security(): Promise<boolean> {
       ),
 
       // Check crypto uses new format
-      encryptWithPin(
-        stringToUint8Array("test"),
-        stringToUint8Array("test123"),
+      Promise.resolve(
+        encryptWithPin(
+          stringToUint8Array("test"),
+          stringToUint8Array("test123"),
+        )
       ).then((encrypted) => encrypted.length >= 28),
     ]);
 
     return tests.every((result) => result === true);
   } catch (error) {
-    devLog("Phase 1 security validation failed:", error);
+    devLog("Phase 1 security validation failed:", error instanceof Error ? error.message : String(error));
     return false;
   }
 }
