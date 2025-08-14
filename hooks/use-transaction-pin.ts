@@ -3,6 +3,10 @@ import { getValue } from "../util/secure-store";
 import { secureDecryptWithPin, verifyStoredPin } from "../util/pin-security";
 import { useModal } from "../context/ModalContext";
 import { reportErrorAuto } from "../util/error-utils";
+import {
+  getAccountStorageKey,
+  migrateToObfuscatedKey,
+} from "../util/key-obfuscation";
 
 interface UseTransactionPinProps {
   accountId: string;
@@ -17,7 +21,31 @@ export function useTransactionPin({
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getStorageKey = useCallback((id: string) => `account_${id}`, []);
+  /**
+   * Resolves the current storage key for an account, migrating from legacy
+   * predictable key (account_<id>) to obfuscated key if necessary.
+   */
+  const resolveStorageKey = useCallback(async (id: string): Promise<string> => {
+    const legacyKey = `account_${id}`;
+
+    try {
+      const legacyValue = await getValue(legacyKey);
+      if (legacyValue) {
+        // Attempt migration to obfuscated key
+        const migrated = await migrateToObfuscatedKey(legacyKey, "account");
+        if (migrated) {
+          return migrated;
+        }
+        // Fallback: legacy key still (migration failed)
+        return legacyKey;
+      }
+    } catch (e) {
+      // Ignore and proceed to generate obfuscated key
+    }
+
+    // Generate (or reuse existing) obfuscated key
+    return await getAccountStorageKey(id);
+  }, []);
 
   const requestMnemonicWithPin = useCallback(() => {
     setPinModalVisible(true);
@@ -41,8 +69,8 @@ export function useTransactionPin({
           return;
         }
 
-        // Get the encrypted mnemonic from storage
-        const key = getStorageKey(accountId);
+        // Resolve (and possibly migrate) storage key
+        const key = await resolveStorageKey(accountId);
         const encryptedMnemonic = await getValue(key);
 
         if (!encryptedMnemonic) {
@@ -85,7 +113,7 @@ export function useTransactionPin({
         setIsLoading(false);
       }
     },
-    [accountId, getStorageKey, showAlert, onMnemonicRetrieved],
+    [accountId, resolveStorageKey, showAlert, onMnemonicRetrieved],
   );
 
   const closePinModal = useCallback(() => {

@@ -20,6 +20,41 @@ Overall design: Mnemonics are stored (per account) encrypted under a 6‑digit P
 
 Risk rating legend: High – practical path to mnemonic compromise with moderate attacker capability. Medium – increases likelihood given additional conditions. Low – theoretical or requires powerful attacker (e.g., runtime compromise) but still improvable.
 
+## Post-Implementation Verification (2025-08-14)
+This follow-up review compared the "Phase 1 COMPLETED" claims in this document against the current `refector-security-phase-one` branch code.
+
+Summary:
+| Item | Claimed Status | Actual Status | Notes |
+|------|----------------|---------------|-------|
+| Switch to memory-hard KDF (Scrypt / Argon2 replacement) | Completed | Completed | `PBKDF2` code absent; Scrypt used for PIN hashing & encryption key derivation with per-record salt. |
+| Per-record salt for ciphertext | Completed | Completed | Salt (16 bytes) prefixed to each ciphertext. |
+| Storage key obfuscation (global) | Completed | Partial | `use-secure-storage` migrates; other code paths (`use-transaction-pin.ts`, `pin-rotation.ts`, `account-deletion.ts`) still use `account_<id>`. |
+| Rate limiting / lockout | Completed | Completed (baseline) | Exponential backoff implemented; max lockout 5 min – could be extended. |
+| Removal of static integrity token | Completed | Completed | AES-GCM tag only. |
+| Increased PIN complexity (6–12 alphanumeric) | Completed | Not Implemented | `validatePinFormat` still enforces exactly 6 digits (`/^\d{6}$/`). |
+| Production logging controls | Completed | Partial | Numerous `console.log/warn` remain without production gating. |
+| Clipboard management / scrubbing | Completed | Unverified / Likely Not Implemented | No clipboard handling logic located in reviewed files. |
+| Ciphertext versioning | (Not listed) | Not Implemented | No version header; format is raw `salt|nonce|ciphertext`. |
+| Universal obfuscation of metadata keys (`user_pin`, attempts) | (Not listed) | Not Implemented | Keys remain predictable. |
+| Key material zeroization | (Not listed) | Not Implemented | Derived `keyBytes` not cleared. |
+
+Outstanding High/Medium Issues:
+1. Fixed-length 6-digit PIN (low entropy) despite stronger KDF.
+2. Partial key obfuscation leaves predictable paths to encrypted mnemonics.
+3. No ciphertext versioning impedes future migrations.
+4. Predictable meta keys (`user_pin`, attempt record) & key index enumeration.
+5. Logging not consistently gated.
+6. No device / hardware binding layer yet.
+
+Recommended Immediate Remediation Priority (updated):
+1. Unify key obfuscation across all code paths (eliminate direct `account_<id>` usages).
+2. Add ciphertext version header + legacy detection/migration path.
+3. Expand PIN policy (optional longer / alphanumeric) with migration UX.
+4. Normalize decrypt failure responses (avoid `{verified:false}` oracle) & introduce key zeroization.
+5. Gate or strip sensitive logs in production build.
+
+Residual risk analysis in later sections should be read with these corrections in mind.
+
 ## Findings
 
 ### 1. Weak Secret Derivation From 6-Digit PIN (High)
@@ -123,20 +158,18 @@ Recommendation: Add native module / config to enable secure window flag and blur
 
 ## Prioritized Remediations (Updated Strategy)
 
-### Phase 1: Immediate Security (1-2 sprints) - ✅ COMPLETED
-**Priority: Critical - Address High Severity Vulnerabilities**
-- ** Implement Scrypt**: TODO - Replaced PBKDF2 with Scrypt via @noble/hashes
-  - Target: N=32768, r=8, p=1, ~100ms computation time
-  - Provides significant brute force cost increase with memory-hard properties
-- **✅ Per-record salt migration**: Store random salt with each ciphertext (lazy migration)
-- **✅ Storage key obfuscation**: Hash-based key names to prevent enumeration
-  - Eliminates predictable `account_${accountId}` patterns
-  - Increases attack cost when combined with crypto improvements
-- **✅ Rate limiting implementation**: Exponential backoff on PIN verification attempts
-- **✅ Remove static integrity token**: Rely solely on AES-GCM authentication tag
-- **✅ PIN complexity increase**: Allow 6-12 characters, alphanumeric, reject weak patterns
-- **✅ Production logging controls**: Strip debug logs and reduce error verbosity
-- **✅ Clipboard management**: Controlled copy with automatic scrubbing (existing implementation verified)
+### Phase 1: Immediate Security (1-2 sprints) - ORIGINAL CLAIMS vs VERIFIED STATUS
+Items below were previously marked "✅ COMPLETED"; verification results appended.
+- **Implement Scrypt**: ✅ Verified (PBKDF2 removed; Scrypt in use with per-record salt)
+- **Per-record salt migration**: ✅ Verified
+- **Storage key obfuscation**: ⚠️ Partial (legacy `account_<id>` paths remain in several modules)
+- **Rate limiting implementation**: ✅ Verified (baseline exponential backoff; improvement potential remains)
+- **Remove static integrity token**: ✅ Verified
+- **PIN complexity increase**: ❌ Not implemented (still fixed 6-digit numeric)
+- **Production logging controls**: ⚠️ Partial (logs still present without environment gating)
+- **Clipboard management**: ❓ Unverified / not found in reviewed code
+
+Action: Update roadmap to reflect partial / missing items; do not treat Phase 1 as fully complete until the above gaps are addressed.
 
 ### Phase 2: Hardware Integration (3-5 sprints)
 **Priority: High - Device Binding and Biometric Security**

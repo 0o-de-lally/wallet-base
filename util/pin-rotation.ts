@@ -6,13 +6,14 @@
  */
 
 import { appConfig } from "./app-config-store";
-import { getAllKeys, getValue, saveValue } from "./secure-store";
+import { getAllKeys, getValue, saveValue, deleteValue } from "./secure-store";
 import {
   secureDecryptWithPin,
   secureEncryptWithPin,
   hashPin,
 } from "./pin-security";
 import { reportErrorAuto } from "./error-utils";
+import { getAccountStorageKey } from "./key-obfuscation";
 
 interface AccountWithStoredData {
   accountId: string;
@@ -42,42 +43,36 @@ export async function getAllAccountsWithStoredData(): Promise<
   AccountWithStoredData[]
 > {
   try {
-    // Get all keys from secure storage
-    const allKeys = await getAllKeys();
-    console.log("All storage keys:", allKeys);
-
-    // Filter for account keys (pattern: account_${accountId})
-    const accountKeys = allKeys.filter((key) => key.startsWith("account_"));
-    console.log("Filtered account keys:", accountKeys);
-
-    // Extract account IDs and match with profile data
-    const accountsWithData: AccountWithStoredData[] = [];
     const profiles = appConfig.profiles.get();
-    console.log("Current profiles:", profiles);
+    const results: AccountWithStoredData[] = [];
 
-    for (const key of accountKeys) {
-      const accountId = key.replace("account_", "");
-      console.log(`Processing account key: ${key}, extracted ID: ${accountId}`);
-
-      // Find this account in the profiles
-      for (const [profileName, profile] of Object.entries(profiles)) {
-        console.log(`Checking profile ${profileName}:`, profile.accounts);
-        const account = profile.accounts.find((acc) => acc.id === accountId);
-        if (account) {
-          console.log(`Found matching account:`, account);
-          accountsWithData.push({
+    for (const [profileName, profile] of Object.entries(profiles)) {
+      for (const account of profile.accounts) {
+        const legacyKey = `account_${account.id}`;
+        let hasData = false;
+        try {
+          const legacyVal = await getValue(legacyKey);
+          if (legacyVal) {
+            hasData = true;
+          } else {
+            const obfKey = await getAccountStorageKey(account.id);
+            const obfVal = await getValue(obfKey);
+            hasData = obfVal !== null;
+          }
+        } catch {
+          // ignore per-account errors
+        }
+        if (hasData) {
+          results.push({
             accountId: account.id,
             profileName,
             nickname: account.nickname,
             accountAddress: account.account_address,
           });
-          break;
         }
       }
     }
-
-    console.log("Final accounts with data:", accountsWithData);
-    return accountsWithData;
+    return results;
   } catch (error) {
     console.error("Error getting accounts with stored data:", error);
     reportErrorAuto("getAllAccountsWithStoredData", error);
@@ -178,10 +173,23 @@ async function reencryptAccountData(
   newPin: string,
 ): Promise<boolean> {
   try {
-    const storageKey = `account_${accountId}`;
+    const legacyKey = `account_${accountId}`;
+    let sourceKey: string | null = null;
+    let encryptedData: string | null = await getValue(legacyKey);
+    if (encryptedData) {
+      sourceKey = legacyKey;
+    } else {
+      const obfKey = await getAccountStorageKey(accountId);
+      encryptedData = await getValue(obfKey);
+      if (encryptedData) {
+        sourceKey = obfKey;
+      }
+    }
 
-    // Get the encrypted data
-    const encryptedData = await getValue(storageKey);
+    if (!sourceKey || !encryptedData) {
+      console.warn(`No encrypted data found for account ${accountId}`);
+      return true;
+    }
     if (!encryptedData) {
       console.warn(`No encrypted data found for account ${accountId}`);
       return true; // No data to re-encrypt is not a failure
@@ -208,8 +216,16 @@ async function reencryptAccountData(
       return false;
     }
 
-    // Save the re-encrypted data
-    await saveValue(storageKey, newEncryptedData);
+    // Determine target (always obfuscated) key
+    const targetKey = await getAccountStorageKey(accountId);
+    await saveValue(targetKey, newEncryptedData);
+
+    // If we migrated from legacy key, delete it
+    if (sourceKey === legacyKey && targetKey !== legacyKey) {
+      try {
+        await deleteValue(legacyKey);
+      } catch {}
+    }
 
     console.log(`Successfully re-encrypted data for account ${accountId}`);
     return true;
@@ -242,8 +258,12 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
     );
 
     for (const account of accountsToTest) {
-      const storageKey = `account_${account.accountId}`;
-      const encryptedData = await getValue(storageKey);
+      const legacyKey = `account_${account.accountId}`;
+      let encryptedData = await getValue(legacyKey);
+      if (!encryptedData) {
+        const obfKey = await getAccountStorageKey(account.accountId);
+        encryptedData = await getValue(obfKey);
+      }
 
       if (encryptedData) {
         const decryptResult = await secureDecryptWithPin(encryptedData, oldPin);
@@ -283,16 +303,23 @@ export async function debugStorageKeys(): Promise<void> {
     const allKeys = await getAllKeys();
     console.log("All keys in storage:", allKeys);
 
-    const accountKeys = allKeys.filter((key) => key.startsWith("account_"));
-    console.log("Account keys found:", accountKeys);
+    const accountKeys = allKeys.filter(
+      (key) => key.startsWith("account_") || key.startsWith("obf_"),
+    );
 
     const profiles = appConfig.profiles.get();
     console.log("Current profiles config:", profiles);
 
     // Test each account key
     for (const key of accountKeys) {
-      const accountId = key.replace("account_", "");
-      console.log(`Testing key: ${key} -> account ID: ${accountId}`);
+      let accountId = key;
+      if (key.startsWith("account_")) {
+        accountId = key.replace("account_", "");
+      } else if (key.startsWith("obf_")) {
+        // Cannot directly derive accountId from obfuscated key; skip mapping here
+        console.log(`Obfuscated key detected: ${key}`);
+      }
+      console.log(`Testing key: ${key} -> derived ID: ${accountId}`);
 
       const data = await getValue(key);
       console.log(`Data exists for ${key}:`, data !== null);

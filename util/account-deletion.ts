@@ -1,5 +1,6 @@
-import { deleteValue } from "./secure-store";
+import { deleteValue, getValue } from "./secure-store";
 import { deleteAccount } from "./app-config-store";
+import { getAccountStorageKey } from "./key-obfuscation";
 
 /**
  * Completely deletes an account, including:
@@ -14,20 +15,25 @@ export async function deleteAccountCompletely(
   accountId: string,
 ): Promise<boolean> {
   try {
-    // Step 1: Remove mnemonic from secure storage
-    // The mnemonic is stored with the key pattern `account_${accountId}`
-    const mnemonicKey = `account_${accountId}`;
+    // Step 1: Remove mnemonic from secure storage (handle legacy & obfuscated)
+    const legacyKey = `account_${accountId}`;
+    const obfKey = await getAccountStorageKey(accountId);
 
-    try {
-      await deleteValue(mnemonicKey);
-      console.log(`Deleted mnemonic for account ${accountId}`);
-    } catch (error) {
-      console.warn(
-        `Failed to delete mnemonic for account ${accountId}:`,
-        error,
-      );
-      // Continue with deletion even if mnemonic deletion fails
-      // (might not exist or already deleted)
+    for (const key of [legacyKey, obfKey]) {
+      try {
+        const existing = await getValue(key);
+        if (existing) {
+          await deleteValue(key);
+          console.log(
+            `Deleted stored secret for account ${accountId} (key=${key})`,
+          );
+        }
+      } catch (error) {
+        console.warn(
+          `Failed to delete key ${key} for account ${accountId}:`,
+          error,
+        );
+      }
     }
 
     // Step 2 & 3: Delete account data and remove from profile
