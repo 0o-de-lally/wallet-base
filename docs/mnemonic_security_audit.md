@@ -266,7 +266,452 @@ Recommendation: Add native module / config to enable secure window flag and blur
 ## Residual Risks
 Even with improvements, a fully compromised device (rooted with debugger) can usually extract mnemonics eventually. Defense in depth reduces exposure window and increases attack cost.
 
-## Strategic Security Analysis: TEE vs Argon2
+## Argon2 vs AES: Complementary Security Functions
+
+### Why Both Argon2 AND AES Are Required
+
+**Argon2** and **AES** serve fundamentally different purposes in cryptographic security and are **complementary, not alternatives**:
+
+#### Argon2: Key Derivation Function (KDF)
+- **Purpose**: Transforms low-entropy inputs (PINs) into high-entropy cryptographic keys
+- **Security Goal**: Resist brute force attacks through computational cost
+- **Function**: `PIN + Salt → Cryptographic Key`
+- **Characteristics**: 
+  - Memory-hard (requires significant RAM)
+  - Time-consuming (tunable computational cost)
+  - Produces fixed-size output (32 bytes for AES-256)
+
+#### AES: Symmetric Encryption Algorithm
+- **Purpose**: Encrypts/decrypts actual data using cryptographic keys
+- **Security Goal**: Provide confidentiality and integrity for stored data
+- **Function**: `Data + Key → Encrypted Data`
+- **Characteristics**:
+  - Fast symmetric encryption
+  - Authenticated encryption (AES-GCM)
+  - Industry standard for data protection
+
+### Current Architecture (PBKDF2 + AES)
+```typescript
+// Current flow:
+PIN → PBKDF2(PIN, salt, 10k iter) → AES Key → AES-GCM(mnemonic) → Ciphertext
+```
+
+### Proposed Architecture (Argon2 + AES)
+```typescript
+// Enhanced flow:
+PIN → Argon2id(PIN, salt, config) → AES Key → AES-GCM(mnemonic) → Ciphertext
+```
+
+### Why You Cannot Replace AES with Argon2
+
+#### 1. **Different Cryptographic Primitives**
+- **Argon2**: Key Derivation Function (not encryption)
+- **AES**: Symmetric encryption algorithm
+- **Analogy**: Argon2 is like a key factory, AES is like a lock
+
+#### 2. **Output Characteristics**
+- **Argon2**: Fixed output size (32 bytes), deterministic for same inputs
+- **AES**: Variable output size, includes authentication tag, requires nonce
+
+#### 3. **Security Properties**
+- **Argon2**: Designed for password hashing, not data encryption
+- **AES-GCM**: Provides authenticated encryption with integrity verification
+
+#### 4. **Performance Considerations**
+- **Argon2**: Intentionally slow (100ms+), used once per operation
+- **AES**: Extremely fast, suitable for large data encryption
+
+### Refactoring Strategy: Replace PBKDF2, Keep AES
+
+#### Before (Current - Vulnerable)
+```typescript
+async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8Array> {
+  // ❌ Weak: PBKDF2 with static salt
+  const key = pbkdf2(sha256, pin, STATIC_SALT, {
+    c: 10000,         // Too few iterations
+    dkLen: 32
+  });
+  
+  // ✅ Good: AES-GCM encryption
+  const cipher = gcm(key, nonce);
+  return cipher.encrypt(data);
+}
+```
+
+#### After (Proposed - Secure)
+```typescript
+async function encryptWithPin(data: Uint8Array, pin: Uint8Array): Promise<Uint8Array> {
+  // ✅ Strong: Argon2id with per-record salt
+  const salt = getRandomBytes(16);
+  const key = await argon2id({
+    password: pin,
+    salt: salt,
+    timeCost: 2,      // iterations
+    memoryCost: 65536, // 64MB memory
+    parallelism: 1,
+    hashLength: 32
+  });
+  
+  // ✅ Good: Same AES-GCM encryption
+  const cipher = gcm(key, nonce);
+  const ciphertext = cipher.encrypt(data);
+  
+  // Store salt with ciphertext for decryption
+  return concatArrays(salt, nonce, ciphertext);
+}
+```
+
+### Security Benefits of Argon2 + AES Combination
+
+#### 1. **Defense in Depth**
+- **Argon2**: Prevents brute force attacks on PIN
+- **AES-GCM**: Provides data confidentiality and integrity
+- **Combined**: Attacker must break both layers
+
+#### 2. **Complementary Strengths**
+- **Argon2**: Memory-hard, GPU-resistant key derivation
+- **AES**: Fast, hardware-accelerated data encryption
+- **Result**: Secure and performant overall system
+
+#### 3. **Industry Standard Architecture**
+```
+User Input → KDF (Argon2) → Encryption Key → Symmetric Cipher (AES) → Protected Data
+```
+This is the standard pattern used by:
+- Password managers (1Password, Bitwarden)
+- Disk encryption (LUKS, FileVault)
+- Cryptocurrency wallets (hardware and software)
+
+### Alternative Approaches (Not Recommended)
+
+#### Option 1: Argon2 Only (❌ Problematic)
+```typescript
+// ❌ Misuse of Argon2 for encryption
+const encrypted = argon2id(mnemonic + pin + nonce, salt, config);
+```
+**Problems:**
+- Argon2 not designed for encryption
+- No authentication/integrity verification
+- Deterministic output (same input = same output)
+- No proper nonce handling
+
+#### Option 2: AES with Better Random Key (❌ Incomplete)
+```typescript
+// ❌ Strong encryption but weak key protection
+const randomKey = getRandomBytes(32);  // Strong key
+const encrypted = aesGcmEncrypt(mnemonic, randomKey);
+// But how do we securely derive randomKey from PIN?
+```
+**Problems:**
+- Still need KDF to derive key from PIN
+- Back to square one with key derivation problem
+
+### Hardware Integration Considerations
+
+#### TEE + Argon2 + AES Architecture
+```typescript
+// Phase 1: Argon2 key derivation (JavaScript)
+const derivedKey = await argon2id(pin, salt, config);
+
+// Phase 2: Store derived key in TEE
+await SecureStore.setItemAsync('derived_key', base64Key, {
+  requireAuthentication: true
+});
+
+// Phase 3: AES encryption with TEE-protected key
+const protectedKey = await SecureStore.getItemAsync('derived_key', {
+  requireAuthentication: true
+});
+const encrypted = aesGcmEncrypt(mnemonic, base64ToUint8Array(protectedKey));
+```
+
+### Implementation Recommendations
+
+#### 1. **Keep AES-GCM for Data Encryption**
+- Proven security properties
+- Hardware acceleration available
+- Industry standard for symmetric encryption
+- Authenticated encryption prevents tampering
+
+#### 2. **Replace PBKDF2 with Argon2 for Key Derivation**
+- Memory-hard function resists GPU attacks
+- Configurable security parameters
+- Designed specifically for password-based key derivation
+- OWASP recommended standard
+
+#### 3. **Maintain Clear Separation of Concerns**
+```typescript
+interface CryptoArchitecture {
+  keyDerivation: 'argon2id';        // PIN → Key
+  dataEncryption: 'aes-256-gcm';    // Key + Data → Ciphertext
+  keyProtection: 'tee-hardware';    // Additional key wrapping
+  randomGeneration: 'hardware-rng'; // Entropy source
+}
+```
+
+### Migration Path
+
+#### Step 1: Replace Key Derivation Function
+```typescript
+// Change only the KDF, keep AES unchanged
+- const key = pbkdf2(sha256, pin, STATIC_SALT, {c: 10000, dkLen: 32});
++ const key = await argon2id({password: pin, salt: randomSalt, ...config});
+```
+
+#### Step 2: Update Ciphertext Format
+```typescript
+// New format includes salt and version
+const ciphertext = {
+  version: 3,
+  algorithm: 'argon2id+aes-gcm',
+  salt: base64(randomSalt),
+  nonce: base64(nonce),
+  data: base64(aesGcmCiphertext),
+  parameters: {timeCost: 2, memoryCost: 65536, parallelism: 1}
+};
+```
+
+#### Step 3: Backward Compatibility
+```typescript
+async function decrypt(ciphertext: string, pin: string) {
+  const parsed = JSON.parse(ciphertext);
+  
+  if (parsed.version === 1) {
+    // Legacy PBKDF2 decryption
+    return decryptLegacy(parsed, pin);
+  } else if (parsed.version === 3) {
+    // New Argon2 decryption
+    return decryptArgon2(parsed, pin);
+  }
+}
+```
+
+### Conclusion
+
+**Argon2 and AES are complementary technologies that solve different security problems:**
+
+- **Argon2**: Securely derives strong keys from weak PINs (replaces PBKDF2)
+- **AES**: Encrypts data using those strong keys (remains essential)
+
+The refactoring should **replace PBKDF2 with Argon2** while **keeping AES-GCM** for data encryption. This provides the optimal balance of security (memory-hard key derivation) and performance (fast symmetric encryption).
+
+### Current Platform Capabilities Assessment
+
+#### Available TEE Operations (Via Current Dependencies)
+
+**iOS Secure Enclave (via expo-local-authentication + expo-secure-store):**
+- ✅ **Key Storage**: Hardware-backed key storage in Secure Enclave
+- ✅ **Biometric Gating**: Touch ID/Face ID for key access authorization
+- ✅ **Key Generation**: Hardware random number generation in Secure Enclave
+- ✅ **Access Control**: Biometric-protected item retrieval
+- ❌ **Direct Encryption**: No direct AES operations in Secure Enclave via Expo
+- ❌ **Digital Signatures**: No ECDSA/EdDSA operations in Secure Enclave via Expo
+- ❌ **Key Derivation**: No PBKDF2/Argon2 operations in Secure Enclave via Expo
+
+**Android TEE (via expo-local-authentication + expo-secure-store):**
+- ✅ **Keystore Operations**: Hardware-backed Android Keystore (TEE/StrongBox)
+- ✅ **Biometric Gating**: Fingerprint/Face authentication for key access
+- ✅ **Key Wrapping**: Hardware-backed key encryption/decryption
+- ✅ **Attestation**: Basic key attestation (Android 7+)
+- ❌ **Direct Cryptographic Operations**: Limited crypto operations via Expo
+- ❌ **Custom Algorithms**: No Argon2 or custom crypto in Android TEE via Expo
+- ❌ **Secure Computation**: No arbitrary computation in TEE via Expo
+
+#### Expo SecureStore TEE Integration
+
+**Current Implementation (`expo-secure-store`):**
+```typescript
+// What's currently possible:
+await SecureStore.setItemAsync('key', 'value', {
+  requireAuthentication: true,        // ✅ Biometric gate
+  authenticationPrompt: 'message',    // ✅ Custom prompt
+  keychainService: 'wallet-service'   // ✅ Keychain isolation
+});
+
+// Hardware-backed on both platforms:
+// iOS: Stored in Secure Enclave-protected Keychain
+// Android: Stored in Android Keystore (TEE/StrongBox when available)
+```
+
+**Limitations:**
+- **No Direct Crypto Operations**: Cannot perform AES/PBKDF2/Argon2 directly in TEE
+- **Key Size Limits**: Typically limited to small data (passwords, tokens, small keys)
+- **No Custom Algorithms**: Restricted to platform-provided cryptographic operations
+- **Limited Attestation**: Basic attestation only, no complex attestation workflows
+
+### Feasible TEE Operations for Each Recommendation
+
+#### 1. Argon2 Key Derivation
+**TEE Feasibility: ❌ Not Directly Possible**
+- **Current Limitation**: Neither iOS Secure Enclave nor Android TEE expose Argon2 via Expo
+- **Workaround**: Store Argon2-derived key in TEE after JavaScript computation
+- **Implementation**:
+  ```typescript
+  // Phase 1: Argon2 in JavaScript, store result in TEE
+  const derivedKey = await argon2id(pin, salt, config); // JS operation
+  await SecureStore.setItemAsync('derived_key', base64Key, {
+    requireAuthentication: true  // Store in TEE with biometric gate
+  });
+  ```
+
+#### 2. Hardware Key Wrapping
+**TEE Feasibility: ✅ Fully Supported**
+- **iOS**: Secure Enclave generates and stores wrapping keys
+- **Android**: Android Keystore provides hardware-backed key wrapping
+- **Implementation**:
+  ```typescript
+  // Generate master key in TEE
+  const masterKey = getRandomBytes(32);
+  await SecureStore.setItemAsync('master_key', uint8ArrayToBase64(masterKey), {
+    requireAuthentication: true,
+    authenticationPrompt: 'Authorize key generation'
+  });
+  
+  // Use master key to wrap data encryption keys
+  const dataKey = getRandomBytes(32);
+  const wrappedDataKey = await aesGcmEncrypt(dataKey, masterKey);
+  ```
+
+#### 3. Biometric Authentication Gating
+**TEE Feasibility: ✅ Fully Supported**
+- **iOS**: Face ID/Touch ID integration with Secure Enclave
+- **Android**: BiometricPrompt with Keystore-backed authentication
+- **Implementation**:
+  ```typescript
+  // All sensitive key access requires biometrics
+  const sensitiveKey = await SecureStore.getItemAsync('sensitive_key', {
+    requireAuthentication: true,
+    authenticationPrompt: 'Access wallet encryption key'
+  });
+  ```
+
+#### 4. Device Binding / Hardware Attestation
+**TEE Feasibility: ✅ Partially Supported**
+- **iOS**: Hardware-specific key generation (device-bound)
+- **Android**: Basic attestation available, StrongBox on newer devices
+- **Implementation**:
+  ```typescript
+  // Keys generated in TEE are automatically device-bound
+  // Cannot be extracted or used on different devices
+  const deviceBoundKey = await SecureStore.setItemAsync('device_key', keyData, {
+    requireAuthentication: true
+  });
+  ```
+
+#### 5. Secure Random Generation
+**TEE Feasibility: ✅ Fully Supported**
+- **iOS**: Secure Enclave provides hardware entropy
+- **Android**: TEE/TRNG provides hardware entropy
+- **Current Implementation**: Already using `react-native-get-random-values` (hardware-backed)
+
+#### 6. Integrity Verification
+**TEE Feasibility: ✅ Partially Supported**
+- **iOS**: Can verify key integrity via Keychain item existence/authentication
+- **Android**: Key attestation provides some integrity verification
+- **Implementation**:
+  ```typescript
+  // Verify key hasn't been tampered with
+  try {
+    const key = await SecureStore.getItemAsync('integrity_key', {
+      requireAuthentication: true
+    });
+    return key !== null; // Key exists and passed biometric check
+  } catch (error) {
+    return false; // Key compromised or device tampered
+  }
+  ```
+
+#### 7. AES Encryption/Decryption
+**TEE Feasibility: ❌ Not Directly Possible via Expo**
+- **Current Limitation**: No direct AES operations in TEE via Expo APIs
+- **Workaround**: Use TEE for key protection, perform AES in JavaScript
+- **Future Enhancement**: Native module could expose platform TEE crypto APIs
+
+#### 8. Digital Signatures
+**TEE Feasibility: ❌ Not Directly Possible via Expo**
+- **Current Limitation**: No ECDSA/EdDSA operations exposed via Expo
+- **Potential**: Could be implemented via native modules for transaction signing
+
+### Recommended TEE Integration Strategy
+
+#### Phase 1: Immediate TEE Utilization (Current Expo Capabilities)
+```typescript
+// 1. Device Master Key in TEE
+const masterKey = getRandomBytes(32);
+await SecureStore.setItemAsync('device_master_key', base64Key, {
+  requireAuthentication: true,
+  authenticationPrompt: 'Initialize wallet security'
+});
+
+// 2. Biometric-Gated Key Access
+const wrappingKey = await SecureStore.getItemAsync('device_master_key', {
+  requireAuthentication: true,
+  authenticationPrompt: 'Access wallet encryption'
+});
+
+// 3. Hardware-Wrapped Data Keys
+const dataKey = getRandomBytes(32);
+const wrappedKey = await aesGcmEncrypt(dataKey, base64ToUint8Array(wrappingKey));
+const encryptedMnemonic = await aesGcmEncrypt(mnemonic, dataKey);
+```
+
+#### Phase 2: Enhanced TEE Operations (Native Module Required)
+```typescript
+// Future native module interface
+interface TeeOperations {
+  // Direct encryption in TEE
+  encryptInTee(data: Uint8Array, keyId: string): Promise<Uint8Array>;
+  
+  // Hardware-backed key derivation
+  deriveKeyInTee(password: Uint8Array, salt: Uint8Array): Promise<string>;
+  
+  // Digital signatures for transactions
+  signInTee(data: Uint8Array, keyId: string): Promise<Uint8Array>;
+  
+  // Attestation
+  attestKey(keyId: string): Promise<AttestationResult>;
+}
+```
+
+#### Phase 3: Full TEE Integration (Platform-Specific Implementation)
+- **iOS**: Custom Swift module accessing Secure Enclave directly
+- **Android**: Custom Kotlin/Java module using Android Keystore provider
+- **Operations**: Direct cryptographic operations in hardware
+
+### Implementation Priority for TEE Operations
+
+#### High Priority (Immediately Implementable)
+1. **Hardware Key Wrapping** - Use TEE for master key storage and biometric gating
+2. **Device Binding** - Generate device-specific keys in TEE
+3. **Biometric Authentication** - Gate all sensitive operations with biometrics
+4. **Secure Key Storage** - Move critical keys to hardware-backed storage
+
+#### Medium Priority (Native Module Required)
+5. **Hardware Random Generation** - Enhanced entropy from TEE (already partially available)
+6. **Key Attestation** - Verify key integrity and device state
+7. **Direct AES Operations** - Perform encryption/decryption in TEE
+
+#### Low Priority (Complex Platform Integration)
+8. **Custom Algorithm Support** - Argon2 or other algorithms in TEE
+9. **Transaction Signing** - Hardware-backed digital signatures
+10. **Advanced Attestation** - Complex attestation workflows
+
+### Current vs Future TEE Capabilities
+
+#### Immediately Available (Expo APIs)
+- ✅ Hardware-backed key storage
+- ✅ Biometric authentication gating
+- ✅ Device binding
+- ✅ Basic integrity verification
+
+#### Requires Native Development
+- ❌ Direct cryptographic operations (AES, signatures)
+- ❌ Custom algorithms (Argon2)
+- ❌ Advanced attestation
+- ❌ Secure computation
+
+### Conclusion
+While full TEE cryptographic operations require native module development, significant security improvements can be achieved immediately using `expo-local-authentication` and `expo-secure-store`. The recommended approach is to maximize current TEE capabilities for key protection and device binding while planning native modules for direct cryptographic operations.
 
 ### Executive Recommendation
 **Implement a hybrid approach prioritizing Argon2 with incremental TEE adoption.** This strategy addresses immediate high-severity vulnerabilities while establishing a path toward hardware-backed security.
