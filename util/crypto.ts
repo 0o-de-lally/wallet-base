@@ -140,6 +140,6 @@ export function uint8ArrayToBase64(array: Uint8Array): string {
   return btoa(String.fromCharCode(...array));
 }
 
-export function base64ToUint8Array(base64: string): Uint8Array {
-  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-}
+// export function base64ToUint8Array(base64: string): Uint8Array {
+//   return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+// }
