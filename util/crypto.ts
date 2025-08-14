@@ -14,10 +14,10 @@ import { getRandomBytes } from "./random";
 
 // Scrypt parameters for secure key derivation
 const SCRYPT_CONFIG = {
-  N: 32768,    // Cost parameter (32K)
-  r: 8,        // Block size parameter
-  p: 1,        // Parallelization parameter
-  dkLen: 32    // Derived key length (256 bits)
+  N: 32768, // Cost parameter (32K)
+  r: 8, // Block size parameter
+  p: 1, // Parallelization parameter
+  dkLen: 32, // Derived key length (256 bits)
 };
 
 /**
@@ -27,10 +27,7 @@ const SCRYPT_CONFIG = {
  * @param salt - The salt for key derivation as Uint8Array
  * @returns Key suitable for AES encryption
  */
-function generateKeyFromPin(
-  pinData: Uint8Array,
-  salt: Uint8Array,
-): Uint8Array {
+function generateKeyFromPin(pinData: Uint8Array, salt: Uint8Array): Uint8Array {
   // Use Scrypt for memory-hard key derivation with provided salt
   return scrypt(pinData, salt, SCRYPT_CONFIG);
 }
@@ -43,10 +40,7 @@ function generateKeyFromPin(
  * @param pin - The PIN as Uint8Array
  * @returns The encrypted data as Uint8Array (salt + nonce + ciphertext)
  */
-export function encryptWithPin(
-  value: Uint8Array,
-  pin: Uint8Array,
-): Uint8Array {
+export function encryptWithPin(value: Uint8Array, pin: Uint8Array): Uint8Array {
   if (!value || value.length === 0) return new Uint8Array(0);
 
   try {

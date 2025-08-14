@@ -52,11 +52,13 @@ export async function testPinValidation(): Promise<TestResult> {
       { pin: "qwerty", shouldPass: false, name: "common sequence" },
     ];
 
-    const results = tests.map((test) => {
-      const result = validatePin(test.pin);
-      const passed = result.isValid === test.shouldPass;
-      return { ...test, passed, result };
-    });
+    const results = await Promise.all(
+      tests.map(async (test) => {
+        const result = await validatePin(test.pin);
+        const passed = result.isValid === test.shouldPass;
+        return { ...test, passed, result };
+      }),
+    );
 
     const allPassed = results.every((r) => r.passed);
     const passedCount = results.filter((r) => r.passed).length;

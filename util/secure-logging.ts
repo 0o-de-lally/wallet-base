@@ -37,7 +37,11 @@ function devWarn(...args: LogValue[]): void {
 /**
  * Safe console.error that logs in development and reports in production
  */
-export function devError(context: string, error: unknown, ...args: LogValue[]): void {
+export function devError(
+  context: string,
+  error: unknown,
+  ...args: LogValue[]
+): void {
   if (isDevelopment) {
     console.error(context, error, ...args);
   } else {
