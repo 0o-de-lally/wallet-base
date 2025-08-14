@@ -377,9 +377,8 @@ export const verifyStoredPin = validatePinWithRateLimit;
 
 // High-level wrapper functions for data encryption/decryption with PIN
 export async function secureEncryptWithPin(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   data: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   pin: string,
 ): Promise<string | null> {
   return processWithPin(pin, async (securePin) => {
@@ -406,9 +405,8 @@ export async function secureEncryptWithPin(
 }
 
 export async function secureDecryptWithPin(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   encryptedData: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   pin: string,
 ): Promise<{ value: string; verified: boolean } | null> {
   return processWithPin(pin, async (securePin) => {
