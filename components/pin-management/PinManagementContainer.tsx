@@ -12,7 +12,7 @@ import { usePinManagement } from "./hooks/usePinManagement";
 import { usePinRotation } from "./hooks/usePinRotation";
 
 /**
- * Main PIN management container component
+ * Main password / (legacy PIN) management container component
  */
 const PinManagementContainer = memo(() => {
   const {

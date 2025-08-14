@@ -5,7 +5,7 @@ import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
 
-// Define callback types for PIN operations
+// Define callback types for authentication secret operations
 type PinActionCallback = (pin: string) => Promise<boolean>;
 
 interface PinInputModalProps {
@@ -18,7 +18,7 @@ interface PinInputModalProps {
     | "schedule_reveal"
     | "execute_reveal"
     | "clear_all";
-  // Callbacks for different PIN operations - only one will be called based on purpose
+  // Callback invoked to process the entered password
   onPinAction: PinActionCallback;
   actionTitle?: string;
   actionSubtitle?: string;
