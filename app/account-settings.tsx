@@ -21,7 +21,7 @@ export default function AccountSettingsScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <SetupGuard requiresPin={true} requiresAccount={true}>
+  <SetupGuard requiresPassword={true} requiresAccount={true}>
         <View style={styles.root}>
           <AccountSettingsContent />
         </View>

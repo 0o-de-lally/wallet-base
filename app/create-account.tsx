@@ -20,7 +20,7 @@ export default function CreateAccountScreen() {
           headerBackTitle: "Back",
         }}
       />
-      <SetupGuard requiresPin={true} requiresAccount={false}>
+  <SetupGuard requiresPassword={true} requiresAccount={false}>
         <View style={styles.root}>
           <StatusBar backgroundColor={styles.root.backgroundColor} />
           <CreateAccountContent />

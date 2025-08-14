@@ -8,7 +8,9 @@ import { styles } from "../../styles/styles";
 
 interface SetupGuardProps {
   children: React.ReactNode;
+  /** @deprecated use requiresPassword */
   requiresPin?: boolean;
+  requiresPassword?: boolean;
   requiresAccount?: boolean;
 }
 
@@ -18,9 +20,17 @@ interface SetupGuardProps {
  */
 export const SetupGuard: React.FC<SetupGuardProps> = ({
   children,
-  requiresPin = true,
+  requiresPin,
+  requiresPassword,
   requiresAccount = true,
 }) => {
+  // Normalization: default to requiring password if neither provided
+  const effectiveRequiresPassword =
+    typeof requiresPassword === "boolean"
+      ? requiresPassword
+      : typeof requiresPin === "boolean"
+        ? requiresPin
+        : true;
   const [isLoading, setIsLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
@@ -33,7 +43,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
 
       if (isComplete) {
         setNeedsOnboarding(false);
-      } else if (requiresPin && !hasPin) {
+  } else if (effectiveRequiresPassword && !hasPin) {
         setNeedsOnboarding(true);
       } else if (requiresAccount && !hasUserAccounts) {
         setNeedsOnboarding(true);

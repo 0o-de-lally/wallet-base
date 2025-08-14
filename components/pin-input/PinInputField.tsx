@@ -27,7 +27,7 @@ export const PinInputField = memo(
         onChangeText,
         placeholder = "Enter PIN",
         error,
-        maxLength = 6,
+  maxLength = 128,
         autoFocus = false,
         onSubmit,
         clearOnSubmit = false,
