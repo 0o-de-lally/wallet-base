@@ -225,7 +225,7 @@ export const PinInputModal = memo(
               onSubmit={processPinSecurely}
               clearOnSubmit={true}
               ref={pinInputRef}
-              numericOnly={false}
+              showToggle={true}
             />
 
             <View style={styles.modalButtons}>

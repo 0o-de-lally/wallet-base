@@ -104,7 +104,7 @@ export const TransactionPinModal = memo(
                 autoFocus={true}
                 error={pinError || undefined}
                 onSubmit={handleSubmit}
-                numericOnly={false}
+                showToggle={true}
               />
             </View>
 

@@ -134,8 +134,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         placeholder="********"
         error={error || undefined}
         autoFocus={true}
-        maxLength={128}
-        numericOnly={false}
+  maxLength={128}
+  showToggle={true}
       />
 
       <View style={styles.modalButtons}>
@@ -170,8 +170,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         placeholder="********"
         error={error || undefined}
         autoFocus={true}
-        maxLength={128}
-        numericOnly={false}
+  maxLength={128}
+  showToggle={true}
       />
 
       <View style={styles.modalButtons}>

@@ -113,7 +113,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           error={error || undefined}
           autoFocus={true}
           maxLength={128}
-          numericOnly={false}
+          showToggle={true}
         />
 
         <View style={styles.modalButtons}>
@@ -149,7 +149,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           error={error || undefined}
           autoFocus={true}
           maxLength={128}
-          numericOnly={false}
+          showToggle={true}
         />
 
         <View style={styles.modalButtons}>
