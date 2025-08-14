@@ -4,7 +4,7 @@ import { Modal, View, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
-import { hashPin, validatePin } from "../../util/pin-security";
+import { hashPin, validatePinFormat } from "../../util/pin-security";
 import { saveValue } from "../../util/secure-store";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
@@ -51,7 +51,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
     }, []);
 
     const validateAndProceed = useCallback(() => {
-      if (!validatePin(pin)) {
+      if (!validatePinFormat(pin)) {
         setError("PIN must be exactly 6 digits");
         return;
       }

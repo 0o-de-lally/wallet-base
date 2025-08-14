@@ -1,8 +1,4 @@
-import {
-  getItemAsync,
-  setItemAsync,
-  deleteItemAsync,
-} from "expo-secure-store";
+import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 import { devLog, devError } from "./error-utils";
 
 /**

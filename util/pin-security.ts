@@ -372,7 +372,18 @@ async function validatePinWithRateLimit(pin: string): Promise<{
 
 // Export compatibility functions for existing code
 export { hashPin };
-export const validatePin = validatePinWithRateLimit;
+
+/**
+ * Validates PIN format (synchronous)
+ * @param pin - The PIN to validate
+ * @returns true if PIN format is valid, false otherwise
+ */
+export function validatePinFormat(pin: string): boolean {
+  // PIN must be exactly 6 digits
+  return /^\d{6}$/.test(pin);
+}
+
+// Main PIN verification function with rate limiting
 export const verifyStoredPin = validatePinWithRateLimit;
 
 // High-level wrapper functions for data encryption/decryption with PIN

@@ -3,7 +3,7 @@ import { View, Text, Modal } from "react-native";
 import { PinInputField } from "./PinInputField";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { validatePin, hashPin } from "../../util/pin-security";
+import { validatePinFormat, hashPin } from "../../util/pin-security";
 import { saveValue } from "../../util/secure-store";
 import { refreshSetupStatus } from "../../util/setup-state";
 
@@ -69,7 +69,7 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
   );
 
   const validateAndProceed = useCallback(() => {
-    if (!validatePin(pin)) {
+    if (!validatePinFormat(pin)) {
       setError("PIN must be exactly 6 digits");
       return;
     }
@@ -79,7 +79,7 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
   }, [pin]);
 
   const createPin = useCallback(async () => {
-    if (!validatePin(pin) || !validatePin(confirmPin)) {
+    if (!validatePinFormat(pin) || !validatePinFormat(confirmPin)) {
       setError("PIN must be exactly 6 digits");
       setIsCreating(false);
       return;

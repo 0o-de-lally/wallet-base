@@ -319,9 +319,10 @@ export function devError(
   if (isDevelopment) {
     // Filter sensitive data from context and error message
     const safeContext = filterSensitiveString(context);
-    const safeError = error instanceof Error
-      ? new Error(filterSensitiveString(error.message))
-      : filterSensitiveValue(error as LogValue);
+    const safeError =
+      error instanceof Error
+        ? new Error(filterSensitiveString(error.message))
+        : filterSensitiveValue(error as LogValue);
     const safeArgs = args.map(filterSensitiveValue);
 
     console.error(safeContext, safeError, ...safeArgs);
@@ -365,17 +366,30 @@ function filterSensitiveString(str: string): string {
     { pattern: /\b[0-9a-fA-F]{32}\b/g, replacement: "[REDACTED_HASH]" }, // 32-char hex
 
     // Mnemonic patterns (12 or 24 common words)
-    { pattern: /\b(?:[a-z]{3,8}\s+){11}[a-z]{3,8}\b/gi, replacement: "[REDACTED_MNEMONIC]" }, // 12 words
-    { pattern: /\b(?:[a-z]{3,8}\s+){23}[a-z]{3,8}\b/gi, replacement: "[REDACTED_MNEMONIC]" }, // 24 words
+    {
+      pattern: /\b(?:[a-z]{3,8}\s+){11}[a-z]{3,8}\b/gi,
+      replacement: "[REDACTED_MNEMONIC]",
+    }, // 12 words
+    {
+      pattern: /\b(?:[a-z]{3,8}\s+){23}[a-z]{3,8}\b/gi,
+      replacement: "[REDACTED_MNEMONIC]",
+    }, // 24 words
 
     // Base64 encoded data (likely keys/tokens)
-    { pattern: /\b[A-Za-z0-9+/]{40,}={0,2}\b/g, replacement: "[REDACTED_BASE64]" },
+    {
+      pattern: /\b[A-Za-z0-9+/]{40,}={0,2}\b/g,
+      replacement: "[REDACTED_BASE64]",
+    },
 
     // PIN patterns (4-12 digits)
     { pattern: /\b\d{4,12}\b/g, replacement: "[REDACTED_PIN]" },
 
     // Common sensitive keywords followed by values
-    { pattern: /(pin|password|secret|key|token|auth|signature|hash)\s*[:=]\s*\S+/gi, replacement: "$1: [REDACTED]" },
+    {
+      pattern:
+        /(pin|password|secret|key|token|auth|signature|hash)\s*[:=]\s*\S+/gi,
+      replacement: "$1: [REDACTED]",
+    },
   ];
 
   let filteredStr = str;

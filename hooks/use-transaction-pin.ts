@@ -34,8 +34,8 @@ export function useTransactionPin({
 
       try {
         // Verify the PIN first
-        const isPinValid = await verifyStoredPin(pin);
-        if (!isPinValid) {
+        const pinResult = await verifyStoredPin(pin);
+        if (!pinResult.isValid) {
           showAlert("Error", "Invalid PIN. Please try again.");
           setIsLoading(false);
           return;

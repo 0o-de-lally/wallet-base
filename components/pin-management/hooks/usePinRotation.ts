@@ -27,8 +27,8 @@ export const usePinRotation = () => {
   const handleVerifyPin = useCallback(
     async (pin: string): Promise<boolean> => {
       try {
-        const isValid = await verifyStoredPin(pin);
-        if (isValid) {
+        const result = await verifyStoredPin(pin);
+        if (result.isValid) {
           showAlert("Success", "PIN verified successfully");
           return true;
         } else {
@@ -50,8 +50,8 @@ export const usePinRotation = () => {
   const validateOldPin = useCallback(
     async (oldPin: string, accountsWithData: number): Promise<boolean> => {
       try {
-        const isValid = await verifyStoredPin(oldPin);
-        if (!isValid) {
+        const result = await verifyStoredPin(oldPin);
+        if (!result.isValid) {
           showAlert("Incorrect PIN", "The PIN you entered is incorrect");
           return false;
         }
