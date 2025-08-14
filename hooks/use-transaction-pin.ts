@@ -39,8 +39,8 @@ export function useTransactionPin({
         // Fallback: legacy key still (migration failed)
         return legacyKey;
       }
-    } catch (e) {
-      // Ignore and proceed to generate obfuscated key
+    } catch {
+      // Intentionally ignoring migration read errors; will fall back to new obfuscated key
     }
 
     // Generate (or reuse existing) obfuscated key

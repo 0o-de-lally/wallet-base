@@ -224,7 +224,9 @@ async function reencryptAccountData(
     if (sourceKey === legacyKey && targetKey !== legacyKey) {
       try {
         await deleteValue(legacyKey);
-      } catch {}
+      } catch {
+        // Non-fatal: legacy key deletion failure. Data already migrated to obfuscated key.
+      }
     }
 
     console.log(`Successfully re-encrypted data for account ${accountId}`);
