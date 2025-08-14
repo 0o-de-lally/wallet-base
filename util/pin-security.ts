@@ -44,6 +44,11 @@ import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
 import { getValue } from "./secure-store";
 import {
+  checkLockoutStatus,
+  recordFailedAttempt,
+  recordSuccessfulAttempt,
+} from "./pin-rate-limiting";
+import {
   encryptWithPin as cryptoEncryptWithPin,
   decryptWithPin as cryptoDecryptWithPin,
   stringToUint8Array,
@@ -61,11 +66,33 @@ type HashedPin = {
 /**
  * Validates a PIN format.
  * @param pin The PIN to validate
- * @returns true if the PIN is valid (6 digits), false otherwise
+ * @returns Object with validation result and error message
  */
-export function validatePin(pin: string): boolean {
-  // PIN must be exactly 6 digits
-  return /^\d{6}$/.test(pin);
+export function validatePin(pin: string): { isValid: boolean; error?: string } {
+  // Check length - PIN must be 6-12 characters
+  if (pin.length < 6) {
+    return { isValid: false, error: "PIN must be at least 6 characters" };
+  }
+  
+  if (pin.length > 12) {
+    return { isValid: false, error: "PIN must be no more than 12 characters" };
+  }
+  
+  // Allow digits and letters for better security
+  if (!/^[a-zA-Z0-9]+$/.test(pin)) {
+    return { isValid: false, error: "PIN can only contain letters and numbers" };
+  }
+  
+  // Check for common weak patterns
+  if (/^(\d)\1+$/.test(pin)) {
+    return { isValid: false, error: "PIN cannot be all the same character" };
+  }
+  
+  if (/^(012345|123456|654321|abcdef|qwerty)$/i.test(pin)) {
+    return { isValid: false, error: "PIN cannot be a common sequence" };
+  }
+  
+  return { isValid: true };
 }
 
 /**
@@ -74,12 +101,12 @@ export function validatePin(pin: string): boolean {
  * brute force attacks than simple hash algorithms.
  *
  * @param pin The PIN to hash
- * @param iterations Number of PBKDF2 iterations for key stretching (default: 10000)
+ * @param iterations Number of PBKDF2 iterations for key stretching (default: 100000)
  * @returns The hashed PIN with salt and iteration info
  */
 export async function hashPin(
   pin: string,
-  iterations = 10000,
+  iterations = 100000,
 ): Promise<HashedPin> {
   try {
     // Generate a random salt (16 bytes)
@@ -166,31 +193,82 @@ async function processWithPin<T>(
 }
 
 /**
- * Verifies a PIN against the stored hashed PIN
+ * Verifies a PIN against the stored hashed PIN with rate limiting
  * @param pin - The PIN to verify (will be cleared after use)
- * @returns Promise resolving to boolean indicating if PIN is valid
+ * @returns Promise resolving to object with verification result and lockout info
  */
-export async function verifyStoredPin(pin: string): Promise<boolean> {
+export async function verifyStoredPin(pin: string): Promise<{
+  isValid: boolean;
+  isLockedOut: boolean;
+  remainingTime: number;
+  attemptsRemaining: number;
+}> {
   return processWithPin(pin, async (securePin) => {
     try {
+      // Check if we're currently locked out
+      const lockoutStatus = await checkLockoutStatus();
+      
+      if (lockoutStatus.isLockedOut) {
+        return {
+          isValid: false,
+          isLockedOut: true,
+          remainingTime: lockoutStatus.remainingTime,
+          attemptsRemaining: 0
+        };
+      }
+
       const savedPinJson = await getValue("user_pin");
 
       if (!savedPinJson) {
-        return false;
+        // Record failed attempt for missing PIN
+        const newLockoutStatus = await recordFailedAttempt();
+        return {
+          isValid: false,
+          isLockedOut: newLockoutStatus.isLockedOut,
+          remainingTime: newLockoutStatus.remainingTime,
+          attemptsRemaining: newLockoutStatus.attemptsRemaining
+        };
       }
 
       // Parse the stored PIN from JSON
       const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
 
       // Verify PIN
-      return await comparePins(storedHashedPin, securePin);
+      const isValid = await comparePins(storedHashedPin, securePin);
+      
+      if (isValid) {
+        // Record successful attempt (clears rate limiting)
+        await recordSuccessfulAttempt();
+        return {
+          isValid: true,
+          isLockedOut: false,
+          remainingTime: 0,
+          attemptsRemaining: 0
+        };
+      } else {
+        // Record failed attempt
+        const newLockoutStatus = await recordFailedAttempt();
+        return {
+          isValid: false,
+          isLockedOut: newLockoutStatus.isLockedOut,
+          remainingTime: newLockoutStatus.remainingTime,
+          attemptsRemaining: newLockoutStatus.attemptsRemaining
+        };
+      }
     } catch (error) {
       console.error(
         "PIN verification error:",
         error instanceof Error ? error.message : String(error),
       );
-      console.warn("Error verifying PIN, returning false for safety");
-      return false;
+      
+      // Record failed attempt on error
+      const lockoutStatus = await recordFailedAttempt();
+      return {
+        isValid: false,
+        isLockedOut: lockoutStatus.isLockedOut,
+        remainingTime: lockoutStatus.remainingTime,
+        attemptsRemaining: lockoutStatus.attemptsRemaining
+      };
     }
   });
 }

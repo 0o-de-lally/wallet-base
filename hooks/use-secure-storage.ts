@@ -15,6 +15,10 @@ import {
 } from "../util/pin-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 import { reportErrorAuto } from "../util/error-utils";
+import { 
+  getAccountStorageKey, 
+  migrateToObfuscatedKey 
+} from "../util/key-obfuscation";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
@@ -55,16 +59,30 @@ export function useSecureStorage(initialAccountId?: string) {
     expiresIn: number;
   } | null>(null);
 
-  // Function to get storage key from account ID
-  const getStorageKey = useCallback((accountId: string) => {
-    return `account_${accountId}`;
+  // Function to get storage key from account ID (with obfuscation)
+  const getStorageKey = useCallback(async (accountId: string) => {
+    // Try to migrate from legacy key if it exists
+    const legacyKey = `account_${accountId}`;
+    const legacyValue = await getValue(legacyKey);
+    
+    if (legacyValue) {
+      // Migrate to obfuscated key
+      const newKey = await migrateToObfuscatedKey(legacyKey, "account");
+      if (newKey) {
+        console.log(`Migrated account ${accountId} to obfuscated storage`);
+        return newKey;
+      }
+    }
+    
+    // Return obfuscated key (for new accounts or if migration failed)
+    return await getAccountStorageKey(accountId);
   }, []);
 
   // Function to check if an account has stored data
   const checkHasStoredData = useCallback(
     async (accountId: string): Promise<boolean> => {
       try {
-        const key = getStorageKey(accountId);
+        const key = await getStorageKey(accountId);
         const storedData = await getValue(key);
         return storedData !== null;
       } catch (error) {
@@ -182,14 +200,27 @@ export function useSecureStorage(initialAccountId?: string) {
     try {
       setIsLoading(true);
 
-      // First verify this is really the user's PIN
-      const isValid = await verifyStoredPin(pin);
-      if (!isValid) {
+      // First verify this is really the user's PIN (with rate limiting)
+      const verifyResult = await verifyStoredPin(pin);
+      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+        if (verifyResult.isLockedOut) {
+          const minutes = Math.ceil(verifyResult.remainingTime / 60000);
+          reportErrorAuto(
+            "useSecureStorage.saveSecurelyWithPin",
+            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+          );
+        } else {
+          reportErrorAuto(
+            "useSecureStorage.saveSecurelyWithPin",
+            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+          );
+        }
+        return false;
+      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.saveSecurelyWithPin",
           new Error("Invalid PIN"),
         );
-        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
@@ -200,7 +231,7 @@ export function useSecureStorage(initialAccountId?: string) {
         throw new Error("Encryption failed");
       }
 
-      const key = getStorageKey(currentAccountId);
+      const key = await getStorageKey(currentAccountId);
       await saveValue(key, encryptedBase64);
 
       // Update the account's is_key_stored status
@@ -231,14 +262,27 @@ export function useSecureStorage(initialAccountId?: string) {
         throw new Error("No account selected");
       }
 
-      // First verify this is really the user's PIN
-      const isValid = await verifyStoredPin(pin);
-      if (!isValid) {
+      // First verify this is really the user's PIN (with rate limiting)
+      const verifyResult = await verifyStoredPin(pin);
+      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+        if (verifyResult.isLockedOut) {
+          const minutes = Math.ceil(verifyResult.remainingTime / 60000);
+          reportErrorAuto(
+            "useSecureStorage.scheduleRevealWithPin",
+            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+          );
+        } else {
+          reportErrorAuto(
+            "useSecureStorage.scheduleRevealWithPin",
+            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+          );
+        }
+        return false;
+      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.scheduleRevealWithPin",
           new Error("Invalid PIN"),
         );
-        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
@@ -301,7 +345,7 @@ export function useSecureStorage(initialAccountId?: string) {
         return false;
       }
 
-      const key = getStorageKey(currentAccountId);
+      const key = await getStorageKey(currentAccountId);
       const encryptedBase64 = await getValue(key);
 
       if (encryptedBase64 === null) {
@@ -368,7 +412,7 @@ export function useSecureStorage(initialAccountId?: string) {
         throw new Error("No account selected");
       }
 
-      const key = getStorageKey(currentAccountId);
+      const key = await getStorageKey(currentAccountId);
       await deleteValue(key);
       setStoredValue(null);
 
@@ -399,19 +443,32 @@ export function useSecureStorage(initialAccountId?: string) {
         throw new Error("No account selected");
       }
 
-      // First verify this is really the user's PIN
-      const isValid = await verifyStoredPin(pin);
-      if (!isValid) {
+      // First verify this is really the user's PIN (with rate limiting)
+      const verifyResult = await verifyStoredPin(pin);
+      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+        if (verifyResult.isLockedOut) {
+          const minutes = Math.ceil(verifyResult.remainingTime / 60000);
+          reportErrorAuto(
+            "useSecureStorage.clearAccountDataWithPin",
+            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+          );
+        } else {
+          reportErrorAuto(
+            "useSecureStorage.clearAccountDataWithPin",
+            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+          );
+        }
+        return false;
+      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.clearAccountDataWithPin",
           new Error("Invalid PIN"),
         );
-        // Don't close the modal here - let PinInputModal handle the error display
         return false;
       }
 
       // Clear the specific account's data
-      const key = getStorageKey(currentAccountId);
+      const key = await getStorageKey(currentAccountId);
       await deleteValue(key);
 
       // Update the account's is_key_stored status
@@ -507,11 +564,10 @@ export function useSecureStorage(initialAccountId?: string) {
   }, []);
 
   const handleCancelReveal = useCallback(
-    (accountId: string) => {
+    async (accountId: string) => {
       try {
         setIsLoading(true);
-        const key = getStorageKey(accountId);
-        cancelReveal(key);
+        cancelReveal(accountId);
         setRevealStatus(null);
       } catch (error) {
         showAlert("Error", "Failed to cancel reveal");
@@ -520,7 +576,7 @@ export function useSecureStorage(initialAccountId?: string) {
         setIsLoading(false);
       }
     },
-    [showAlert, getStorageKey],
+    [showAlert],
   );
 
   const handleDelete = useCallback((accountId: string) => {
