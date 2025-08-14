@@ -73,25 +73,28 @@ export function validatePin(pin: string): { isValid: boolean; error?: string } {
   if (pin.length < 6) {
     return { isValid: false, error: "PIN must be at least 6 characters" };
   }
-  
+
   if (pin.length > 12) {
     return { isValid: false, error: "PIN must be no more than 12 characters" };
   }
-  
+
   // Allow digits and letters for better security
   if (!/^[a-zA-Z0-9]+$/.test(pin)) {
-    return { isValid: false, error: "PIN can only contain letters and numbers" };
+    return {
+      isValid: false,
+      error: "PIN can only contain letters and numbers",
+    };
   }
-  
+
   // Check for common weak patterns
   if (/^(\d)\1+$/.test(pin)) {
     return { isValid: false, error: "PIN cannot be all the same character" };
   }
-  
+
   if (/^(012345|123456|654321|abcdef|qwerty)$/i.test(pin)) {
     return { isValid: false, error: "PIN cannot be a common sequence" };
   }
-  
+
   return { isValid: true };
 }
 
@@ -207,13 +210,13 @@ export async function verifyStoredPin(pin: string): Promise<{
     try {
       // Check if we're currently locked out
       const lockoutStatus = await checkLockoutStatus();
-      
+
       if (lockoutStatus.isLockedOut) {
         return {
           isValid: false,
           isLockedOut: true,
           remainingTime: lockoutStatus.remainingTime,
-          attemptsRemaining: 0
+          attemptsRemaining: 0,
         };
       }
 
@@ -226,7 +229,7 @@ export async function verifyStoredPin(pin: string): Promise<{
           isValid: false,
           isLockedOut: newLockoutStatus.isLockedOut,
           remainingTime: newLockoutStatus.remainingTime,
-          attemptsRemaining: newLockoutStatus.attemptsRemaining
+          attemptsRemaining: newLockoutStatus.attemptsRemaining,
         };
       }
 
@@ -235,7 +238,7 @@ export async function verifyStoredPin(pin: string): Promise<{
 
       // Verify PIN
       const isValid = await comparePins(storedHashedPin, securePin);
-      
+
       if (isValid) {
         // Record successful attempt (clears rate limiting)
         await recordSuccessfulAttempt();
@@ -243,7 +246,7 @@ export async function verifyStoredPin(pin: string): Promise<{
           isValid: true,
           isLockedOut: false,
           remainingTime: 0,
-          attemptsRemaining: 0
+          attemptsRemaining: 0,
         };
       } else {
         // Record failed attempt
@@ -252,7 +255,7 @@ export async function verifyStoredPin(pin: string): Promise<{
           isValid: false,
           isLockedOut: newLockoutStatus.isLockedOut,
           remainingTime: newLockoutStatus.remainingTime,
-          attemptsRemaining: newLockoutStatus.attemptsRemaining
+          attemptsRemaining: newLockoutStatus.attemptsRemaining,
         };
       }
     } catch (error) {
@@ -260,14 +263,14 @@ export async function verifyStoredPin(pin: string): Promise<{
         "PIN verification error:",
         error instanceof Error ? error.message : String(error),
       );
-      
+
       // Record failed attempt on error
       const lockoutStatus = await recordFailedAttempt();
       return {
         isValid: false,
         isLockedOut: lockoutStatus.isLockedOut,
         remainingTime: lockoutStatus.remainingTime,
-        attemptsRemaining: lockoutStatus.attemptsRemaining
+        attemptsRemaining: lockoutStatus.attemptsRemaining,
       };
     }
   });

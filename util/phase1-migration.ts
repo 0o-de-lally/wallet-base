@@ -1,9 +1,9 @@
 /**
  * Migration utility for Phase 1 security improvements
- * 
+ *
  * Handles migration from legacy implementations to new secure implementations:
  * - Legacy PIN verification to rate-limited verification
- * - Old PBKDF2 format to new per-salt format  
+ * - Old PBKDF2 format to new per-salt format
  * - Predictable keys to obfuscated keys
  * - Legacy logging to secure logging
  */
@@ -31,7 +31,7 @@ export async function needsMigration(): Promise<{
   const result = {
     needsPinMigration: false,
     needsAccountMigration: false,
-    legacyAccountKeys: [] as string[]
+    legacyAccountKeys: [] as string[],
   };
 
   try {
@@ -44,7 +44,7 @@ export async function needsMigration(): Promise<{
     // Look for legacy account patterns
     const allKeys = await getAllStorageKeys();
     const legacyAccountPattern = /^account_[a-zA-Z0-9]+$/;
-    
+
     for (const key of allKeys) {
       if (legacyAccountPattern.test(key)) {
         result.legacyAccountKeys.push(key);
@@ -55,9 +55,8 @@ export async function needsMigration(): Promise<{
     securityLog("Migration assessment completed", {
       needsPinMigration: result.needsPinMigration,
       needsAccountMigration: result.needsAccountMigration,
-      legacyAccountCount: result.legacyAccountKeys.length
+      legacyAccountCount: result.legacyAccountKeys.length,
     });
-
   } catch (error) {
     reportErrorAuto("migration.needsMigration", error);
   }
@@ -82,7 +81,10 @@ async function getAllStorageKeys(): Promise<string[]> {
 /**
  * Migrates PIN storage to obfuscated key
  */
-async function migratePinStorage(): Promise<{ success: boolean; error?: string }> {
+async function migratePinStorage(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
   try {
     const legacyPinData = await getValue("user_pin");
     if (!legacyPinData) {
@@ -91,27 +93,26 @@ async function migratePinStorage(): Promise<{ success: boolean; error?: string }
 
     // Get new obfuscated PIN key
     const newPinKey = await getPinStorageKey();
-    
+
     // Move data to new key
     await saveValue(newPinKey, legacyPinData);
-    
+
     // Verify the migration worked
     const verifyData = await getValue(newPinKey);
     if (verifyData !== legacyPinData) {
       throw new Error("PIN migration verification failed");
     }
-    
+
     // Delete legacy key
     await deleteValue("user_pin");
-    
+
     securityLog("PIN storage migrated to obfuscated key");
     return { success: true };
-    
   } catch (error) {
     reportErrorAuto("migration.migratePinStorage", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Unknown error" 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -127,7 +128,7 @@ async function migrateAccountStorage(legacyKeys: string[]): Promise<{
   const result = {
     success: true,
     migratedCount: 0,
-    errors: [] as string[]
+    errors: [] as string[],
   };
 
   for (const legacyKey of legacyKeys) {
@@ -137,11 +138,13 @@ async function migrateAccountStorage(legacyKeys: string[]): Promise<{
         result.migratedCount++;
         devLog(`Migrated account key: ${legacyKey} -> ${newKey}`);
       } else {
-        result.errors.push(`Failed to migrate ${legacyKey}: migration returned null`);
+        result.errors.push(
+          `Failed to migrate ${legacyKey}: migration returned null`,
+        );
         result.success = false;
       }
     } catch (error) {
-      const errorMsg = `Failed to migrate ${legacyKey}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      const errorMsg = `Failed to migrate ${legacyKey}: ${error instanceof Error ? error.message : "Unknown error"}`;
       result.errors.push(errorMsg);
       result.success = false;
       reportErrorAuto("migration.migrateAccountStorage", error, { legacyKey });
@@ -150,7 +153,7 @@ async function migrateAccountStorage(legacyKeys: string[]): Promise<{
 
   securityLog("Account storage migration completed", {
     migratedCount: result.migratedCount,
-    errorCount: result.errors.length
+    errorCount: result.errors.length,
   });
 
   return result;
@@ -164,7 +167,7 @@ export async function performPhase1Migration(): Promise<MigrationResult> {
     success: true,
     migratedItems: [],
     errors: [],
-    summary: ""
+    summary: "",
   };
 
   try {
@@ -186,9 +189,13 @@ export async function performPhase1Migration(): Promise<MigrationResult> {
 
     // Migrate account storage if needed
     if (assessment.needsAccountMigration) {
-      const accountMigration = await migrateAccountStorage(assessment.legacyAccountKeys);
+      const accountMigration = await migrateAccountStorage(
+        assessment.legacyAccountKeys,
+      );
       if (accountMigration.success) {
-        result.migratedItems.push(`${accountMigration.migratedCount} account storage keys (obfuscated)`);
+        result.migratedItems.push(
+          `${accountMigration.migratedCount} account storage keys (obfuscated)`,
+        );
       } else {
         result.errors.push(...accountMigration.errors);
         result.success = false;
@@ -197,7 +204,8 @@ export async function performPhase1Migration(): Promise<MigrationResult> {
 
     // Create summary
     if (result.migratedItems.length === 0) {
-      result.summary = "No migration needed - all data already using secure format";
+      result.summary =
+        "No migration needed - all data already using secure format";
     } else if (result.success) {
       result.summary = `Successfully migrated: ${result.migratedItems.join(", ")}`;
     } else {
@@ -207,12 +215,13 @@ export async function performPhase1Migration(): Promise<MigrationResult> {
     securityLog("Phase 1 migration completed", {
       success: result.success,
       migratedCount: result.migratedItems.length,
-      errorCount: result.errors.length
+      errorCount: result.errors.length,
     });
-
   } catch (error) {
     result.success = false;
-    result.errors.push(`Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.errors.push(
+      `Migration failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
     result.summary = "Migration failed due to unexpected error";
     reportErrorAuto("migration.performPhase1Migration", error);
   }
@@ -250,7 +259,9 @@ export async function getMigrationStatus(): Promise<{
     }
 
     if (assessment.needsAccountMigration) {
-      pendingMigrations.push(`${assessment.legacyAccountKeys.length} account keys security upgrade`);
+      pendingMigrations.push(
+        `${assessment.legacyAccountKeys.length} account keys security upgrade`,
+      );
     }
 
     // Check for migration timestamp
@@ -258,7 +269,9 @@ export async function getMigrationStatus(): Promise<{
     try {
       const migrationTimestamp = await getValue("last_migration_timestamp");
       if (migrationTimestamp) {
-        lastMigrationDate = new Date(parseInt(migrationTimestamp)).toISOString();
+        lastMigrationDate = new Date(
+          parseInt(migrationTimestamp),
+        ).toISOString();
       }
     } catch {
       // Ignore error - this is optional info
@@ -267,13 +280,13 @@ export async function getMigrationStatus(): Promise<{
     return {
       isComplete: pendingMigrations.length === 0,
       pendingMigrations,
-      lastMigrationDate
+      lastMigrationDate,
     };
   } catch (error) {
     reportErrorAuto("migration.getMigrationStatus", error);
     return {
       isComplete: false,
-      pendingMigrations: ["Unable to assess migration status"]
+      pendingMigrations: ["Unable to assess migration status"],
     };
   }
 }

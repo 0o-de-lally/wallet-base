@@ -1,6 +1,6 @@
 /**
  * Storage Key Obfuscation Module
- * 
+ *
  * Implements secure key name obfuscation to prevent enumeration attacks.
  * Uses SHA-256 hashing with device-specific salt to generate unpredictable
  * storage key names.
@@ -21,7 +21,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
   try {
     const existingSalt = await getValue(DEVICE_SALT_KEY);
     if (existingSalt) {
-      return Uint8Array.from(atob(existingSalt), c => c.charCodeAt(0));
+      return Uint8Array.from(atob(existingSalt), (c) => c.charCodeAt(0));
     }
   } catch (error) {
     console.warn("Could not retrieve existing device salt, generating new one");
@@ -35,7 +35,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
     console.error("Failed to save device salt:", error);
     // Continue with in-memory salt for this session
   }
-  
+
   return newSalt;
 }
 
@@ -45,26 +45,31 @@ async function getDeviceSalt(): Promise<Uint8Array> {
  * @param keyType - The type of key for additional entropy (e.g., "account", "pin", "config")
  * @returns Obfuscated key name
  */
-export async function obfuscateKey(originalKey: string, keyType: string = "data"): Promise<string> {
+export async function obfuscateKey(
+  originalKey: string,
+  keyType: string = "data",
+): Promise<string> {
   const deviceSalt = await getDeviceSalt();
-  
+
   // Create input for hashing: deviceSalt + originalKey + keyType
   const encoder = new TextEncoder();
   const originalKeyBytes = encoder.encode(originalKey);
   const keyTypeBytes = encoder.encode(keyType);
-  
+
   // Combine all inputs
-  const combined = new Uint8Array(deviceSalt.length + originalKeyBytes.length + keyTypeBytes.length);
+  const combined = new Uint8Array(
+    deviceSalt.length + originalKeyBytes.length + keyTypeBytes.length,
+  );
   combined.set(deviceSalt, 0);
   combined.set(originalKeyBytes, deviceSalt.length);
   combined.set(keyTypeBytes, deviceSalt.length + originalKeyBytes.length);
-  
+
   // Hash the combined input
   const hash = sha256(combined);
-  
+
   // Use first 16 bytes of hash as obfuscated key (32 hex characters)
   const obfuscatedKey = bytesToHex(hash.slice(0, 16));
-  
+
   return `obf_${obfuscatedKey}`;
 }
 
@@ -72,7 +77,10 @@ export async function obfuscateKey(originalKey: string, keyType: string = "data"
  * Stores a mapping between original and obfuscated keys (encrypted)
  * This is used for key recovery during migration or debugging
  */
-export async function storeLegacyKeyMapping(originalKey: string, obfuscatedKey: string): Promise<void> {
+export async function storeLegacyKeyMapping(
+  originalKey: string,
+  obfuscatedKey: string,
+): Promise<void> {
   try {
     const mappingKey = `${KEY_MAPPING_PREFIX}${originalKey}`;
     await saveValue(mappingKey, obfuscatedKey);
@@ -85,7 +93,9 @@ export async function storeLegacyKeyMapping(originalKey: string, obfuscatedKey: 
 /**
  * Retrieves the obfuscated key for a legacy original key
  */
-export async function getLegacyKeyMapping(originalKey: string): Promise<string | null> {
+export async function getLegacyKeyMapping(
+  originalKey: string,
+): Promise<string | null> {
   try {
     const mappingKey = `${KEY_MAPPING_PREFIX}${originalKey}`;
     return await getValue(mappingKey);
@@ -102,8 +112,8 @@ export async function getLegacyKeyMapping(originalKey: string): Promise<string |
  * @returns The new obfuscated key name, or null if migration failed
  */
 export async function migrateToObfuscatedKey(
-  originalKey: string, 
-  keyType: string = "data"
+  originalKey: string,
+  keyType: string = "data",
 ): Promise<string | null> {
   try {
     // Check if value exists under original key
@@ -114,17 +124,17 @@ export async function migrateToObfuscatedKey(
 
     // Generate obfuscated key
     const obfuscatedKey = await obfuscateKey(originalKey, keyType);
-    
+
     // Store value under new key
     await saveValue(obfuscatedKey, value);
-    
+
     // Store mapping for potential recovery
     await storeLegacyKeyMapping(originalKey, obfuscatedKey);
-    
+
     // Delete original key
     const { deleteValue } = await import("./secure-store");
     await deleteValue(originalKey);
-    
+
     console.log(`Migrated key: ${originalKey} -> ${obfuscatedKey}`);
     return obfuscatedKey;
   } catch (error) {
@@ -144,7 +154,7 @@ export async function getAccountStorageKey(accountId: string): Promise<string> {
 }
 
 /**
- * Helper function to get PIN storage key with obfuscation  
+ * Helper function to get PIN storage key with obfuscation
  * @returns Obfuscated PIN key
  */
 export async function getPinStorageKey(): Promise<string> {

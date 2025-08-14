@@ -1,6 +1,6 @@
 /**
  * PIN Rate Limiting Module
- * 
+ *
  * Implements exponential backoff for PIN verification attempts to prevent
  * brute force attacks. Uses secure storage to maintain attempt counters
  * and lockout timestamps.
@@ -34,11 +34,11 @@ async function getAttemptRecord(): Promise<AttemptRecord> {
   } catch (error) {
     console.error("Error reading attempt record:", error);
   }
-  
+
   // Return default record if none exists or error occurred
   return {
     count: 0,
-    lastAttempt: 0
+    lastAttempt: 0,
   };
 }
 
@@ -65,35 +65,35 @@ export async function checkLockoutStatus(): Promise<{
 }> {
   const record = await getAttemptRecord();
   const now = Date.now();
-  
+
   // Check if we're in an active lockout period
   if (record.lockoutUntil && now < record.lockoutUntil) {
     return {
       isLockedOut: true,
       remainingTime: record.lockoutUntil - now,
-      attemptsRemaining: 0
+      attemptsRemaining: 0,
     };
   }
-  
+
   // If lockout period has expired, reset the attempt count
   if (record.lockoutUntil && now >= record.lockoutUntil) {
     const resetRecord: AttemptRecord = {
       count: 0,
-      lastAttempt: 0
+      lastAttempt: 0,
     };
     await saveAttemptRecord(resetRecord);
-    
+
     return {
       isLockedOut: false,
       remainingTime: 0,
-      attemptsRemaining: MAX_ATTEMPTS_BEFORE_LOCKOUT
+      attemptsRemaining: MAX_ATTEMPTS_BEFORE_LOCKOUT,
     };
   }
-  
+
   return {
     isLockedOut: false,
     remainingTime: 0,
-    attemptsRemaining: Math.max(0, MAX_ATTEMPTS_BEFORE_LOCKOUT - record.count)
+    attemptsRemaining: Math.max(0, MAX_ATTEMPTS_BEFORE_LOCKOUT - record.count),
   };
 }
 
@@ -108,30 +108,36 @@ export async function recordFailedAttempt(): Promise<{
 }> {
   const record = await getAttemptRecord();
   const now = Date.now();
-  
+
   // Increment attempt count
   const newCount = record.count + 1;
-  
-  let newRecord: AttemptRecord = {
+
+  const newRecord: AttemptRecord = {
     count: newCount,
-    lastAttempt: now
+    lastAttempt: now,
   };
-  
+
   // Check if we need to apply lockout
   if (newCount >= MAX_ATTEMPTS_BEFORE_LOCKOUT) {
     // Calculate lockout duration with exponential backoff
     const lockoutDuration = Math.min(
-      INITIAL_LOCKOUT_DURATION * Math.pow(LOCKOUT_MULTIPLIER, Math.floor(newCount / MAX_ATTEMPTS_BEFORE_LOCKOUT) - 1),
-      MAX_LOCKOUT_DURATION
+      INITIAL_LOCKOUT_DURATION *
+        Math.pow(
+          LOCKOUT_MULTIPLIER,
+          Math.floor(newCount / MAX_ATTEMPTS_BEFORE_LOCKOUT) - 1,
+        ),
+      MAX_LOCKOUT_DURATION,
     );
-    
+
     newRecord.lockoutUntil = now + lockoutDuration;
-    
-    console.warn(`PIN lockout activated for ${lockoutDuration}ms after ${newCount} failed attempts`);
+
+    console.warn(
+      `PIN lockout activated for ${lockoutDuration}ms after ${newCount} failed attempts`,
+    );
   }
-  
+
   await saveAttemptRecord(newRecord);
-  
+
   return checkLockoutStatus();
 }
 
@@ -171,10 +177,10 @@ export async function getRateLimitingStatus(): Promise<{
 }> {
   const record = await getAttemptRecord();
   const status = await checkLockoutStatus();
-  
+
   return {
     totalAttempts: record.count,
     isActive: status.isLockedOut,
-    lockoutUntil: record.lockoutUntil
+    lockoutUntil: record.lockoutUntil,
   };
 }

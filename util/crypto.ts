@@ -1,7 +1,7 @@
 /**
  * Secure encryption/decryption utility using @noble/ciphers for AES encryption.
  * This implementation uses Uint8Array for all binary data handling and per-record salts.
- * 
+ *
  * Security improvements:
  * - Per-record random salt (eliminates rainbow table attacks)
  * - Increased PBKDF2 iterations (100k vs 10k)
@@ -25,7 +25,10 @@ const AES_KEY_LENGTH = 32; // 256 bits
  * @param salt - The salt for key derivation as Uint8Array
  * @returns Promise resolving to a key suitable for AES encryption
  */
-async function generateKeyFromPin(pinData: Uint8Array, salt: Uint8Array): Promise<Uint8Array> {
+async function generateKeyFromPin(
+  pinData: Uint8Array,
+  salt: Uint8Array,
+): Promise<Uint8Array> {
   // Use PBKDF2 for secure key derivation with provided salt
   return pbkdf2(sha256, pinData, salt, {
     c: PBKDF2_ITERATIONS,
@@ -50,7 +53,7 @@ export async function encryptWithPin(
   try {
     // Generate a random salt for this encryption (16 bytes)
     const salt = getRandomBytes(16);
-    
+
     // Generate a key from the PIN and salt
     const keyBytes = await generateKeyFromPin(pin, salt);
 
@@ -62,7 +65,9 @@ export async function encryptWithPin(
     const ciphertext = cipher.encrypt(value);
 
     // Combine salt + nonce + ciphertext for storage
-    const result = new Uint8Array(salt.length + nonce.length + ciphertext.length);
+    const result = new Uint8Array(
+      salt.length + nonce.length + ciphertext.length,
+    );
     result.set(salt, 0);
     result.set(nonce, salt.length);
     result.set(ciphertext, salt.length + nonce.length);
@@ -90,7 +95,8 @@ export async function decryptWithPin(
   encryptedValue: Uint8Array,
   pin: Uint8Array,
 ): Promise<{ value: Uint8Array; verified: boolean } | null> {
-  if (!encryptedValue || encryptedValue.length < 28) { // 16 (salt) + 12 (nonce) minimum
+  if (!encryptedValue || encryptedValue.length < 28) {
+    // 16 (salt) + 12 (nonce) minimum
     return null;
   }
 

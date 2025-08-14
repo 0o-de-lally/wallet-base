@@ -1,6 +1,6 @@
 /**
  * Production-safe logging utilities
- * 
+ *
  * Provides logging functions that respect production environment settings
  * and avoid exposing sensitive information in production builds.
  */
@@ -8,7 +8,7 @@
 import { reportErrorAuto } from "./error-utils";
 
 // Check if we're in development mode
-const isDevelopment = __DEV__ || process.env.NODE_ENV === 'development';
+const isDevelopment = __DEV__ || process.env.NODE_ENV === "development";
 
 /**
  * Safe console.log that only logs in development
@@ -43,7 +43,10 @@ export function devError(context: string, error: any, ...args: any[]): void {
 /**
  * Security-focused logging that never logs sensitive data
  */
-export function securityLog(message: string, context?: Record<string, any>): void {
+export function securityLog(
+  message: string,
+  context?: Record<string, any>,
+): void {
   if (isDevelopment) {
     // Filter out potentially sensitive keys
     const safeContext = context ? filterSensitiveData(context) : undefined;
@@ -54,19 +57,29 @@ export function securityLog(message: string, context?: Record<string, any>): voi
 /**
  * Filter out sensitive data from log context
  */
-function filterSensitiveData(context: Record<string, any>): Record<string, any> {
-  const sensitiveKeys = ['pin', 'password', 'mnemonic', 'privateKey', 'seed', 'key', 'secret'];
+function filterSensitiveData(
+  context: Record<string, any>,
+): Record<string, any> {
+  const sensitiveKeys = [
+    "pin",
+    "password",
+    "mnemonic",
+    "privateKey",
+    "seed",
+    "key",
+    "secret",
+  ];
   const filtered: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(context)) {
     const lowerKey = key.toLowerCase();
-    if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
-      filtered[key] = '[REDACTED]';
+    if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
+      filtered[key] = "[REDACTED]";
     } else {
       filtered[key] = value;
     }
   }
-  
+
   return filtered;
 }
 
@@ -85,11 +98,11 @@ export function perfLog(operation: string, startTime: number): void {
  */
 export function auditLog(event: string, context?: Record<string, any>): void {
   const safeContext = context ? filterSensitiveData(context) : undefined;
-  
+
   if (isDevelopment) {
     console.log(`[AUDIT] ${event}`, safeContext);
   }
-  
+
   // In production, these could be sent to a security monitoring service
   // For now, we'll just ensure they don't contain sensitive data
 }

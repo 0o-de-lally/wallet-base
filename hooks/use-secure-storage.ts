@@ -15,9 +15,9 @@ import {
 } from "../util/pin-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 import { reportErrorAuto } from "../util/error-utils";
-import { 
-  getAccountStorageKey, 
-  migrateToObfuscatedKey 
+import {
+  getAccountStorageKey,
+  migrateToObfuscatedKey,
 } from "../util/key-obfuscation";
 
 // Configuration for auto-hiding revealed values
@@ -64,7 +64,7 @@ export function useSecureStorage(initialAccountId?: string) {
     // Try to migrate from legacy key if it exists
     const legacyKey = `account_${accountId}`;
     const legacyValue = await getValue(legacyKey);
-    
+
     if (legacyValue) {
       // Migrate to obfuscated key
       const newKey = await migrateToObfuscatedKey(legacyKey, "account");
@@ -73,7 +73,7 @@ export function useSecureStorage(initialAccountId?: string) {
         return newKey;
       }
     }
-    
+
     // Return obfuscated key (for new accounts or if migration failed)
     return await getAccountStorageKey(accountId);
   }, []);
@@ -202,21 +202,25 @@ export function useSecureStorage(initialAccountId?: string) {
 
       // First verify this is really the user's PIN (with rate limiting)
       const verifyResult = await verifyStoredPin(pin);
-      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+      if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);
           reportErrorAuto(
             "useSecureStorage.saveSecurelyWithPin",
-            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+            new Error(
+              `Too many failed attempts. Try again in ${minutes} minutes.`,
+            ),
           );
         } else {
           reportErrorAuto(
             "useSecureStorage.saveSecurelyWithPin",
-            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+            new Error(
+              `Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`,
+            ),
           );
         }
         return false;
-      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
+      } else if (typeof verifyResult === "boolean" && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.saveSecurelyWithPin",
           new Error("Invalid PIN"),
@@ -264,21 +268,25 @@ export function useSecureStorage(initialAccountId?: string) {
 
       // First verify this is really the user's PIN (with rate limiting)
       const verifyResult = await verifyStoredPin(pin);
-      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+      if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);
           reportErrorAuto(
             "useSecureStorage.scheduleRevealWithPin",
-            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+            new Error(
+              `Too many failed attempts. Try again in ${minutes} minutes.`,
+            ),
           );
         } else {
           reportErrorAuto(
             "useSecureStorage.scheduleRevealWithPin",
-            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+            new Error(
+              `Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`,
+            ),
           );
         }
         return false;
-      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
+      } else if (typeof verifyResult === "boolean" && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.scheduleRevealWithPin",
           new Error("Invalid PIN"),
@@ -445,21 +453,25 @@ export function useSecureStorage(initialAccountId?: string) {
 
       // First verify this is really the user's PIN (with rate limiting)
       const verifyResult = await verifyStoredPin(pin);
-      if (typeof verifyResult === 'object' && !verifyResult.isValid) {
+      if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);
           reportErrorAuto(
             "useSecureStorage.clearAccountDataWithPin",
-            new Error(`Too many failed attempts. Try again in ${minutes} minutes.`),
+            new Error(
+              `Too many failed attempts. Try again in ${minutes} minutes.`,
+            ),
           );
         } else {
           reportErrorAuto(
             "useSecureStorage.clearAccountDataWithPin",
-            new Error(`Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`),
+            new Error(
+              `Invalid PIN. ${verifyResult.attemptsRemaining} attempts remaining.`,
+            ),
           );
         }
         return false;
-      } else if (typeof verifyResult === 'boolean' && !verifyResult) {
+      } else if (typeof verifyResult === "boolean" && !verifyResult) {
         reportErrorAuto(
           "useSecureStorage.clearAccountDataWithPin",
           new Error("Invalid PIN"),
