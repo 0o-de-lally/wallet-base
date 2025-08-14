@@ -1,0 +1,213 @@
+name: "Development Task Implementation"
+description: "Automated implementation of security improvements and development tasks from documentation"
+version: "1.0.0"
+
+workflow:
+  - name: "documentation_review"
+    description: "Review all documentation files for open tasks and implementation requirements"
+    steps:
+      - name: "scan_docs"
+        description: "Scan documentation files for actionable items"
+        file_patterns:
+          - "./docs/*.md"
+          - "./README.md"
+          - "./.ai/*.yaml"
+        
+        task_indicators:
+          - "TODO:"
+          - "FIXME:"
+          - "[ ]" # Unchecked checkboxes
+          - "Recommendation:"
+          - "Action:"
+          - "Short Term"
+          - "Medium Term"
+          - "Long Term"
+          - "High priority"
+          - "Critical"
+
+      - name: "prioritize_tasks"
+        description: "Categorize and prioritize found tasks"
+        categories:
+          security:
+            priority: "critical"
+            patterns:
+              - "security"
+              - "vulnerability"
+              - "attack"
+              - "exploit"
+              - "PIN"
+              - "encryption"
+              - "mnemonic"
+          
+          performance:
+            priority: "medium"
+            patterns:
+              - "performance"
+              - "optimization"
+              - "slow"
+              - "memory"
+          
+          functionality:
+            priority: "high"
+            patterns:
+              - "feature"
+              - "implement"
+              - "add"
+              - "missing"
+          
+          maintenance:
+            priority: "low"
+            patterns:
+              - "refactor"
+              - "cleanup"
+              - "documentation"
+              - "comment"
+
+  - name: "implementation_planning"
+    description: "Plan implementation approach for identified tasks"
+    steps:
+      - name: "dependency_analysis"
+        description: "Analyze dependencies between tasks and existing code"
+        considerations:
+          - "Breaking changes and backward compatibility"
+          - "Migration requirements for existing data"
+          - "Testing implications"
+          - "Third-party library requirements"
+      
+      - name: "impact_assessment"
+        description: "Assess impact of changes on existing functionality"
+        areas:
+          - "User experience changes"
+          - "Performance implications"
+          - "Security model changes"
+          - "API compatibility"
+
+  - name: "implementation_execution"
+    description: "Execute planned implementations"
+    steps:
+      - name: "security_fixes"
+        description: "Implement critical security improvements first"
+        priority_order:
+          1: "Rate limiting and PIN attempt controls"
+          2: "Salt randomization and per-record salts"
+          3: "Remove static integrity tokens"
+          4: "Increase key derivation strength"
+          5: "Implement proper logging controls"
+          6: "Memory protection improvements"
+        
+        implementation_guidelines:
+          - "Always maintain backward compatibility where possible"
+          - "Implement migration logic for data format changes"
+          - "Add comprehensive error handling"
+          - "Include unit tests for new security features"
+          - "Document security model changes"
+
+      - name: "code_implementation"
+        description: "Systematic code changes following security audit recommendations"
+        file_targets:
+          crypto_improvements:
+            files:
+              - "util/crypto.ts"
+              - "util/pin-security.ts"
+            changes:
+              - "Replace static salt with per-record random salt"
+              - "Remove custom integrity token"
+              - "Increase PBKDF2 iterations"
+              - "Add ciphertext versioning"
+          
+          rate_limiting:
+            files:
+              - "util/pin-security.ts"
+              - "hooks/use-secure-storage.ts"
+              - "hooks/use-transaction-pin.ts"
+            changes:
+              - "Add PIN attempt tracking"
+              - "Implement exponential backoff"
+              - "Add lockout mechanisms"
+          
+          storage_security:
+            files:
+              - "util/secure-store.ts"
+            changes:
+              - "Obfuscate storage key names"
+              - "Add metadata encryption"
+          
+          logging_cleanup:
+            files: "**/*.ts"
+            changes:
+              - "Remove or gate sensitive logging statements"
+              - "Add production build log stripping"
+
+      - name: "testing_implementation"
+        description: "Add tests for new security features"
+        test_categories:
+          - "Unit tests for cryptographic functions"
+          - "Integration tests for PIN rate limiting"
+          - "Migration tests for data format changes"
+          - "Security regression tests"
+
+  - name: "documentation_updates"
+    description: "Update documentation and mark completed tasks"
+    steps:
+      - name: "changelog_generation"
+        description: "Generate comprehensive changelog entry"
+        changelog_location: "./CHANGELOG.md"
+        entry_format: |
+          ## [{version}] - {date}
+          
+          ### Security
+          {security_changes}
+          
+          ### Added
+          {new_features}
+          
+          ### Changed
+          {modifications}
+          
+          ### Fixed
+          {bug_fixes}
+          
+          ### Migration Notes
+          {migration_notes}
+
+      - name: "task_completion_marking"
+        description: "Mark completed tasks in documentation"
+        actions:
+          - "Convert [ ] to [x] for completed checkboxes"
+          - "Add completion timestamps to implemented recommendations"
+          - "Update status indicators from 'TODO' to 'DONE'"
+          - "Add references to changelog entries"
+
+      - name: "security_audit_updates"
+        description: "Update security audit documentation"
+        updates:
+          - "Mark implemented recommendations as complete"
+          - "Update risk assessments for fixed vulnerabilities"
+          - "Add implementation notes and migration details"
+          - "Update residual risk analysis"
+
+validation:
+  pre_implementation:
+    - "Verify all dependencies are compatible"
+    - "Ensure no breaking changes without migration path"
+    - "Validate security improvements don't introduce new vulnerabilities"
+    - "Check that all changes have corresponding tests"
+  
+  post_implementation:
+    - "Run full test suite"
+    - "Verify security improvements are working as expected"
+    - "Confirm backward compatibility is maintained"
+    - "Validate that all documentation is updated"
+
+error_handling:
+  - "If implementation fails, document the failure reason in changelog"
+  - "Partial implementations should be clearly marked as incomplete"
+  - "Rollback procedures should be documented for breaking changes"
+  - "Failed security fixes should be escalated as critical issues"
+
+execution_notes:
+  - "Always prioritize security fixes over feature additions"
+  - "Maintain clear audit trail of what was changed and why"
+  - "Test thoroughly in development environment before committing"
+  - "Consider phased rollout for major security changes"
+  - "Document any deviations from planned implementation"

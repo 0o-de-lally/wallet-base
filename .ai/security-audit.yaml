@@ -1,0 +1,137 @@
+name: "Mnemonic Security Audit"
+description: "Comprehensive security audit focused on mnemonic protection and potential attack vectors"
+version: "1.0.0"
+
+workflow:
+  - name: "analyze_attack_vectors"
+    description: "Identify and analyze potential attack vectors for mnemonic revelation"
+    steps:
+      - name: "code_review"
+        description: "Review cryptographic implementations and storage mechanisms"
+        tasks:
+          - "Examine mnemonic storage and encryption implementations"
+          - "Analyze PIN-based key derivation mechanisms"
+          - "Review secure storage usage patterns"
+          - "Identify potential side-channel attacks"
+          - "Check for timing attack vulnerabilities"
+        focus_files:
+          - "util/crypto.ts"
+          - "util/pin-security.ts"
+          - "util/secure-store.ts"
+          - "hooks/use-secure-storage.ts"
+          - "hooks/use-transaction-pin.ts"
+          - "util/reveal-controller.ts"
+          - "util/random.ts"
+          - "util/security-utils.ts"
+
+      - name: "threat_modeling"
+        description: "Model potential attack scenarios and threat actors"
+        attack_categories:
+          - name: "offline_attacks"
+            description: "Attacks using extracted data without device interaction"
+            scenarios:
+              - "Brute force PIN with extracted ciphertext and salt"
+              - "Rainbow table attacks using static salt"
+              - "Dictionary attacks on weak PINs"
+          
+          - name: "online_attacks"
+            description: "Interactive attacks on running application"
+            scenarios:
+              - "Automated PIN brute forcing"
+              - "UI overlay/phishing attacks"
+              - "Malware-based PIN harvesting"
+              - "Side-channel timing attacks"
+          
+          - name: "device_compromise"
+            description: "Attacks with device-level access"
+            scenarios:
+              - "Memory dump analysis"
+              - "Secure storage extraction"
+              - "Debug/runtime manipulation"
+              - "Backup file analysis"
+          
+          - name: "implementation_flaws"
+            description: "Vulnerabilities in cryptographic implementation"
+            scenarios:
+              - "Weak key derivation parameters"
+              - "Predictable randomness"
+              - "Information leakage through logs"
+              - "Insecure key storage patterns"
+
+      - name: "vulnerability_assessment"
+        description: "Assess identified vulnerabilities by severity and exploitability"
+        severity_levels:
+          - "critical": "Direct path to mnemonic compromise with minimal effort"
+          - "high": "Practical path to compromise with moderate attacker capability"
+          - "medium": "Increases attack likelihood given additional conditions"
+          - "low": "Theoretical or requires powerful attacker but still improvable"
+        
+        assessment_criteria:
+          - "Ease of exploitation"
+          - "Required attacker capabilities"
+          - "Impact on user funds"
+          - "Likelihood in real-world scenarios"
+
+      - name: "mitigation_analysis"
+        description: "Analyze existing mitigations and identify gaps"
+        review_areas:
+          - "Rate limiting and attempt throttling"
+          - "Hardware security integration"
+          - "Key derivation strength"
+          - "Salt randomization"
+          - "Memory protection"
+          - "Logging and information disclosure"
+
+output:
+  format: "markdown"
+  location: "./docs/mnemonic_security_audit_{date}.md"
+  template: |
+    # Mnemonic Security Audit
+    
+    Date: {date}
+    Branch: {branch}
+    Scope: Review of repository code paths that could lead to exposure or exfiltration of a user's mnemonic ("recovery phrase") or enable a sophisticated attack to extract it.
+    
+    ## Executive Summary
+    {executive_summary}
+    
+    Risk rating legend: High – practical path to mnemonic compromise with moderate attacker capability. Medium – increases likelihood given additional conditions. Low – theoretical or requires powerful attacker (e.g., runtime compromise) but still improvable.
+    
+    ## Findings
+    {detailed_findings}
+    
+    ## Attack Scenarios
+    {attack_scenarios}
+    
+    ## Prioritized Remediations
+    {remediation_priorities}
+    
+    ## Additional Code-Level Recommendations
+    {code_recommendations}
+    
+    ## Migration Considerations
+    {migration_notes}
+    
+    ## Testing & Verification Additions
+    {testing_recommendations}
+    
+    ## Residual Risks
+    {residual_risks}
+    
+    ## Conclusion
+    {conclusion}
+
+validation:
+  requirements:
+    - "All high and critical findings must include proof-of-concept attack scenarios"
+    - "Recommendations must be technically feasible within React Native/Expo constraints"
+    - "Code references must include specific file names and line numbers where applicable"
+    - "Mitigation suggestions must include implementation complexity estimates"
+    - "Backward compatibility and migration paths must be considered"
+
+execution_notes:
+  - "Focus on practical, exploitable vulnerabilities rather than theoretical issues"
+  - "Consider the mobile app threat model and typical attack vectors"
+  - "Balance security improvements with development effort and user experience"
+  - "Prioritize fixes that provide maximum security improvement for minimum implementation cost"
+  - "Document any assumptions about attacker capabilities and threat models"
