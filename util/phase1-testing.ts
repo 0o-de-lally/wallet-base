@@ -19,7 +19,7 @@ import {
   stringToUint8Array,
   uint8ArrayToBase64,
 } from "./crypto";
-import { securityLog, devLog } from "./secure-logging";
+// import { securityLog, devLog } from "./secure-logging"; // Commented out - only needed for commented functions
 
 export interface TestResult {
   testName: string;
@@ -273,8 +273,10 @@ export async function testMigration(): Promise<TestResult> {
 
 /**
  * Run all Phase 1 tests
+ * @internal - Available for manual testing but not exported
  */
-export async function runPhase1Tests(): Promise<{
+/*
+async function runPhase1Tests(): Promise<{
   overallPassed: boolean;
   results: TestResult[];
   summary: string;
@@ -327,11 +329,14 @@ export async function runPhase1Tests(): Promise<{
     summary,
   };
 }
+*/
 
 /**
  * Quick validation that Phase 1 security is active
+ * @internal - Available for manual validation but not exported
  */
-export async function validatePhase1Security(): Promise<boolean> {
+/*
+async function validatePhase1Security(): Promise<boolean> {
   try {
     // Quick checks that key security features are working
     const tests = await Promise.all([
@@ -361,3 +366,4 @@ export async function validatePhase1Security(): Promise<boolean> {
     return false;
   }
 }
+*/

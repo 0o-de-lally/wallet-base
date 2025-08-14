@@ -76,6 +76,7 @@ export async function obfuscateKey(
 /**
  * Stores a mapping between original and obfuscated keys (encrypted)
  * This is used for key recovery during migration or debugging
+ * @public API - Used for debugging and manual recovery scenarios
  */
 export async function storeLegacyKeyMapping(
   originalKey: string,
@@ -92,8 +93,11 @@ export async function storeLegacyKeyMapping(
 
 /**
  * Retrieves the obfuscated key for a legacy original key
+ * @internal - Used for debugging and manual recovery scenarios
+ * Currently unused but kept for potential debugging needs
  */
-export async function getLegacyKeyMapping(
+/*
+async function getLegacyKeyMapping(
   originalKey: string,
 ): Promise<string | null> {
   try {
@@ -104,6 +108,7 @@ export async function getLegacyKeyMapping(
     return null;
   }
 }
+*/
 
 /**
  * Migrates a value from a predictable key to an obfuscated key

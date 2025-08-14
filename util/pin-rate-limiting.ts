@@ -169,8 +169,10 @@ export async function resetRateLimiting(): Promise<void> {
 
 /**
  * Gets rate limiting status for display purposes
+ * @internal - Currently unused but kept for potential status display
  */
-export async function getRateLimitingStatus(): Promise<{
+/*
+async function getRateLimitingStatus(): Promise<{
   totalAttempts: number;
   isActive: boolean;
   lockoutUntil?: number;
@@ -184,3 +186,4 @@ export async function getRateLimitingStatus(): Promise<{
     lockoutUntil: record.lockoutUntil,
   };
 }
+*/

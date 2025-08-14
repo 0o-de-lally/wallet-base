@@ -24,12 +24,15 @@ export function devLog(...args: LogValue[]): void {
 
 /**
  * Safe console.warn that only logs in development
+ * @internal - Currently unused but available for debugging
  */
-export function devWarn(...args: LogValue[]): void {
+/*
+function devWarn(...args: LogValue[]): void {
   if (isDevelopment) {
     console.warn(...args);
   }
 }
+*/
 
 /**
  * Safe console.error that logs in development and reports in production
@@ -88,18 +91,23 @@ function filterSensitiveData(
 
 /**
  * Performance logging for development
+ * @internal - Currently unused but available for performance debugging
  */
-export function perfLog(operation: string, startTime: number): void {
+/*
+function perfLog(operation: string, startTime: number): void {
   if (isDevelopment) {
     const duration = Date.now() - startTime;
     console.log(`[PERF] ${operation}: ${duration}ms`);
   }
 }
+*/
 
 /**
  * Audit logging for security events
+ * @internal - Currently unused but available for security auditing
  */
-export function auditLog(event: string, context?: Record<string, LogValue>): void {
+/*
+function auditLog(event: string, context?: Record<string, LogValue>): void {
   const safeContext = context ? filterSensitiveData(context) : undefined;
 
   if (isDevelopment) {
@@ -109,3 +117,4 @@ export function auditLog(event: string, context?: Record<string, LogValue>): voi
   // In production, these could be sent to a security monitoring service
   // For now, we'll just ensure they don't contain sensitive data
 }
+*/

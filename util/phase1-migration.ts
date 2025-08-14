@@ -231,8 +231,10 @@ export async function performPhase1Migration(): Promise<MigrationResult> {
 
 /**
  * Checks if data has been migrated to Phase 1 format
+ * @internal - Currently unused but kept for potential status checks
  */
-export async function isPhase1Migrated(): Promise<boolean> {
+/*
+async function isPhase1Migrated(): Promise<boolean> {
   try {
     const assessment = await needsMigration();
     return !assessment.needsPinMigration && !assessment.needsAccountMigration;
@@ -241,6 +243,7 @@ export async function isPhase1Migrated(): Promise<boolean> {
     return false;
   }
 }
+*/
 
 /**
  * Gets migration status for display
@@ -293,8 +296,10 @@ export async function getMigrationStatus(): Promise<{
 
 /**
  * Records successful migration timestamp
+ * @internal - Currently unused but kept for potential migration tracking
  */
-export async function recordMigrationCompletion(): Promise<void> {
+/*
+async function recordMigrationCompletion(): Promise<void> {
   try {
     await saveValue("last_migration_timestamp", Date.now().toString());
     securityLog("Migration completion recorded");
@@ -302,3 +307,4 @@ export async function recordMigrationCompletion(): Promise<void> {
     reportErrorAuto("migration.recordMigrationCompletion", error);
   }
 }
+*/

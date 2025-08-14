@@ -10,7 +10,7 @@
     "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:tsc": "bunx tsc --noEmit",
-    "lint:unused": "bunx ts-prune --ignore '.tsx:' | tee /dev/stderr | (! grep -q .)",
+        "lint:unused": "bunx ts-prune --ignore '.tsx:' | tee /dev/stderr | (! grep -q .)",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
