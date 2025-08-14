@@ -41,7 +41,7 @@ Summary:
 |------|----------------|---------------|-------|
 | Switch to memory-hard KDF (Scrypt / Argon2 replacement) | Completed | Completed | `PBKDF2` code absent; Scrypt used for PIN hashing & encryption key derivation with per-record salt. |
 | Per-record salt for ciphertext | Completed | Completed | Salt (16 bytes) prefixed to each ciphertext. |
-| Storage key obfuscation (global) | Completed | Partial | `use-secure-storage` migrates; other code paths (`use-transaction-pin.ts`, `pin-rotation.ts`, `account-deletion.ts`) still use `account_<id>`. |
+| Storage key obfuscation (global) | Completed | Completed | Legacy `account_<id>` references remain only for lazy read/migration; all new writes & re-encrypt operations use obfuscated keys. |
 | Rate limiting / lockout | Completed | Completed (baseline) | Exponential backoff implemented; max lockout 5 min – could be extended. |
 | Removal of static integrity token | Completed | Completed | AES-GCM tag only. |
 | Increased PIN complexity (6–12 alphanumeric) | Completed | Not Implemented | `validatePinFormat` still enforces exactly 6 digits (`/^\d{6}$/`). |
@@ -53,11 +53,10 @@ Summary:
 
 Outstanding High/Medium Issues:
 1. Fixed-length 6-digit PIN (low entropy) despite stronger KDF.
-2. Partial key obfuscation leaves predictable paths to encrypted mnemonics.
-3. No ciphertext versioning impedes future migrations.
-4. Predictable meta keys (`user_pin`, attempt record) & key index enumeration.
-5. Logging not consistently gated.
-6. No device / hardware binding layer yet.
+2. No ciphertext versioning impedes future migrations.
+3. Predictable meta keys (`user_pin`, attempt record) & key index enumeration.
+4. Logging not consistently gated.
+5. No device / hardware binding layer yet.
 
 Recommended Immediate Remediation Priority (updated):
 1. Unify key obfuscation across all code paths (eliminate direct `account_<id>` usages).
@@ -173,7 +172,7 @@ Recommendation: Add native module / config to enable secure window flag and blur
 Items below were previously marked "✅ COMPLETED"; verification results appended.
 - **Implement Scrypt**: ✅ Verified (PBKDF2 removed; Scrypt in use with per-record salt)
 - **Per-record salt migration**: ✅ Verified
-- **Storage key obfuscation**: ⚠️ Partial (legacy `account_<id>` paths remain in several modules)
+- **Storage key obfuscation**: ✅ Verified (legacy `account_<id>` only referenced for backward-compatible migration; no new writes use legacy pattern)
 - **Rate limiting implementation**: ✅ Verified (baseline exponential backoff; improvement potential remains)
 - **Remove static integrity token**: ✅ Verified
 - **PIN complexity increase**: ❌ Not implemented (still fixed 6-digit numeric)
