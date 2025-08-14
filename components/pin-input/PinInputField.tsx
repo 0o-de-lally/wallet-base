@@ -12,6 +12,7 @@ interface PinInputFieldProps extends Omit<TextInputProps, "onChangeText"> {
   autoFocus?: boolean;
   onSubmit?: () => void;
   clearOnSubmit?: boolean;
+  numericOnly?: boolean; // default true (legacy PIN); set false for passwords
 }
 
 /**
@@ -30,13 +31,15 @@ export const PinInputField = memo(
         autoFocus = false,
         onSubmit,
         clearOnSubmit = false,
+        numericOnly = true,
         ...rest
       },
       ref,
     ) => {
       const handleChangeText = (text: string) => {
-        // Only allow numeric input
-        if (/^\d*$/.test(text)) {
+        if (numericOnly) {
+          if (/^\d*$/.test(text)) onChangeText(text);
+        } else {
           onChangeText(text);
         }
       };
@@ -59,7 +62,7 @@ export const PinInputField = memo(
           onChangeText={handleChangeText}
           placeholder={placeholder}
           error={error}
-          keyboardType="number-pad"
+          keyboardType={numericOnly ? "number-pad" : "default"}
           secureTextEntry={true}
           maxLength={maxLength}
           autoFocus={autoFocus}

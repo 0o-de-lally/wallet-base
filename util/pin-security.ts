@@ -43,20 +43,25 @@ import { gcm } from "@noble/ciphers/aes";
 import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
 import { getValue } from "./secure-store";
+import { saveValue } from "./secure-store";
 import {
   checkLockoutStatus,
   recordFailedAttempt,
   recordSuccessfulAttempt,
 } from "./pin-rate-limiting";
 
-// Define a custom type for the hashed PIN
+// Define a custom type for the hashed secret (PIN v1 or Password v2)
 type HashedPin = {
   salt: string;
   hash: string;
   N: number; // Scrypt cost parameter
   r: number; // Scrypt block size parameter
   p: number; // Scrypt parallelization parameter
+  // version omitted in legacy (v1) objects. Added for password (v2+)
+  version?: number;
 };
+
+export const CURRENT_SECRET_VERSION = 2; // v1=6-digit PIN, v2=password >=8 chars
 
 // Scrypt parameters for secure PIN hashing (matching crypto.ts)
 const SCRYPT_CONFIG = {
@@ -211,6 +216,7 @@ async function hashPin(pin: string): Promise<HashedPin> {
       N: SCRYPT_CONFIG.N,
       r: SCRYPT_CONFIG.r,
       p: SCRYPT_CONFIG.p,
+      version: CURRENT_SECRET_VERSION,
     };
   } catch (error) {
     console.error("PIN hashing failed:", error);
@@ -378,13 +384,66 @@ export { hashPin };
  * @param pin - The PIN to validate
  * @returns true if PIN format is valid, false otherwise
  */
+// Legacy validator retained for backward compatibility (v1 only)
 export function validatePinFormat(pin: string): boolean {
-  // PIN must be exactly 6 digits
   return /^\d{6}$/.test(pin);
+}
+
+// New password policy (v2). Minimum 8 chars after trim. Accept any non-control chars.
+export function validatePasswordPolicy(secret: string): boolean {
+  if (typeof secret !== "string") return false;
+  if (secret.trim().length < 8) return false;
+  // Reject if contains unprintable control characters (except newline not expected anyway)
+  if (/[^\x20-\x7E]/.test(secret)) return false;
+  return true;
+}
+
+// Helper to detect legacy PIN vs password (based on stored object)
+export function isLegacyPinObject(obj: HashedPin | null): boolean {
+  return !!obj && obj.version === undefined; // no version -> legacy PIN
 }
 
 // Main PIN verification function with rate limiting
 export const verifyStoredPin = validatePinWithRateLimit;
+
+// Upgrade path: verify legacy PIN then set new password (>=8 chars) atomically.
+export async function upgradeLegacyPinToPassword(
+  legacyPin: string,
+  newPassword: string,
+): Promise<{ success: boolean; reason?: string }> {
+  try {
+    if (!validatePinFormat(legacyPin)) {
+      return { success: false, reason: "legacy_pin_invalid_format" };
+    }
+    if (!validatePasswordPolicy(newPassword)) {
+      return { success: false, reason: "new_password_policy_failure" };
+    }
+    const savedPinJson = await getValue("user_pin");
+    if (!savedPinJson) return { success: false, reason: "no_stored_secret" };
+    let parsed: HashedPin;
+    try {
+      parsed = JSON.parse(savedPinJson);
+    } catch {
+      return { success: false, reason: "stored_secret_corrupt" };
+    }
+    if (!isLegacyPinObject(parsed)) {
+      return { success: false, reason: "already_upgraded" };
+    }
+    const legacyValid = await comparePins(parsed, legacyPin);
+    if (!legacyValid) return { success: false, reason: "legacy_pin_incorrect" };
+    const newHash = await hashPin(newPassword);
+    await saveValue("user_pin", JSON.stringify(newHash));
+    return { success: true };
+  } catch (e) {
+    console.warn("upgradeLegacyPinToPassword error", e);
+    return { success: false, reason: "unexpected_error" };
+  }
+}
+
+// Generic verifier that accepts either legacy PIN or new password; keeps rate limiting
+export async function verifyAuthSecret(secret: string) {
+  return verifyStoredPin(secret); // alias for clarity in new code
+}
 
 // High-level wrapper functions for data encryption/decryption with PIN
 export async function secureEncryptWithPin(

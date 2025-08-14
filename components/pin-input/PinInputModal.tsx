@@ -95,7 +95,7 @@ export const PinInputModal = memo(
     );
 
     // Use a transient pin state - we'll clear it immediately after use
-    const [pinValue, setPinValue] = useState("");
+  const [pinValue, setPinValue] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
     const pinInputRef = useRef<TextInput>(null);
@@ -110,7 +110,7 @@ export const PinInputModal = memo(
 
     const processPinSecurely = useCallback(async () => {
       if (!pinValue || !pinValue.trim()) {
-        setError("PIN is required");
+        setError("Password is required");
         return;
       }
 
@@ -131,10 +131,10 @@ export const PinInputModal = memo(
             onClose();
           }
         } else {
-          setError("Incorrect PIN. Please try again.");
+          setError("Incorrect password. Please try again.");
         }
       } catch (error) {
-        console.error("Error processing PIN:", error);
+        console.error("Error processing password:", error);
         setError("Error processing your request");
       } finally {
         setIsVerifying(false);
@@ -143,7 +143,7 @@ export const PinInputModal = memo(
 
     const handleCancel = useCallback(() => {
       setPinValue("");
-      setError(null);
+  setError(null);
       onClose();
     }, [onClose]);
 
@@ -181,7 +181,7 @@ export const PinInputModal = memo(
         case "clear_all":
           return "Clear Account Data";
         default:
-          return "Enter PIN";
+          return "Enter Password";
       }
     }, [purpose, actionTitle]);
 
@@ -190,13 +190,13 @@ export const PinInputModal = memo(
 
       switch (purpose) {
         case "schedule_reveal":
-          return `Enter your PIN to schedule a reveal of the secured data. You'll need to wait ${formatWaitingPeriod()} before you can reveal it.`;
+          return `Enter your password to schedule a reveal of the secured data. You'll need to wait ${formatWaitingPeriod()} before you can reveal it.`;
         case "execute_reveal":
-          return "Enter your PIN again to reveal the secured data. This data will be visible on screen.";
+          return "Enter your password again to reveal the secured data. This data will be visible on screen.";
         case "clear_all":
-          return "Enter your PIN to permanently delete all secure data for this account. This action cannot be undone.";
+          return "Enter your password to permanently delete all secure data for this account. This action cannot be undone.";
         default:
-          return `Please enter your PIN to ${getActionText()} this secure data.`;
+          return `Please enter your password to ${getActionText()} this secure data.`;
       }
     }, [purpose, actionSubtitle, getActionText]);
 
@@ -218,13 +218,14 @@ export const PinInputModal = memo(
             <PinInputField
               value={pinValue}
               onChangeText={handlePinChange}
-              placeholder="******"
+              placeholder="********"
               label=""
               error={error ? error : undefined}
               autoFocus={true}
               onSubmit={processPinSecurely}
               clearOnSubmit={true}
               ref={pinInputRef}
+              numericOnly={false}
             />
 
             <View style={styles.modalButtons}>
@@ -233,7 +234,7 @@ export const PinInputModal = memo(
                 variant="secondary"
                 onPress={handleCancel}
                 disabled={isVerifying}
-                accessibilityLabel="Cancel PIN entry"
+                accessibilityLabel="Cancel password entry"
                 style={{ flex: 1, marginRight: 8 }}
               />
 
@@ -241,7 +242,7 @@ export const PinInputModal = memo(
                 text="Verify"
                 onPress={processPinSecurely}
                 isLoading={isVerifying}
-                accessibilityLabel="Verify PIN"
+                accessibilityLabel="Verify password"
                 style={{ flex: 1, marginLeft: 8 }}
               />
             </View>

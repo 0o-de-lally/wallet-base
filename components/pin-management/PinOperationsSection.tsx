@@ -26,30 +26,30 @@ export const PinOperationsSection: React.FC<PinOperationsSectionProps> = ({
 }) => {
   if (!pinExists) {
     return (
-      <SectionContainer title="Create PIN">
+      <SectionContainer title="Create Password">
         <ActionButton
-          text="Create New PIN"
+          text="Create New Password"
           onPress={onCreatePin}
-          accessibilityHint="Create a new PIN for secure access"
+          accessibilityHint="Create a new password for secure access"
         />
       </SectionContainer>
     );
   }
 
   return (
-    <SectionContainer title="PIN Operations">
+  <SectionContainer title="Password Operations">
       <View style={styles.buttonContainer}>
         <ActionButton
-          text="Verify PIN"
+      text="Verify Password"
           onPress={onVerifyPin}
           disabled={isLoading || showRotationProgress}
-          accessibilityHint="Verify your PIN is correct"
+      accessibilityHint="Verify your password is correct"
         />
         <ActionButton
-          text="Rotate PIN"
+      text="Change Password"
           onPress={onRotatePin}
           disabled={isLoading || showRotationProgress}
-          accessibilityHint="Change your PIN"
+      accessibilityHint="Change your password"
         />
       </View>
     </SectionContainer>
