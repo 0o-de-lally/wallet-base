@@ -12,7 +12,7 @@ workflow:
           - "./docs/*.md"
           - "./README.md"
           - "./.ai/*.yaml"
-        
+
         task_indicators:
           - "TODO:"
           - "FIXME:"
@@ -38,7 +38,7 @@ workflow:
               - "PIN"
               - "encryption"
               - "mnemonic"
-          
+
           performance:
             priority: "medium"
             patterns:
@@ -46,7 +46,7 @@ workflow:
               - "optimization"
               - "slow"
               - "memory"
-          
+
           functionality:
             priority: "high"
             patterns:
@@ -54,7 +54,7 @@ workflow:
               - "implement"
               - "add"
               - "missing"
-          
+
           maintenance:
             priority: "low"
             patterns:
@@ -73,7 +73,7 @@ workflow:
           - "Migration requirements for existing data"
           - "Testing implications"
           - "Third-party library requirements"
-      
+
       - name: "impact_assessment"
         description: "Assess impact of changes on existing functionality"
         areas:
@@ -94,7 +94,7 @@ workflow:
           4: "Increase key derivation strength"
           5: "Implement proper logging controls"
           6: "Memory protection improvements"
-        
+
         implementation_guidelines:
           - "Always maintain backward compatibility where possible"
           - "Implement migration logic for data format changes"
@@ -114,7 +114,7 @@ workflow:
               - "Remove custom integrity token"
               - "Increase PBKDF2 iterations"
               - "Add ciphertext versioning"
-          
+
           rate_limiting:
             files:
               - "util/pin-security.ts"
@@ -124,14 +124,14 @@ workflow:
               - "Add PIN attempt tracking"
               - "Implement exponential backoff"
               - "Add lockout mechanisms"
-          
+
           storage_security:
             files:
               - "util/secure-store.ts"
             changes:
               - "Obfuscate storage key names"
               - "Add metadata encryption"
-          
+
           logging_cleanup:
             files: "**/*.ts"
             changes:
@@ -154,19 +154,19 @@ workflow:
         changelog_location: "./CHANGELOG.md"
         entry_format: |
           ## [{version}] - {date}
-          
+
           ### Security
           {security_changes}
-          
+
           ### Added
           {new_features}
-          
+
           ### Changed
           {modifications}
-          
+
           ### Fixed
           {bug_fixes}
-          
+
           ### Migration Notes
           {migration_notes}
 
@@ -192,7 +192,7 @@ validation:
     - "Ensure no breaking changes without migration path"
     - "Validate security improvements don't introduce new vulnerabilities"
     - "Check that all changes have corresponding tests"
-  
+
   post_implementation:
     - "Run full test suite"
     - "Verify security improvements are working as expected"

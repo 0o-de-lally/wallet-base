@@ -33,7 +33,7 @@ workflow:
               - "Brute force PIN with extracted ciphertext and salt"
               - "Rainbow table attacks using static salt"
               - "Dictionary attacks on weak PINs"
-          
+
           - name: "online_attacks"
             description: "Interactive attacks on running application"
             scenarios:
@@ -41,7 +41,7 @@ workflow:
               - "UI overlay/phishing attacks"
               - "Malware-based PIN harvesting"
               - "Side-channel timing attacks"
-          
+
           - name: "device_compromise"
             description: "Attacks with device-level access"
             scenarios:
@@ -49,7 +49,7 @@ workflow:
               - "Secure storage extraction"
               - "Debug/runtime manipulation"
               - "Backup file analysis"
-          
+
           - name: "implementation_flaws"
             description: "Vulnerabilities in cryptographic implementation"
             scenarios:
@@ -65,7 +65,7 @@ workflow:
           - "high": "Practical path to compromise with moderate attacker capability"
           - "medium": "Increases attack likelihood given additional conditions"
           - "low": "Theoretical or requires powerful attacker but still improvable"
-        
+
         assessment_criteria:
           - "Ease of exploitation"
           - "Required attacker capabilities"
@@ -87,37 +87,37 @@ output:
   location: "./docs/mnemonic_security_audit_{date}.md"
   template: |
     # Mnemonic Security Audit
-    
+
     Date: {date}
     Branch: {branch}
     Scope: Review of repository code paths that could lead to exposure or exfiltration of a user's mnemonic ("recovery phrase") or enable a sophisticated attack to extract it.
-    
+
     ## Executive Summary
     {executive_summary}
-    
+
     Risk rating legend: High – practical path to mnemonic compromise with moderate attacker capability. Medium – increases likelihood given additional conditions. Low – theoretical or requires powerful attacker (e.g., runtime compromise) but still improvable.
-    
+
     ## Findings
     {detailed_findings}
-    
+
     ## Attack Scenarios
     {attack_scenarios}
-    
+
     ## Prioritized Remediations
     {remediation_priorities}
-    
+
     ## Additional Code-Level Recommendations
     {code_recommendations}
-    
+
     ## Migration Considerations
     {migration_notes}
-    
+
     ## Testing & Verification Additions
     {testing_recommendations}
-    
+
     ## Residual Risks
     {residual_risks}
-    
+
     ## Conclusion
     {conclusion}
 

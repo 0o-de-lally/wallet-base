@@ -5,7 +5,7 @@ This directory contains YAML configuration files that provide structured instruc
 ## Files
 
 ### `security-audit.yaml`
-Comprehensive instructions for conducting security audits focused on mnemonic protection and cryptographic implementations. 
+Comprehensive instructions for conducting security audits focused on mnemonic protection and cryptographic implementations.
 
 **Purpose**: Guide AI agents through systematic security analysis and vulnerability assessment.
 
