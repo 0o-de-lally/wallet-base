@@ -104,6 +104,8 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | Rate limiting / exponential backoff | Throttle online password guessing | Baseline implemented |
 | Constant-time compare | Reduce timing oracle | Implemented |
 | Integrity token removal | Eliminate static oracle | Implemented |
+| Screenshot protection (FLAG_SECURE) | Prevent visual capture of sensitive data | **REQUIRED** - Not implemented |
+| App switcher blur overlay | Hide sensitive data in task switcher | **REQUIRED** - Not implemented |
 | Password format validation | Input sanity | Weak (6 digits) |
 | Logging review | Prevent sensitive leakage | Partial (dev logs remain) |
 
@@ -115,9 +117,9 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | Keychain / SecureStore extraction via jailbreak | Jailbreak + user device access | Obtain ciphertext + password hash | Strengthen password, hardware wrapping (future) |
 | Unencrypted iTunes / Finder backup parsing | User creates unencrypted backup + local attacker | Possible recovery of some keychain classes (depends on protection class) | Encourage encrypted backups; hardware binding (future) |
 | Runtime instrumentation (Frida) | Developer mode + physical access | Hook decryption, grab plaintext mnemonic in memory | Plan: move crypto to native / ephemeral buffers |
-| Screen capture / recording | User grants screen recording or malware exploit | Mnemonic visually exfiltrated | Shorter display window, screen security flags (future) |
+| Screen capture / recording | User grants screen recording or malware exploit | Mnemonic visually exfiltrated | **REQUIRED**: FLAG_SECURE implementation |
 | Clipboard leakage | User copies mnemonic | Other app reads clipboard | Add controlled copy + timed scrub |
-| Over-the-shoulder / app switcher snapshot | User opens multitask view | Phrase visible in snapshot | Use blur / secure view flags |
+| Over-the-shoulder / app switcher snapshot | User opens multitask view | Phrase visible in snapshot | **REQUIRED**: App switcher blur overlay |
 
 ### 7.2 Android
 | Vector | Precondition | Potential Result | Mitigations |
@@ -125,7 +127,7 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | Keystore / SecureStore extraction | Root / custom recovery | Ciphertext + password hash exfil | Stronger password, hardware wrapping (StrongBox) |
 | adb backup / debug build leakage | USB debugging enabled + unlocked device | Process memory inspection | Ship release builds; detect debuggers (optional) |
 | Accessibility overlay phishing | Malicious accessibility service | Capture password entry | Password complexity, biometric gating, UI hardening |
-| Screen overlay (SYSTEM_ALERT_WINDOW) | Malicious app permission | Fake password modal harvests password | Use FLAG_SECURE + focus heuristics |
+| Screen overlay (SYSTEM_ALERT_WINDOW) | Malicious app permission | Fake password modal harvests password | **REQUIRED**: FLAG_SECURE + focus heuristics |
 | Clipboard / global pasteboard | User copies mnemonic | Background app reads clipboard | Timed scrub, discourage copy |
 | Frida / hooking | Root or user-enabled debugging | Extract mnemonic in memory | Native crypto + ephemeral buffers |
 
@@ -135,7 +137,7 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | 1 | Brute force 6-digit password offline after SecureStore dump | Privileged (root/jailbreak/forensic) | Moderate (1e6 Scrypt ops) | Conditional on privileged compromise |
 | 2 | Runtime instrumentation to intercept decrypted mnemonic post-password | On-device instrumentation / debugger attach | Moderate | Window: immediately after successful decrypt |
 | 3 | UI phishing overlay to capture password then decrypt (online) | Malicious app + overlay permission | Moderate | Rate limiting slows brute force only, not single capture |
-| 4 | Screen recording / screenshot of reveal screen | Malware or user negligence | Low | Reduced by shorter display & FLAG_SECURE (future) |
+| 4 | Screen recording / screenshot of reveal screen | Malware or user negligence | **BLOCKED** | **REQUIRED**: FLAG_SECURE implementation |
 | 5 | Clipboard capture after copy | Co-resident app reading clipboard | Low | Add controlled copy + wipe |
 | 6 | Supply-chain injected malicious code exfiltrates plaintext | Build system compromise | High impact / Low likelihood | Requires CI/human signing compromise |
 | 7 | Social engineering user to export or manually reveal & send | Human-level attack | Variable | Out of purely technical control |
@@ -163,7 +165,7 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | Biometric gating for reveal | Blocks passive password disclosure attacks | High |
 | Logging gating / stripping | Limit info leakage | Medium |
 | Clipboard scrub implementation | Reduce unbounded exposure | Medium |
-| FLAG_SECURE / snapshot blur | Mitigate visual side-channel | Medium |
+| Screenshot protection (FLAG_SECURE) + app switcher blur | **MANDATORY**: Prevent visual capture attacks | **CRITICAL** |
 | Native crypto module (JSI/Rust) | Reduce hook surface; better zeroization | Medium |
 | Ephemeral mnemonic fetch & explicit reveal session | Minimize memory dwell time | Medium |
 | Attempt uniform failure responses | Oracle reduction | Medium |
