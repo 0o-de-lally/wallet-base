@@ -179,8 +179,82 @@ Password hash (Scrypt again w/ separate salt) stored as JSON (key to be obfuscat
 | Obfuscation migration coverage complete | Automated test enumerating legacy keys | Until legacy keys <1% |
 | Rate limiting effective (lockout) | Unit + instrumentation tests | Each release |
 
-## 12. Summary
+## 12. Security Audit False Alarms (Historical Record)
+
+During security assessments conducted in August 2025, several findings were initially misclassified as vulnerabilities but later determined to be false alarms upon careful code review. This section documents these false positives to prevent future mischaracterization:
+
+### **12.1 False Alarm: "Timing Attack Vulnerability in Reveal Operations"**
+**Initial Classification**: HIGH severity
+**Location**: `/util/reveal-controller.ts:11-13` 
+**Why False**: Different development (30s) vs production (24h) timing is standard practice, not a vulnerability:
+- `IS_PRODUCTION` is a build-time constant, not runtime-modifiable
+- Development environments require faster testing cycles
+- No cryptographic timing attack vector exists
+- Industry-standard configuration practice
+
+### **12.2 False Alarm: "Information Disclosure Through Error Messages"**
+**Initial Classification**: HIGH severity → **Actual**: LOW (well-mitigated)
+**Location**: Multiple error handling locations
+**Why Overstated**: Failed to recognize comprehensive error filtering system:
+- `/util/error-utils.ts` implements extensive pattern matching (`[REDACTED_HASH]`, `[REDACTED_MNEMONIC]`, etc.)
+- Generic error messages in production ("Encryption error", "Decryption error")
+- No cryptographic implementation details exposed
+- Robust production/development error handling separation
+
+### **12.3 False Alarm: "Insufficient Production Environment Controls"**
+**Initial Classification**: MEDIUM severity
+**Location**: `/util/environment.ts:16`
+**Why False**: Misunderstood build-time vs runtime behavior:
+- `__DEV__` and `NODE_ENV` are build-time constants compiled into JavaScript bundle
+- Cannot be modified at runtime in production builds
+- Standard React Native environment detection pattern
+- No security impact from theoretical modification
+
+### **12.4 False Alarm: "Base64 Conversion Information Leakage"**  
+**Initial Classification**: MEDIUM severity
+**Location**: `/util/pin-security.ts:185-191`
+**Why False**: Mischaracterized standard, secure implementation:
+- Uses built-in browser/React Native base64 functions (`btoa`/`atob`)
+- No meaningful timing differences in validation
+- Standard implementation with proper error handling
+- No information disclosure vector
+
+### **12.5 False Alarm: "Development Keystore in Repository"**
+**Initial Classification**: LOW severity
+**Location**: `/android/app/debug.keystore`
+**Why False**: File not actually in repository:
+- `.gitignore` properly excludes `*.jks`, `*.p8`, `*.p12`, `*.key` files
+- `android/` directory excluded entirely
+- Standard development security practice correctly implemented
+
+### **12.6 Overstated: "Memory Protection Limitations"**
+**Initial Classification**: CRITICAL severity → **Actual**: MEDIUM severity
+**Location**: `/util/pin-security.ts:274-280`
+**Why Overstated**: Mischaracterized platform constraint as implementation flaw:
+- JavaScript string immutability is runtime limitation, not security bug
+- Requires sophisticated device compromise with debug access as prerequisite
+- Strong mitigations in place (cryptography, rate limiting, key derivation)
+- Attack window requires precise timing during operations
+
+### **12.7 Audit Quality Lessons**
+**Root Causes of False Alarms**:
+- Insufficient understanding of React Native/JavaScript runtime constraints
+- Failure to examine comprehensive error handling systems
+- Misunderstanding build-time vs runtime behavior
+- Conflating standard development practices with vulnerabilities
+- Inadequate review of `.gitignore` and repository structure
+
+**Validation Requirements for Future Audits**:
+- Verify file presence claims against actual repository contents
+- Distinguish between platform constraints and implementation flaws  
+- Examine complete error handling and logging systems
+- Understand build-time constant behavior in React Native
+- Validate claimed attack vectors against realistic threat models
+
+## 13. Summary
 Under default (non-rooted, non-jailbroken) conditions, direct offline brute force requires an escalation the model treats as *privileged compromise*. Current controls focus on raising cost post-compromise (Scrypt, per-record salt) and reducing casual data leakage. Primary near-term improvement remains increasing user secret entropy (stronger password/passphrase) and binding encrypted material to device hardware to deny usefulness of exfiltrated ciphertext.
+
+Historical false alarms demonstrate the importance of thorough code review and understanding platform-specific constraints when conducting security assessments. The application's security posture is stronger than initially assessed, with comprehensive defensive controls already in place.
 
 ---
 Maintainer: Security Automation (GitHub Copilot)
