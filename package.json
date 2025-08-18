@@ -36,7 +36,7 @@
     "react-native-quick-crypto": "^0.7.17",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-svg": "15.11.2",
+    "react-native-svg": "15.11.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
