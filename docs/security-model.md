@@ -185,7 +185,7 @@ During security assessments conducted in August 2025, several findings were init
 
 ### **12.1 False Alarm: "Timing Attack Vulnerability in Reveal Operations"**
 **Initial Classification**: HIGH severity
-**Location**: `/util/reveal-controller.ts:11-13` 
+**Location**: `/util/reveal-controller.ts:11-13`
 **Why False**: Different development (30s) vs production (24h) timing is standard practice, not a vulnerability:
 - `IS_PRODUCTION` is a build-time constant, not runtime-modifiable
 - Development environments require faster testing cycles
@@ -210,7 +210,7 @@ During security assessments conducted in August 2025, several findings were init
 - Standard React Native environment detection pattern
 - No security impact from theoretical modification
 
-### **12.4 False Alarm: "Base64 Conversion Information Leakage"**  
+### **12.4 False Alarm: "Base64 Conversion Information Leakage"**
 **Initial Classification**: MEDIUM severity
 **Location**: `/util/pin-security.ts:185-191`
 **Why False**: Mischaracterized standard, secure implementation:
@@ -246,7 +246,7 @@ During security assessments conducted in August 2025, several findings were init
 
 **Validation Requirements for Future Audits**:
 - Verify file presence claims against actual repository contents
-- Distinguish between platform constraints and implementation flaws  
+- Distinguish between platform constraints and implementation flaws
 - Examine complete error handling and logging systems
 - Understand build-time constant behavior in React Native
 - Validate claimed attack vectors against realistic threat models
