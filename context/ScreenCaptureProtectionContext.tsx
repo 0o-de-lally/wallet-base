@@ -1,22 +1,29 @@
 /**
  * Screen Capture Protection Context
- * 
+ *
  * Provides centralized screen capture protection management across the app.
  * This context-based approach offers several advantages:
- * 
+ *
  * 1. Single source of truth for protection state
  * 2. Performance optimization - one native protection call instead of multiple
  * 3. Hierarchical protection levels with automatic escalation
  * 4. Future-proof for user preferences and dynamic protection rules
- * 
+ *
  * Security Architecture:
  * - Context manages protection state at app level
- * - Components register their protection requirements 
+ * - Components register their protection requirements
  * - Highest protection level automatically applied
  * - Native FLAG_SECURE and expo-screen-capture coordination
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { usePreventScreenCapture } from "expo-screen-capture";
 
 // Define __DEV__ since it's not exported by react-native
@@ -61,88 +68,102 @@ interface ScreenCaptureProtectionContextType {
 /**
  * Context instance
  */
-const ScreenCaptureProtectionContext = createContext<ScreenCaptureProtectionContextType | null>(null);
+const ScreenCaptureProtectionContext =
+  createContext<ScreenCaptureProtectionContextType | null>(null);
 
 /**
  * Protection level descriptions for logging
  */
 const PROTECTION_DESCRIPTIONS: Record<ProtectionLevel, string> = {
   [ProtectionLevel.NONE]: "No Protection",
-  [ProtectionLevel.FINANCIAL]: "Financial Data Protection", 
+  [ProtectionLevel.FINANCIAL]: "Financial Data Protection",
   [ProtectionLevel.AUTHENTICATION]: "Authentication Protection",
   [ProtectionLevel.CRITICAL]: "Critical Data Protection",
 };
 
 /**
  * Screen Capture Protection Provider
- * 
+ *
  * Manages app-wide screen capture protection by coordinating multiple
  * component protection requirements and applying the highest level.
  */
-export function ScreenCaptureProtectionProvider({ children }: { children: React.ReactNode }) {
+export function ScreenCaptureProtectionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Track all active protection registrations
-  const [registrations, setRegistrations] = useState<Map<string, ProtectionRegistration>>(new Map());
-  
+  const [registrations, setRegistrations] = useState<
+    Map<string, ProtectionRegistration>
+  >(new Map());
+
   // Track current active protection level
-  const [activeProtectionLevel, setActiveProtectionLevel] = useState<ProtectionLevel>(ProtectionLevel.NONE);
-  
+  const [activeProtectionLevel, setActiveProtectionLevel] =
+    useState<ProtectionLevel>(ProtectionLevel.NONE);
+
   // Ref to track if we've logged the current state to avoid spam
   const lastLoggedLevel = useRef<ProtectionLevel>(ProtectionLevel.NONE);
-  
+
   // Calculate the highest protection level from all registrations
-  const calculateProtectionLevel = useCallback((regs: Map<string, ProtectionRegistration>): ProtectionLevel => {
-    let maxLevel = ProtectionLevel.NONE;
-    
-    for (const registration of regs.values()) {
-      // Skip dev-disabled registrations in development
-      if (__DEV__ && !registration.enableInDev) {
-        continue;
+  const calculateProtectionLevel = useCallback(
+    (regs: Map<string, ProtectionRegistration>): ProtectionLevel => {
+      let maxLevel = ProtectionLevel.NONE;
+
+      for (const registration of regs.values()) {
+        // Skip dev-disabled registrations in development
+        if (__DEV__ && !registration.enableInDev) {
+          continue;
+        }
+
+        if (registration.level > maxLevel) {
+          maxLevel = registration.level;
+        }
       }
-      
-      if (registration.level > maxLevel) {
-        maxLevel = registration.level;
-      }
-    }
-    
-    return maxLevel;
-  }, []);
+
+      return maxLevel;
+    },
+    [],
+  );
 
   // Update active protection level when registrations change
   useEffect(() => {
     const newLevel = calculateProtectionLevel(registrations);
-    
+
     if (newLevel !== activeProtectionLevel) {
       setActiveProtectionLevel(newLevel);
-      
+
       // Log level changes for debugging (avoid spam)
       if (__DEV__ && newLevel !== lastLoggedLevel.current) {
         const activeComponents = Array.from(registrations.values())
-          .filter(reg => __DEV__ ? reg.enableInDev : true)
-          .map(reg => reg.componentId);
-          
+          .filter((reg) => (__DEV__ ? reg.enableInDev : true))
+          .map((reg) => reg.componentId);
+
         console.log(
           `[Screen Protection] Level changed: ${PROTECTION_DESCRIPTIONS[lastLoggedLevel.current]} -> ${PROTECTION_DESCRIPTIONS[newLevel]}`,
-          `\nActive components: [${activeComponents.join(', ')}]`,
-          `\nTotal registrations: ${registrations.size}`
+          `\nActive components: [${activeComponents.join(", ")}]`,
+          `\nTotal registrations: ${registrations.size}`,
         );
-        
+
         lastLoggedLevel.current = newLevel;
       }
     }
   }, [registrations, activeProtectionLevel, calculateProtectionLevel]);
 
   // Register a component for protection
-  const registerProtection = useCallback((registration: ProtectionRegistration) => {
-    setRegistrations(prev => {
-      const newMap = new Map(prev);
-      newMap.set(registration.componentId, registration);
-      return newMap;
-    });
-  }, []);
+  const registerProtection = useCallback(
+    (registration: ProtectionRegistration) => {
+      setRegistrations((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(registration.componentId, registration);
+        return newMap;
+      });
+    },
+    [],
+  );
 
   // Unregister a component
   const unregisterProtection = useCallback((componentId: string) => {
-    setRegistrations(prev => {
+    setRegistrations((prev) => {
       const newMap = new Map(prev);
       newMap.delete(componentId);
       return newMap;
@@ -157,7 +178,9 @@ export function ScreenCaptureProtectionProvider({ children }: { children: React.
   // Apply native screen capture protection based on active level
   // Use expo-screen-capture for JavaScript-level coordination with FLAG_SECURE
   const shouldProtect = activeProtectionLevel > ProtectionLevel.NONE;
-  usePreventScreenCapture(shouldProtect ? "wallet-global-protection" : undefined);
+  usePreventScreenCapture(
+    shouldProtect ? "wallet-global-protection" : undefined,
+  );
 
   const isProtectionActive = shouldProtect;
 
@@ -181,13 +204,13 @@ export function ScreenCaptureProtectionProvider({ children }: { children: React.
  */
 export function useScreenCaptureProtectionContext(): ScreenCaptureProtectionContextType {
   const context = useContext(ScreenCaptureProtectionContext);
-  
+
   if (!context) {
     throw new Error(
-      'useScreenCaptureProtectionContext must be used within a ScreenCaptureProtectionProvider'
+      "useScreenCaptureProtectionContext must be used within a ScreenCaptureProtectionProvider",
     );
   }
-  
+
   return context;
 }
 
@@ -199,9 +222,10 @@ export function useScreenCaptureProtection(
   componentId: string,
   level: ProtectionLevel,
   enableInDev: boolean = false,
-  reason: string = "General protection"
+  reason: string = "General protection",
 ) {
-  const { registerProtection, unregisterProtection } = useScreenCaptureProtectionContext();
+  const { registerProtection, unregisterProtection } =
+    useScreenCaptureProtectionContext();
 
   useEffect(() => {
     const registration: ProtectionRegistration = {
@@ -217,7 +241,14 @@ export function useScreenCaptureProtection(
     return () => {
       unregisterProtection(componentId);
     };
-  }, [componentId, level, enableInDev, reason, registerProtection, unregisterProtection]);
+  }, [
+    componentId,
+    level,
+    enableInDev,
+    reason,
+    registerProtection,
+    unregisterProtection,
+  ]);
 }
 
 /**
@@ -230,19 +261,19 @@ export function useCriticalDataProtection(componentName: string): void {
     componentName,
     ProtectionLevel.CRITICAL,
     true, // Always protect critical data, even in dev
-    "Critical cryptographic data (mnemonics, private keys)"
+    "Critical cryptographic data (mnemonics, private keys)",
   );
 }
 
 export function useFinancialDataProtection(
   shouldProtect: boolean = true,
-  componentName: string
+  componentName: string,
 ): void {
   useScreenCaptureProtection(
     componentName,
     shouldProtect ? ProtectionLevel.FINANCIAL : ProtectionLevel.NONE,
     false, // Allow screenshots in dev for financial data
-    "Financial data (balances, transactions)"
+    "Financial data (balances, transactions)",
   );
 }
 
@@ -251,6 +282,6 @@ export function useAuthenticationProtection(componentName: string): void {
     componentName,
     ProtectionLevel.AUTHENTICATION,
     true, // Protect auth flows in dev for security testing
-    "Authentication data (PIN entry, biometric)"
+    "Authentication data (PIN entry, biometric)",
   );
 }

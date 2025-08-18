@@ -87,9 +87,7 @@ export const PinInputField = memo(
       // Custom inline layout to show toggle; replicate FormInput structure
       return (
         <View style={styles.passwordInputContainer}>
-          <Text style={styles.passwordInputLabel}>
-            {label}
-          </Text>
+          <Text style={styles.passwordInputLabel}>{label}</Text>
           <View style={styles.passwordInputRow}>
             <TextInput
               style={styles.passwordInput}
@@ -118,11 +116,7 @@ export const PinInputField = memo(
               </Text>
             </TouchableOpacity>
           </View>
-          {error ? (
-            <Text style={styles.errorText}>
-              {error}
-            </Text>
-          ) : null}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>
       );
     },

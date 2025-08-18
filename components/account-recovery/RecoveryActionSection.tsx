@@ -75,7 +75,11 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
           isLoading={isLoading}
           accessibilityLabel="Retry saving recovery phrase"
           accessibilityHint="Attempt to save the recovery phrase again after PIN failure"
-          style={[styles.width100Percent, styles.marginHorizontal0, styles.marginTop12]}
+          style={[
+            styles.width100Percent,
+            styles.marginHorizontal0,
+            styles.marginTop12,
+          ]}
           variant="secondary"
         />
       )}

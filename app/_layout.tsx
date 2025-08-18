@@ -29,9 +29,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
   <SafeAreaProvider>
     <ModalProvider>
       <ScreenCaptureProtectionProvider>
-        <View
-          style={styles.appWrapper}
-        >
+        <View style={styles.appWrapper}>
           <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
           {children}
         </View>

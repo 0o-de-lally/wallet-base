@@ -102,12 +102,8 @@ const ViewOnlyIcon = ({
 // Compact view component
 const CompactAccountView = ({ account }: { account: AccountState }) => (
   <View>
-    <View
-      style={styles.compactModeContainer}
-    >
-      <View
-        style={styles.flexRowCenterGap6Flex1}
-      >
+    <View style={styles.compactModeContainer}>
+      <View style={styles.flexRowCenterGap6Flex1}>
         <AccountHeader account={account} fontSize={14} />
         <View style={styles.flexOne} />
         <View style={styles.flexRowCenterGap4}>

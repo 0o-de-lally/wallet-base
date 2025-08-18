@@ -48,9 +48,7 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
   return (
     <View style={styles.marginTop24}>
       {/* Table-like layout for aligned values */}
-      <View
-        style={styles.flexRowSpaceBetweenWithMargin}
-      >
+      <View style={styles.flexRowSpaceBetweenWithMargin}>
         <Text style={[styles.balanceText, styles.balancePrimary]}>
           Total Unlocked:
         </Text>

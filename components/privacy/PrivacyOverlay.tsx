@@ -1,9 +1,9 @@
 /**
  * Privacy Overlay Component
- * 
+ *
  * Provides a blur overlay that activates when the app goes to background,
  * protecting sensitive content from being visible in app switcher previews.
- * 
+ *
  * Security Features:
  * - Automatic activation on app state change (active -> background/inactive)
  * - Blur overlay using expo-blur for content obfuscation
@@ -27,68 +27,67 @@ interface PrivacyOverlayProps {
   /** Blur intensity (0-100) */
   intensity?: number;
   /** Blur tint */
-  tint?: 'light' | 'dark' | 'default';
+  tint?: "light" | "dark" | "default";
 }
 
 /**
  * Privacy overlay component that hides sensitive content when app is backgrounded
  */
-export const PrivacyOverlay = memo(({
-  forceShow = false,
-  message = "Open wallet to continue",
-  intensity = 100,
-  tint = 'dark',
-}: PrivacyOverlayProps) => {
-  const { shouldShowPrivacyOverlay } = useSensitiveScreenProtection("PrivacyOverlay");
+export const PrivacyOverlay = memo(
+  ({
+    forceShow = false,
+    message = "Open wallet to continue",
+    intensity = 100,
+    tint = "dark",
+  }: PrivacyOverlayProps) => {
+    const { shouldShowPrivacyOverlay } =
+      useSensitiveScreenProtection("PrivacyOverlay");
 
-  // Show overlay if forced or if app state indicates it should be shown
-  const isVisible = forceShow || shouldShowPrivacyOverlay;
+    // Show overlay if forced or if app state indicates it should be shown
+    const isVisible = forceShow || shouldShowPrivacyOverlay;
 
-  if (!isVisible) {
-    return null;
-  }
+    if (!isVisible) {
+      return null;
+    }
 
-  return (
-    <View style={StyleSheet.absoluteFill}>
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        intensity={intensity}
-        tint={tint}
-      >
-        <View style={overlayStyles.container}>
-          <View style={overlayStyles.contentContainer}>
-            <Ionicons 
-              name="shield-checkmark" 
-              size={48} 
-              color={colors.primary} 
-              style={overlayStyles.icon}
-            />
-            <Text style={overlayStyles.title}>
-              Wallet Protected
-            </Text>
-            <Text style={overlayStyles.message}>
-              {message}
-            </Text>
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          intensity={intensity}
+          tint={tint}
+        >
+          <View style={overlayStyles.container}>
+            <View style={overlayStyles.contentContainer}>
+              <Ionicons
+                name="shield-checkmark"
+                size={48}
+                color={colors.primary}
+                style={overlayStyles.icon}
+              />
+              <Text style={overlayStyles.title}>Wallet Protected</Text>
+              <Text style={overlayStyles.message}>{message}</Text>
+            </View>
           </View>
-        </View>
-      </BlurView>
-    </View>
-  );
-});
+        </BlurView>
+      </View>
+    );
+  },
+);
 
 PrivacyOverlay.displayName = "PrivacyOverlay";
 
 const overlayStyles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Additional overlay for better visibility
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Additional overlay for better visibility
   },
   contentContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 32,
-    backgroundColor: 'rgba(26, 26, 31, 0.8)', // Semi-transparent background matching app theme
+    backgroundColor: "rgba(26, 26, 31, 0.8)", // Semi-transparent background matching app theme
     borderRadius: 16,
     marginHorizontal: 32,
   },
@@ -97,15 +96,15 @@ const overlayStyles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   message: {
     fontSize: 14,
-    color: '#cccccc',
-    textAlign: 'center',
+    color: "#cccccc",
+    textAlign: "center",
     lineHeight: 20,
   },
 });
@@ -114,20 +113,22 @@ const overlayStyles = StyleSheet.create({
  * Lightweight privacy overlay for financial screens
  * Less aggressive styling but still provides protection
  */
-export const LightPrivacyOverlay = memo(({
-  forceShow = false,
-  message = "Wallet protected while away",
-  intensity = 80,
-  tint = 'dark' as const,
-}: PrivacyOverlayProps) => {
-  return (
-    <PrivacyOverlay
-      forceShow={forceShow}
-      message={message}
-      intensity={intensity}
-      tint={tint}
-    />
-  );
-});
+export const LightPrivacyOverlay = memo(
+  ({
+    forceShow = false,
+    message = "Wallet protected while away",
+    intensity = 80,
+    tint = "dark" as const,
+  }: PrivacyOverlayProps) => {
+    return (
+      <PrivacyOverlay
+        forceShow={forceShow}
+        message={message}
+        intensity={intensity}
+        tint={tint}
+      />
+    );
+  },
+);
 
 LightPrivacyOverlay.displayName = "LightPrivacyOverlay";
