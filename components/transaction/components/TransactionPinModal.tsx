@@ -95,7 +95,7 @@ export const TransactionPinModal = memo(
 
             <Text style={styles.modalSubtitle}>{getModalSubtitle()}</Text>
 
-            <View style={{ marginVertical: 20 }}>
+            <View style={styles.marginVertical20}>
               <PinInputField
                 label="Password"
                 value={pin}

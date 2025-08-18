@@ -38,14 +38,14 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
         ]}
         onPress={() => onModeChange(mode)}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.flexRowCenter}>
           <Ionicons
             name={icon as keyof typeof Ionicons.glyphMap}
             size={24}
             color={isSelected ? colors.primary : colors.textPrimary}
-            style={{ marginRight: 12 }}
+            style={styles.marginRight12}
           />
-          <View style={{ flex: 1 }}>
+          <View style={styles.flexOne}>
             <Text
               style={[
                 styles.label,
@@ -84,7 +84,7 @@ export const AccountModeSelection: React.FC<AccountModeSelectionProps> = ({
   };
 
   return (
-    <View style={{ marginBottom: 24 }}>
+    <View style={styles.marginBottom24}>
       {renderModeOption(
         "recover",
         "Recover Existing Account",

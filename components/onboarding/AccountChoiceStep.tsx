@@ -45,12 +45,12 @@ export const AccountChoiceStep: React.FC<AccountChoiceStepProps> = ({
           onAccountChoice(choice);
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.flexRowCenter}>
           <Ionicons
             name={icon as keyof typeof Ionicons.glyphMap}
             size={24}
             color={isSelected ? colors.primary : colors.textPrimary}
-            style={{ marginRight: 12 }}
+            style={styles.marginRight12}
           />
           <View style={{ flex: 1 }}>
             <Text

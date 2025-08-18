@@ -42,6 +42,7 @@ This file provides guidance to Claude Code when working with this cryptocurrency
 - Use TypeScript strict mode
 - Follow existing component patterns
 - Use `useModal` hook for alerts
+- Never use `npx`, `yarn`, or `npm` - use `bun` and `bunx` for all package management and execution
 
 **Essential Files:**
 - `util/pin-security.ts` - Core security module

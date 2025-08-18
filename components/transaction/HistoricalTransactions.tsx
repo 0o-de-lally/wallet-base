@@ -12,6 +12,7 @@ import { getLibraClient } from "../../util/libra-client";
 import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
+import { useFinancialDataProtection } from "../../hooks/use-screenshot-protection";
 
 export interface HistoricalTransactionsProps {
   accountAddress: string;
@@ -43,6 +44,9 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
   onRefresh: externalOnRefresh,
   refreshing: externalRefreshing = false,
 }) => {
+  // Financial data protection - prevents screenshots of transaction history
+  useFinancialDataProtection(true, "HistoricalTransactions");
+
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

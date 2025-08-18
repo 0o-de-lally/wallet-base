@@ -7,6 +7,8 @@ import {
   Text,
 } from "react-native";
 import { FormInput } from "../common/FormInput";
+import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
+import { styles } from "../../styles/styles";
 
 interface PinInputFieldProps extends Omit<TextInputProps, "onChangeText"> {
   label: string;
@@ -42,6 +44,9 @@ export const PinInputField = memo(
       },
       ref,
     ) => {
+      // Authentication protection - prevents screenshots during PIN entry
+      useAuthenticationProtection("PinInputField");
+
       const [hidden, setHidden] = useState(true);
       const handleChangeText = (text: string) => {
         onChangeText(text);
@@ -81,25 +86,17 @@ export const PinInputField = memo(
 
       // Custom inline layout to show toggle; replicate FormInput structure
       return (
-        <View style={{ width: "100%" }}>
-          <Text style={{ fontSize: 14, fontWeight: "500", marginBottom: 4 }}>
+        <View style={styles.passwordInputContainer}>
+          <Text style={styles.passwordInputLabel}>
             {label}
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.passwordInputRow}>
             <TextInput
-              style={{
-                flex: 1,
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                borderWidth: 1,
-                borderColor: "#444",
-                borderRadius: 6,
-                color: "#fff",
-              }}
+              style={styles.passwordInput}
               value={value}
               onChangeText={handleChangeText}
               placeholder={placeholder}
-              placeholderTextColor="#888"
+              placeholderTextColor={styles.inputPlaceholder.color}
               secureTextEntry={hidden}
               keyboardType={"default"}
               maxLength={maxLength}
@@ -111,18 +108,18 @@ export const PinInputField = memo(
               {...rest}
             />
             <TouchableOpacity
-              style={{ marginLeft: 8, padding: 8 }}
+              style={styles.passwordToggleButton}
               onPress={() => setHidden((h) => !h)}
               accessibilityRole="button"
               accessibilityLabel={hidden ? "Show password" : "Hide password"}
             >
-              <Text style={{ color: "#4da3ff", fontSize: 12 }}>
+              <Text style={styles.passwordToggleText}>
                 {hidden ? "show" : "hide"}
               </Text>
             </TouchableOpacity>
           </View>
           {error ? (
-            <Text style={{ color: "#ff6b6b", marginTop: 4, fontSize: 12 }}>
+            <Text style={styles.errorText}>
               {error}
             </Text>
           ) : null}

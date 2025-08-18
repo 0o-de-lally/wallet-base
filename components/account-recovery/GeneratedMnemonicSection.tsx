@@ -4,6 +4,7 @@ import { ActionButton } from "../common/ActionButton";
 import { CopyButton } from "../common/CopyButton";
 import { styles } from "../../styles/styles";
 import { generateMnemonic } from "open-libra-sdk";
+import { useCriticalDataProtection } from "../../hooks/use-screenshot-protection";
 
 interface GeneratedMnemonicSectionProps {
   onMnemonicGenerated: (mnemonic: string) => void;
@@ -13,6 +14,9 @@ interface GeneratedMnemonicSectionProps {
 export const GeneratedMnemonicSection: React.FC<
   GeneratedMnemonicSectionProps
 > = ({ onMnemonicGenerated, isLoading = false }) => {
+  // Critical data protection - prevents screenshots when mnemonic is displayed
+  useCriticalDataProtection("GeneratedMnemonicSection");
+
   const [generatedMnemonic, setGeneratedMnemonic] = useState<string | null>(
     null,
   );
@@ -103,7 +107,7 @@ export const GeneratedMnemonicSection: React.FC<
             onPress={handleGenerateMnemonic}
             isLoading={isGenerating}
             disabled={isLoading}
-            style={{ marginTop: 16 }}
+            style={styles.marginTop16}
           />
         </View>
       )}

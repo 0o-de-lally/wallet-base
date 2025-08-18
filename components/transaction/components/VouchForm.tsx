@@ -206,7 +206,7 @@ export const VouchForm = memo(
             <View>
               <TouchableOpacity
                 onPress={() => setShowReceivedVouches(!showReceivedVouches)}
-                style={{ marginBottom: 8 }}
+                style={styles.marginBottom8}
                 accessibilityRole="button"
                 accessibilityLabel={`${showReceivedVouches ? "Hide" : "Show"} received vouches list`}
               >
@@ -215,7 +215,7 @@ export const VouchForm = memo(
                 </Text>
               </TouchableOpacity>
               {showReceivedVouches && vouchInfo.received_vouches.length > 0 && (
-                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                <View style={styles.spacingContainer}>
                   {vouchInfo.received_vouches
                     .slice(0, 10)
                     .map((addr, index) => (
@@ -243,7 +243,7 @@ export const VouchForm = memo(
               )}
               <TouchableOpacity
                 onPress={() => setShowGivenVouches(!showGivenVouches)}
-                style={{ marginBottom: 8 }}
+                style={styles.marginBottom8}
                 accessibilityRole="button"
                 accessibilityLabel={`${showGivenVouches ? "Hide" : "Show"} given vouches list`}
               >
@@ -252,7 +252,7 @@ export const VouchForm = memo(
                 </Text>
               </TouchableOpacity>
               {showGivenVouches && vouchInfo.given_vouches.length > 0 && (
-                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                <View style={styles.spacingContainer}>
                   {vouchInfo.given_vouches.slice(0, 10).map((addr, index) => (
                     <Text
                       key={index}

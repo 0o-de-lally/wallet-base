@@ -4,6 +4,7 @@ import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
+import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
 
 // Define callback types for authentication secret operations
 type PinActionCallback = (pin: string) => Promise<boolean>;
@@ -35,6 +36,8 @@ export const PinInputModal = memo(
     actionSubtitle,
     autoCloseOnSuccess = true, // Default to true for backward compatibility
   }: PinInputModalProps) => {
+    // Authentication protection - prevents screenshots during PIN modal interactions
+    useAuthenticationProtection("PinInputModal");
     // Ensure onPinAction is always a function even if undefined is passed
     const safeOnPinAction = useCallback(
       async (pin: string) => {
@@ -235,7 +238,7 @@ export const PinInputModal = memo(
                 onPress={handleCancel}
                 disabled={isVerifying}
                 accessibilityLabel="Cancel password entry"
-                style={{ flex: 1, marginRight: 8 }}
+                style={[styles.flexOne, styles.marginRight8]}
               />
 
               <ActionButton
@@ -243,7 +246,7 @@ export const PinInputModal = memo(
                 onPress={processPinSecurely}
                 isLoading={isVerifying}
                 accessibilityLabel="Verify password"
-                style={{ flex: 1, marginLeft: 8 }}
+                style={[styles.flexOne, styles.marginLeft8]}
               />
             </View>
           </View>

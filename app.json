@@ -52,7 +52,8 @@
             "enableExperimentalBlurViewBitmapCheck": true
           }
         }
-      ]
+      ],
+      "./plugins/withFlagSecure.js"
     ],
     "experiments": {
       "typedRoutes": true

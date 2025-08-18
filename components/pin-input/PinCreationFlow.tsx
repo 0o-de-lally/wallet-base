@@ -10,6 +10,7 @@ import {
 } from "../../util/pin-security";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
+import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
 
 interface PinCreationFlowProps {
   visible: boolean;
@@ -20,6 +21,9 @@ interface PinCreationFlowProps {
 
 export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
   ({ visible, onComplete, onCancel, showSuccessAlert = true }) => {
+    // Authentication protection - prevents screenshots during PIN creation
+    useAuthenticationProtection("PinCreationFlow");
+
     const [step, setStep] = useState<"create" | "confirm">("create");
     const [pin, setPin] = useState("");
     const [confirmPin, setConfirmPin] = useState("");

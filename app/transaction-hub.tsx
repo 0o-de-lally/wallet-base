@@ -31,7 +31,7 @@ export default function TransactionHubScreen() {
               text="← Back"
               onPress={() => router.back()}
               size="small"
-              style={{ marginTop: 16 }}
+              style={styles.marginTop16}
             />
           </View>
         </View>

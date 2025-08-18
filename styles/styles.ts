@@ -219,6 +219,99 @@ export const styles = StyleSheet.create({
     letterSpacing: 8,
     color: colors.textPrimary,
   },
+  // Enhanced PIN/password input styles
+  passwordInputContainer: {
+    width: "100%",
+  },
+  passwordInputLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
+    color: colors.textPrimary, // Fixed contrast - was inline
+  },
+  passwordInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 2,
+    borderColor: colors.outlineBold,
+    borderRadius: 6,
+    color: colors.textPrimary, // Enhanced contrast
+    backgroundColor: colors.inputBg,
+    fontSize: 16,
+  },
+  passwordToggleButton: {
+    marginLeft: 8,
+    padding: 12,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  passwordToggleText: {
+    color: colors.primary, // Enhanced contrast - was #4da3ff inline
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  // Common spacing utilities
+  flexOne: {
+    flex: 1,
+  },
+  marginTop16: {
+    marginTop: 16,
+  },
+  marginTop10: {
+    marginTop: 10,
+  },
+  marginBottom8: {
+    marginBottom: 8,
+  },
+  marginBottom20: {
+    marginBottom: 20,
+  },
+  marginVertical20: {
+    marginVertical: 20,
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  spacingContainer: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  marginTop0: {
+    marginTop: 0,
+  },
+  appWrapper: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  // Account not found card styles
+  accountNotFoundHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 16,
+  },
+  accountAddressContainer: {
+    backgroundColor: colors.cardBg,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  accountAddressRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
 
   // BUTTON STYLES - All outline only, no filled backgrounds
   buttonContainer: {
@@ -953,5 +1046,147 @@ export const styles = StyleSheet.create({
   switchingText: {
     textAlign: "center",
     color: colors.primary,
+  },
+
+  // COMMON LAYOUT UTILITIES
+  flexRow: {
+    flexDirection: "row",
+  },
+  flexRowCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  flexRowStart: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  flexRowSpaceBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  positionRelative: {
+    position: "relative",
+  },
+  paddingVertical16: {
+    paddingVertical: 16,
+  },
+  paddingHorizontal4: {
+    paddingHorizontal: 4,
+  },
+  paddingHorizontal8: {
+    paddingHorizontal: 8,
+  },
+  marginTop12: {
+    marginTop: 12,
+  },
+  marginTop24: {
+    marginTop: 24,
+  },
+  marginBottom12: {
+    marginBottom: 12,
+  },
+  marginBottom24: {
+    marginBottom: 24,
+  },
+  marginRight8: {
+    marginRight: 8,
+  },
+  marginRight12: {
+    marginRight: 12,
+  },
+  marginLeft8: {
+    marginLeft: 8,
+  },
+  marginVertical12: {
+    marginVertical: 12,
+  },
+  marginHorizontal0: {
+    marginHorizontal: 0,
+  },
+  width100Percent: {
+    width: "100%",
+  },
+  alignCenter: {
+    alignItems: "center",
+  },
+  marginTop2: {
+    marginTop: 2,
+  },
+  marginTopNeg1: {
+    marginTop: -1,
+  },
+  verticalAlignMiddle: {
+    verticalAlign: "middle",
+  },
+  positionAbsolute: {
+    position: "absolute",
+  },
+  dismissButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 1,
+    padding: 8,
+  },
+  progressContainer: {
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+  },
+  progressCenter: {
+    alignItems: "center",
+    marginVertical: 12,
+  },
+  statusContainer: {
+    marginTop: 16,
+    paddingHorizontal: 8,
+  },
+  statusIconText: {
+    marginRight: 8,
+    verticalAlign: "middle",
+  },
+  statusIconTextWithMarginTop: {
+    marginRight: 8,
+    marginTop: -1,
+  },
+  statusRowStart: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  statusIconWithMarginTop: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  flexRowSpaceBetweenWithMargin: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  flexRowCenterGap6: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  flexRowCenterGap6Flex1: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flex: 1,
+  },
+  flexRowCenterGap4: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  accountItemContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  compactModeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });

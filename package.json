@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@expo/config-plugins": "^10.1.2",
     "@types/bun": "latest",
     "@types/react": "~19.0.14",
     "eslint": "^9.32.0",

@@ -17,6 +17,7 @@ import { View, StatusBar } from "react-native";
 import { AuthenticationView } from "../components/auth/AuthenticationView";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
+import { PrivacyOverlay } from "../components/privacy/PrivacyOverlay";
 import { styles } from "../styles/styles";
 
 // Enable screens for react-native-screens
@@ -27,10 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
   <SafeAreaProvider>
     <ModalProvider>
       <View
-        style={{
-          flex: 1,
-          backgroundColor: styles.headerContainer.backgroundColor,
-        }}
+        style={styles.appWrapper}
       >
         <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
         {children}
@@ -156,6 +154,8 @@ const RootLayout = observer(() => {
           animation: "fade",
         }}
       />
+      {/* Privacy overlay that activates when app goes to background */}
+      <PrivacyOverlay message="Return to continue using your wallet securely" />
     </Layout>
   );
 });

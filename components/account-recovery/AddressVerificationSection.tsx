@@ -70,12 +70,12 @@ export const AddressVerificationSection: React.FC<
 
       {isChainVerified && chainAddress && (
         <View style={styles.inputContainer}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.flexRowCenter}>
             <Ionicons
               name="checkmark-circle"
               size={16}
               color={colors.success}
-              style={{ marginRight: 8 }}
+              style={styles.marginRight8}
             />
             <Text style={[styles.label, { color: colors.success }]}>
               Chain verification successful
