@@ -14,7 +14,8 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
-    "fix": "bun format:fix && bun lint:fix"
+    "fix": "bun format:fix && bun lint:fix",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@legendapp/state": "^2.1.15",
@@ -32,9 +33,11 @@
     "react": "19.0.0",
     "react-native": "0.79.5",
     "react-native-get-random-values": "^1.11.0",
+    "react-native-quick-crypto": "^0.7.17",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-svg": "15.11.2"
+    "react-native-svg": "15.11.2",
+    "expo": "~53.0.20"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
