@@ -18,21 +18,24 @@ import { AuthenticationView } from "../components/auth/AuthenticationView";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
 import { PrivacyOverlay } from "../components/privacy/PrivacyOverlay";
+import { ScreenCaptureProtectionProvider } from "../context/ScreenCaptureProtectionContext";
 import { styles } from "../styles/styles";
 
 // Enable screens for react-native-screens
 enableScreens();
 
-// Layout wrapper to avoid duplication - only includes the ModalProvider once
+// Layout wrapper to avoid duplication - includes global providers and security context
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <SafeAreaProvider>
     <ModalProvider>
-      <View
-        style={styles.appWrapper}
-      >
-        <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
-        {children}
-      </View>
+      <ScreenCaptureProtectionProvider>
+        <View
+          style={styles.appWrapper}
+        >
+          <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+          {children}
+        </View>
+      </ScreenCaptureProtectionProvider>
     </ModalProvider>
   </SafeAreaProvider>
 );

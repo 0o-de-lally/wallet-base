@@ -114,6 +114,8 @@ export function useSensitiveScreenProtection(componentName?: string) {
 /**
  * Hook for financial screens with moderate protection needs
  * Allows more relaxed settings while still providing privacy
+ * 
+ * @deprecated Use useSensitiveScreenProtection instead for consistency
  */
 export function useFinancialScreenProtection(componentName?: string) {
   return useAppStateProtection({
@@ -128,6 +130,8 @@ export function useFinancialScreenProtection(componentName?: string) {
 /**
  * Simplified hook that just returns whether privacy overlay should be shown
  * Useful for components that only need the boolean state
+ * 
+ * @deprecated Use useSensitiveScreenProtection().shouldShowPrivacyOverlay instead
  */
 export function usePrivacyOverlayState(forSensitiveData: boolean = false): boolean {
   const { shouldShowPrivacyOverlay } = useAppStateProtection({

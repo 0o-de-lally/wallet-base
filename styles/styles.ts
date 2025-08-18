@@ -661,9 +661,6 @@ export const styles = StyleSheet.create({
   },
 
   // ACCOUNT ITEM STYLES
-  accountItemContainer: {
-    marginBottom: 10,
-  },
   accountItemContainerCompact: {
     marginBottom: 4,
   },

@@ -14,7 +14,8 @@
  * Usage: Add this plugin to the plugins array in app.json
  */
 
-const { withMainActivity, AndroidConfig } = require('@expo/config-plugins');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { withMainActivity } = require('@expo/config-plugins');
 
 /**
  * Config plugin to add FLAG_SECURE to Android MainActivity

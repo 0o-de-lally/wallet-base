@@ -1,9 +1,13 @@
 /**
- * Screenshot Protection Hook
+ * Screenshot Protection Hook (Legacy Compatibility)
  * 
  * Provides secure screen capture protection for sensitive components in the cryptocurrency wallet.
  * This hook prevents screenshots and screen recordings when sensitive data like mnemonics,
  * private keys, PINs, and wallet balances are displayed.
+ * 
+ * ⚠️ MIGRATION NOTICE:
+ * This file provides backward compatibility for existing components. New components should use
+ * the context-based protection from ScreenCaptureProtectionContext for better performance.
  * 
  * Security Features:
  * - Prevents screenshots using native OS APIs via expo-screen-capture
@@ -20,6 +24,11 @@
 
 import { useEffect } from "react";
 import { usePreventScreenCapture } from "expo-screen-capture";
+import { 
+  useCriticalDataProtection as useContextCriticalDataProtection,
+  useFinancialDataProtection as useContextFinancialDataProtection,
+  useAuthenticationProtection as useContextAuthenticationProtection
+} from "../context/ScreenCaptureProtectionContext";
 
 // Define __DEV__ since it's not exported by react-native
 declare const __DEV__: boolean;
@@ -77,38 +86,32 @@ export function useScreenshotProtection(
 /**
  * Hook for critical sensitive data that should ALWAYS be protected
  * This is used for mnemonics, private keys, and other critical cryptographic material
+ * 
+ * ⚠️ COMPATIBILITY: This now uses the context-based protection system
  */
 export function useCriticalDataProtection(componentName?: string): void {
-  useScreenshotProtection(true, {
-    enableInDev: true, // Always protect critical data, even in dev
-    componentName: componentName || "Critical Data Component",
-    verbose: true,
-  });
+  useContextCriticalDataProtection(componentName || "Critical Data Component");
 }
 
 /**
  * Hook for protecting financial data (balances, transactions)
  * Can be configured by user preferences in the future
+ * 
+ * ⚠️ COMPATIBILITY: This now uses the context-based protection system
  */
 export function useFinancialDataProtection(
   shouldProtect: boolean = true,
   componentName?: string
 ): void {
-  useScreenshotProtection(shouldProtect, {
-    enableInDev: false, // Allow screenshots in dev for financial data
-    componentName: componentName || "Financial Data Component",
-    verbose: __DEV__,
-  });
+  useContextFinancialDataProtection(shouldProtect, componentName || "Financial Data Component");
 }
 
 /**
  * Hook for protecting authentication flows (PIN entry, biometric)
  * Always protects in production, configurable in development
+ * 
+ * ⚠️ COMPATIBILITY: This now uses the context-based protection system
  */
 export function useAuthenticationProtection(componentName?: string): void {
-  useScreenshotProtection(true, {
-    enableInDev: true, // Protect auth flows in dev for security testing
-    componentName: componentName || "Authentication Component",
-    verbose: true,
-  });
+  useContextAuthenticationProtection(componentName || "Authentication Component");
 }

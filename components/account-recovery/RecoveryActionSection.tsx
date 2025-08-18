@@ -2,6 +2,7 @@ import React from "react";
 import { ActionButton } from "../common/ActionButton";
 import { FormInput } from "../common/FormInput";
 import { AccountMode } from "./types";
+import { styles } from "../../styles/styles";
 
 interface RecoveryActionSectionProps {
   nickname: string;
