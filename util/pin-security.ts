@@ -237,12 +237,16 @@ async function comparePasswords(
     // Generate hash from input PIN using the same salt and Scrypt parameters
     const encoder = new TextEncoder();
     const passwordBytes = encoder.encode(inputPassword);
-    const derivedKey = scrypt(passwordBytes, hexToBytes(storedHashedPassword.salt), {
-      N: storedHashedPassword.N,
-      r: storedHashedPassword.r,
-      p: storedHashedPassword.p,
-      dkLen: 32, // 32 bytes = 256 bits
-    });
+    const derivedKey = scrypt(
+      passwordBytes,
+      hexToBytes(storedHashedPassword.salt),
+      {
+        N: storedHashedPassword.N,
+        r: storedHashedPassword.r,
+        p: storedHashedPassword.p,
+        dkLen: 32, // 32 bytes = 256 bits
+      },
+    );
 
     const hash = bytesToHex(derivedKey);
 
@@ -337,10 +341,14 @@ async function validatePasswordWithRateLimit(password: string): Promise<{
       }
 
       // Parse the stored password from JSON
-      const storedHashedPassword: HashedPassword = JSON.parse(savedPasswordJson);
+      const storedHashedPassword: HashedPassword =
+        JSON.parse(savedPasswordJson);
 
       // Verify password using Scrypt comparison
-      const isValid = await comparePasswords(storedHashedPassword, securePassword);
+      const isValid = await comparePasswords(
+        storedHashedPassword,
+        securePassword,
+      );
 
       if (isValid) {
         // Record successful attempt (clears rate limiting)
@@ -480,7 +488,10 @@ export async function secureDecryptWithPassword(
       const value = new TextDecoder().decode(result.value);
       return { value, verified: true };
     } catch (error) {
-      console.warn("Decryption failed - possibly due to incorrect password", error);
+      console.warn(
+        "Decryption failed - possibly due to incorrect password",
+        error,
+      );
       return null;
     }
   });

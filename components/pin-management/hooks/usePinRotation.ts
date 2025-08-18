@@ -11,13 +11,12 @@ import { useModal } from "../../../context/ModalContext";
  * Custom hook for handling password rotation logic
  */
 export const usePasswordRotation = () => {
-  const [rotationProgress, setRotationProgress] = useState<PasswordRotationProgress>(
-    {
+  const [rotationProgress, setRotationProgress] =
+    useState<PasswordRotationProgress>({
       total: 0,
       completed: 0,
       failed: [],
-    },
-  );
+    });
 
   const { showAlert } = useModal();
 
@@ -32,7 +31,10 @@ export const usePasswordRotation = () => {
           showAlert("Success", "Password verified successfully");
           return true;
         } else {
-          showAlert("Incorrect Password", "The password you entered is incorrect");
+          showAlert(
+            "Incorrect Password",
+            "The password you entered is incorrect",
+          );
           return false;
         }
       } catch (error) {
@@ -52,13 +54,17 @@ export const usePasswordRotation = () => {
       try {
         const result = await verifyStoredPassword(oldPassword);
         if (!result.isValid) {
-          showAlert("Incorrect Password", "The password you entered is incorrect");
+          showAlert(
+            "Incorrect Password",
+            "The password you entered is incorrect",
+          );
           return false;
         }
 
         // Additionally validate that the password can decrypt existing data
         if (accountsWithData > 0) {
-          const validationResult = await validateOldPasswordCanDecryptData(oldPassword);
+          const validationResult =
+            await validateOldPasswordCanDecryptData(oldPassword);
           if (!validationResult.isValid) {
             showAlert(
               "Password Validation Failed",

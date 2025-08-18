@@ -71,7 +71,10 @@ const PinManagementContainer = memo(() => {
       setLoading(true);
 
       try {
-        const isValid = await validateOldPassword(oldPinValue, accountsWithData);
+        const isValid = await validateOldPassword(
+          oldPinValue,
+          accountsWithData,
+        );
         if (isValid) {
           // Store the old PIN for re-encryption later
           setOldPin(oldPinValue);
@@ -86,7 +89,13 @@ const PinManagementContainer = memo(() => {
         setLoading(false);
       }
     },
-    [validateOldPassword, accountsWithData, setOldPin, updateModalState, setLoading],
+    [
+      validateOldPassword,
+      accountsWithData,
+      setOldPin,
+      updateModalState,
+      setLoading,
+    ],
   );
 
   /**

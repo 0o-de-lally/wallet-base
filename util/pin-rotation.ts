@@ -196,7 +196,10 @@ async function reencryptAccountData(
     }
 
     // Decrypt with old password
-    const decryptResult = await secureDecryptWithPassword(encryptedData, oldPassword);
+    const decryptResult = await secureDecryptWithPassword(
+      encryptedData,
+      oldPassword,
+    );
     if (!decryptResult || !decryptResult.verified) {
       console.error(
         `Failed to decrypt data for account ${accountId} with old password`,
@@ -241,7 +244,9 @@ async function reencryptAccountData(
 /**
  * Validates that the old password can decrypt existing data before rotation
  */
-export async function validateOldPasswordCanDecryptData(oldPassword: string): Promise<{
+export async function validateOldPasswordCanDecryptData(
+  oldPassword: string,
+): Promise<{
   isValid: boolean;
   testedAccounts: number;
   error?: string;
@@ -268,7 +273,10 @@ export async function validateOldPasswordCanDecryptData(oldPassword: string): Pr
       }
 
       if (encryptedData) {
-        const decryptResult = await secureDecryptWithPassword(encryptedData, oldPassword);
+        const decryptResult = await secureDecryptWithPassword(
+          encryptedData,
+          oldPassword,
+        );
         if (!decryptResult || !decryptResult.verified) {
           return {
             isValid: false,

@@ -3,7 +3,10 @@ import { View, Text, Modal } from "react-native";
 import { PinInputField } from "./PinInputField";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { validatePasswordPolicy, storePasswordHash } from "../../util/pin-security";
+import {
+  validatePasswordPolicy,
+  storePasswordHash,
+} from "../../util/pin-security";
 import { refreshSetupStatus } from "../../util/setup-state";
 
 interface PinRotationFlowProps {

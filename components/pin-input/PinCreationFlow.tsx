@@ -4,7 +4,10 @@ import { Modal, View, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
-import { storePasswordHash, validatePasswordPolicy } from "../../util/pin-security";
+import {
+  storePasswordHash,
+  validatePasswordPolicy,
+} from "../../util/pin-security";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
 

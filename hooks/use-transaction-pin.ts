@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { getValue } from "../util/secure-store";
-import { secureDecryptWithPassword, verifyStoredPassword } from "../util/pin-security";
+import {
+  secureDecryptWithPassword,
+  verifyStoredPassword,
+} from "../util/pin-security";
 import { useModal } from "../context/ModalContext";
 import { reportErrorAuto } from "../util/error-utils";
 import {

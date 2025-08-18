@@ -367,7 +367,10 @@ export function useSecureStorage(initialAccountId?: string) {
       }
 
       // Use pin-security utility to decrypt
-      const decryptResult = await secureDecryptWithPassword(encryptedBase64, pin);
+      const decryptResult = await secureDecryptWithPassword(
+        encryptedBase64,
+        pin,
+      );
 
       if (!decryptResult) {
         setStoredValue(null);
