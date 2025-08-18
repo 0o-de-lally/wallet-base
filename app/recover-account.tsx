@@ -14,7 +14,7 @@ import { router } from "expo-router";
  */
 export default function RecoverAccountScreen() {
   return (
-  <SetupGuard requiresPassword={true} requiresAccount={false}>
+    <SetupGuard requiresPassword={true} requiresAccount={false}>
       <View style={styles.root}>
         <Stack.Screen
           options={{

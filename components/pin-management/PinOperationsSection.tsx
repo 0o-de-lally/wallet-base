@@ -37,19 +37,19 @@ export const PinOperationsSection: React.FC<PinOperationsSectionProps> = ({
   }
 
   return (
-  <SectionContainer title="Password Operations">
+    <SectionContainer title="Password Operations">
       <View style={styles.buttonContainer}>
         <ActionButton
-      text="Verify Password"
+          text="Verify Password"
           onPress={onVerifyPin}
           disabled={isLoading || showRotationProgress}
-      accessibilityHint="Verify your password is correct"
+          accessibilityHint="Verify your password is correct"
         />
         <ActionButton
-      text="Change Password"
+          text="Change Password"
           onPress={onRotatePin}
           disabled={isLoading || showRotationProgress}
-      accessibilityHint="Change your password"
+          accessibilityHint="Change your password"
         />
       </View>
     </SectionContainer>

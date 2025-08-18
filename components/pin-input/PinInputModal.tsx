@@ -95,7 +95,7 @@ export const PinInputModal = memo(
     );
 
     // Use a transient pin state - we'll clear it immediately after use
-  const [pinValue, setPinValue] = useState("");
+    const [pinValue, setPinValue] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
     const pinInputRef = useRef<TextInput>(null);
@@ -143,7 +143,7 @@ export const PinInputModal = memo(
 
     const handleCancel = useCallback(() => {
       setPinValue("");
-  setError(null);
+      setError(null);
       onClose();
     }, [onClose]);
 

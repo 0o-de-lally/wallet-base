@@ -51,7 +51,7 @@ export const TransactionPinModal = memo(
 
     const handleSubmit = useCallback(async () => {
       if (!pin.trim()) {
-  setPinError("Please enter your password");
+        setPinError("Please enter your password");
         return;
       }
 
@@ -61,8 +61,8 @@ export const TransactionPinModal = memo(
         await onPinSubmit(pin);
         setPin(""); // Clear PIN on success
       } catch (error) {
-  console.error("Password submission error:", error);
-  setPinError("Failed to verify password. Please try again.");
+        console.error("Password submission error:", error);
+        setPinError("Failed to verify password. Please try again.");
       }
     }, [pin, onPinSubmit]);
 

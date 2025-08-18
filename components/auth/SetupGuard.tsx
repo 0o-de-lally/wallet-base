@@ -43,7 +43,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
 
       if (isComplete) {
         setNeedsOnboarding(false);
-  } else if (effectiveRequiresPassword && !hasPin) {
+      } else if (effectiveRequiresPassword && !hasPin) {
         setNeedsOnboarding(true);
       } else if (requiresAccount && !hasUserAccounts) {
         setNeedsOnboarding(true);

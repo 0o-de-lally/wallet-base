@@ -144,7 +144,7 @@ const PinManagementContainer = memo(() => {
       if (success) {
         // Update pin exists state
         setPinExists(true);
-  showAlert("Success", "Password created successfully!");
+        showAlert("Success", "Password created successfully!");
       }
 
       // Reset the operation
@@ -263,7 +263,7 @@ const PinManagementContainer = memo(() => {
       {/* Confirmation Modal for PIN Rotation */}
       <ConfirmationModal
         visible={rotatePinModalVisible}
-  title="Change Password"
+        title="Change Password"
         message={getRotationMessage(accountsWithData)}
         confirmText="Continue"
         onConfirm={confirmRotatePin}

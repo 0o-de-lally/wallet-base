@@ -124,7 +124,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
     <>
       <Text style={styles.modalTitle}>Create Your New Password</Text>
       <Text style={styles.modalSubtitle}>
-        Choose a new password (minimum 8 characters). All encrypted data will be re-encrypted with it.
+        Choose a new password (minimum 8 characters). All encrypted data will be
+        re-encrypted with it.
       </Text>
 
       <PinInputField
@@ -134,8 +135,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         placeholder="********"
         error={error || undefined}
         autoFocus={true}
-  maxLength={128}
-  showToggle={true}
+        maxLength={128}
+        showToggle={true}
       />
 
       <View style={styles.modalButtons}>
@@ -148,9 +149,9 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
 
         <ActionButton
           text="Next"
-            onPress={validateAndProceed}
-            disabled={!validatePasswordPolicy(pin)}
-            accessibilityLabel="Proceed to confirm new password"
+          onPress={validateAndProceed}
+          disabled={!validatePasswordPolicy(pin)}
+          accessibilityLabel="Proceed to confirm new password"
         />
       </View>
     </>
@@ -170,8 +171,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         placeholder="********"
         error={error || undefined}
         autoFocus={true}
-  maxLength={128}
-  showToggle={true}
+        maxLength={128}
+        showToggle={true}
       />
 
       <View style={styles.modalButtons}>

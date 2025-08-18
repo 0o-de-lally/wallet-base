@@ -1,5 +1,11 @@
 import React, { memo, forwardRef, useState } from "react";
-import { TextInputProps, TextInput, View, TouchableOpacity, Text } from "react-native";
+import {
+  TextInputProps,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import { FormInput } from "../common/FormInput";
 
 interface PinInputFieldProps extends Omit<TextInputProps, "onChangeText"> {
@@ -27,10 +33,10 @@ export const PinInputField = memo(
         onChangeText,
         placeholder = "enter password",
         error,
-  maxLength = 128,
+        maxLength = 128,
         autoFocus = false,
         onSubmit,
-  clearOnSubmit = false,
+        clearOnSubmit = false,
         showToggle = false,
         ...rest
       },
@@ -38,7 +44,7 @@ export const PinInputField = memo(
     ) => {
       const [hidden, setHidden] = useState(true);
       const handleChangeText = (text: string) => {
-  onChangeText(text);
+        onChangeText(text);
       };
 
       const handleSubmitEditing = () => {
@@ -81,7 +87,15 @@ export const PinInputField = memo(
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TextInput
-              style={{ flex: 1, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#444", borderRadius: 6, color: "#fff" }}
+              style={{
+                flex: 1,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderWidth: 1,
+                borderColor: "#444",
+                borderRadius: 6,
+                color: "#fff",
+              }}
               value={value}
               onChangeText={handleChangeText}
               placeholder={placeholder}

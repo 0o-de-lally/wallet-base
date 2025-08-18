@@ -102,7 +102,8 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
       <>
         <Text style={styles.modalTitle}>Create Your Password</Text>
         <Text style={styles.modalSubtitle}>
-          Choose a strong password (minimum 8 characters) to secure your wallet. You&apos;ll need this password to access sensitive operations.
+          Choose a strong password (minimum 8 characters) to secure your wallet.
+          You&apos;ll need this password to access sensitive operations.
         </Text>
 
         <PinInputField

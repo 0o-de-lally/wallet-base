@@ -8,7 +8,7 @@ import { Stack } from "expo-router";
 
 const PinScreen = observer(() => {
   return (
-  <SetupGuard requiresPassword={false} requiresAccount={false}>
+    <SetupGuard requiresPassword={false} requiresAccount={false}>
       <View style={styles.root}>
         <Stack.Screen
           options={{
