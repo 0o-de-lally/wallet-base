@@ -77,8 +77,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
 
       setIsCreating(true);
       // set a timeout to simulate async operation
-      setTimeout(() => {
-      }, 100);
+      setTimeout(() => {}, 100);
 
       try {
         setError(null);
@@ -102,7 +101,6 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         setError("Failed to create password. Please try again.");
         setIsCreating(false);
       }
-
     }, [pin, confirmPin, showSuccessAlert, showAlert, resetState, onComplete]);
 
     const handleBackToCreate = useCallback(() => {
