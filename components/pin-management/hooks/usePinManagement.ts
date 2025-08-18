@@ -36,10 +36,10 @@ export const usePinManagement = () => {
    */
   const checkExistingPin = useCallback(async () => {
     try {
-      const savedPin = await getValue("user_pin");
+      const savedPin = await getValue("user_password");
       setState((prev) => ({ ...prev, pinExists: savedPin !== null }));
     } catch (error) {
-      console.error("Error checking existing PIN:", error);
+      console.error("Error checking existing Password:", error);
     }
   }, []);
 

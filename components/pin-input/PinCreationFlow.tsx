@@ -75,8 +75,12 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         return;
       }
 
+      setIsCreating(true);
+      // set a timeout to simulate async operation
+      setTimeout(() => {
+      }, 100);
+
       try {
-        setIsCreating(true);
         setError(null);
         const success = await storePasswordHash(pin);
         if (!success) {
@@ -91,22 +95,14 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
             "Your password has been created successfully.",
           );
         }
-        // Show spinner for a short time before closing modal
-        setTimeout(() => {
-          onComplete(true);
-        }, 500);
-        // resetState() will be called when modal closes
+        onComplete(true);
+        resetState();
       } catch (error) {
         console.error("Error creating password:", error);
         setError("Failed to create password. Please try again.");
         setIsCreating(false);
       }
-    // Reset state when modal closes
-    React.useEffect(() => {
-      if (!visible) {
-        resetState();
-      }
-    }, [visible, resetState]);
+
     }, [pin, confirmPin, showSuccessAlert, showAlert, resetState, onComplete]);
 
     const handleBackToCreate = useCallback(() => {
@@ -182,7 +178,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           <ActionButton
             text="Confirm Password"
             onPress={createPin}
-            disabled={!validatePasswordPolicy(confirmPin) || isCreating}
+            disabled={!validatePasswordPolicy(confirmPin)}
             isLoading={isCreating}
             accessibilityLabel="Confirm password"
           />

@@ -110,6 +110,7 @@ export async function clearAllSecureStorage(): Promise<void> {
     // Add all your application's secure storage keys here
     const appKeys = [
       "user_pin", // Added the actual PIN storage key
+      "user_password",
       "user_pin_hash",
       "user_pin_salt",
       "user_token",
@@ -157,7 +158,7 @@ export async function rebuildKeysList(): Promise<void> {
 
     // Check for common key patterns
     const patternsToCheck = [
-      "user_pin",
+      "user_password",
       // Account keys - we'll need to check based on current profiles
     ];
 

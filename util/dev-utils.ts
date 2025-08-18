@@ -16,8 +16,9 @@ export async function resetAppToFirstTimeUser(): Promise<void> {
     appConfig.profiles.set({});
     appConfig.activeAccountId.set(null);
 
-    // Clear PIN data
+    // Clear PIN and password data
     await deleteValue("user_pin");
+    await deleteValue("user_password");
 
     // Clear any other stored data that might exist
     const commonKeys = ["default", "private_key"];
