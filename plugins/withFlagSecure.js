@@ -14,7 +14,7 @@
  * Usage: Add this plugin to the plugins array in app.json
  */
 
-const { withAndroidMainActivity, AndroidConfig } = require('@expo/config-plugins');
+const { withMainActivity, AndroidConfig } = require('@expo/config-plugins');
 
 /**
  * Config plugin to add FLAG_SECURE to Android MainActivity
@@ -22,7 +22,7 @@ const { withAndroidMainActivity, AndroidConfig } = require('@expo/config-plugins
  * @returns {import('@expo/config-plugins').ExportedConfig}
  */
 function withFlagSecure(config) {
-  return withAndroidMainActivity(config, (config) => {
+  return withMainActivity(config, (config) => {
     let { contents } = config.modResults;
 
     // Check if FLAG_SECURE is already implemented
