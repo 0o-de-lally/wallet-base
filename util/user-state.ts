@@ -34,9 +34,9 @@ function getProfiles(): Record<string, Profile> | null {
 /**
  * Checks if the user has completed the basic setup (has PIN)
  */
-export async function hasPINSetup(): Promise<boolean> {
+export async function hasPasswordSetup(): Promise<boolean> {
   try {
-    const savedPin = await getValue("user_pin");
+    const savedPin = await getValue("user_password");
     return savedPin !== null;
   } catch (error) {
     console.error("Error checking basic setup status:", error);

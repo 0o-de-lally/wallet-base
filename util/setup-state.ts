@@ -1,5 +1,5 @@
 import { observable } from "@legendapp/state";
-import { hasPINSetup, hasAccounts } from "./user-state";
+import { hasPasswordSetup, hasAccounts } from "./user-state";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
 
 type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
@@ -66,7 +66,7 @@ async function updateSetupStatus(): Promise<void> {
       // Continue with status check even if profile initialization fails
     }
 
-    const pinExists = await hasPINSetup();
+    const pinExists = await hasPasswordSetup();
     const accountsExist = hasAccounts();
 
     setupState.hasPin.set(pinExists);

@@ -64,7 +64,7 @@ const CURRENT_SECRET_VERSION = 2; // password >=8 chars
 
 // Scrypt parameters for secure PIN hashing (matching crypto.ts)
 const SCRYPT_CONFIG = {
-  N: 32768, // Cost parameter (32K)
+  N: 256,//32768, // Cost parameter (32K)
   r: 8, // Block size parameter
   p: 1, // Parallelization parameter
   dkLen: 32, // Derived key length (256 bits)

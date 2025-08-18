@@ -6,7 +6,7 @@ import { styles } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
-import { hasPINSetup, hasAccounts } from "../../util/user-state";
+import { hasPasswordSetup, hasAccounts } from "../../util/user-state";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
 import { resetAppToFirstTimeUser } from "../../util/dev-utils";
 import { WelcomeStep } from "./WelcomeStep";
@@ -35,7 +35,7 @@ export const OnboardingWizard: React.FC = observer(() => {
       maybeInitializeDefaultProfile();
       await new Promise((resolve) => setTimeout(resolve, 100)); // Brief delay for initialization
 
-      const pinExists = await hasPINSetup();
+      const pinExists = await hasPasswordSetup();
       const accountsExist = hasAccounts();
 
       setHasPin(pinExists);
@@ -72,6 +72,8 @@ export const OnboardingWizard: React.FC = observer(() => {
         // Small delay to ensure PIN is fully stored before checking status
         await new Promise((resolve) => setTimeout(resolve, 200));
         await checkStatus(); // Re-check status after PIN creation
+        // Navigate to next step of wallet setup wizard
+        setAccountChoice("create");
       }
     },
     [checkStatus],
