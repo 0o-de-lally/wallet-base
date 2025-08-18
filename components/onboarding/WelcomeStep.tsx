@@ -19,7 +19,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({
         Let&apos;s get you set up! This wizard will guide you through:
       </Text>
       <Text style={[styles.resultValue, { marginTop: 10 }]}>
-        • Creating a secure PIN for your wallet
+        • Creating a secure Password for your wallet
       </Text>
       <Text style={styles.resultValue}>• Setting up your first account</Text>
       <Text
@@ -29,10 +29,10 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({
       </Text>
 
       <ActionButton
-        text="Create PIN"
+        text="Create Password"
         onPress={onStartPinCreation}
         style={styles.buttonSpacingDefault}
-        accessibilityLabel="Start PIN creation for wallet setup"
+        accessibilityLabel="Start Password creation for wallet setup"
       />
 
       <Text

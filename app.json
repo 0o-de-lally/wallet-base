@@ -44,15 +44,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-screen-capture",
-      [
-        "expo-blur",
-        {
-          "android": {
-            "enableExperimentalBlurViewBitmapCheck": true
-          }
-        }
-      ],
       "./plugins/withFlagSecure.js"
     ],
     "experiments": {
