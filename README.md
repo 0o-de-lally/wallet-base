@@ -93,7 +93,7 @@ wallet-test/
 ├── app/                    # Main application screens (Expo Router)
 ├── components/             # Reusable React components
 │   ├── auth/              # Authentication components
-│   ├── pin-input/         # PIN management components
+│   ├── pin-input/         # Password management components
 │   ├── secure-storage/    # Secure storage components
 │   └── transaction/       # Transaction components
 ├── context/               # React context providers
@@ -101,7 +101,7 @@ wallet-test/
 ├── hooks/                 # Custom React hooks
 ├── util/                  # Utility modules
 │   ├── crypto.ts         # Cryptographic functions
-│   ├── pin-security.ts   # PIN handling and security
+│   ├── pin-security.ts   # Password handling and security
 │   ├── secure-store.ts   # Secure storage abstraction
 │   └── libra-client.ts   # Blockchain interaction
 ├── testing/              # Test utilities and E2E harness
@@ -117,14 +117,14 @@ wallet-test/
 - **Constant-Time Comparisons**: Timing attack prevention
 
 ### Mnemonic Protection
-- **PIN-Protected Storage**: 6-digit PIN with secure hashing
+- **Password-Protected Storage**: 6-digit password with secure hashing
 - **Reveal Scheduling**: Time-delayed access to sensitive data
 - **Secure Storage**: Expo SecureStore with hardware-backed encryption
 - **Memory Protection**: Automatic cleanup of sensitive data
 
 ### Access Controls
 - **Biometric Authentication**: Face ID/Fingerprint support
-- **PIN Rotation**: Secure PIN change functionality
+- **Password Rotation**: Secure password change functionality
 - **Account Isolation**: Per-account encrypted storage
 
 ## 🤖 AI Agent Integration
@@ -211,15 +211,15 @@ For detailed AI agent instructions, see [`./.ai/README.md`](./.ai/README.md).
 ## 🚨 Security Considerations
 
 ### Current Security Status
-- ⚠️ **6-digit PIN vulnerability**: Consider implementing longer PINs or passphrases
+- ⚠️ **6-digit password vulnerability**: Consider implementing longer passwords or passphrases
 - ⚠️ **Static salt usage**: Migration to per-record salts recommended
-- ⚠️ **No rate limiting**: PIN brute force protection needed
+- ⚠️ **No rate limiting**: Password brute force protection needed
 - ✅ **AES-GCM encryption**: Strong authenticated encryption in use
 - ✅ **Secure random generation**: Using OS-level entropy
 - ✅ **Biometric support**: Hardware-backed authentication available
 
 ### Planned Security Improvements
-1. Implement PIN attempt rate limiting with exponential backoff
+1. Implement password attempt rate limiting with exponential backoff
 2. Replace static salt with per-record random salts
 3. Remove custom integrity tokens (rely on AES-GCM auth tag)
 4. Increase PBKDF2 iterations or migrate to Argon2

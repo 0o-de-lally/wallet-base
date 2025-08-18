@@ -15,7 +15,7 @@ This document defines the cryptographic standards, operations, and implementatio
 - **Key Derivation**: Scrypt with memory-hard parameters (via @noble/hashes)
 - **Encryption**: AES-256-GCM for authenticated encryption
 - **Storage**: Hardware-backed TEE integration with device binding
-- **Authentication**: Multi-layer security (Device biometric → PIN → Hardware attestation)
+- **Authentication**: Multi-layer security (Device biometric → password → Hardware attestation)
 - **Access Control**: Mandatory device biometric authentication for application access
 
 ## Cryptographic Standards
@@ -74,7 +74,7 @@ Device Startup
     ↓ (SUCCESS)
 Application Access Granted
     ↓
-[Layer 1] PIN Entry for Wallet Operations
+[Layer 1] Password Entry for Wallet Operations
     ↓ (SUCCESS) 
 [Layer 2] Scrypt Key Derivation
     ↓
@@ -87,8 +87,8 @@ Wallet Operation Authorized
 
 **Security Rationale**:
 - **Layer 0**: Prevents unauthorized app access entirely
-- **Layer 1**: Protects wallet-specific operations with user PIN
-- **Layer 2**: Makes PIN brute force computationally expensive
+- **Layer 1**: Protects wallet-specific operations with user password
+- **Layer 2**: Makes password brute force computationally expensive
 - **Layer 3**: Ensures data confidentiality with strong encryption
 - **Layer 4**: Verifies hardware integrity (planned enhancement)
 
@@ -99,7 +99,7 @@ Device Biometric (Required)
     ↓
 Application Access
     ↓
-PIN (User Input)
+Password (User Input)
     ↓
 Scrypt (Key Derivation)
     ↓
@@ -146,7 +146,7 @@ if (!result.success) {
 import { scrypt } from '@noble/hashes/scrypt';
 
 const salt = getRandomBytes(16);  // Per-record random salt
-const key = scrypt(pin, salt, {
+const key = scrypt(password, salt, {
   N: 32768,    // Cost parameter
   r: 8,        // Block size
   p: 1,        // Parallelization
@@ -191,7 +191,7 @@ await SecureStore.setItemAsync('device_master_key', base64(masterKey), {
 });
 
 // Wrap data encryption keys
-const dataKey = scrypt(pin, salt, SCRYPT_CONFIG);
+const dataKey = scrypt(password, salt, SCRYPT_CONFIG);
 const wrappedKey = await aesGcmEncrypt(dataKey, masterKey);
 ```
 
@@ -279,13 +279,13 @@ function deriveKey(password: Uint8Array, salt: Uint8Array, config: ScryptConfig)
 }
 ```
 
-#### Enhanced PIN Policy
-**Requirement**: Strengthen PIN requirements beyond basic 6-digit format  
+#### Enhanced Password Policy
+**Requirement**: Strengthen password requirements beyond basic 6-digit format  
 **Target**: 8-12 digits or alphanumeric passphrase  
 **Entropy Requirement**: Minimum 32 bits effective entropy
 
 #### Rate Limiting System
-**Requirement**: Exponential backoff on failed PIN attempts  
+**Requirement**: Exponential backoff on failed password attempts  
 **Storage**: Attempt counter in hardware-backed secure storage  
 **Policy**: 5 failures → 30s, 10 → 5m, 15 → escalate to device authentication
 
@@ -297,7 +297,7 @@ function deriveKey(password: Uint8Array, salt: Uint8Array, config: ScryptConfig)
 #### Multi-Layer Authentication
 **Requirements**: 
 1. **App-level**: Device biometric required for initial app access
-2. **Operation-level**: PIN + optional biometric verification for wallet operations  
+2. **Operation-level**: Password + optional biometric verification for wallet operations  
 **Fallback**: Device passcode when biometrics unavailable
 
 ## Security Analysis
@@ -305,13 +305,13 @@ function deriveKey(password: Uint8Array, salt: Uint8Array, config: ScryptConfig)
 ### Threat Model
 
 #### Threat 1: Offline Brute Force Attack
-**Scenario**: Attacker extracts encrypted data and attempts PIN cracking  
+**Scenario**: Attacker extracts encrypted data and attempts password cracking  
 **Prerequisites**: Attacker must first bypass device biometric authentication  
 **Mitigation**: Scrypt memory-hard function makes brute force computationally expensive (~32MB memory per attempt)  
 **Additional Protection**: Device binding prevents off-device attacks
 
 #### Threat 2: Online Automated Attack
-**Scenario**: Malware attempts rapid PIN guessing on unlocked device  
+**Scenario**: Malware attempts rapid password guessing on unlocked device  
 **Prerequisites**: Device must already be biometrically unlocked  
 **Mitigation**: Exponential backoff and biometric re-authentication requirements
 
@@ -348,7 +348,7 @@ function deriveKey(password: Uint8Array, salt: Uint8Array, config: ScryptConfig)
 
 #### Authentication
 - **Device Biometric**: Hardware-backed authentication required for app access
-- **PIN Verification**: Constant-time comparison prevents timing attacks
+- **Password Verification**: Constant-time comparison prevents timing attacks
 - **Biometric Gating**: Additional hardware-backed authentication for sensitive operations
 - **Device Binding**: Cryptographic proof of device identity
 
@@ -411,7 +411,7 @@ describe('Cryptographic Operations', () => {
     // Verify salt uniqueness protection
   });
   
-  test('Invalid PIN produces different key', () => {
+  test('Invalid password produces different key', () => {
     // Verify key derivation security
   });
 });
@@ -424,7 +424,7 @@ describe('End-to-End Encryption', () => {
     // Round-trip verification
   });
   
-  test('Wrong PIN fails decryption', () => {
+  test('Wrong password fails decryption', () => {
     // Authentication verification
   });
   
@@ -480,7 +480,7 @@ util/
 │   ├── biometric.ts            # Biometric authentication
 │   └── keystore.ts             # Hardware keystore operations
 └── security/
-    ├── pin.ts                  # PIN validation and security
+    ├── pin.ts                  # Password validation and security
     ├── rate-limit.ts           # Attempt rate limiting
     └── migration.ts            # Legacy format migration
 ```
@@ -498,7 +498,7 @@ class CryptographicError extends Error {
 }
 
 enum CryptoErrorCode {
-  INVALID_PIN = 'INVALID_PIN',
+  INVALID_PASSWORD = 'INVALID_PASSWORD',
   RATE_LIMITED = 'RATE_LIMITED',
   HARDWARE_UNAVAILABLE = 'HARDWARE_UNAVAILABLE',
   CORRUPTION_DETECTED = 'CORRUPTION_DETECTED',
@@ -516,7 +516,7 @@ interface SecurityEvent {
 }
 
 enum SecurityEventType {
-  PIN_VERIFICATION = 'pin_verification',
+  PASSWORD_VERIFICATION = 'password_verification',
   BIOMETRIC_AUTH = 'biometric_auth',
   ENCRYPTION = 'encryption',
   DECRYPTION = 'decryption',

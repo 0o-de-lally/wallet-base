@@ -24,14 +24,14 @@ A single, consistent authentication UI component used throughout the app when de
 A wrapper component that protects screens and redirects users to onboarding if needed.
 
 **Props:**
-- `requiresPin`: boolean (default: true) - whether the screen requires a PIN
+- `requiresPin`: boolean (default: true) - whether the screen requires a password
 - `requiresAccount`: boolean (default: true) - whether the screen requires an account
 
 ## Authentication Flow
 
 1. **App Initialization**: Root layout checks if app is initialized
 2. **Device Authentication**: If biometric/passcode is available, user must authenticate
-3. **Setup Verification**: SetupGuard ensures user has completed PIN and account setup
+3. **Setup Verification**: SetupGuard ensures user has completed password and account setup
 4. **App Access**: User gains access to protected content
 
 ## Implementation

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security - Phase 1 Critical Security Improvements
 
 #### Added
-- **Rate Limiting**: Implemented exponential backoff for PIN verification attempts
+- **Rate Limiting**: Implemented exponential backoff for password verification attempts
   - 5 failed attempts trigger 30-second lockout
   - Lockout duration doubles with each subsequent lockout period
   - Maximum lockout duration of 5 minutes
@@ -19,10 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents enumeration attacks on storage keys
   - Device-specific salt generation for unique key names
   - Migration system for existing predictable keys
-- **Enhanced PIN Security**: Improved PIN validation and complexity requirements
-  - Support for 6-12 character alphanumeric PINs
+- **Enhanced Password Security**: Improved password validation and complexity requirements
+  - Support for 6-12 character alphanumeric passwords
   - Rejection of common weak patterns (repeated characters, sequences)
-  - Backward compatibility with existing 6-digit PINs
+  - Backward compatibility with existing 6-digit passwords
 - **Secure Logging System**: Production-safe logging utilities
   - Automatic sensitive data filtering
   - Development vs production log level controls
@@ -40,13 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **REMOVED**: Static integrity token (now relies on AES-GCM authentication)
   - **NEW**: Ciphertext format now includes: salt(16 bytes) + nonce(12 bytes) + ciphertext
   - Automatic migration from legacy format on first access
-- **PIN Verification**: Enhanced with rate limiting integration
+- **Password Verification**: Enhanced with rate limiting integration
   - Returns detailed status including lockout information
   - Integrates with rate limiting system
   - Improved error messaging for user feedback
 - **Storage Operations**: Updated to use obfuscated key names
   - Account storage keys now use SHA-256 obfuscation
-  - PIN storage key obfuscated
+  - Password storage key obfuscated
   - Legacy key migration on access
 - **Error Handling**: Reduced information leakage in production
   - Sensitive logging only in development builds
@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Brute Force Resistance**: 100,000x increase in offline attack cost due to PBKDF2 increase
 - **Rainbow Table Prevention**: Per-record salts eliminate rainbow table attacks completely
 - **Enumeration Prevention**: Obfuscated keys prevent attackers from identifying encrypted data
-- **Online Attack Prevention**: Rate limiting stops automated PIN guessing attacks
+- **Online Attack Prevention**: Rate limiting stops automated password guessing attacks
 - **Information Leakage Reduction**: Secure logging prevents sensitive data exposure
 
 #### Testing
@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance benchmarking for crypto operations
 
 ### Fixed
-- Resolved potential timing attacks in PIN verification
+- Resolved potential timing attacks in password verification
 - Eliminated static salt vulnerability in key derivation
 - Removed predictable storage key patterns
 - Reduced sensitive information in logs
