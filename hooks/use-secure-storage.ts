@@ -9,9 +9,9 @@ import {
 import { useModal } from "../context/ModalContext";
 // Import from pin-security.ts instead of PinProcessor
 import {
-  verifyStoredPin,
-  secureEncryptWithPin,
-  secureDecryptWithPin,
+  verifyStoredPassword,
+  secureEncryptWithPassword,
+  secureDecryptWithPassword,
 } from "../util/pin-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 import { reportErrorAuto } from "../util/error-utils";
@@ -201,7 +201,7 @@ export function useSecureStorage(initialAccountId?: string) {
       setIsLoading(true);
 
       // First verify this is really the user's PIN (with rate limiting)
-      const verifyResult = await verifyStoredPin(pin);
+      const verifyResult = await verifyStoredPassword(pin);
       if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);
@@ -229,7 +229,7 @@ export function useSecureStorage(initialAccountId?: string) {
       }
 
       // Use the pin-security utilities to encrypt data
-      const encryptedBase64 = await secureEncryptWithPin(value, pin);
+      const encryptedBase64 = await secureEncryptWithPassword(value, pin);
 
       if (!encryptedBase64) {
         throw new Error("Encryption failed");
@@ -267,7 +267,7 @@ export function useSecureStorage(initialAccountId?: string) {
       }
 
       // First verify this is really the user's PIN (with rate limiting)
-      const verifyResult = await verifyStoredPin(pin);
+      const verifyResult = await verifyStoredPassword(pin);
       if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);
@@ -367,7 +367,7 @@ export function useSecureStorage(initialAccountId?: string) {
       }
 
       // Use pin-security utility to decrypt
-      const decryptResult = await secureDecryptWithPin(encryptedBase64, pin);
+      const decryptResult = await secureDecryptWithPassword(encryptedBase64, pin);
 
       if (!decryptResult) {
         setStoredValue(null);
@@ -452,7 +452,7 @@ export function useSecureStorage(initialAccountId?: string) {
       }
 
       // First verify this is really the user's PIN (with rate limiting)
-      const verifyResult = await verifyStoredPin(pin);
+      const verifyResult = await verifyStoredPassword(pin);
       if (typeof verifyResult === "object" && !verifyResult.isValid) {
         if (verifyResult.isLockedOut) {
           const minutes = Math.ceil(verifyResult.remainingTime / 60000);

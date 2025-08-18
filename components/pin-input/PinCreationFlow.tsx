@@ -4,8 +4,7 @@ import { Modal, View, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
-import { hashPin, validatePasswordPolicy } from "../../util/pin-security";
-import { saveValue } from "../../util/secure-store";
+import { storePasswordHash, validatePasswordPolicy } from "../../util/pin-security";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
 
@@ -72,8 +71,10 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
       try {
         setIsCreating(true);
         setError(null);
-        const hashedPin = await hashPin(pin);
-        await saveValue("user_pin", JSON.stringify(hashedPin));
+        const success = await storePasswordHash(pin);
+        if (!success) {
+          throw new Error("Failed to store password");
+        }
         setPin("");
         setConfirmPin("");
         refreshSetupStatus();

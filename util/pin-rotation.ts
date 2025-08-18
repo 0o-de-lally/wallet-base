@@ -1,16 +1,16 @@
 /**
- * PIN Rotation Utilities
+ * Password Rotation Utilities
  *
- * Handles the complete PIN rotation workflow, including re-encrypting
- * all account data with the new PIN.
+ * Handles the complete password rotation workflow, including re-encrypting
+ * all account data with the new password.
  */
 
 import { appConfig } from "./app-config-store";
 import { getAllKeys, getValue, saveValue, deleteValue } from "./secure-store";
 import {
-  secureDecryptWithPin,
-  secureEncryptWithPin,
-  hashPin,
+  secureDecryptWithPassword,
+  secureEncryptWithPassword,
+  hashPassword,
 } from "./pin-security";
 import { reportErrorAuto } from "./error-utils";
 import { getAccountStorageKey } from "./key-obfuscation";
@@ -22,14 +22,14 @@ interface AccountWithStoredData {
   accountAddress: string;
 }
 
-export interface PinRotationProgress {
+export interface PasswordRotationProgress {
   total: number;
   completed: number;
   current?: string; // current account being processed
   failed: string[]; // list of account IDs that failed
 }
 
-interface PinRotationResult {
+interface PasswordRotationResult {
   success: boolean;
   rotatedCount: number;
   failedAccounts: string[];
@@ -81,21 +81,21 @@ export async function getAllAccountsWithStoredData(): Promise<
 }
 
 /**
- * Rotates the PIN and re-encrypts all account data
+ * Rotates the password and re-encrypts all account data
  */
-export async function rotatePinAndReencryptData(
-  oldPin: string,
-  newPin: string,
-  onProgress?: (progress: PinRotationProgress) => void,
-): Promise<PinRotationResult> {
+export async function rotatePasswordAndReencryptData(
+  oldPassword: string,
+  newPassword: string,
+  onProgress?: (progress: PasswordRotationProgress) => void,
+): Promise<PasswordRotationResult> {
   try {
     // First, get all accounts with stored data
     const accountsWithData = await getAllAccountsWithStoredData();
 
     if (accountsWithData.length === 0) {
-      // No data to re-encrypt, just update the PIN
-      const hashedPin = await hashPin(newPin);
-      await saveValue("user_pin", JSON.stringify(hashedPin));
+      // No data to re-encrypt, just update the password
+      const hashedPassword = await hashPassword(newPassword);
+      await saveValue("user_password", JSON.stringify(hashedPassword));
 
       return {
         success: true,
@@ -104,7 +104,7 @@ export async function rotatePinAndReencryptData(
       };
     }
 
-    const progress: PinRotationProgress = {
+    const progress: PasswordRotationProgress = {
       total: accountsWithData.length,
       completed: 0,
       failed: [],
@@ -121,8 +121,8 @@ export async function rotatePinAndReencryptData(
 
         const success = await reencryptAccountData(
           account.accountId,
-          oldPin,
-          newPin,
+          oldPassword,
+          newPassword,
         );
 
         if (success) {
@@ -142,9 +142,9 @@ export async function rotatePinAndReencryptData(
       }
     }
 
-    // Update the stored PIN hash with the new PIN
-    const hashedPin = await hashPin(newPin);
-    await saveValue("user_pin", JSON.stringify(hashedPin));
+    // Update the stored password hash with the new password
+    const hashedPassword = await hashPassword(newPassword);
+    await saveValue("user_password", JSON.stringify(hashedPassword));
 
     return {
       success: progress.failed.length === 0,
@@ -152,8 +152,8 @@ export async function rotatePinAndReencryptData(
       failedAccounts: progress.failed,
     };
   } catch (error) {
-    console.error("Error during PIN rotation:", error);
-    reportErrorAuto("rotatePinAndReencryptData", error);
+    console.error("Error during password rotation:", error);
+    reportErrorAuto("rotatePasswordAndReencryptData", error);
 
     return {
       success: false,
@@ -165,12 +165,12 @@ export async function rotatePinAndReencryptData(
 }
 
 /**
- * Re-encrypts a single account's data with the new PIN
+ * Re-encrypts a single account's data with the new password
  */
 async function reencryptAccountData(
   accountId: string,
-  oldPin: string,
-  newPin: string,
+  oldPassword: string,
+  newPassword: string,
 ): Promise<boolean> {
   try {
     const legacyKey = `account_${accountId}`;
@@ -195,23 +195,23 @@ async function reencryptAccountData(
       return true; // No data to re-encrypt is not a failure
     }
 
-    // Decrypt with old PIN
-    const decryptResult = await secureDecryptWithPin(encryptedData, oldPin);
+    // Decrypt with old password
+    const decryptResult = await secureDecryptWithPassword(encryptedData, oldPassword);
     if (!decryptResult || !decryptResult.verified) {
       console.error(
-        `Failed to decrypt data for account ${accountId} with old PIN`,
+        `Failed to decrypt data for account ${accountId} with old password`,
       );
       return false;
     }
 
-    // Re-encrypt with new PIN
-    const newEncryptedData = await secureEncryptWithPin(
+    // Re-encrypt with new password
+    const newEncryptedData = await secureEncryptWithPassword(
       decryptResult.value,
-      newPin,
+      newPassword,
     );
     if (!newEncryptedData) {
       console.error(
-        `Failed to encrypt data for account ${accountId} with new PIN`,
+        `Failed to encrypt data for account ${accountId} with new password`,
       );
       return false;
     }
@@ -239,9 +239,9 @@ async function reencryptAccountData(
 }
 
 /**
- * Validates that the old PIN can decrypt existing data before rotation
+ * Validates that the old password can decrypt existing data before rotation
  */
-export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
+export async function validateOldPasswordCanDecryptData(oldPassword: string): Promise<{
   isValid: boolean;
   testedAccounts: number;
   error?: string;
@@ -253,7 +253,7 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
       return { isValid: true, testedAccounts: 0 };
     }
 
-    // Test the old PIN on a few accounts to make sure it works
+    // Test the old password on a few accounts to make sure it works
     const accountsToTest = accountsWithData.slice(
       0,
       Math.min(3, accountsWithData.length),
@@ -268,7 +268,7 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
       }
 
       if (encryptedData) {
-        const decryptResult = await secureDecryptWithPin(encryptedData, oldPin);
+        const decryptResult = await secureDecryptWithPassword(encryptedData, oldPassword);
         if (!decryptResult || !decryptResult.verified) {
           return {
             isValid: false,
@@ -281,7 +281,7 @@ export async function validateOldPinCanDecryptData(oldPin: string): Promise<{
 
     return { isValid: true, testedAccounts: accountsToTest.length };
   } catch (error) {
-    console.error("Error validating old PIN:", error);
+    console.error("Error validating old password:", error);
     return {
       isValid: false,
       testedAccounts: 0,

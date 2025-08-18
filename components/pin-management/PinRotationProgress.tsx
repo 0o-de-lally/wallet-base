@@ -4,18 +4,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { shortenAddress } from "../../util/format-utils";
 import { styles, namedColors } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
-import { PinRotationProgress } from "../../util/pin-rotation";
+import { PasswordRotationProgress } from "../../util/pin-rotation";
 
-interface PinRotationProgressDisplayProps {
-  progress: PinRotationProgress;
+interface PasswordRotationProgressDisplayProps {
+  progress: PasswordRotationProgress;
   onDismiss: () => void;
 }
 
 /**
  * Component that displays the progress of PIN rotation and data re-encryption
  */
-export const PinRotationProgressDisplay: React.FC<
-  PinRotationProgressDisplayProps
+export const PasswordRotationProgressDisplay: React.FC<
+  PasswordRotationProgressDisplayProps
 > = ({ progress, onDismiss }) => {
   const isComplete =
     progress.total === 0 ||
@@ -60,7 +60,7 @@ export const PinRotationProgressDisplay: React.FC<
  * Internal component for the progress content
  */
 const InlineProgressContent: React.FC<{
-  progress: PinRotationProgress;
+  progress: PasswordRotationProgress;
 }> = ({ progress }) => {
   const progressPercentage =
     progress.total > 0
@@ -146,7 +146,7 @@ const InlineProgressContent: React.FC<{
  * Component for displaying completion summary
  */
 const CompletionSummary: React.FC<{
-  progress: PinRotationProgress;
+  progress: PasswordRotationProgress;
 }> = ({ progress }) => (
   <View style={{ marginTop: 16, paddingHorizontal: 8 }}>
     <View

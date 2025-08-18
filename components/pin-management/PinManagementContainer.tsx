@@ -7,9 +7,9 @@ import { PinInputModal } from "../pin-input/PinInputModal";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { PinRotationFlow } from "../pin-input/PinRotationFlow";
 import { PinOperationsSection } from "./PinOperationsSection";
-import { PinRotationProgressDisplay } from "./PinRotationProgress";
+import { PasswordRotationProgressDisplay } from "./PinRotationProgress";
 import { usePinManagement } from "./hooks/usePinManagement";
-import { usePinRotation } from "./hooks/usePinRotation";
+import { usePasswordRotation } from "./hooks/usePinRotation";
 
 /**
  * Main password / (legacy PIN) management container component
@@ -39,11 +39,11 @@ const PinManagementContainer = memo(() => {
 
   const {
     rotationProgress,
-    handleVerifyPin,
-    validateOldPin,
+    handleVerifyPassword,
+    validateOldPassword,
     executeRotation,
     getRotationMessage,
-  } = usePinRotation();
+  } = usePasswordRotation();
 
   const { showAlert } = useModal();
 
@@ -54,13 +54,13 @@ const PinManagementContainer = memo(() => {
     async (pin: string): Promise<boolean> => {
       setLoading(true);
       try {
-        return await handleVerifyPin(pin);
+        return await handleVerifyPassword(pin);
       } finally {
         setLoading(false);
         updateModalState({ pinModalVisible: false });
       }
     },
-    [handleVerifyPin, setLoading, updateModalState],
+    [handleVerifyPassword, setLoading, updateModalState],
   );
 
   /**
@@ -71,7 +71,7 @@ const PinManagementContainer = memo(() => {
       setLoading(true);
 
       try {
-        const isValid = await validateOldPin(oldPinValue, accountsWithData);
+        const isValid = await validateOldPassword(oldPinValue, accountsWithData);
         if (isValid) {
           // Store the old PIN for re-encryption later
           setOldPin(oldPinValue);
@@ -86,7 +86,7 @@ const PinManagementContainer = memo(() => {
         setLoading(false);
       }
     },
-    [validateOldPin, accountsWithData, setOldPin, updateModalState, setLoading],
+    [validateOldPassword, accountsWithData, setOldPin, updateModalState, setLoading],
   );
 
   /**
@@ -207,7 +207,7 @@ const PinManagementContainer = memo(() => {
     <View style={styles.container}>
       {/* Show PIN rotation progress inline when active */}
       {showRotationProgress && (
-        <PinRotationProgressDisplay
+        <PasswordRotationProgressDisplay
           progress={rotationProgress}
           onDismiss={handleDismissProgress}
         />

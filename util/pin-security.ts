@@ -42,26 +42,25 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { gcm } from "@noble/ciphers/aes";
 import { getRandomBytes } from "./random";
 import { constantTimeEqual } from "./security-utils";
-import { getValue } from "./secure-store";
+import { getValue, saveValue } from "./secure-store";
 import {
   checkLockoutStatus,
   recordFailedAttempt,
   recordSuccessfulAttempt,
 } from "./pin-rate-limiting";
 
-// Define a custom type for the hashed secret (PIN v1 or Password v2)
-type HashedPin = {
+// Define a custom type for the hashed password
+type HashedPassword = {
   salt: string;
   hash: string;
   N: number; // Scrypt cost parameter
   r: number; // Scrypt block size parameter
   p: number; // Scrypt parallelization parameter
-  // version omitted in legacy (v1) objects. Added for password (v2+)
-  version?: number;
+  version: number; // Always required - current version
 };
 
-// TODO: use this when storing secrets
-const CURRENT_SECRET_VERSION = 2; // v1=6-digit PIN, v2=password >=8 chars
+// Current password version - always saved with stored passwords
+const CURRENT_SECRET_VERSION = 2; // password >=8 chars
 
 // Scrypt parameters for secure PIN hashing (matching crypto.ts)
 const SCRYPT_CONFIG = {
@@ -192,11 +191,11 @@ function base64ToUint8Array(base64: string): Uint8Array {
 }
 
 /**
- * Hashes a PIN using Scrypt for secure storage and verification.
- * @param pin - The PIN to hash
- * @returns Promise resolving to the hashed PIN data
+ * Hashes a password using Scrypt for secure storage and verification.
+ * @param password - The password to hash
+ * @returns Promise resolving to the hashed password data
  */
-async function hashPin(pin: string): Promise<HashedPin> {
+async function hashPassword(password: string): Promise<HashedPassword> {
   try {
     // Generate a random salt (16 bytes)
     const saltBytes = getRandomBytes(16);
@@ -204,8 +203,8 @@ async function hashPin(pin: string): Promise<HashedPin> {
 
     // Use Noble's Scrypt implementation to derive a key from the PIN
     const encoder = new TextEncoder();
-    const pinBytes = encoder.encode(pin);
-    const derivedKey = scrypt(pinBytes, hexToBytes(salt), SCRYPT_CONFIG);
+    const passwordBytes = encoder.encode(password);
+    const derivedKey = scrypt(passwordBytes, hexToBytes(salt), SCRYPT_CONFIG);
 
     // Convert to hex string
     const hash = bytesToHex(derivedKey);
@@ -219,60 +218,60 @@ async function hashPin(pin: string): Promise<HashedPin> {
       version: CURRENT_SECRET_VERSION,
     };
   } catch (error) {
-    console.error("PIN hashing failed:", error);
-    throw new Error("Failed to hash PIN");
+    console.error("Password hashing failed:", error);
+    throw new Error("Failed to hash password");
   }
 }
 
 /**
- * Securely compares two hashed PINs using constant-time comparison.
- * @param storedHashedPin Stored hashed PIN
- * @param inputPin Raw PIN input to verify
- * @returns Promise resolving to true if the PINs match, false otherwise
+ * Securely compares two hashed passwords using constant-time comparison.
+ * @param storedHashedPassword Stored hashed password
+ * @param inputPassword Raw password input to verify
+ * @returns Promise resolving to true if the passwords match, false otherwise
  */
-async function comparePins(
-  storedHashedPin: HashedPin,
-  inputPin: string,
+async function comparePasswords(
+  storedHashedPassword: HashedPassword,
+  inputPassword: string,
 ): Promise<boolean> {
   try {
     // Generate hash from input PIN using the same salt and Scrypt parameters
     const encoder = new TextEncoder();
-    const pinBytes = encoder.encode(inputPin);
-    const derivedKey = scrypt(pinBytes, hexToBytes(storedHashedPin.salt), {
-      N: storedHashedPin.N,
-      r: storedHashedPin.r,
-      p: storedHashedPin.p,
+    const passwordBytes = encoder.encode(inputPassword);
+    const derivedKey = scrypt(passwordBytes, hexToBytes(storedHashedPassword.salt), {
+      N: storedHashedPassword.N,
+      r: storedHashedPassword.r,
+      p: storedHashedPassword.p,
       dkLen: 32, // 32 bytes = 256 bits
     });
 
     const hash = bytesToHex(derivedKey);
 
     // Use constant-time comparison to prevent timing attacks
-    return constantTimeEqual(hash, storedHashedPin.hash);
+    return constantTimeEqual(hash, storedHashedPassword.hash);
   } catch (error) {
-    console.error("PIN comparison failed:", error);
+    console.error("Password comparison failed:", error);
     return false;
   }
 }
 
 /**
- * Processes a PIN operation with some memory clearing (limited by JavaScript constraints)
- * @param pin - The PIN to use (will be attempted to be cleared after use)
- * @param operation - The async operation to perform with the PIN
+ * Processes a password operation with some memory clearing (limited by JavaScript constraints)
+ * @param password - The password to use (will be attempted to be cleared after use)
+ * @param operation - The async operation to perform with the password
  * @returns Promise resolving to the operation result
  */
-async function processWithPin<T>(
-  pin: string,
-  operation: (pin: string) => Promise<T>,
+async function processWithPassword<T>(
+  password: string,
+  operation: (password: string) => Promise<T>,
 ): Promise<T> {
   try {
     // Execute the operation with the PIN
-    return await operation(pin);
+    return await operation(password);
   } finally {
     // Best-effort memory clearing within JavaScript's limitations
     // This doesn't guarantee the PIN is fully removed from memory
     // due to JavaScript's garbage collection and string immutability
-    pin = "";
+    password = "";
   }
 }
 
@@ -300,17 +299,17 @@ async function processWithPin<T>(
 // }
 
 /**
- * Validates a PIN against the stored hash with rate limiting
- * @param pin - The PIN to validate (will be cleared after use)
+ * Validates a password against the stored hash with rate limiting
+ * @param password - The password to validate (will be cleared after use)
  * @returns Promise resolving to object with validation result and lockout info
  */
-async function validatePinWithRateLimit(pin: string): Promise<{
+async function validatePasswordWithRateLimit(password: string): Promise<{
   isValid: boolean;
   isLockedOut: boolean;
   remainingTime: number;
   attemptsRemaining: number;
 }> {
-  return processWithPin(pin, async (securePin) => {
+  return processWithPassword(password, async (securePassword) => {
     try {
       // Check if we're currently locked out
       const lockoutStatus = await checkLockoutStatus();
@@ -324,10 +323,10 @@ async function validatePinWithRateLimit(pin: string): Promise<{
         };
       }
 
-      const savedPinJson = await getValue("user_pin");
+      const savedPasswordJson = await getValue("user_password");
 
-      if (!savedPinJson) {
-        // Record failed attempt for missing PIN
+      if (!savedPasswordJson) {
+        // Record failed attempt for missing password
         const newLockoutStatus = await recordFailedAttempt();
         return {
           isValid: false,
@@ -337,11 +336,11 @@ async function validatePinWithRateLimit(pin: string): Promise<{
         };
       }
 
-      // Parse the stored PIN from JSON
-      const storedHashedPin: HashedPin = JSON.parse(savedPinJson);
+      // Parse the stored password from JSON
+      const storedHashedPassword: HashedPassword = JSON.parse(savedPasswordJson);
 
-      // Verify PIN using Scrypt comparison
-      const isValid = await comparePins(storedHashedPin, securePin);
+      // Verify password using Scrypt comparison
+      const isValid = await comparePasswords(storedHashedPassword, securePassword);
 
       if (isValid) {
         // Record successful attempt (clears rate limiting)
@@ -363,7 +362,7 @@ async function validatePinWithRateLimit(pin: string): Promise<{
         };
       }
     } catch (error) {
-      console.error("PIN validation failed:", error);
+      console.error("Password validation failed:", error);
       // On error, record as failed attempt for security
       const newLockoutStatus = await recordFailedAttempt();
       return {
@@ -376,41 +375,69 @@ async function validatePinWithRateLimit(pin: string): Promise<{
   });
 }
 
-// Export compatibility functions for existing code
-export { hashPin };
+/**
+ * Stores a password hash securely after validating it meets requirements
+ * @param password - The password to store (will be cleared after use)
+ * @returns Promise resolving to true if successful, false otherwise
+ */
+export async function storePasswordHash(password: string): Promise<boolean> {
+  return processWithPassword(password, async (securePassword) => {
+    try {
+      // Validate password policy
+      if (!validatePasswordPolicy(securePassword)) {
+        console.error("Password does not meet policy requirements");
+        return false;
+      }
+
+      // Hash the password using Scrypt
+      const hashedPassword = await hashPassword(securePassword);
+
+      // Store the hash as JSON in secure storage
+      const hashedPasswordJson = JSON.stringify(hashedPassword);
+      await saveValue("user_password", hashedPasswordJson);
+
+      return true;
+    } catch (error) {
+      console.error("Failed to store password hash:", error);
+      return false;
+    }
+  });
+}
+
+// Export password functions
+export { hashPassword };
 
 /**
- * Validates PIN format (synchronous)
- * @param pin - The PIN to validate
- * @returns true if PIN format is valid, false otherwise
+ * Validates password format (synchronous)
+ * @param password - The password to validate
+ * @returns true if password format is valid, false otherwise
  */
 
-// New password policy (v2). Minimum 8 chars after trim. Accept any non-control chars.
-export function validatePasswordPolicy(secret: string): boolean {
-  if (typeof secret !== "string") return false;
-  if (secret.trim().length < 8) return false;
-  // Reject if contains unprintable control characters (except newline not expected anyway)
-  if (/[^\x20-\x7E]/.test(secret)) return false;
+// Password policy: Minimum 8 chars after trim. Accept any printable characters.
+export function validatePasswordPolicy(password: string): boolean {
+  if (typeof password !== "string") return false;
+  if (password.trim().length < 8) return false;
+  // Reject if contains unprintable control characters
+  if (/[^\x20-\x7E]/.test(password)) return false;
   return true;
 }
 
-// Main PIN verification function with rate limiting
-export const verifyStoredPin = validatePinWithRateLimit;
+// Main password verification function with rate limiting
+export const verifyStoredPassword = validatePasswordWithRateLimit;
 
-// High-level wrapper functions for data encryption/decryption with PIN
-export async function secureEncryptWithPin(
+// High-level wrapper functions for data encryption/decryption with password
+export async function secureEncryptWithPassword(
   data: string,
-
-  pin: string,
+  password: string,
 ): Promise<string | null> {
-  return processWithPin(pin, async (securePin) => {
+  return processWithPassword(password, async (securePassword) => {
     try {
       // Convert data to Uint8Array for encryption
       const dataBytes = stringToUint8Array(data);
-      const pinBytes = stringToUint8Array(securePin);
+      const passwordBytes = stringToUint8Array(securePassword);
 
       // Encrypt using the internal crypto function
-      const encryptedBytes = encryptWithPin(dataBytes, pinBytes);
+      const encryptedBytes = encryptWithPin(dataBytes, passwordBytes);
 
       if (!encryptedBytes || encryptedBytes.length === 0) {
         console.warn("Encryption failed - empty result");
@@ -426,19 +453,18 @@ export async function secureEncryptWithPin(
   });
 }
 
-export async function secureDecryptWithPin(
+export async function secureDecryptWithPassword(
   encryptedData: string,
-
-  pin: string,
+  password: string,
 ): Promise<{ value: string; verified: boolean } | null> {
-  return processWithPin(pin, async (securePin) => {
+  return processWithPassword(password, async (securePassword) => {
     try {
       // Convert from base64 to Uint8Array
       const encryptedBytes = base64ToUint8Array(encryptedData);
-      const pinBytes = stringToUint8Array(securePin);
+      const passwordBytes = stringToUint8Array(securePassword);
 
       // Decrypt using the internal crypto function
-      const result = decryptWithPin(encryptedBytes, pinBytes);
+      const result = decryptWithPin(encryptedBytes, passwordBytes);
 
       if (!result) {
         console.warn("Decryption failed - null result");
@@ -454,7 +480,7 @@ export async function secureDecryptWithPin(
       const value = new TextDecoder().decode(result.value);
       return { value, verified: true };
     } catch (error) {
-      console.warn("Decryption failed - possibly due to incorrect PIN", error);
+      console.warn("Decryption failed - possibly due to incorrect password", error);
       return null;
     }
   });

@@ -1,17 +1,17 @@
 import { useState, useCallback } from "react";
-import { verifyStoredPin } from "../../../util/pin-security";
+import { verifyStoredPassword } from "../../../util/pin-security";
 import {
-  rotatePinAndReencryptData,
-  validateOldPinCanDecryptData,
-  type PinRotationProgress,
+  rotatePasswordAndReencryptData,
+  validateOldPasswordCanDecryptData,
+  type PasswordRotationProgress,
 } from "../../../util/pin-rotation";
 import { useModal } from "../../../context/ModalContext";
 
 /**
- * Custom hook for handling PIN rotation logic
+ * Custom hook for handling password rotation logic
  */
-export const usePinRotation = () => {
-  const [rotationProgress, setRotationProgress] = useState<PinRotationProgress>(
+export const usePasswordRotation = () => {
+  const [rotationProgress, setRotationProgress] = useState<PasswordRotationProgress>(
     {
       total: 0,
       completed: 0,
@@ -22,21 +22,21 @@ export const usePinRotation = () => {
   const { showAlert } = useModal();
 
   /**
-   * Handles PIN verification when starting rotation
+   * Handles password verification when starting rotation
    */
-  const handleVerifyPin = useCallback(
-    async (pin: string): Promise<boolean> => {
+  const handleVerifyPassword = useCallback(
+    async (password: string): Promise<boolean> => {
       try {
-        const result = await verifyStoredPin(pin);
+        const result = await verifyStoredPassword(password);
         if (result.isValid) {
-          showAlert("Success", "PIN verified successfully");
+          showAlert("Success", "Password verified successfully");
           return true;
         } else {
-          showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+          showAlert("Incorrect Password", "The password you entered is incorrect");
           return false;
         }
       } catch (error) {
-        showAlert("Error", "Failed to verify PIN");
+        showAlert("Error", "Failed to verify password");
         console.error(error);
         return false;
       }
@@ -45,24 +45,24 @@ export const usePinRotation = () => {
   );
 
   /**
-   * Validates old PIN and checks if it can decrypt existing data
+   * Validates old password and checks if it can decrypt existing data
    */
-  const validateOldPin = useCallback(
-    async (oldPin: string, accountsWithData: number): Promise<boolean> => {
+  const validateOldPassword = useCallback(
+    async (oldPassword: string, accountsWithData: number): Promise<boolean> => {
       try {
-        const result = await verifyStoredPin(oldPin);
+        const result = await verifyStoredPassword(oldPassword);
         if (!result.isValid) {
-          showAlert("Incorrect PIN", "The PIN you entered is incorrect");
+          showAlert("Incorrect Password", "The password you entered is incorrect");
           return false;
         }
 
-        // Additionally validate that the PIN can decrypt existing data
+        // Additionally validate that the password can decrypt existing data
         if (accountsWithData > 0) {
-          const validationResult = await validateOldPinCanDecryptData(oldPin);
+          const validationResult = await validateOldPasswordCanDecryptData(oldPassword);
           if (!validationResult.isValid) {
             showAlert(
-              "PIN Validation Failed",
-              `Cannot decrypt existing data with this PIN. ${validationResult.error || ""}`,
+              "Password Validation Failed",
+              `Cannot decrypt existing data with this password. ${validationResult.error || ""}`,
             );
             return false;
           }
@@ -70,7 +70,7 @@ export const usePinRotation = () => {
 
         return true;
       } catch (error) {
-        showAlert("Error", "Failed to verify PIN");
+        showAlert("Error", "Failed to verify password");
         console.error(error);
         return false;
       }
@@ -79,12 +79,12 @@ export const usePinRotation = () => {
   );
 
   /**
-   * Executes the PIN rotation and data re-encryption
+   * Executes the password rotation and data re-encryption
    */
   const executeRotation = useCallback(
     async (
-      oldPin: string,
-      newPin: string,
+      oldPassword: string,
+      newPassword: string,
       onProgressUpdate: (showProgress: boolean) => void,
     ): Promise<{ success: boolean; error?: string }> => {
       try {
@@ -95,9 +95,9 @@ export const usePinRotation = () => {
           failed: [],
         });
 
-        const result = await rotatePinAndReencryptData(
-          oldPin,
-          newPin,
+        const result = await rotatePasswordAndReencryptData(
+          oldPassword,
+          newPassword,
           (progress) => {
             setRotationProgress(progress);
             // Show progress when we have accounts to process
@@ -120,7 +120,7 @@ export const usePinRotation = () => {
               : "";
           showAlert(
             "Warning",
-            `PIN updated but there were issues with data re-encryption.${failedMessage} ${result.error || ""}`,
+            `Password updated but there were issues with data re-encryption.${failedMessage} ${result.error || ""}`,
           );
         }
 
@@ -129,7 +129,7 @@ export const usePinRotation = () => {
         onProgressUpdate(false);
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
-        showAlert("Error", "Failed to complete PIN rotation");
+        showAlert("Error", "Failed to complete password rotation");
         console.error(error);
         return { success: false, error: errorMessage };
       }
@@ -141,7 +141,7 @@ export const usePinRotation = () => {
    * Gets the rotation warning message based on accounts with data
    */
   const getRotationMessage = useCallback((accountsWithData: number) => {
-    const baseMessage = "You are about to change your PIN.";
+    const baseMessage = "You are about to change your password.";
     if (accountsWithData > 0) {
       return `${baseMessage} This will automatically re-encrypt all secure data for ${accountsWithData} account${accountsWithData > 1 ? "s" : ""}. Continue?`;
     }
@@ -150,8 +150,8 @@ export const usePinRotation = () => {
 
   return {
     rotationProgress,
-    handleVerifyPin,
-    validateOldPin,
+    handleVerifyPassword,
+    validateOldPassword,
     executeRotation,
     getRotationMessage,
   };

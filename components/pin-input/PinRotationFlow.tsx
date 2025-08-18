@@ -3,8 +3,7 @@ import { View, Text, Modal } from "react-native";
 import { PinInputField } from "./PinInputField";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { validatePasswordPolicy, hashPin } from "../../util/pin-security";
-import { saveValue } from "../../util/secure-store";
+import { validatePasswordPolicy, storePasswordHash } from "../../util/pin-security";
 import { refreshSetupStatus } from "../../util/setup-state";
 
 interface PinRotationFlowProps {
@@ -91,8 +90,10 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
     }
 
     try {
-      const hashedPin = await hashPin(pin);
-      await saveValue("user_pin", JSON.stringify(hashedPin));
+      const success = await storePasswordHash(pin);
+      if (!success) {
+        throw new Error("Failed to store password");
+      }
       refreshSetupStatus();
       const rawPin = pin;
       setPin("");

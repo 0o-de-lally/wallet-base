@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { getValue } from "../util/secure-store";
-import { secureDecryptWithPin, verifyStoredPin } from "../util/pin-security";
+import { secureDecryptWithPassword, verifyStoredPassword } from "../util/pin-security";
 import { useModal } from "../context/ModalContext";
 import { reportErrorAuto } from "../util/error-utils";
 import {
@@ -62,7 +62,7 @@ export function useTransactionPin({
 
       try {
         // Verify the PIN first
-        const pinResult = await verifyStoredPin(pin);
+        const pinResult = await verifyStoredPassword(pin);
         if (!pinResult.isValid) {
           showAlert("Error", "Invalid PIN. Please try again.");
           setIsLoading(false);
@@ -84,7 +84,7 @@ export function useTransactionPin({
         }
 
         // Decrypt the mnemonic using the PIN
-        const decryptResult = await secureDecryptWithPin(
+        const decryptResult = await secureDecryptWithPassword(
           encryptedMnemonic,
           pin,
         );
