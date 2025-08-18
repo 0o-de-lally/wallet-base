@@ -176,7 +176,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           />
 
           <ActionButton
-            text="Confirm Password"
+            text="Confirm"
             onPress={createPin}
             disabled={!validatePasswordPolicy(confirmPin)}
             isLoading={isCreating}
