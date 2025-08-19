@@ -2,7 +2,7 @@ import { appConfig } from "./app-config-store";
 import { deleteValue } from "./secure-store";
 import { refreshSetupStatus } from "./setup-state";
 import { debugStorageKeys } from "./password-rotation";
-import { secureLog, secureError } from "./secure-logging";
+import { secureLog, secureError } from "./error-utils";
 
 /**
  * Development utility to reset the app to first-time user state

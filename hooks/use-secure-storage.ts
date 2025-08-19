@@ -20,7 +20,7 @@ import {
   migrateToObfuscatedKey,
 } from "../util/key-obfuscation";
 
-import { secureError } from "../util/secure-logging";
+import { secureError } from "../util/error-utils";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds

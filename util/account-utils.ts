@@ -10,7 +10,7 @@ import { AccountAddress } from "open-libra-sdk";
 import { refreshSetupStatus } from "./setup-state";
 import { refreshNewAccount } from "./balance-polling-service";
 
-import { secureError } from "./secure-logging";
+import { secureError } from "./error-utils";
 
 /**
  * Creates a new account in the specified profile

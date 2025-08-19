@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
 import { styles, colors } from "../../styles/styles";
 import { ActionButton } from "./ActionButton";
 
-import { secureLog } from "../../util/secure-logging";
+import { secureLog } from "../../util/error-utils";
 
 interface DropdownProps<T> {
   label: string;

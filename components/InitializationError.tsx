@@ -1,5 +1,5 @@
 import React from "react";
-import { secureLog } from "../util/secure-logging";
+import { secureLog } from "../util/error-utils";
 import { View, Text, StyleSheet } from "react-native";
 import { colors } from "../styles/styles";
 import { ActionButton } from "./common/ActionButton";

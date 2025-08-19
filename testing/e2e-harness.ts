@@ -1,6 +1,6 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
-import { secureError } from "../util/secure-logging";
+import { secureError } from "../util/error-utils";
 
 async function waitForDeviceBoot() {
   // Wait until device is recognized

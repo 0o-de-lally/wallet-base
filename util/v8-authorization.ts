@@ -1,7 +1,7 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
-import { secureLog } from "./secure-logging";
+import { secureLog } from "./error-utils";
 
 export interface V8AuthData {
   is_v8_authorized: boolean;

@@ -1,7 +1,7 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
-import { secureLog } from "./secure-logging";
+import { secureLog } from "./error-utils";
 
 export interface VouchData {
   received_vouches: string[]; // Array of addresses that vouched for this account

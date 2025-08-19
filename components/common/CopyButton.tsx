@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { styles, colors } from "../../styles/styles";
 
-import { secureError } from "../../util/secure-logging";
+import { secureError } from "../../util/error-utils";
 
 interface CopyButtonProps {
   text: string;

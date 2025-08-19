@@ -8,7 +8,7 @@
 import { LibraClient } from "open-libra-sdk";
 import { IS_DEVELOPMENT } from "./environment";
 
-import { secureLog, secureError } from "./secure-logging";
+import { secureLog, secureError } from "./error-utils";
 
 // Default URLs for different networks
 const DEFAULT_MAINNET_URL = "https://rpc.scan.openlibra.world/v1";

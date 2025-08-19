@@ -14,9 +14,9 @@ import {
 } from "../../../util/vouch-utils";
 import type { AccountState } from "../../../util/app-config-store";
 
-import { secureLog } from "../../../util/secure-logging";
+import { secureLog } from "../../../util/error-utils";
 
-import { secureError } from "../../../util/secure-logging";
+import { secureError } from "../../../util/error-utils";
 
 interface VouchData {
   recipient: AccountAddress;

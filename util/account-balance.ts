@@ -3,7 +3,7 @@ import { appConfig } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
 import { categorizeError, reportError } from "./error-utils";
 
-import { secureLog } from "./secure-logging";
+import { secureLog } from "./error-utils";
 
 export interface BalanceData {
   balance_unlocked: number;

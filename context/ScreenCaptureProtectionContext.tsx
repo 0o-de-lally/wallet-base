@@ -26,7 +26,7 @@ import React, {
 } from "react";
 import { usePreventScreenCapture } from "expo-screen-capture";
 
-import { secureLog } from "../util/secure-logging";
+import { secureLog } from "../util/error-utils";
 
 // Define __DEV__ since it's not exported by react-native
 declare const __DEV__: boolean;

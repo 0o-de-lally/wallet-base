@@ -7,7 +7,7 @@ import { ActionButton } from "../common/ActionButton";
 import { deleteAccountCompletely } from "../../util/account-deletion";
 import { useModal } from "../../context/ModalContext";
 
-import { secureError } from "../../util/secure-logging";
+import { secureError } from "../../util/error-utils";
 
 interface DeleteAccountSectionProps {
   accountId: string;

@@ -1,4 +1,31 @@
 /**
+ * Secure logging functions (formerly in secure-logging.ts)
+ */
+export function secureLog(...args: unknown[]): void {
+  // Filter sensitive data from all arguments
+  const safeArgs = args.map((arg) =>
+    typeof arg === "string" ? filterSensitiveString(arg) : arg
+  );
+  // Log securely in all environments
+  if (typeof window !== "undefined" && window.console) {
+    window.console.log("[SECURE]", ...safeArgs);
+  } else if (typeof console !== "undefined") {
+    console.log("[SECURE]", ...safeArgs);
+  }
+}
+
+export function secureError(...args: unknown[]): void {
+  // Filter sensitive data from all arguments
+  const safeArgs = args.map((arg) =>
+    typeof arg === "string" ? filterSensitiveString(arg) : arg
+  );
+  if (typeof window !== "undefined" && window.console) {
+    window.console.error("[SECURE]", ...safeArgs);
+  } else if (typeof console !== "undefined") {
+    console.error("[SECURE]", ...safeArgs);
+  }
+}
+/**
  * Utility functions for error handling and logging across the application
  * Includes production-safe logging utilities and secure logging functionality
  */

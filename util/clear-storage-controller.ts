@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Remove unused imports
 import { clearAllScheduledReveals } from "./reveal-controller";
 
-import { secureLog, secureError } from "./secure-logging";
+import { secureLog, secureError } from "./error-utils";
 
 /**
  * Clears all storage without PIN verification

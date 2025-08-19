@@ -17,7 +17,7 @@ import {
   type MigrationData,
 } from "./migration-status";
 
-import { secureLog } from "./secure-logging";
+import { secureLog } from "./error-utils";
 
 export interface AccountPollingData {
   balance: BalanceData;

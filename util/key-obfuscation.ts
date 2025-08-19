@@ -12,7 +12,7 @@ import { getValue, saveValue } from "./secure-store";
 import { getRandomBytes } from "./random";
 import { devLog, devError } from "./error-utils";
 
-import { secureError } from "./secure-logging";
+import { secureError } from "./error-utils";
 
 const DEVICE_SALT_KEY = "device_salt_2025";
 const KEY_MAPPING_PREFIX = "key_mapping_";

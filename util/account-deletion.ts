@@ -2,7 +2,7 @@ import { deleteValue, getValue } from "./secure-store";
 import { deleteAccount } from "./app-config-store";
 import { getAccountStorageKey } from "./key-obfuscation";
 
-import { secureLog, secureError } from "./secure-logging";
+import { secureLog, secureError } from "./error-utils";
 
 /**
  * Completely deletes an account, including:

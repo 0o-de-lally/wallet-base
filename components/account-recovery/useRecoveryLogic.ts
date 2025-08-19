@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { secureLog, secureError } from "../../util/secure-logging";
+import { secureLog, secureError } from "../../util/error-utils";
 import { LibraWallet, Network } from "open-libra-sdk";
 import { createAccount } from "../../util/account-utils";
 import { getLibraClientUrl } from "../../util/libra-client";

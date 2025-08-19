@@ -15,7 +15,7 @@ import {
 import { reportErrorAuto, devLog, devError } from "./error-utils";
 import { getAccountStorageKey } from "./key-obfuscation";
 
-import { secureError } from "./secure-logging";
+import { secureError } from "./error-utils";
 
 interface AccountWithStoredData {
   accountId: string;

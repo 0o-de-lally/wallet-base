@@ -6,7 +6,7 @@ import { OnboardingWizard } from "../onboarding/OnboardingWizard";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
 import { styles } from "../../styles/styles";
 
-import { secureError } from "../../util/secure-logging";
+import { secureError } from "../../util/error-utils";
 
 interface SetupGuardProps {
   children: React.ReactNode;

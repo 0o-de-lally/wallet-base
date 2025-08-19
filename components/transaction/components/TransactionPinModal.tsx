@@ -1,5 +1,5 @@
 import React, { memo, useState, useCallback } from "react";
-import { secureError } from "../../../util/secure-logging";
+import { secureError } from "../../../util/error-utils";
 import { Modal, View, Text } from "react-native";
 import { styles } from "../../../styles/styles";
 import { ActionButton } from "../../common/ActionButton";
