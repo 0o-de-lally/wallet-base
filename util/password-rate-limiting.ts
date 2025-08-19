@@ -1,12 +1,13 @@
 /**
- * PIN Rate Limiting Module
+ * Password Rate Limiting Module
  *
- * Implements exponential backoff for PIN verification attempts to prevent
+ * Implements exponential backoff for password verification attempts to prevent
  * brute force attacks. Uses secure storage to maintain attempt counters
  * and lockout timestamps.
  */
 
 import { getValue, saveValue, deleteValue } from "./secure-store";
+import { devError, devLog } from "./error-utils";
 
 interface AttemptRecord {
   count: number;
@@ -20,7 +21,7 @@ const INITIAL_LOCKOUT_DURATION = 30000; // 30 seconds
 const MAX_LOCKOUT_DURATION = 300000; // 5 minutes
 const LOCKOUT_MULTIPLIER = 2;
 
-const ATTEMPT_RECORD_KEY = "pin_attempt_record";
+const ATTEMPT_RECORD_KEY = "password_attempt_record";
 
 /**
  * Gets the current attempt record from secure storage
@@ -32,7 +33,7 @@ async function getAttemptRecord(): Promise<AttemptRecord> {
       return JSON.parse(recordJson);
     }
   } catch (error) {
-    console.error("Error reading attempt record:", error);
+    devError("password-rate-limiting", error, "Error reading attempt record");
   }
 
   // Return default record if none exists or error occurred
@@ -49,13 +50,13 @@ async function saveAttemptRecord(record: AttemptRecord): Promise<void> {
   try {
     await saveValue(ATTEMPT_RECORD_KEY, JSON.stringify(record));
   } catch (error) {
-    console.error("Error saving attempt record:", error);
+    devError("password-rate-limiting", error, "Error saving attempt record");
     // Don't throw - rate limiting failure shouldn't break the app
   }
 }
 
 /**
- * Checks if PIN attempts are currently locked out
+ * Checks if password attempts are currently locked out
  * @returns Object with lockout status and remaining time
  */
 export async function checkLockoutStatus(): Promise<{
@@ -98,7 +99,7 @@ export async function checkLockoutStatus(): Promise<{
 }
 
 /**
- * Records a failed PIN attempt and applies lockout if necessary
+ * Records a failed password attempt and applies lockout if necessary
  * @returns Updated lockout status
  */
 export async function recordFailedAttempt(): Promise<{
@@ -131,8 +132,8 @@ export async function recordFailedAttempt(): Promise<{
 
     newRecord.lockoutUntil = now + lockoutDuration;
 
-    console.warn(
-      `PIN lockout activated for ${lockoutDuration}ms after ${newCount} failed attempts`,
+    devLog(
+      `Password lockout activated for ${lockoutDuration}ms after ${newCount} failed attempts`,
     );
   }
 
@@ -142,14 +143,14 @@ export async function recordFailedAttempt(): Promise<{
 }
 
 /**
- * Records a successful PIN attempt and resets the counter
+ * Records a successful password attempt and resets the counter
  */
 export async function recordSuccessfulAttempt(): Promise<void> {
   try {
     // Clear the attempt record on successful authentication
     await deleteValue(ATTEMPT_RECORD_KEY);
   } catch (error) {
-    console.error("Error clearing attempt record:", error);
+    devError("password-rate-limiting", error, "Error clearing attempt record");
     // Don't throw - this is not critical for functionality
   }
 }

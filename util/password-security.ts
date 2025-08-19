@@ -1,7 +1,7 @@
 /**
- * PIN Security Module
+ * Password Security Module
  *
- * This module implements PIN handling with current Expo/React Native constraints in mind.
+ * This module implements password handling with current Expo/React Native constraints in mind.
  * It balances security and cross-platform compatibility within the existing toolchain.
  *
  * Current approach:
@@ -12,11 +12,11 @@
  *
  * Security considerations:
  * - No sensitive data is ever stored in plaintext - all secrets are encrypted
- * - All operations involving secrets require explicit PIN entry, separate from the OS
+ * - All operations involving secrets require explicit password entry, separate from the OS
  *   authentication. This is intentionally burdensome but necessary for a crypto wallet
  *   where security cannot be compromised for convenience
- * - The original PIN is never stored anywhere
- * - We minimize PIN retention in memory and attempt to clear sensitive data when possible,
+ * - The original password is never stored anywhere
+ * - We minimize password retention in memory and attempt to clear sensitive data when possible,
  *   though JavaScript's garbage collection makes this imperfect
  * - We use secure random salt generation via native crypto API (which uses OS-level randomness)
  * - Constant-time comparison prevents timing attacks, though we recognize this is a
@@ -47,7 +47,7 @@ import {
   checkLockoutStatus,
   recordFailedAttempt,
   recordSuccessfulAttempt,
-} from "./pin-rate-limiting";
+} from "./password-rate-limiting";
 import { devError } from "./error-utils";
 
 // Define a custom type for the hashed password
@@ -63,7 +63,7 @@ type HashedPassword = {
 // Current password version - always saved with stored passwords
 const CURRENT_SECRET_VERSION = 2; // password >=8 chars
 
-// Scrypt parameters for secure PIN hashing (matching crypto.ts)
+// Scrypt parameters for secure password hashing (matching crypto.ts)
 const SCRYPT_CONFIG = {
   N: 32768, // Cost parameter (32K)
   r: 8, // Block size parameter
@@ -72,34 +72,34 @@ const SCRYPT_CONFIG = {
 };
 
 /**
- * Generates a secure key from a PIN using Scrypt (memory-hard function)
+ * Generates a secure key from a password using Scrypt (memory-hard function)
  *
- * @param pinData - The PIN as Uint8Array
+ * @param passwordData - The password as Uint8Array
  * @param salt - The salt for key derivation as Uint8Array
  * @returns Key suitable for AES encryption
  */
-function generateKeyFromPin(pinData: Uint8Array, salt: Uint8Array): Uint8Array {
+function generateKeyFromPassword(passwordData: Uint8Array, salt: Uint8Array): Uint8Array {
   // Use Scrypt for memory-hard key derivation with provided salt
-  return scrypt(pinData, salt, SCRYPT_CONFIG);
+  return scrypt(passwordData, salt, SCRYPT_CONFIG);
 }
 
 /**
- * Encrypts data using a PIN.
+ * Encrypts data using a password.
  * Uses AES-GCM for secure encryption with per-record salt.
  *
  * @param value - The data to encrypt as Uint8Array
- * @param pin - The PIN as Uint8Array
+ * @param password - The password as Uint8Array
  * @returns The encrypted data as Uint8Array (salt + nonce + ciphertext)
  */
-function encryptWithPin(value: Uint8Array, pin: Uint8Array): Uint8Array {
+function encryptWithPassword(value: Uint8Array, password: Uint8Array): Uint8Array {
   if (!value || value.length === 0) return new Uint8Array(0);
 
   try {
     // Generate a random salt for this encryption (16 bytes)
     const salt = getRandomBytes(16);
 
-    // Generate a key from the PIN and salt
-    const keyBytes = generateKeyFromPin(pin, salt);
+    // Generate a key from the password and salt
+    const keyBytes = generateKeyFromPassword(password, salt);
 
     // Generate a random nonce/IV using our random utility
     const nonce = getRandomBytes(12); // 12-byte nonce is standard for GCM
@@ -119,7 +119,7 @@ function encryptWithPin(value: Uint8Array, pin: Uint8Array): Uint8Array {
     return result;
   } catch (e) {
     devError(
-      "pin-security",
+      "password-security",
       e,
       "Encryption error"
     );
@@ -128,17 +128,17 @@ function encryptWithPin(value: Uint8Array, pin: Uint8Array): Uint8Array {
 }
 
 /**
- * Decrypts a value that was encrypted with a PIN.
+ * Decrypts a value that was encrypted with a password.
  * Uses AES-GCM authentication tag for integrity verification.
  *
  * @param encryptedValue - The encrypted data as Uint8Array (salt + nonce + ciphertext)
- * @param pin - The PIN as Uint8Array
+ * @param password - The password as Uint8Array
  * @returns An object with the decrypted data and verification status,
  *          or null if decryption fails
  */
-function decryptWithPin(
+function decryptWithPassword(
   encryptedValue: Uint8Array,
-  pin: Uint8Array,
+  password: Uint8Array,
 ): { value: Uint8Array; verified: boolean } | null {
   if (!encryptedValue || encryptedValue.length < 28) {
     // 16 (salt) + 12 (nonce) minimum
@@ -151,8 +151,8 @@ function decryptWithPin(
     const nonce = encryptedValue.slice(16, 28);
     const ciphertext = encryptedValue.slice(28);
 
-    // Generate key from PIN and extracted salt
-    const keyBytes = generateKeyFromPin(pin, salt);
+    // Generate key from password and extracted salt
+    const keyBytes = generateKeyFromPassword(password, salt);
 
     // Create AES-GCM decipher
     const decipher = gcm(keyBytes, nonce);
@@ -162,7 +162,7 @@ function decryptWithPin(
     try {
       decryptedBytes = decipher.decrypt(ciphertext);
     } catch {
-      // AES-GCM authentication failed - wrong PIN or corrupted data
+      // AES-GCM authentication failed - wrong password or corrupted data
       return { value: new Uint8Array(0), verified: false };
     }
 
@@ -170,7 +170,7 @@ function decryptWithPin(
     return { value: decryptedBytes, verified: true };
   } catch (error) {
     devError(
-      "pin-security",
+      "password-security",
       error,
       "Decryption error"
     );
@@ -204,7 +204,7 @@ async function hashPassword(password: string): Promise<HashedPassword> {
     const saltBytes = getRandomBytes(16);
     const salt = bytesToHex(saltBytes);
 
-    // Use Noble's Scrypt implementation to derive a key from the PIN
+    // Use Noble's Scrypt implementation to derive a key from the password
     const encoder = new TextEncoder();
     const passwordBytes = encoder.encode(password);
     const derivedKey = scrypt(passwordBytes, hexToBytes(salt), SCRYPT_CONFIG);
@@ -221,7 +221,7 @@ async function hashPassword(password: string): Promise<HashedPassword> {
       version: CURRENT_SECRET_VERSION,
     };
   } catch (error) {
-    devError("pin-security", error, "Password hashing failed");
+    devError("password-security", error, "Password hashing failed");
     throw new Error("Failed to hash password");
   }
 }
@@ -237,7 +237,7 @@ async function comparePasswords(
   inputPassword: string,
 ): Promise<boolean> {
   try {
-    // Generate hash from input PIN using the same salt and Scrypt parameters
+    // Generate hash from input password using the same salt and Scrypt parameters
     const encoder = new TextEncoder();
     const passwordBytes = encoder.encode(inputPassword);
     const derivedKey = scrypt(
@@ -256,7 +256,7 @@ async function comparePasswords(
     // Use constant-time comparison to prevent timing attacks
     return constantTimeEqual(hash, storedHashedPassword.hash);
   } catch (error) {
-    devError("pin-security", error, "Password comparison failed");
+    devError("password-security", error, "Password comparison failed");
     return false;
   }
 }
@@ -272,25 +272,25 @@ async function processWithPassword<T>(
   operation: (password: string) => Promise<T>,
 ): Promise<T> {
   try {
-    // Execute the operation with the PIN
+    // Execute the operation with the password
     return await operation(password);
   } finally {
     // Best-effort memory clearing within JavaScript's limitations
-    // This doesn't guarantee the PIN is fully removed from memory
+    // This doesn't guarantee the password is fully removed from memory
     // due to JavaScript's garbage collection and string immutability
     password = "";
   }
 }
 
 // /**
-//  * Stores a PIN hash securely after validating it meets requirements
-//  * @param pin - The PIN to store (will be cleared after use)
+//  * Stores a password hash securely after validating it meets requirements
+//  * @param password - The password to store (will be cleared after use)
 //  * @returns Promise resolving to true if successful, false otherwise
 //  */
-// export async function storePinHash(pin: string): Promise<boolean> {
-//   return processWithPin(pin, async (securePin) => {
+// export async function storePasswordHash(password: string): Promise<boolean> {
+//   return processWithPassword(password, async (securePassword) => {
 //     try {
-//       // Hash the PIN using Scrypt
+//       // Hash the password using Scrypt
 //       const hashedPin = await hashPin(securePin);
 
 //       // Store the hash as JSON in secure storage
@@ -299,7 +299,7 @@ async function processWithPassword<T>(
 
 //       return true;
 //     } catch (error) {
-//       devError("pin-security", error, "Failed to store PIN hash");
+//       devError("password-security", error, "Failed to store password hash");
 //       return false;
 //     }
 //   });
@@ -373,7 +373,7 @@ async function validatePasswordWithRateLimit(password: string): Promise<{
         };
       }
     } catch (error) {
-      devError("pin-security", error, "Password validation failed");
+      devError("password-security", error, "Password validation failed");
       // On error, record as failed attempt for security
       const newLockoutStatus = await recordFailedAttempt();
       return {
@@ -396,7 +396,7 @@ export async function storePasswordHash(password: string): Promise<boolean> {
     try {
       // Validate password policy
       if (!validatePasswordPolicy(securePassword)) {
-        devError("pin-security", new Error("Password does not meet policy requirements"), "Password does not meet policy requirements");
+        devError("password-security", new Error("Password does not meet policy requirements"), "Password does not meet policy requirements");
         return false;
       }
 
@@ -409,7 +409,7 @@ export async function storePasswordHash(password: string): Promise<boolean> {
 
       return true;
     } catch (error) {
-      devError("pin-security", error, "Failed to store password hash");
+      devError("password-security", error, "Failed to store password hash");
       return false;
     }
   });
@@ -448,17 +448,17 @@ export async function secureEncryptWithPassword(
       const passwordBytes = stringToUint8Array(securePassword);
 
       // Encrypt using the internal crypto function
-      const encryptedBytes = encryptWithPin(dataBytes, passwordBytes);
+      const encryptedBytes = encryptWithPassword(dataBytes, passwordBytes);
 
       if (!encryptedBytes || encryptedBytes.length === 0) {
-        devError("pin-security", new Error("Encryption failed - empty result"), "Encryption failed - empty result");
+        devError("password-security", new Error("Encryption failed - empty result"), "Encryption failed - empty result");
         return null;
       }
 
       // Convert to base64 for storage
       return uint8ArrayToBase64(encryptedBytes);
     } catch (error) {
-      devError("pin-security", error, "Encryption failed");
+      devError("password-security", error, "Encryption failed");
       return null;
     }
   });
@@ -475,15 +475,15 @@ export async function secureDecryptWithPassword(
       const passwordBytes = stringToUint8Array(securePassword);
 
       // Decrypt using the internal crypto function
-      const result = decryptWithPin(encryptedBytes, passwordBytes);
+      const result = decryptWithPassword(encryptedBytes, passwordBytes);
 
       if (!result) {
-        devError("pin-security", new Error("Decryption failed - null result"), "Decryption failed - null result");
+        devError("password-security", new Error("Decryption failed - null result"), "Decryption failed - null result");
         return null;
       }
 
       if (!result.verified) {
-        devError("pin-security", new Error("Decryption failed - verification failed"), "Decryption failed - verification failed");
+        devError("password-security", new Error("Decryption failed - verification failed"), "Decryption failed - verification failed");
         return { value: "", verified: false };
       }
 
@@ -491,7 +491,7 @@ export async function secureDecryptWithPassword(
       const value = new TextDecoder().decode(result.value);
       return { value, verified: true };
     } catch (error) {
-      devError("pin-security", error, "Decryption failed - possibly due to incorrect password");
+      devError("password-security", error, "Decryption failed - possibly due to incorrect password");
       return null;
     }
   });

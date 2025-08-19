@@ -2,14 +2,14 @@ import React, { memo } from "react";
 import { View } from "react-native";
 import { styles } from "../styles/styles";
 import { observer } from "@legendapp/state/react";
-import EnterPinScreen from "../components/pin-management/PinManagementContainer";
+import EnterPasswordScreen from "../components/pin-management/PinManagementContainer";
 import { SetupGuard } from "../components/auth/SetupGuard";
 import { Stack } from "expo-router";
 import { useAuthenticationProtection } from "../hooks/use-screenshot-protection";
 
-const PinScreen = observer(() => {
-  // Authentication protection - prevents screenshots in PIN management screen
-  useAuthenticationProtection("PinScreen");
+const PasswordScreen = observer(() => {
+  // Authentication protection - prevents screenshots in Password management screen
+  useAuthenticationProtection("PasswordScreen");
 
   return (
     <SetupGuard requiresPassword={false} requiresAccount={false}>
@@ -20,21 +20,21 @@ const PinScreen = observer(() => {
             headerBackTitle: "Back",
           }}
         />
-        <PinScreenContent />
+        <PasswordScreenContent />
       </View>
     </SetupGuard>
   );
 });
 
-const PinScreenContent = memo(() => {
+const PasswordScreenContent = memo(() => {
   return (
     <>
-      <EnterPinScreen />
+      <EnterPasswordScreen />
       {/* DangerZone removed: clearing all app data is now in Settings */}
     </>
   );
 });
 
-PinScreenContent.displayName = "PinScreenContent";
+PasswordScreenContent.displayName = "PasswordScreenContent";
 
-export default PinScreen;
+export default PasswordScreen;
