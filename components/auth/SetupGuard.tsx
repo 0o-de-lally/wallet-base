@@ -6,6 +6,8 @@ import { OnboardingWizard } from "../onboarding/OnboardingWizard";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
 import { styles } from "../../styles/styles";
 
+import { secureError } from "../../util/secure-logging";
+
 interface SetupGuardProps {
   children: React.ReactNode;
   /** @deprecated use requiresPassword */
@@ -51,7 +53,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
         setNeedsOnboarding(false);
       }
     } catch (error) {
-      console.error("Error checking setup status:", error);
+  secureError("Error checking setup status:", error);
       setNeedsOnboarding(true); // Fail safe
     } finally {
       setIsLoading(false);

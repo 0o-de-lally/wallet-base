@@ -26,6 +26,8 @@ import React, {
 } from "react";
 import { usePreventScreenCapture } from "expo-screen-capture";
 
+import { secureLog } from "../util/secure-logging";
+
 // Define __DEV__ since it's not exported by react-native
 declare const __DEV__: boolean;
 
@@ -138,7 +140,7 @@ export function ScreenCaptureProtectionProvider({
           .filter((reg) => (__DEV__ ? reg.enableInDev : true))
           .map((reg) => reg.componentId);
 
-        console.log(
+        secureLog(
           `[Screen Protection] Level changed: ${PROTECTION_DESCRIPTIONS[lastLoggedLevel.current]} -> ${PROTECTION_DESCRIPTIONS[newLevel]}`,
           `\nActive components: [${activeComponents.join(", ")}]`,
           `\nTotal registrations: ${registrations.size}`,

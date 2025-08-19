@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
 import { styles, colors } from "../../styles/styles";
 import { ActionButton } from "./ActionButton";
 
+import { secureLog } from "../../util/secure-logging";
+
 interface DropdownProps<T> {
   label: string;
   value: T;
@@ -34,7 +36,7 @@ function Dropdown<T>({
     setSelectedValue(item);
     onSelect(item);
     setShowDropdown(false);
-    console.log("Dropdown selected:", renderLabel(item));
+    secureLog("Dropdown selected:", renderLabel(item));
   };
 
   const renderItem = ({ item }: { item: T }) => (

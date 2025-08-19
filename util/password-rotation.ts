@@ -15,6 +15,8 @@ import {
 import { reportErrorAuto, devLog, devError } from "./error-utils";
 import { getAccountStorageKey } from "./key-obfuscation";
 
+import { secureError } from "./secure-logging";
+
 interface AccountWithStoredData {
   accountId: string;
   profileName: string;
@@ -188,11 +190,11 @@ async function reencryptAccountData(
     }
 
     if (!sourceKey || !encryptedData) {
-      console.warn(`No encrypted data found for account ${accountId}`);
+      secureError(`No encrypted data found for account ${accountId}`);
       return true;
     }
     if (!encryptedData) {
-      console.warn(`No encrypted data found for account ${accountId}`);
+      secureError(`No encrypted data found for account ${accountId}`);
       return true; // No data to re-encrypt is not a failure
     }
 

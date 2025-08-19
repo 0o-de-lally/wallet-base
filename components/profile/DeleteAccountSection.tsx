@@ -7,6 +7,8 @@ import { ActionButton } from "../common/ActionButton";
 import { deleteAccountCompletely } from "../../util/account-deletion";
 import { useModal } from "../../context/ModalContext";
 
+import { secureError } from "../../util/secure-logging";
+
 interface DeleteAccountSectionProps {
   accountId: string;
   accountNickname?: string;
@@ -45,7 +47,7 @@ export const DeleteAccountSection = memo(
           showAlert("Error", "Failed to delete the account. Please try again.");
         }
       } catch (error) {
-        console.error("Error deleting account:", error);
+  secureError("Error deleting account:", error);
         showAlert(
           "Error",
           "An unexpected error occurred while deleting the account.",

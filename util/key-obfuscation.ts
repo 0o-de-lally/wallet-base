@@ -12,6 +12,8 @@ import { getValue, saveValue } from "./secure-store";
 import { getRandomBytes } from "./random";
 import { devLog, devError } from "./error-utils";
 
+import { secureError } from "./secure-logging";
+
 const DEVICE_SALT_KEY = "device_salt_2025";
 const KEY_MAPPING_PREFIX = "key_mapping_";
 
@@ -25,7 +27,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
       return Uint8Array.from(atob(existingSalt), (c) => c.charCodeAt(0));
     }
   } catch {
-    console.warn("Could not retrieve existing device salt, generating new one");
+    secureError("Could not retrieve existing device salt, generating new one");
   }
 
   // Generate new device salt

@@ -10,6 +10,8 @@ import { AccountAddress } from "open-libra-sdk";
 import { refreshSetupStatus } from "./setup-state";
 import { refreshNewAccount } from "./balance-polling-service";
 
+import { secureError } from "./secure-logging";
+
 /**
  * Creates a new account in the specified profile
  *
@@ -74,7 +76,7 @@ export async function createAccount(
       // Add a small delay to ensure the account is properly saved
       setTimeout(() => {
         refreshNewAccount(account.id).catch((error) => {
-          console.warn(
+          secureError(
             "Failed to immediately refresh new account data:",
             error,
           );
@@ -93,7 +95,7 @@ export async function createAccount(
       };
     }
   } catch (error) {
-    console.error("Failed to create account:", error);
+  secureError("Failed to create account:", error);
     return {
       success: false,
       error: "Failed to create account. Please try again.",

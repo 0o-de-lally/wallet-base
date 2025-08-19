@@ -3,6 +3,8 @@ import { appConfig } from "./app-config-store";
 import { LIBRA_SCALE_FACTOR } from "./constants";
 import { categorizeError, reportError } from "./error-utils";
 
+import { secureLog } from "./secure-logging";
+
 export interface BalanceData {
   balance_unlocked: number;
   balance_total: number;
@@ -57,7 +59,7 @@ export async function fetchAccountBalance(
         }
       } else {
         // Log the actual structure for debugging
-        console.log(
+        secureLog(
           "Unexpected balance response structure:",
           JSON.stringify(result, null, 2),
         );

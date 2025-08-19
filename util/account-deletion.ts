@@ -2,6 +2,8 @@ import { deleteValue, getValue } from "./secure-store";
 import { deleteAccount } from "./app-config-store";
 import { getAccountStorageKey } from "./key-obfuscation";
 
+import { secureLog, secureError } from "./secure-logging";
+
 /**
  * Completely deletes an account, including:
  * 1. Removing any mnemonics associated with that account from secure storage
@@ -24,12 +26,12 @@ export async function deleteAccountCompletely(
         const existing = await getValue(key);
         if (existing) {
           await deleteValue(key);
-          console.log(
+          secureLog(
             `Deleted stored secret for account ${accountId} (key=${key})`,
           );
         }
       } catch (error) {
-        console.warn(
+        secureError(
           `Failed to delete key ${key} for account ${accountId}:`,
           error,
         );
@@ -40,14 +42,14 @@ export async function deleteAccountCompletely(
     const configDeleteSuccess = deleteAccount(accountId);
 
     if (!configDeleteSuccess) {
-      console.error(`Failed to delete account ${accountId} from config`);
+      secureError(`Failed to delete account ${accountId} from config`);
       return false;
     }
 
-    console.log(`Successfully deleted account ${accountId} completely`);
+    secureLog(`Successfully deleted account ${accountId} completely`);
     return true;
   } catch (error) {
-    console.error(
+    secureError(
       `Error during complete account deletion for ${accountId}:`,
       error,
     );

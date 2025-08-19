@@ -2,6 +2,7 @@ import { appConfig } from "./app-config-store";
 import { deleteValue } from "./secure-store";
 import { refreshSetupStatus } from "./setup-state";
 import { debugStorageKeys } from "./password-rotation";
+import { secureLog, secureError } from "./secure-logging";
 
 /**
  * Development utility to reset the app to first-time user state
@@ -10,7 +11,7 @@ import { debugStorageKeys } from "./password-rotation";
  */
 export async function resetAppToFirstTimeUser(): Promise<void> {
   try {
-    console.log("Resetting app to first-time user state...");
+  secureLog("Resetting app to first-time user state...");
 
     // Clear all profiles and accounts
     appConfig.profiles.set({});
@@ -30,12 +31,12 @@ export async function resetAppToFirstTimeUser(): Promise<void> {
       }
     }
 
-    console.log("App reset complete - now in first-time user state");
+  secureLog("App reset complete - now in first-time user state");
 
     // Refresh setup status to trigger reactive updates
     refreshSetupStatus();
   } catch (error) {
-    console.error("Error resetting app:", error);
+  secureError("Error resetting app:", error);
     throw error;
   }
 }
@@ -47,11 +48,11 @@ export function logAppState(): void {
   const profiles = appConfig.profiles.get();
   const activeAccountId = appConfig.activeAccountId.get();
 
-  console.log("=== Current App State ===");
-  console.log("Profiles:", Object.keys(profiles).length);
-  console.log("Active Account ID:", activeAccountId);
-  console.log("Profiles data:", JSON.stringify(profiles, null, 2));
-  console.log("========================");
+  secureLog("=== Current App State ===");
+  secureLog("Profiles:", Object.keys(profiles).length);
+  secureLog("Active Account ID:", activeAccountId);
+  secureLog("Profiles data:", JSON.stringify(profiles, null, 2));
+  secureLog("========================");
 }
 
 /**

@@ -20,6 +20,8 @@ import {
   migrateToObfuscatedKey,
 } from "../util/key-obfuscation";
 
+import { secureError } from "../util/secure-logging";
+
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
 
@@ -402,7 +404,7 @@ export function useSecureStorage(initialAccountId?: string) {
       return true;
     } catch (error) {
       // Safely handle any uncaught errors
-      console.warn(
+      secureError(
         "Reveal process failed:",
         error instanceof Error ? error.message : "Unknown error",
       );

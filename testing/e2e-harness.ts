@@ -1,5 +1,7 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
+import { secureError } from "../util/secure-logging";
+
 async function waitForDeviceBoot() {
   // Wait until device is recognized
   spawnSync("adb", ["wait-for-device"], { stdio: "inherit" });
@@ -89,15 +91,15 @@ async function main() {
     await spawnExpoAndroid();
     await spawnMaestroTest();
   } catch (err) {
-    killAll();
-    console.error(err);
-    process.exit(1);
+  killAll();
+  secureError(err);
+  process.exit(1);
   }
   killAll();
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error(err);
+  secureError(err);
   process.exit(1);
 });

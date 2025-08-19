@@ -1,16 +1,16 @@
 /**
  * Expo Config Plugin for FLAG_SECURE Android Security
- * 
+ *
  * This plugin adds FLAG_SECURE to the MainActivity at build time to prevent
  * screenshots and screen recordings on Android devices. This is critical for
  * cryptocurrency wallet applications handling sensitive data.
- * 
+ *
  * Security Features:
  * - Prevents screenshots via WindowManager.LayoutParams.FLAG_SECURE
  * - Applied at native level for maximum security
  * - Persists across Expo builds (not in ephemeral android folder)
  * - Works with both Expo Dev Client and production builds
- * 
+ *
  * Usage: Add this plugin to the plugins array in app.json
  */
 
@@ -19,7 +19,7 @@ const { withMainActivity } = require('@expo/config-plugins');
 
 /**
  * Config plugin to add FLAG_SECURE to Android MainActivity
- * @param {import('@expo/config-plugins').ExportedConfig} config 
+ * @param {import('@expo/config-plugins').ExportedConfig} config
  * @returns {import('@expo/config-plugins').ExportedConfig}
  */
 function withFlagSecure(config) {
@@ -28,13 +28,13 @@ function withFlagSecure(config) {
 
     // Check if FLAG_SECURE is already implemented
     if (contents.includes('FLAG_SECURE')) {
-      console.log('FLAG_SECURE already exists in MainActivity');
+      // secureLog('FLAG_SECURE already exists in MainActivity');
       return config;
     }
 
     // Import statements needed for FLAG_SECURE
     const windowManagerImport = 'import android.view.WindowManager';
-    
+
     // Add WindowManager import if not present
     if (!contents.includes(windowManagerImport)) {
       // Find the import section and add WindowManager import
@@ -101,8 +101,8 @@ function withFlagSecure(config) {
     }
 
     if (!injected) {
-      console.warn('Could not find onCreate method in MainActivity to inject FLAG_SECURE');
-      console.log('MainActivity language detection: Kotlin =', isKotlin, ', Java =', isJava);
+      // Could not find onCreate method in MainActivity to inject FLAG_SECURE
+      // MainActivity language detection: Kotlin =', isKotlin, ', Java =', isJava
     }
 
     config.modResults.contents = contents;

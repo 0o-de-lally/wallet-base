@@ -1,4 +1,5 @@
 import React from "react";
+import { secureLog } from "../util/secure-logging";
 import { View, Text, StyleSheet } from "react-native";
 import { colors } from "../styles/styles";
 import { ActionButton } from "./common/ActionButton";
@@ -16,7 +17,7 @@ export const InitializationError: React.FC<InitializationErrorProps> = ({
   const handleRetry = () => {
     // In React Native, we can't directly use window.location.reload()
     // Instead, we could implement app restart logic here
-    console.log("Retry initialization");
+  secureLog("Retry initialization");
     // For a real implementation, you might want to use:
     // import { DevSettings } from 'react-native';
     // DevSettings.reload();

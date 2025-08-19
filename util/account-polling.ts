@@ -17,6 +17,8 @@ import {
   type MigrationData,
 } from "./migration-status";
 
+import { secureLog } from "./secure-logging";
+
 export interface AccountPollingData {
   balance: BalanceData;
   v8Auth: V8AuthData;
@@ -130,7 +132,7 @@ export async function fetchAndUpdateAccountPollingData(
       account.error_count > 0 &&
       !pollingData.balance.error
     ) {
-      console.log(
+      secureLog(
         `[SUCCESS] Polling data fetch recovered for account ${account.id} after ${account.error_count} errors`,
       );
     }
@@ -181,7 +183,7 @@ export async function fetchAndUpdateProfilePollingData(
     : accounts;
 
   if (accountsToFetch.length !== accounts.length) {
-    console.debug(
+    secureLog(
       `Fetching polling data for ${accountsToFetch.length}/${accounts.length} accounts in profile ${profileName} (${accounts.length - accountsToFetch.length} skipped due to errors)`,
     );
   }

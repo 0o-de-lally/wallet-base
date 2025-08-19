@@ -1,6 +1,8 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
+import { secureLog } from "./secure-logging";
+
 export interface MigrationData {
   v8_migrated: boolean;
   error?: string;
@@ -26,7 +28,7 @@ export async function fetchAccountMigrationStatus(
     // Call the view function
     const result = await client.viewJson(payload);
 
-    console.log("Migration API response for", accountAddress, ":", result);
+  secureLog("Migration API response for", accountAddress, ":", result);
 
     // The result should be a boolean or an array containing a boolean
     let v8_migrated = false;
@@ -38,7 +40,7 @@ export async function fetchAccountMigrationStatus(
     } else if (result && typeof result === "object" && "value" in result) {
       v8_migrated = Boolean(result.value);
     } else {
-      console.log(
+      secureLog(
         "Unexpected migration response structure:",
         JSON.stringify(result, null, 2),
       );

@@ -4,6 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { styles, colors } from "../../styles/styles";
 
+import { secureError } from "../../util/secure-logging";
+
 interface CopyButtonProps {
   text: string;
   label?: string;
@@ -47,7 +49,7 @@ export const CopyButton = memo(
         } else {
           Alert.alert("Error", errorMessage);
         }
-        console.error("Copy error:", error);
+  secureError("Copy error:", error);
       } finally {
         setIsCopying(false);
       }

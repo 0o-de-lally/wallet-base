@@ -8,6 +8,8 @@
 import { LibraClient } from "open-libra-sdk";
 import { IS_DEVELOPMENT } from "./environment";
 
+import { secureLog, secureError } from "./secure-logging";
+
 // Default URLs for different networks
 const DEFAULT_MAINNET_URL = "https://rpc.scan.openlibra.world/v1";
 // Removed unused: DEFAULT_TESTNET_URL
@@ -44,13 +46,13 @@ export function initializeLibraClient(
     currentConfig = { url, network };
 
     if (IS_DEVELOPMENT) {
-      console.log(`LibraClient initialized with ${network} network: ${url}`);
+      secureLog(`LibraClient initialized with ${network} network: ${url}`);
     }
 
     return globalLibraClient;
   } catch (error) {
-    console.error("Failed to initialize LibraClient:", error);
-    throw error;
+  secureError("Failed to initialize LibraClient:", error);
+  throw error;
   }
 }
 
@@ -62,7 +64,7 @@ export function initializeLibraClient(
  */
 export function getLibraClient(): LibraClient {
   if (!globalLibraClient) {
-    console.warn(
+    secureError(
       "LibraClient not initialized, creating with default configuration",
     );
     return initializeLibraClient();

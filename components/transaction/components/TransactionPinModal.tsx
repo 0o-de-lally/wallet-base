@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from "react";
+import { secureError } from "../../../util/secure-logging";
 import { Modal, View, Text } from "react-native";
 import { styles } from "../../../styles/styles";
 import { ActionButton } from "../../common/ActionButton";
@@ -61,7 +62,7 @@ export const TransactionPinModal = memo(
         await onPinSubmit(pin);
         setPin(""); // Clear PIN on success
       } catch (error) {
-        console.error("Password submission error:", error);
+        secureError("Password submission error:", error);
         setPinError("Failed to verify password. Please try again.");
       }
     }, [pin, onPinSubmit]);

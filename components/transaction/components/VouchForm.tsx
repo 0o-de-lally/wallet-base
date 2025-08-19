@@ -14,6 +14,10 @@ import {
 } from "../../../util/vouch-utils";
 import type { AccountState } from "../../../util/app-config-store";
 
+import { secureLog } from "../../../util/secure-logging";
+
+import { secureError } from "../../../util/secure-logging";
+
 interface VouchData {
   recipient: AccountAddress;
 }
@@ -56,14 +60,14 @@ export const VouchForm = memo(
           client,
           account.account_address,
         );
-        console.log("VouchForm received data:", {
+        secureLog("VouchForm received data:", {
           received_count: data.received_vouches.length,
           given_count: data.given_vouches.length,
           data,
         });
         setVouchInfo(data);
       } catch (error) {
-        console.warn("Failed to load vouch info:", error);
+        secureError("Failed to load vouch info:", error);
       } finally {
         setLoadingVouchInfo(false);
       }
