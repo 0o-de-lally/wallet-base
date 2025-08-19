@@ -14,7 +14,7 @@ import {
   secureDecryptWithPassword,
 } from "../util/pin-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
-import { reportErrorAuto } from "../util/error-utils";
+import { reportErrorAuto, devLog, devError } from "../util/error-utils";
 import {
   getAccountStorageKey,
   migrateToObfuscatedKey,
@@ -69,7 +69,7 @@ export function useSecureStorage(initialAccountId?: string) {
       // Migrate to obfuscated key
       const newKey = await migrateToObfuscatedKey(legacyKey, "account");
       if (newKey) {
-        console.log(`Migrated account ${accountId} to obfuscated storage`);
+        devLog(`Migrated account ${accountId} to obfuscated storage`);
         return newKey;
       }
     }
@@ -169,8 +169,8 @@ export function useSecureStorage(initialAccountId?: string) {
       | "clear_all",
     accountId: string,
   ) => {
-    console.log(
-      `Setting action: ${action} for account ${accountId} and showing PIN modal`,
+    devLog(
+      `Setting action: ${action} for account ${accountId} and showing PIN modal`
     );
     setCurrentAction(action);
     setCurrentAccountId(accountId);
@@ -511,7 +511,7 @@ export function useSecureStorage(initialAccountId?: string) {
 
   const handlePinAction = useCallback(
     async (pin: string): Promise<boolean> => {
-      console.log(`Processing pin action: ${currentAction}`);
+      devLog(`Processing pin action: ${currentAction}`);
       if (!pin || !pin.trim()) {
         reportErrorAuto(
           "useSecureStorage.handlePinAction",
@@ -559,7 +559,7 @@ export function useSecureStorage(initialAccountId?: string) {
 
         return result;
       } catch (error) {
-        console.error(`Error in handlePinAction:`, error);
+        devError("use-secure-storage", error, "Error in handlePinAction");
         reportErrorAuto("useSecureStorage.handlePinAction", error);
         setPinModalVisible(false); // Close modal on unexpected error
         setCurrentAction(null); // Reset action to prevent re-opening
@@ -586,7 +586,7 @@ export function useSecureStorage(initialAccountId?: string) {
         setRevealStatus(null);
       } catch (error) {
         showAlert("Error", "Failed to cancel reveal");
-        console.error(error);
+        devError("use-secure-storage", error, "Failed to cancel reveal");
       } finally {
         setIsLoading(false);
       }

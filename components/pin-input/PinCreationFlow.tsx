@@ -8,6 +8,7 @@ import {
   storePasswordHash,
   validatePasswordPolicy,
 } from "../../util/pin-security";
+import { devError } from "../../util/error-utils";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
 import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
@@ -97,7 +98,7 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
         onComplete(true);
         resetState();
       } catch (error) {
-        console.error("Error creating password:", error);
+        devError("pin-creation", error, "Error creating password");
         setError("Failed to create password. Please try again.");
         setIsCreating(false);
       }

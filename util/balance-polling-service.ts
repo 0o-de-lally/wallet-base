@@ -7,7 +7,7 @@ import { getLibraClient } from "./libra-client";
 import { fetchAndUpdateProfilePollingData } from "./account-polling";
 import { clearAccountErrors } from "./account-balance";
 import { BALANCE_POLLING } from "./constants";
-import { reportErrorAuto } from "./error-utils";
+import { reportErrorAuto, devLog, devError } from "./error-utils";
 
 class BalancePollingService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
@@ -31,7 +31,7 @@ class BalancePollingService {
     const shouldSkip = Math.random() < (backoffFactor - 1) / backoffFactor;
 
     if (shouldSkip) {
-      console.debug(
+      devLog(
         `Skipping balance fetch for account ${account.id} (${account.error_count} consecutive errors)`,
       );
     }
@@ -44,11 +44,11 @@ class BalancePollingService {
    */
   start(): void {
     if (this.isRunning) {
-      console.log("Balance polling service is already running");
+      devLog("Balance polling service is already running");
       return;
     }
 
-    console.log("Starting account polling service (every 30 seconds)");
+    devLog("Starting account polling service (every 30 seconds)");
     this.isRunning = true;
 
     // Run immediately on start
@@ -65,11 +65,11 @@ class BalancePollingService {
    */
   stop(): void {
     if (!this.isRunning) {
-      console.log("Balance polling service is not running");
+      devLog("Balance polling service is not running");
       return;
     }
 
-    console.log("Stopping balance polling service");
+    devLog("Stopping balance polling service");
     this.isRunning = false;
 
     if (this.intervalId) {
@@ -92,20 +92,20 @@ class BalancePollingService {
     try {
       const client = getLibraClient();
       if (!client) {
-        console.log("No Libra client available, skipping balance poll");
+        devLog("No Libra client available, skipping balance poll");
         return;
       }
 
       // Get the active account and its profile
       const activeAccountId = appConfig.activeAccountId.get();
       if (!activeAccountId) {
-        console.log("No active account, skipping balance poll");
+        devLog("No active account, skipping balance poll");
         return;
       }
 
       const activeProfileName = getProfileForAccount(activeAccountId);
       if (!activeProfileName) {
-        console.log("No active profile found, skipping balance poll");
+        devLog("No active profile found, skipping balance poll");
         return;
       }
 
@@ -118,11 +118,11 @@ class BalancePollingService {
         !activeProfile.accounts ||
         activeProfile.accounts.length === 0
       ) {
-        console.log("No accounts in active profile, skipping balance poll");
+        devLog("No accounts in active profile, skipping balance poll");
         return;
       }
 
-      console.log(
+      devLog(
         `Polling account data for ${activeProfile.accounts.length} accounts in profile: ${activeProfileName}`,
       );
 
@@ -134,7 +134,7 @@ class BalancePollingService {
         (account: AccountState) => this.shouldSkipAccount(account),
       );
 
-      console.log("Account polling completed successfully");
+      devLog("Account polling completed successfully");
     } catch (error) {
       // Use the error reporting system
       reportErrorAuto("balancePolling", error);
@@ -147,7 +147,7 @@ class BalancePollingService {
    * Manually trigger an account data poll (useful for immediate refresh)
    */
   async triggerPoll(): Promise<void> {
-    console.log("Manually triggering account data poll");
+    devLog("Manually triggering account data poll");
     await this.pollBalances();
   }
 
@@ -186,7 +186,7 @@ class BalancePollingService {
         return;
       }
 
-      console.log(
+      devLog(
         `Retrying account data fetch for account ${targetAccount.nickname} (${accountId})`,
       );
 
@@ -212,7 +212,7 @@ class BalancePollingService {
    */
   async refreshNewAccount(accountId: string): Promise<void> {
     try {
-      console.log(`refreshNewAccount called for accountId: ${accountId}`);
+      devLog(`refreshNewAccount called for accountId: ${accountId}`);
 
       const profiles = appConfig.profiles.get();
       let targetAccount = null;
@@ -227,11 +227,11 @@ class BalancePollingService {
       }
 
       if (!targetAccount) {
-        console.warn(`Account ${accountId} not found for immediate refresh`);
+        devError("balance-polling", new Error(`Account ${accountId} not found for immediate refresh`), "Account not found for immediate refresh");
         return;
       }
 
-      console.log(
+      devLog(
         `Immediately refreshing account data for newly added account: ${targetAccount.nickname || targetAccount.id}`,
       );
 
@@ -241,14 +241,14 @@ class BalancePollingService {
           "./account-polling"
         );
         await fetchAndUpdateAccountPollingData(client, targetAccount);
-        console.log(
+        devLog(
           `Account data refresh completed for ${targetAccount.nickname || targetAccount.id}`,
         );
       } else {
-        console.warn("No Libra client available for immediate account refresh");
+        devError("balance-polling", new Error("No Libra client available for immediate account refresh"), "No Libra client available for immediate account refresh");
       }
     } catch (error) {
-      console.error("Error in refreshNewAccount:", error);
+      devError("balance-polling", error, "Error in refreshNewAccount");
       reportErrorAuto("refreshNewAccount", error, { accountId });
     }
   }

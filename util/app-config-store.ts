@@ -14,6 +14,7 @@ import {
   RevealSchedule,
   defaultConfig,
 } from "./app-config-types";
+import { devLog, devError } from "./error-utils";
 
 // Global configuration
 configureObservablePersistence({
@@ -82,7 +83,7 @@ export function addAccountToProfile(
   profileName: string,
   account: AccountState,
 ): boolean {
-  console.log("addAccountToProfile called:", {
+  devLog("addAccountToProfile called:", {
     profileName,
     accountId: account.id,
     accountNickname: account.nickname,
@@ -91,11 +92,11 @@ export function addAccountToProfile(
   const profile = appConfig.profiles[profileName].get();
 
   if (!profile) {
-    console.log("addAccountToProfile: Profile not found:", profileName);
+    devError("app-config", new Error(`Profile not found: ${profileName}`), "addAccountToProfile: Profile not found");
     return false; // Profile doesn't exist
   }
 
-  console.log(
+  devLog(
     "addAccountToProfile: Profile exists, current account count:",
     profile.accounts.length,
   );
@@ -106,27 +107,27 @@ export function addAccountToProfile(
   );
 
   if (accountExists) {
-    console.log("addAccountToProfile: Account already exists in profile");
+    devLog("addAccountToProfile: Account already exists in profile");
     return false; // Account already exists in this profile
   }
 
-  console.log("addAccountToProfile: Adding account to profile");
+  devLog("addAccountToProfile: Adding account to profile");
 
   // Add account to profile
   appConfig.profiles[profileName].accounts.push(account);
 
-  console.log(
+  devLog(
     "addAccountToProfile: Account added, new count:",
     appConfig.profiles[profileName].accounts.get().length,
   );
 
   // If this is the first account added to any profile, set it as active
   if (appConfig.activeAccountId.get() === null) {
-    console.log("addAccountToProfile: Setting as active account:", account.id);
+    devLog("addAccountToProfile: Setting as active account:", account.id);
     appConfig.activeAccountId.set(account.id);
   }
 
-  console.log("addAccountToProfile: Success");
+  devLog("addAccountToProfile: Success");
   return true;
 }
 
@@ -255,19 +256,19 @@ export function maybeInitializeDefaultProfile() {
           (!currentProfiles || Object.keys(currentProfiles).length === 0) &&
           !appConfig.activeAccountId?.get()
         ) {
-          console.log("No profiles found, initializing default profile");
+          devLog("No profiles found, initializing default profile");
           const success = createProfile("mainnet", {
             network_name: "Mainnet",
             network_type: NetworkTypeEnum.MAINNET,
           });
 
           if (success) {
-            console.log("Default profile 'mainnet' created successfully");
+            devLog("Default profile 'mainnet' created successfully");
           } else {
-            console.log("Failed to create default profile");
+            devError("app-config", new Error("Failed to create default profile"), "Failed to create default profile");
           }
         } else {
-          console.log("Profiles already exist, skipping initialization", {
+          devLog("Profiles already exist, skipping initialization", {
             profileCount: currentProfiles
               ? Object.keys(currentProfiles).length
               : 0,
@@ -275,11 +276,11 @@ export function maybeInitializeDefaultProfile() {
           });
         }
       } catch (innerError) {
-        console.error("Error in delayed profile initialization:", innerError);
+        devError("app-config", innerError, "Error in delayed profile initialization");
       }
     }, 10); // Very short delay to allow persistence to settle
   } catch (error) {
-    console.error("Error setting up delayed profile initialization:", error);
+    devError("app-config", error, "Error setting up delayed profile initialization");
 
     // Fallback to immediate initialization if delayed fails
     try {
@@ -288,14 +289,14 @@ export function maybeInitializeDefaultProfile() {
         (!currentProfiles || Object.keys(currentProfiles).length === 0) &&
         !appConfig.activeAccountId?.get()
       ) {
-        console.log("Fallback: Creating default profile immediately");
+        devLog("Fallback: Creating default profile immediately");
         createProfile("mainnet", {
           network_name: "Mainnet",
           network_type: NetworkTypeEnum.MAINNET,
         });
       }
     } catch (fallbackError) {
-      console.error("Error in fallback profile initialization:", fallbackError);
+      devError("app-config", fallbackError, "Error in fallback profile initialization");
     }
   }
 }

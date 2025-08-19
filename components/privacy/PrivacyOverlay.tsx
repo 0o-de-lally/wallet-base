@@ -56,6 +56,7 @@ export const PrivacyOverlay = memo(
           style={StyleSheet.absoluteFill}
           intensity={intensity}
           tint={tint}
+          experimentalBlurMethod="blur" as any
         >
           <View style={overlayStyles.container}>
             <View style={overlayStyles.contentContainer}>
@@ -82,7 +83,7 @@ const overlayStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.3)", // Additional overlay for better visibility
+    backgroundColor: "rgba(0, 0, 0, 0.7)", // Stronger overlay for better visibility when blur doesn't work
   },
   contentContainer: {
     alignItems: "center",

@@ -5,7 +5,7 @@ import {
   verifyStoredPassword,
 } from "../util/pin-security";
 import { useModal } from "../context/ModalContext";
-import { reportErrorAuto } from "../util/error-utils";
+import { reportErrorAuto, devError } from "../util/error-utils";
 import {
   getAccountStorageKey,
   migrateToObfuscatedKey,
@@ -106,7 +106,7 @@ export function useTransactionPin({
         setIsLoading(false);
         onMnemonicRetrieved(decryptResult.value);
       } catch (error) {
-        console.error("Error retrieving mnemonic with PIN:", error);
+        devError("use-transaction-pin", error, "Error retrieving mnemonic with PIN");
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         showAlert("Error", `Failed to retrieve mnemonic: ${errorMessage}`);

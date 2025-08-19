@@ -20,6 +20,7 @@
 
 import { useEffect, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
+import { devLog } from "../util/error-utils";
 
 // Define __DEV__ since it's not exported by react-native
 declare const __DEV__: boolean;
@@ -64,8 +65,8 @@ function useAppStateProtection(config: AppStateProtectionConfig = {}) {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (verbose) {
-        console.log(
-          `[App State Protection] ${componentName}: ${appState} -> ${nextAppState}`,
+        devLog(
+          `[App State Protection] ${componentName}: ${appState} -> ${nextAppState}`
         );
       }
 

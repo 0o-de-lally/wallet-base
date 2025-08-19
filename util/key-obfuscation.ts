@@ -10,6 +10,7 @@ import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex } from "@noble/hashes/utils";
 import { getValue, saveValue } from "./secure-store";
 import { getRandomBytes } from "./random";
+import { devLog, devError } from "./error-utils";
 
 const DEVICE_SALT_KEY = "device_salt_2025";
 const KEY_MAPPING_PREFIX = "key_mapping_";
@@ -32,7 +33,7 @@ async function getDeviceSalt(): Promise<Uint8Array> {
   try {
     await saveValue(DEVICE_SALT_KEY, btoa(String.fromCharCode(...newSalt)));
   } catch (error) {
-    console.error("Failed to save device salt:", error);
+    devError("key-obfuscation", error, "Failed to save device salt");
     // Continue with in-memory salt for this session
   }
 
@@ -86,7 +87,7 @@ async function storeLegacyKeyMapping(
     const mappingKey = `${KEY_MAPPING_PREFIX}${originalKey}`;
     await saveValue(mappingKey, obfuscatedKey);
   } catch (error) {
-    console.error("Failed to store key mapping:", error);
+    devError("key-obfuscation", error, "Failed to store key mapping");
     // Non-critical for security, continue operation
   }
 }
@@ -104,7 +105,7 @@ async function getLegacyKeyMapping(
     const mappingKey = `${KEY_MAPPING_PREFIX}${originalKey}`;
     return await getValue(mappingKey);
   } catch (error) {
-    console.error("Failed to retrieve key mapping:", error);
+    devError("key-obfuscation", error, "Failed to retrieve key mapping");
     return null;
   }
 }
@@ -140,10 +141,10 @@ export async function migrateToObfuscatedKey(
     const { deleteValue } = await import("./secure-store");
     await deleteValue(originalKey);
 
-    console.log(`Migrated key: ${originalKey} -> ${obfuscatedKey}`);
+    devLog(`Migrated key: ${originalKey} -> ${obfuscatedKey}`);
     return obfuscatedKey;
   } catch (error) {
-    console.error(`Failed to migrate key ${originalKey}:`, error);
+    devError("key-obfuscation", error, `Failed to migrate key ${originalKey}`);
     return null;
   }
 }

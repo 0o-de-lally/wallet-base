@@ -48,6 +48,7 @@ import {
   recordFailedAttempt,
   recordSuccessfulAttempt,
 } from "./pin-rate-limiting";
+import { devError } from "./error-utils";
 
 // Define a custom type for the hashed password
 type HashedPassword = {
@@ -117,9 +118,10 @@ function encryptWithPin(value: Uint8Array, pin: Uint8Array): Uint8Array {
 
     return result;
   } catch (e) {
-    console.error(
-      "Encryption error:",
-      e instanceof Error ? e.message : String(e),
+    devError(
+      "pin-security",
+      e,
+      "Encryption error"
     );
     return new Uint8Array(0);
   }
@@ -167,9 +169,10 @@ function decryptWithPin(
     // If we reach here, AES-GCM authentication passed
     return { value: decryptedBytes, verified: true };
   } catch (error) {
-    console.error(
-      "Decryption error:",
-      error instanceof Error ? error.message : String(error),
+    devError(
+      "pin-security",
+      error,
+      "Decryption error"
     );
     return null;
   }
@@ -218,7 +221,7 @@ async function hashPassword(password: string): Promise<HashedPassword> {
       version: CURRENT_SECRET_VERSION,
     };
   } catch (error) {
-    console.error("Password hashing failed:", error);
+    devError("pin-security", error, "Password hashing failed");
     throw new Error("Failed to hash password");
   }
 }
@@ -253,7 +256,7 @@ async function comparePasswords(
     // Use constant-time comparison to prevent timing attacks
     return constantTimeEqual(hash, storedHashedPassword.hash);
   } catch (error) {
-    console.error("Password comparison failed:", error);
+    devError("pin-security", error, "Password comparison failed");
     return false;
   }
 }
@@ -296,7 +299,7 @@ async function processWithPassword<T>(
 
 //       return true;
 //     } catch (error) {
-//       console.error("Failed to store PIN hash:", error);
+//       devError("pin-security", error, "Failed to store PIN hash");
 //       return false;
 //     }
 //   });
@@ -370,7 +373,7 @@ async function validatePasswordWithRateLimit(password: string): Promise<{
         };
       }
     } catch (error) {
-      console.error("Password validation failed:", error);
+      devError("pin-security", error, "Password validation failed");
       // On error, record as failed attempt for security
       const newLockoutStatus = await recordFailedAttempt();
       return {
@@ -393,7 +396,7 @@ export async function storePasswordHash(password: string): Promise<boolean> {
     try {
       // Validate password policy
       if (!validatePasswordPolicy(securePassword)) {
-        console.error("Password does not meet policy requirements");
+        devError("pin-security", new Error("Password does not meet policy requirements"), "Password does not meet policy requirements");
         return false;
       }
 
@@ -406,7 +409,7 @@ export async function storePasswordHash(password: string): Promise<boolean> {
 
       return true;
     } catch (error) {
-      console.error("Failed to store password hash:", error);
+      devError("pin-security", error, "Failed to store password hash");
       return false;
     }
   });
@@ -448,14 +451,14 @@ export async function secureEncryptWithPassword(
       const encryptedBytes = encryptWithPin(dataBytes, passwordBytes);
 
       if (!encryptedBytes || encryptedBytes.length === 0) {
-        console.warn("Encryption failed - empty result");
+        devError("pin-security", new Error("Encryption failed - empty result"), "Encryption failed - empty result");
         return null;
       }
 
       // Convert to base64 for storage
       return uint8ArrayToBase64(encryptedBytes);
     } catch (error) {
-      console.warn("Encryption failed:", error);
+      devError("pin-security", error, "Encryption failed");
       return null;
     }
   });
@@ -475,12 +478,12 @@ export async function secureDecryptWithPassword(
       const result = decryptWithPin(encryptedBytes, passwordBytes);
 
       if (!result) {
-        console.warn("Decryption failed - null result");
+        devError("pin-security", new Error("Decryption failed - null result"), "Decryption failed - null result");
         return null;
       }
 
       if (!result.verified) {
-        console.warn("Decryption failed - verification failed");
+        devError("pin-security", new Error("Decryption failed - verification failed"), "Decryption failed - verification failed");
         return { value: "", verified: false };
       }
 
@@ -488,10 +491,7 @@ export async function secureDecryptWithPassword(
       const value = new TextDecoder().decode(result.value);
       return { value, verified: true };
     } catch (error) {
-      console.warn(
-        "Decryption failed - possibly due to incorrect password",
-        error,
-      );
+      devError("pin-security", error, "Decryption failed - possibly due to incorrect password");
       return null;
     }
   });

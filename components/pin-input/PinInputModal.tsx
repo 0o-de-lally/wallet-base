@@ -5,6 +5,7 @@ import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
 import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
+import { devLog, devError } from "../../util/error-utils";
 
 // Define callback types for authentication secret operations
 type PinActionCallback = (pin: string) => Promise<boolean>;
@@ -43,30 +44,33 @@ export const PinInputModal = memo(
       async (pin: string) => {
         if (typeof onPinAction === "function") {
           try {
-            console.log(`Executing onPinAction for purpose: ${purpose}`);
+            devLog(`Executing onPinAction for purpose: ${purpose}`);
             const wasSuccessful = await onPinAction(pin);
 
             if (wasSuccessful) {
-              console.log(`Completed onPinAction for purpose: ${purpose}`);
+              devLog(`Completed onPinAction for purpose: ${purpose}`);
             } else {
-              console.log(
+              devLog(
                 `PIN action failed for purpose: ${purpose} (e.g., incorrect PIN)`,
               );
             }
             return wasSuccessful;
           } catch (error) {
-            console.error(
-              `Error in onPinAction for purpose "${purpose}":`,
+            devError(
+              "pin-input-modal",
               error,
+              `Error in onPinAction for purpose "${purpose}"`
             );
             throw error; // Re-throw to be caught by the caller
           }
         } else {
-          console.error(
-            `ERROR: Missing onPinAction handler for purpose "${purpose}"`,
+          devError(
+            "pin-input-modal",
+            new Error(`Missing onPinAction handler for purpose "${purpose}"`),
+            "ERROR: Missing onPinAction handler"
           );
           // Log additional context to help debug
-          console.log("PinInputModal props received:", {
+          devLog("PinInputModal props received:", {
             purpose,
             hasOnPinAction: !!onPinAction,
             typeOfOnPinAction: typeof onPinAction,
@@ -137,7 +141,7 @@ export const PinInputModal = memo(
           setError("Incorrect password. Please try again.");
         }
       } catch (error) {
-        console.error("Error processing password:", error);
+        devError("pin-input-modal", error, "Error processing password");
         setError("Error processing your request");
       } finally {
         setIsVerifying(false);
