@@ -45,10 +45,7 @@ export const Settings: React.FC<SettingsProps> = observer(
     const navigateToScreen = useCallback(
       (screen: string) => {
         router.navigate(
-          screen as
-            | `/profiles`
-            | `/create-account`
-            | `/recover-account`
+          screen as `/profiles` | `/create-account` | `/recover-account`,
         );
       },
       [router],
