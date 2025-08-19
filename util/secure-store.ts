@@ -109,7 +109,7 @@ export async function clearAllSecureStorage(): Promise<void> {
   try {
     // Add all your application's secure storage keys here
     const appKeys = [
-      "user_pin", // Added the actual PIN storage key
+      "user_pin", // Legacy key - kept for migration cleanup purposes
       "user_password",
       "user_pin_hash",
       "user_pin_salt",
@@ -159,7 +159,13 @@ export async function rebuildKeysList(): Promise<void> {
     // Check for common key patterns
     const patternsToCheck = [
       "user_password",
-      // Account keys - we'll need to check based on current profiles
+      "user_pin", // Legacy key - kept for migration cleanup purposes
+      "user_pin_hash",
+      "user_pin_salt",
+      "user_token",
+      "private_key",
+      "walletData",
+      "settings",
     ];
 
     for (const key of patternsToCheck) {
@@ -177,15 +183,28 @@ export async function rebuildKeysList(): Promise<void> {
     // This requires importing appConfig, but we'll do it dynamically to avoid circular imports
     try {
       const { appConfig } = await import("./app-config-store");
+      const { getAccountStorageKey } = await import("./key-obfuscation");
       const profiles = appConfig.profiles.get();
 
       for (const [, profile] of Object.entries(profiles)) {
         for (const account of profile.accounts) {
-          const accountKey = `account_${account.id}`;
+          // Check legacy key pattern first
+          const legacyKey = `account_${account.id}`;
           try {
-            const value = await getItemAsync(accountKey);
-            if (value !== null) {
-              knownKeys.push(accountKey);
+            const legacyValue = await getItemAsync(legacyKey);
+            if (legacyValue !== null) {
+              knownKeys.push(legacyKey);
+            }
+          } catch {
+            // Key doesn't exist, ignore
+          }
+
+          // Check obfuscated key pattern
+          try {
+            const obfuscatedKey = await getAccountStorageKey(account.id);
+            const obfuscatedValue = await getItemAsync(obfuscatedKey);
+            if (obfuscatedValue !== null) {
+              knownKeys.push(obfuscatedKey);
             }
           } catch {
             // Key doesn't exist, ignore

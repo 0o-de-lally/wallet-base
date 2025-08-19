@@ -3,9 +3,10 @@
 This file provides guidance to Claude Code when working with this cryptocurrency wallet codebase.
 
 ## Development Commands
+Do not use npm, yarn. Only bun.
 
 - `bun start` - Start Metro bundler
-- `bun run android` - Run on Android device/emulator  
+- `bun run android` - Run on Android device/emulator
 - `bun run lint` - Run all linting checks
 - `bun run fix` - Auto-fix formatting and linting issues
 - `bun run e2e` - Run end-to-end tests
