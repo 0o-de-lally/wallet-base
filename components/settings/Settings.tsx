@@ -49,7 +49,6 @@ export const Settings: React.FC<SettingsProps> = observer(
             | `/profiles`
             | `/create-account`
             | `/recover-account`
-            | `/pin`,
         );
       },
       [router],
