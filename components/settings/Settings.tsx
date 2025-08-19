@@ -45,7 +45,11 @@ export const Settings: React.FC<SettingsProps> = observer(
     const navigateToScreen = useCallback(
       (screen: string) => {
         router.navigate(
-          screen as `/profiles` | `/create-account` | `/recover-account` | `/password`,
+          screen as
+            | `/profiles`
+            | `/create-account`
+            | `/recover-account`
+            | `/password`,
         );
       },
       [router],
@@ -145,9 +149,9 @@ export const Settings: React.FC<SettingsProps> = observer(
           {/* Security */}
           <SectionContainer title="Security" style={styles.listItem}>
             <ActionButton
-                text="Change Password"
-                onPress={() => navigateToScreen("/password")}
-                accessibilityLabel="Change your transaction PIN"
+              text="Change Password"
+              onPress={() => navigateToScreen("/password")}
+              accessibilityLabel="Change your transaction PIN"
             />
           </SectionContainer>
 

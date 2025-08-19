@@ -4,7 +4,7 @@
 export function secureLog(...args: unknown[]): void {
   // Filter sensitive data from all arguments
   const safeArgs = args.map((arg) =>
-    typeof arg === "string" ? filterSensitiveString(arg) : arg
+    typeof arg === "string" ? filterSensitiveString(arg) : arg,
   );
   // Log securely in all environments
   if (typeof window !== "undefined" && window.console) {
@@ -17,7 +17,7 @@ export function secureLog(...args: unknown[]): void {
 export function secureError(...args: unknown[]): void {
   // Filter sensitive data from all arguments
   const safeArgs = args.map((arg) =>
-    typeof arg === "string" ? filterSensitiveString(arg) : arg
+    typeof arg === "string" ? filterSensitiveString(arg) : arg,
   );
   if (typeof window !== "undefined" && window.console) {
     window.console.error("[SECURE]", ...safeArgs);
