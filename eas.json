@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 5.9.1",
-    "appVersionSource": "local"
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -14,7 +14,9 @@
         "buildType": "apk"
       }
     },
-    "production": {},
+    "production": {
+      "autoIncrement": true
+    },
     "build-and-maestro-test": {
       "distribution": "internal",
       "withoutCredentials": true,

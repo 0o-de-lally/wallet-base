@@ -13,13 +13,13 @@ The account recovery system allows users to restore their cryptocurrency wallet 
 3. **MnemonicInputSection.tsx** - Mnemonic phrase input and validation
 4. **AddressVerificationSection.tsx** - Address derivation and blockchain verification
 5. **RecoveryActionSection.tsx** - Final account creation/recovery actions
-6. **use-secure-storage.ts** - PIN-based encryption and secure storage
+6. **use-secure-storage.ts** - password-based encryption and secure storage
 
 ### Dependencies
 
 - **open-libra-sdk**: Blockchain operations and wallet creation
 - **@scure/bip39**: Mnemonic validation and checksum verification
-- **PBKDF2**: PIN-based encryption for secure storage
+- **PBKDF2**: password-based encryption for secure storage
 - **React Native Keychain**: Secure device storage
 
 ## Recovery Process Flow
@@ -89,17 +89,17 @@ const actualAddress = wallet.getAddress();
 - Dropdown selection of available profiles
 - Automatic default selection when only one profile exists
 
-### Step 5: PIN Security and Account Storage
+### Step 5: Password Security and Account Storage
 **Technical Implementation:**
 ```typescript
-// PIN-based encryption using PBKDF2
+// password-based encryption using PBKDF2
 const encryptedMnemonic = await encryptWithPin(mnemonic, pin);
 await secureStorage.save(encryptedMnemonic);
 ```
 
 **User Experience:**
-- PIN entry modal for secure storage
-- Retry functionality on incorrect PIN
+- Password entry modal for secure storage
+- Retry functionality on incorrect password
 - Success confirmation upon completion
 
 ## Error Handling
@@ -114,8 +114,8 @@ await secureStorage.save(encryptedMnemonic);
 - **Invalid mnemonic**: "Mnemonic validation failed: derived address mismatch"
 - **Sync failures**: Gracefully handled with fallback to derived address
 
-### PIN Security Errors
-- **Incorrect PIN**: Modal remains open with error message and retry option
+### Password Security Errors
+- **Incorrect password**: Modal remains open with error message and retry option
 - **Encryption failure**: "Failed to securely store account"
 
 ### Profile Management Errors
@@ -128,11 +128,11 @@ await secureStorage.save(encryptedMnemonic);
 1. **UI Layer**: Real-time BIP39 validation using `@scure/bip39`
 2. **Derivation Layer**: LibraWallet mnemonic validation through wallet creation
 3. **Blockchain Layer**: On-chain verification with address matching
-4. **Storage Layer**: PIN-based PBKDF2 encryption
+4. **Storage Layer**: password-based PBKDF2 encryption
 
-### PIN Security
+### Password Security
 - PBKDF2-based encryption with secure key derivation
-- No auto-close on incorrect PIN (prevents data corruption)
+- No auto-close on incorrect password (prevents data corruption)
 - Retry mechanism with persistent error states
 - Secure device storage using React Native Keychain
 
@@ -145,12 +145,12 @@ await secureStorage.save(encryptedMnemonic);
 
 **Fix**: Removed nested error handling and implemented direct validation with proper error propagation. Now validation errors are correctly surfaced to the user instead of being silently ignored.
 
-### Issue #2: Incorrect PIN Acceptance
-**Problem**: Wrong PINs were being treated as correct, causing data corruption.
+### Issue #2: Incorrect Password Acceptance
+**Problem**: Wrong passwords were being treated as correct, causing data corruption.
 
-**Root Cause**: PIN modal was auto-closing regardless of PIN validation result.
+**Root Cause**: Password modal was auto-closing regardless of password validation result.
 
-**Fix**: Implemented proper PIN validation flow where the modal only closes on successful validation. Failed PIN attempts keep the modal open with error messages and retry functionality.
+**Fix**: Implemented proper password validation flow where the modal only closes on successful validation. Failed password attempts keep the modal open with error messages and retry functionality.
 
 ### Issue #3: Poor User Experience
 **Problem**: Manual button pressing required for verification, inconsistent progress indicators.
@@ -163,7 +163,7 @@ await secureStorage.save(encryptedMnemonic);
 ### Issue #4: Performance and UX Delays
 **Problem**: Redundant validation causing delays before PIN modal appearance.
 
-**Fix**: Removed duplicate validation in `handleRecoverAccount()` that was already performed during address derivation, allowing direct progression to PIN entry after successful verification.
+**Fix**: Removed duplicate validation in `handleRecoverAccount()` that was already performed during address derivation, allowing direct progression to password entry after successful verification.
 
 ## User Experience Expectations
 
@@ -174,13 +174,13 @@ await secureStorage.save(encryptedMnemonic);
 4. **Verification**: Automatic blockchain verification with progress indicator
 5. **Success**: Green checkmark with account status (new/existing/rotated keys)
 6. **Profile**: Optional profile selection (auto-selected if only one)
-7. **Security**: PIN entry for secure storage
+7. **Security**: Password entry for secure storage
 8. **Completion**: Success confirmation and navigation
 
 ### Error Recovery Scenarios
 1. **Invalid Mnemonic**: Clear error message, input remains focused
 2. **Network Issues**: Retry mechanism with graceful degradation
-3. **Wrong PIN**: Modal stays open, error message, retry button
+3. **Wrong password**: Modal stays open, error message, retry button
 4. **Duplicate Account**: Clear warning with profile selection guidance
 
 ## Known Limitations
@@ -188,12 +188,12 @@ await secureStorage.save(encryptedMnemonic);
 ### Current Limitations
 1. **Network Dependency**: Blockchain verification requires internet connectivity
 2. **Profile System**: Account uniqueness enforced per profile, not globally
-3. **PIN Complexity**: No enforced PIN complexity requirements
+3. **Password Complexity**: No enforced password complexity requirements
 4. **Backup Verification**: No secondary mnemonic verification step
 
 ### Future Improvements
 1. **Offline Mode**: Support for address derivation without blockchain verification
-2. **Biometric Security**: Integration with device biometrics as PIN alternative
+2. **Biometric Security**: Integration with device biometrics as password alternative
 3. **Mnemonic Confirmation**: Double-entry verification for critical operations
 4. **Progress Persistence**: Recovery state persistence across app restarts
 
@@ -203,18 +203,18 @@ await secureStorage.save(encryptedMnemonic);
 - ✅ Valid 24-word mnemonic with existing on-chain account
 - ✅ Valid 24-word mnemonic for new account (no on-chain presence)
 - ✅ Valid mnemonic with rotated keys (address mismatch handled)
-- ✅ Recovery with correct PIN entry
+- ✅ Recovery with correct password entry
 - ✅ Multiple profile selection scenarios
 
 ### Error Cases
 - ✅ Invalid mnemonic phrases (wrong checksum, invalid words, wrong count)
 - ✅ Network connectivity issues during verification
-- ✅ Incorrect PIN entries with retry functionality
+- ✅ Incorrect password entries with retry functionality
 - ✅ Duplicate account detection across profiles
 - ✅ Profile system edge cases (deleted profiles, corrupted data)
 
 ### Security Tests
-- ✅ PIN-based encryption/decryption verification
+- ✅ password-based encryption/decryption verification
 - ✅ Secure storage integration testing
 - ✅ Error state handling without data corruption
 - ✅ Multiple validation layer verification
