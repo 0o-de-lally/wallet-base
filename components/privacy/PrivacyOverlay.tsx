@@ -56,7 +56,6 @@ export const PrivacyOverlay = memo(
           style={StyleSheet.absoluteFill}
           intensity={intensity}
           tint={tint}
-          experimentalBlurMethod="blur"
         >
           <View style={overlayStyles.container}>
             <View style={overlayStyles.contentContainer}>
