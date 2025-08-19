@@ -78,7 +78,10 @@ const SCRYPT_CONFIG = {
  * @param salt - The salt for key derivation as Uint8Array
  * @returns Key suitable for AES encryption
  */
-function generateKeyFromPassword(passwordData: Uint8Array, salt: Uint8Array): Uint8Array {
+function generateKeyFromPassword(
+  passwordData: Uint8Array,
+  salt: Uint8Array,
+): Uint8Array {
   // Use Scrypt for memory-hard key derivation with provided salt
   return scrypt(passwordData, salt, SCRYPT_CONFIG);
 }
@@ -91,7 +94,10 @@ function generateKeyFromPassword(passwordData: Uint8Array, salt: Uint8Array): Ui
  * @param password - The password as Uint8Array
  * @returns The encrypted data as Uint8Array (salt + nonce + ciphertext)
  */
-function encryptWithPassword(value: Uint8Array, password: Uint8Array): Uint8Array {
+function encryptWithPassword(
+  value: Uint8Array,
+  password: Uint8Array,
+): Uint8Array {
   if (!value || value.length === 0) return new Uint8Array(0);
 
   try {
@@ -118,11 +124,7 @@ function encryptWithPassword(value: Uint8Array, password: Uint8Array): Uint8Arra
 
     return result;
   } catch (e) {
-    devError(
-      "password-security",
-      e,
-      "Encryption error"
-    );
+    devError("password-security", e, "Encryption error");
     return new Uint8Array(0);
   }
 }
@@ -169,11 +171,7 @@ function decryptWithPassword(
     // If we reach here, AES-GCM authentication passed
     return { value: decryptedBytes, verified: true };
   } catch (error) {
-    devError(
-      "password-security",
-      error,
-      "Decryption error"
-    );
+    devError("password-security", error, "Decryption error");
     return null;
   }
 }
@@ -396,7 +394,11 @@ export async function storePasswordHash(password: string): Promise<boolean> {
     try {
       // Validate password policy
       if (!validatePasswordPolicy(securePassword)) {
-        devError("password-security", new Error("Password does not meet policy requirements"), "Password does not meet policy requirements");
+        devError(
+          "password-security",
+          new Error("Password does not meet policy requirements"),
+          "Password does not meet policy requirements",
+        );
         return false;
       }
 
@@ -451,7 +453,11 @@ export async function secureEncryptWithPassword(
       const encryptedBytes = encryptWithPassword(dataBytes, passwordBytes);
 
       if (!encryptedBytes || encryptedBytes.length === 0) {
-        devError("password-security", new Error("Encryption failed - empty result"), "Encryption failed - empty result");
+        devError(
+          "password-security",
+          new Error("Encryption failed - empty result"),
+          "Encryption failed - empty result",
+        );
         return null;
       }
 
@@ -478,12 +484,20 @@ export async function secureDecryptWithPassword(
       const result = decryptWithPassword(encryptedBytes, passwordBytes);
 
       if (!result) {
-        devError("password-security", new Error("Decryption failed - null result"), "Decryption failed - null result");
+        devError(
+          "password-security",
+          new Error("Decryption failed - null result"),
+          "Decryption failed - null result",
+        );
         return null;
       }
 
       if (!result.verified) {
-        devError("password-security", new Error("Decryption failed - verification failed"), "Decryption failed - verification failed");
+        devError(
+          "password-security",
+          new Error("Decryption failed - verification failed"),
+          "Decryption failed - verification failed",
+        );
         return { value: "", verified: false };
       }
 
@@ -491,7 +505,11 @@ export async function secureDecryptWithPassword(
       const value = new TextDecoder().decode(result.value);
       return { value, verified: true };
     } catch (error) {
-      devError("password-security", error, "Decryption failed - possibly due to incorrect password");
+      devError(
+        "password-security",
+        error,
+        "Decryption failed - possibly due to incorrect password",
+      );
       return null;
     }
   });

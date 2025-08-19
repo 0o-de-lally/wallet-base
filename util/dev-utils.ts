@@ -11,7 +11,7 @@ import { secureLog, secureError } from "./secure-logging";
  */
 export async function resetAppToFirstTimeUser(): Promise<void> {
   try {
-  secureLog("Resetting app to first-time user state...");
+    secureLog("Resetting app to first-time user state...");
 
     // Clear all profiles and accounts
     appConfig.profiles.set({});
@@ -31,12 +31,12 @@ export async function resetAppToFirstTimeUser(): Promise<void> {
       }
     }
 
-  secureLog("App reset complete - now in first-time user state");
+    secureLog("App reset complete - now in first-time user state");
 
     // Refresh setup status to trigger reactive updates
     refreshSetupStatus();
   } catch (error) {
-  secureError("Error resetting app:", error);
+    secureError("Error resetting app:", error);
     throw error;
   }
 }

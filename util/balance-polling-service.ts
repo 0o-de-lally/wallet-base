@@ -227,7 +227,11 @@ class BalancePollingService {
       }
 
       if (!targetAccount) {
-        devError("balance-polling", new Error(`Account ${accountId} not found for immediate refresh`), "Account not found for immediate refresh");
+        devError(
+          "balance-polling",
+          new Error(`Account ${accountId} not found for immediate refresh`),
+          "Account not found for immediate refresh",
+        );
         return;
       }
 
@@ -245,7 +249,11 @@ class BalancePollingService {
           `Account data refresh completed for ${targetAccount.nickname || targetAccount.id}`,
         );
       } else {
-        devError("balance-polling", new Error("No Libra client available for immediate account refresh"), "No Libra client available for immediate account refresh");
+        devError(
+          "balance-polling",
+          new Error("No Libra client available for immediate account refresh"),
+          "No Libra client available for immediate account refresh",
+        );
       }
     } catch (error) {
       devError("balance-polling", error, "Error in refreshNewAccount");

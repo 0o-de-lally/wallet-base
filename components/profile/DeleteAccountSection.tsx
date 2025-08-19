@@ -47,7 +47,7 @@ export const DeleteAccountSection = memo(
           showAlert("Error", "Failed to delete the account. Please try again.");
         }
       } catch (error) {
-  secureError("Error deleting account:", error);
+        secureError("Error deleting account:", error);
         showAlert(
           "Error",
           "An unexpected error occurred while deleting the account.",

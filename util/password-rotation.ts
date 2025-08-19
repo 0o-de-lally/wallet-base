@@ -138,7 +138,7 @@ export async function rotatePasswordAndReencryptData(
         devError(
           "pin-rotation",
           error,
-          `Failed to re-encrypt data for account ${account.accountId}`
+          `Failed to re-encrypt data for account ${account.accountId}`,
         );
         progress.failed.push(account.accountId);
         onProgress?.(progress);
@@ -207,7 +207,7 @@ async function reencryptAccountData(
       devError(
         "pin-rotation",
         new Error("Failed to decrypt data with old password"),
-        `Failed to decrypt data for account ${accountId} with old password`
+        `Failed to decrypt data for account ${accountId} with old password`,
       );
       return false;
     }
@@ -221,7 +221,7 @@ async function reencryptAccountData(
       devError(
         "pin-rotation",
         new Error("Failed to encrypt data with new password"),
-        `Failed to encrypt data for account ${accountId} with new password`
+        `Failed to encrypt data for account ${accountId} with new password`,
       );
       return false;
     }
@@ -348,7 +348,7 @@ export async function debugStorageKeys(): Promise<void> {
         if (account) {
           devLog(
             `Found account ${accountId} in profile ${profileName}:`,
-            account
+            account,
           );
           found = true;
           break;

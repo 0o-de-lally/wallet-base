@@ -53,7 +53,7 @@ export const SetupGuard: React.FC<SetupGuardProps> = ({
         setNeedsOnboarding(false);
       }
     } catch (error) {
-  secureError("Error checking setup status:", error);
+      secureError("Error checking setup status:", error);
       setNeedsOnboarding(true); // Fail safe
     } finally {
       setIsLoading(false);

@@ -59,7 +59,7 @@ export const PinInputModal = memo(
             devError(
               "pin-input-modal",
               error,
-              `Error in onPinAction for purpose "${purpose}"`
+              `Error in onPinAction for purpose "${purpose}"`,
             );
             throw error; // Re-throw to be caught by the caller
           }
@@ -67,7 +67,7 @@ export const PinInputModal = memo(
           devError(
             "pin-input-modal",
             new Error(`Missing onPinAction handler for purpose "${purpose}"`),
-            "ERROR: Missing onPinAction handler"
+            "ERROR: Missing onPinAction handler",
           );
           // Log additional context to help debug
           devLog("PinInputModal props received:", {

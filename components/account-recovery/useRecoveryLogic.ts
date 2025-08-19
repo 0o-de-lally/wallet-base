@@ -63,7 +63,7 @@ export const useRecoveryLogic = (
         const address = wallet.getAddress();
         actions.setDerivedAddress(address);
       } catch (err) {
-  secureError("Failed to derive address from mnemonic:", err);
+        secureError("Failed to derive address from mnemonic:", err);
         const errorMessage =
           err instanceof Error
             ? `Invalid mnemonic: ${err.message}`
@@ -90,7 +90,7 @@ export const useRecoveryLogic = (
       state.isVerifiedMnemonic &&
       state.mnemonic.trim()
     ) {
-  secureLog("Auto-triggering chain verification for recovery mode");
+      secureLog("Auto-triggering chain verification for recovery mode");
       // Use a small delay to ensure the UI is ready
       const timer = setTimeout(() => {
         actions.setIsVerifyingChain(true);
@@ -123,10 +123,7 @@ export const useRecoveryLogic = (
               actions.setIsChainVerified(true);
               actions.setError(null);
             } catch (syncError) {
-              secureLog(
-                "Chain sync failed, but mnemonic is valid:",
-                syncError,
-              );
+              secureLog("Chain sync failed, but mnemonic is valid:", syncError);
               actions.setChainAddress(walletAddress);
               actions.setIsChainVerified(true);
               actions.setError(null);
@@ -169,14 +166,14 @@ export const useRecoveryLogic = (
       !secureStorage.pinModalVisible &&
       !state.successModalVisible
     ) {
-  secureLog("PIN process complete, checking result...");
+      secureLog("PIN process complete, checking result...");
 
       // Check if the PIN operation was successful
       if (secureStorage.lastPinOperationSuccess === true) {
-  secureLog("PIN operation successful, showing success modal");
+        secureLog("PIN operation successful, showing success modal");
         actions.setSuccessModalVisible(true);
       } else if (secureStorage.lastPinOperationSuccess === false) {
-  secureLog("PIN operation failed, allowing retry");
+        secureLog("PIN operation failed, allowing retry");
         actions.setError(
           "Failed to save recovery phrase. The account was created but the recovery phrase could not be saved. Please try saving it again.",
         );
@@ -184,7 +181,7 @@ export const useRecoveryLogic = (
         actions.setSaveInitiated(false);
         // The account is still created, so they can try to save the mnemonic again
       } else {
-  secureLog(
+        secureLog(
           "PIN operation result still pending, lastPinOperationSuccess is:",
           secureStorage.lastPinOperationSuccess,
         );
@@ -264,7 +261,7 @@ export const useRecoveryLogic = (
         // 1. A new account that doesn't exist on chain yet (valid)
         // 2. Network issues (valid)
         // 3. Account exists but with rotated keys (valid)
-  secureLog("Chain sync failed, but mnemonic is valid:", syncError);
+        secureLog("Chain sync failed, but mnemonic is valid:", syncError);
 
         // For a valid mnemonic that doesn't sync, we still consider it verified
         // since it could be a new account or network issue
@@ -273,7 +270,7 @@ export const useRecoveryLogic = (
         actions.setError(null);
       }
     } catch (err) {
-  secureError("Chain verification failed:", err);
+      secureError("Chain verification failed:", err);
       actions.setIsChainVerified(false);
       const errorMessage =
         err instanceof Error
@@ -307,7 +304,7 @@ export const useRecoveryLogic = (
       );
 
       if (result.success && result.account) {
-  secureLog("Account created successfully:", result.account.id);
+        secureLog("Account created successfully:", result.account.id);
         // Store the created account ID
         actions.setCreatedAccountId(result.account.id);
         actions.setAccountCreated(true);
@@ -328,7 +325,7 @@ export const useRecoveryLogic = (
         actions.setError(result.error || "Unknown error occurred");
       }
     } catch (err) {
-  secureError("Exception in handleRecoverAccount:", err);
+      secureError("Exception in handleRecoverAccount:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to recover account";
       actions.setError(errorMessage);
@@ -365,7 +362,7 @@ export const useRecoveryLogic = (
   }, [actions]);
 
   const handleSuccess = useCallback(() => {
-  secureLog("handleSuccess called - closing success modal and navigating");
+    secureLog("handleSuccess called - closing success modal and navigating");
     actions.setSuccessModalVisible(false);
     resetForm();
     onComplete();
@@ -374,10 +371,7 @@ export const useRecoveryLogic = (
   // Handler for retrying mnemonic save after PIN failure
   const handleRetryMnemonicSave = useCallback(() => {
     if (state.createdAccountId && state.mnemonic.trim()) {
-  secureLog(
-        "Retrying mnemonic save for account:",
-        state.createdAccountId,
-      );
+      secureLog("Retrying mnemonic save for account:", state.createdAccountId);
       actions.setSaveInitiated(true);
       actions.setError(null);
       secureStorage.handleSaveWithValue(state.createdAccountId, state.mnemonic);

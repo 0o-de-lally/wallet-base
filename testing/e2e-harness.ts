@@ -91,9 +91,9 @@ async function main() {
     await spawnExpoAndroid();
     await spawnMaestroTest();
   } catch (err) {
-  killAll();
-  secureError(err);
-  process.exit(1);
+    killAll();
+    secureError(err);
+    process.exit(1);
   }
   killAll();
   process.exit(0);

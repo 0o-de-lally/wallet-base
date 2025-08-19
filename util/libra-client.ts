@@ -51,8 +51,8 @@ export function initializeLibraClient(
 
     return globalLibraClient;
   } catch (error) {
-  secureError("Failed to initialize LibraClient:", error);
-  throw error;
+    secureError("Failed to initialize LibraClient:", error);
+    throw error;
   }
 }
 

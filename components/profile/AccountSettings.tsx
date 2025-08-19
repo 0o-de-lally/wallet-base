@@ -30,7 +30,10 @@ export const AccountSettings = memo(
         const profile = appConfig.profiles[profileName].get();
 
         if (!profile) {
-          devError(`Account settings - profile not found: ${profileName}`, new Error(`Profile '${profileName}' not found`));
+          devError(
+            `Account settings - profile not found: ${profileName}`,
+            new Error(`Profile '${profileName}' not found`),
+          );
           setIsLoading(false);
           return;
         }
@@ -43,7 +46,12 @@ export const AccountSettings = memo(
         if (foundAccount) {
           setAccount(foundAccount);
         } else {
-          devError(`Account settings - account not found`, new Error(`Account with ID '${accountId}' not found in profile '${profileName}'`));
+          devError(
+            `Account settings - account not found`,
+            new Error(
+              `Account with ID '${accountId}' not found in profile '${profileName}'`,
+            ),
+          );
         }
 
         setIsLoading(false);

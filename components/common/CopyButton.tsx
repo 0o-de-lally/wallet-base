@@ -49,7 +49,7 @@ export const CopyButton = memo(
         } else {
           Alert.alert("Error", errorMessage);
         }
-  secureError("Copy error:", error);
+        secureError("Copy error:", error);
       } finally {
         setIsCopying(false);
       }

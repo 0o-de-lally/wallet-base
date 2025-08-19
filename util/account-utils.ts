@@ -76,10 +76,7 @@ export async function createAccount(
       // Add a small delay to ensure the account is properly saved
       setTimeout(() => {
         refreshNewAccount(account.id).catch((error) => {
-          secureError(
-            "Failed to immediately refresh new account data:",
-            error,
-          );
+          secureError("Failed to immediately refresh new account data:", error);
         });
       }, 100); // 100ms delay
 
@@ -95,7 +92,7 @@ export async function createAccount(
       };
     }
   } catch (error) {
-  secureError("Failed to create account:", error);
+    secureError("Failed to create account:", error);
     return {
       success: false,
       error: "Failed to create account. Please try again.",

@@ -66,7 +66,7 @@ function useAppStateProtection(config: AppStateProtectionConfig = {}) {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (verbose) {
         devLog(
-          `[App State Protection] ${componentName}: ${appState} -> ${nextAppState}`
+          `[App State Protection] ${componentName}: ${appState} -> ${nextAppState}`,
         );
       }
 

@@ -106,7 +106,11 @@ export function useTransactionPin({
         setIsLoading(false);
         onMnemonicRetrieved(decryptResult.value);
       } catch (error) {
-        devError("use-transaction-pin", error, "Error retrieving mnemonic with PIN");
+        devError(
+          "use-transaction-pin",
+          error,
+          "Error retrieving mnemonic with PIN",
+        );
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         showAlert("Error", `Failed to retrieve mnemonic: ${errorMessage}`);

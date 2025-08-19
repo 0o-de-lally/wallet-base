@@ -121,7 +121,10 @@ export const TransactionHub = memo(
           const profile = profiles[profileName];
 
           if (!profile) {
-            devError(`Transaction hub - profile not found: ${profileName}`, new Error(`Profile '${profileName}' not found`));
+            devError(
+              `Transaction hub - profile not found: ${profileName}`,
+              new Error(`Profile '${profileName}' not found`),
+            );
             return;
           }
 
@@ -131,7 +134,12 @@ export const TransactionHub = memo(
           if (foundAccount) {
             setAccount(foundAccount);
           } else {
-            devError(`Transaction hub - account not found`, new Error(`Account with ID '${accountId}' not found in profile '${profileName}'`));
+            devError(
+              `Transaction hub - account not found`,
+              new Error(
+                `Account with ID '${accountId}' not found in profile '${profileName}'`,
+              ),
+            );
           }
         } catch (error) {
           devError("Transaction hub - load account", error);

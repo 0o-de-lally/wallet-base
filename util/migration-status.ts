@@ -28,7 +28,7 @@ export async function fetchAccountMigrationStatus(
     // Call the view function
     const result = await client.viewJson(payload);
 
-  secureLog("Migration API response for", accountAddress, ":", result);
+    secureLog("Migration API response for", accountAddress, ":", result);
 
     // The result should be a boolean or an array containing a boolean
     let v8_migrated = false;

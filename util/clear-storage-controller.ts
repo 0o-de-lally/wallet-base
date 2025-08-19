@@ -20,7 +20,7 @@ async function clearAllStorage(): Promise<void> {
 
     // Clear all account data
     if (accountKeys.length > 0) {
-  secureLog(`Clearing ${accountKeys.length} account keys`);
+      secureLog(`Clearing ${accountKeys.length} account keys`);
     }
 
     // Clear all secure storage
@@ -29,7 +29,7 @@ async function clearAllStorage(): Promise<void> {
     // Clear all scheduled reveals
     clearAllScheduledReveals();
 
-  secureLog("All secure data cleared successfully");
+    secureLog("All secure data cleared successfully");
   } catch (error) {
     secureError(
       "Error clearing all data:",
@@ -48,7 +48,7 @@ async function clearAllStorage(): Promise<void> {
  */
 export async function resetAppToCleanState(): Promise<void> {
   try {
-  secureLog("Starting complete app data reset...");
+    secureLog("Starting complete app data reset...");
 
     // Clear all secure storage (expo-secure-store)
     await clearAllStorage();
@@ -56,7 +56,7 @@ export async function resetAppToCleanState(): Promise<void> {
     // Clear all AsyncStorage (includes Legend State persistence)
     await AsyncStorage.clear();
 
-  secureLog("App data reset completed - app is now in clean state");
+    secureLog("App data reset completed - app is now in clean state");
   } catch (error) {
     secureError(
       "Error during app reset:",

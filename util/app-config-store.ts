@@ -92,7 +92,11 @@ export function addAccountToProfile(
   const profile = appConfig.profiles[profileName].get();
 
   if (!profile) {
-    devError("app-config", new Error(`Profile not found: ${profileName}`), "addAccountToProfile: Profile not found");
+    devError(
+      "app-config",
+      new Error(`Profile not found: ${profileName}`),
+      "addAccountToProfile: Profile not found",
+    );
     return false; // Profile doesn't exist
   }
 
@@ -265,7 +269,11 @@ export function maybeInitializeDefaultProfile() {
           if (success) {
             devLog("Default profile 'mainnet' created successfully");
           } else {
-            devError("app-config", new Error("Failed to create default profile"), "Failed to create default profile");
+            devError(
+              "app-config",
+              new Error("Failed to create default profile"),
+              "Failed to create default profile",
+            );
           }
         } else {
           devLog("Profiles already exist, skipping initialization", {
@@ -276,11 +284,19 @@ export function maybeInitializeDefaultProfile() {
           });
         }
       } catch (innerError) {
-        devError("app-config", innerError, "Error in delayed profile initialization");
+        devError(
+          "app-config",
+          innerError,
+          "Error in delayed profile initialization",
+        );
       }
     }, 10); // Very short delay to allow persistence to settle
   } catch (error) {
-    devError("app-config", error, "Error setting up delayed profile initialization");
+    devError(
+      "app-config",
+      error,
+      "Error setting up delayed profile initialization",
+    );
 
     // Fallback to immediate initialization if delayed fails
     try {
@@ -296,7 +312,11 @@ export function maybeInitializeDefaultProfile() {
         });
       }
     } catch (fallbackError) {
-      devError("app-config", fallbackError, "Error in fallback profile initialization");
+      devError(
+        "app-config",
+        fallbackError,
+        "Error in fallback profile initialization",
+      );
     }
   }
 }

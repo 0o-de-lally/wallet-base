@@ -172,7 +172,7 @@ export function useSecureStorage(initialAccountId?: string) {
     accountId: string,
   ) => {
     devLog(
-      `Setting action: ${action} for account ${accountId} and showing PIN modal`
+      `Setting action: ${action} for account ${accountId} and showing PIN modal`,
     );
     setCurrentAction(action);
     setCurrentAccountId(accountId);

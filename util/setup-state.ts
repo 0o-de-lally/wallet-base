@@ -44,13 +44,13 @@ async function updateSetupStatus(): Promise<void> {
         const profiles = appConfig.profiles?.get();
         if (!profiles || Object.keys(profiles).length === 0) {
           devLog(
-            "No profiles found during setup status check, initializing default profile"
+            "No profiles found during setup status check, initializing default profile",
           );
           maybeInitializeDefaultProfile();
         } else {
           devLog(
             "Found existing profiles during setup status check:",
-            Object.keys(profiles)
+            Object.keys(profiles),
           );
         }
       } else {
@@ -63,7 +63,11 @@ async function updateSetupStatus(): Promise<void> {
         return;
       }
     } catch (initError) {
-      devError("setup-state", initError, "Error during profile initialization check");
+      devError(
+        "setup-state",
+        initError,
+        "Error during profile initialization check",
+      );
       // Continue with status check even if profile initialization fails
     }
 

@@ -24,12 +24,12 @@ export async function fetchAccountV8Authorization(
     // Create the view payload for the reauthorization function
     const payload = LibraViews.reauthorization_isV8Authorized(accountAddress);
 
-  secureLog("Fetching v8 authorization for account:", payload);
+    secureLog("Fetching v8 authorization for account:", payload);
 
     // Call the view function
     const result = await client.viewJson(payload);
 
-  secureLog("V8 Auth API response for", accountAddress, ":", result);
+    secureLog("V8 Auth API response for", accountAddress, ":", result);
 
     // The result should be a boolean or an array containing a boolean
     let is_v8_authorized = false;
