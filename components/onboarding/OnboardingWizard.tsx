@@ -3,6 +3,7 @@ import { Text, ScrollView, View } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { SectionContainer } from "../common/SectionContainer";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
@@ -47,7 +48,7 @@ export const OnboardingWizard: React.FC = observer(() => {
         return;
       }
     } catch (error) {
-      console.error("Error checking status:", error);
+      devError("Onboarding status check", error);
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +97,7 @@ export const OnboardingWizard: React.FC = observer(() => {
             "All app data has been reset. You can now start fresh.",
           );
         } catch (error) {
-          console.error("Error resetting app:", error);
+          devError("Onboarding app reset", error);
           showAlert(
             "Reset Failed",
             "Failed to reset app data. Please try again.",

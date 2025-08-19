@@ -11,7 +11,7 @@ import {
   secureDecryptWithPassword,
   secureEncryptWithPassword,
   hashPassword,
-} from "./pin-security";
+} from "./password-security";
 import { reportErrorAuto, devLog, devError } from "./error-utils";
 import { getAccountStorageKey } from "./key-obfuscation";
 

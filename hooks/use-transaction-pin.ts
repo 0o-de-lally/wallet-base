@@ -3,7 +3,7 @@ import { getValue } from "../util/secure-store";
 import {
   secureDecryptWithPassword,
   verifyStoredPassword,
-} from "../util/pin-security";
+} from "../util/password-security";
 import { useModal } from "../context/ModalContext";
 import { reportErrorAuto, devError } from "../util/error-utils";
 import {

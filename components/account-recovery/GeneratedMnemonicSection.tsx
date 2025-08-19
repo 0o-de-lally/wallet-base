@@ -3,6 +3,7 @@ import { View, Text, Alert } from "react-native";
 import { ActionButton } from "../common/ActionButton";
 import { CopyButton } from "../common/CopyButton";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { generateMnemonic } from "open-libra-sdk";
 import { useCriticalDataProtection } from "../../hooks/use-screenshot-protection";
 
@@ -33,7 +34,7 @@ export const GeneratedMnemonicSection: React.FC<
       setGeneratedMnemonic(newMnemonic);
       onMnemonicGenerated(newMnemonic);
     } catch (error) {
-      console.error("Error generating mnemonic:", error);
+      devError("Mnemonic generation", error);
       Alert.alert(
         "Error",
         "Failed to generate recovery words. Please try again.",

@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { shortenAddress } from "../../util/format-utils";
 import { styles, namedColors } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
-import { PasswordRotationProgress } from "../../util/pin-rotation";
+import { PasswordRotationProgress } from "../../util/password-rotation";
 
 interface PasswordRotationProgressDisplayProps {
   progress: PasswordRotationProgress;

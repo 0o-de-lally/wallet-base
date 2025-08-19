@@ -13,6 +13,7 @@ import { LIBRA_SCALE_FACTOR } from "../../util/constants";
 import { formatTimestamp, formatCurrency } from "../../util/format-utils";
 import type { TransactionResponse } from "@aptos-labs/ts-sdk";
 import { useFinancialDataProtection } from "../../hooks/use-screenshot-protection";
+import { devLog, devError } from "../../util/error-utils";
 
 export interface HistoricalTransactionsProps {
   accountAddress: string;
@@ -57,7 +58,7 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
       setLoading(true);
       setError(null);
 
-      console.log("Fetching transactions for account:", accountAddress);
+      devLog("Fetching transactions for account:", accountAddress);
       const client = getLibraClient();
 
       // Query the last 10 transactions for this account
@@ -70,7 +71,7 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
         },
       });
 
-      console.log("Raw transaction response:", response);
+      devLog("Raw transaction response:", response);
 
       // Transform the response to our display format
       const transformedTransactions: TransactionItem[] = response.map(
@@ -196,10 +197,10 @@ export const HistoricalTransactions: React.FC<HistoricalTransactionsProps> = ({
         return b.timestampMs - a.timestampMs; // Newest first
       });
 
-      console.log("Transformed and sorted transactions:", sortedTransactions);
+      devLog("Transformed and sorted transactions:", sortedTransactions);
       setTransactions(sortedTransactions);
     } catch (err) {
-      console.error("Error fetching transactions:", err);
+      devError("Transaction history fetch", err);
       setError(
         err instanceof Error ? err.message : "Failed to fetch transactions",
       );

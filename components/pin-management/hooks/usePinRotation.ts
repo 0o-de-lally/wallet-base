@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import { verifyStoredPassword } from "../../../util/pin-security";
+import { verifyStoredPassword } from "../../../util/password-security";
 import {
   rotatePasswordAndReencryptData,
   validateOldPasswordCanDecryptData,
   type PasswordRotationProgress,
-} from "../../../util/pin-rotation";
+} from "../../../util/password-rotation";
 import { useModal } from "../../../context/ModalContext";
+import { devError } from "../../../util/error-utils";
 
 /**
  * Custom hook for handling password rotation logic
@@ -39,7 +40,7 @@ export const usePasswordRotation = () => {
         }
       } catch (error) {
         showAlert("Error", "Failed to verify password");
-        console.error(error);
+        devError("Pin rotation - verify password", error);
         return false;
       }
     },
@@ -77,7 +78,7 @@ export const usePasswordRotation = () => {
         return true;
       } catch (error) {
         showAlert("Error", "Failed to verify password");
-        console.error(error);
+        devError("Pin rotation - validate old password", error);
         return false;
       }
     },
@@ -104,7 +105,7 @@ export const usePasswordRotation = () => {
         const result = await rotatePasswordAndReencryptData(
           oldPassword,
           newPassword,
-          (progress) => {
+          (progress: PasswordRotationProgress) => {
             setRotationProgress(progress);
             // Show progress when we have accounts to process
             if (progress.total > 0) {
@@ -136,7 +137,7 @@ export const usePasswordRotation = () => {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         showAlert("Error", "Failed to complete password rotation");
-        console.error(error);
+        devError("Pin rotation - execute rotation", error);
         return { success: false, error: errorMessage };
       }
     },

@@ -20,6 +20,7 @@ import { InitializingApp } from "@/components/InitializingApp";
 import { PrivacyOverlay } from "../components/privacy/PrivacyOverlay";
 import { ScreenCaptureProtectionProvider } from "../context/ScreenCaptureProtectionContext";
 import { styles } from "../styles/styles";
+import { devLog, devError } from "../util/error-utils";
 
 // Enable screens for react-native-screens
 enableScreens();
@@ -57,7 +58,7 @@ const RootLayout = observer(() => {
 
       // If device doesn't support biometrics or has no enrollments, default to allowing access
       if (!hasHardware || !isEnrolled) {
-        console.log("Biometric authentication not available, allowing access");
+        devLog("Biometric authentication not available, allowing access");
         setIsAuthenticated(true);
         return;
       }
@@ -82,7 +83,7 @@ const RootLayout = observer(() => {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error("Authentication error:", error);
+      devError("Authentication", error);
       setAuthError("Authentication error occurred. Please try again.");
       // On error, allow access by default for better user experience
       setIsAuthenticated(true);
@@ -99,7 +100,7 @@ const RootLayout = observer(() => {
         // Trigger authentication after initialization
         authenticate();
       } catch (error) {
-        console.error("Failed to initialize:", error);
+        devError("App initialization", error);
         setInitError(error instanceof Error ? error : new Error(String(error)));
         setAuthChecking(false);
       }

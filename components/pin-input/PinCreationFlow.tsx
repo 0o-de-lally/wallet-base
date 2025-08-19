@@ -7,7 +7,7 @@ import { PinInputField } from "./PinInputField";
 import {
   storePasswordHash,
   validatePasswordPolicy,
-} from "../../util/pin-security";
+} from "../../util/password-security";
 import { devError } from "../../util/error-utils";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";

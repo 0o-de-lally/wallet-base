@@ -1,4 +1,4 @@
-import { uint8ArrayToBase64 } from "./pin-security";
+import { uint8ArrayToBase64 } from "./password-security";
 import { getRandomBytes } from "./random";
 import {
   addAccountToProfile,

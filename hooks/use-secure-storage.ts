@@ -12,7 +12,7 @@ import {
   verifyStoredPassword,
   secureEncryptWithPassword,
   secureDecryptWithPassword,
-} from "../util/pin-security";
+} from "../util/password-security";
 import { updateAccountKeyStoredStatus } from "../util/app-config-store";
 import { reportErrorAuto, devLog, devError } from "../util/error-utils";
 import {

@@ -3,10 +3,11 @@ import { View, Text, Modal } from "react-native";
 import { PinInputField } from "./PinInputField";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import {
   validatePasswordPolicy,
   storePasswordHash,
-} from "../../util/pin-security";
+} from "../../util/password-security";
 import { refreshSetupStatus } from "../../util/setup-state";
 
 interface PinRotationFlowProps {
@@ -104,7 +105,7 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
       resetState();
       onComplete(true, rawPin);
     } catch (error) {
-      console.error("Error creating password:", error);
+      devError("Pin rotation password creation", error);
       setError("Failed to create password. Please try again.");
       setIsCreating(false);
     }

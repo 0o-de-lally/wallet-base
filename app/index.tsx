@@ -11,6 +11,7 @@ import { observer } from "@legendapp/state/react";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { styles, namedColors } from "../styles/styles";
+import { devError } from "@/util/error-utils";
 import { initializeApp } from "@/util/initialize-app";
 import { SetupGuard } from "@/components/auth/SetupGuard";
 import AccountList from "@/components/profile/AccountList";
@@ -45,7 +46,7 @@ const AppContent = observer(() => {
         await initializeApp();
         setIsInitialized(true);
       } catch (error) {
-        console.error("Failed to initialize app:", error);
+        devError("App initialization", error);
         setIsInitialized(true);
       }
     };
