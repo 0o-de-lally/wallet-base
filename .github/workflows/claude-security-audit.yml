@@ -2,7 +2,7 @@ name: Claude Security Audit
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "*" ]
   workflow_dispatch:
 
 permissions:
@@ -58,18 +58,9 @@ jobs:
 
            Format the output as a comprehensive markdown report." > "$REPORT_FILE"
 
-    - name: Commit security audit report
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .docs/reports/
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Add automated security audit report
-
-          🤖 Generated with Claude Security Audit Workflow
-
-          Co-Authored-By: Claude <noreply@anthropic.com>"
-          git push
-        fi
+    - name: Upload security audit report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-audit-report
+        path: .docs/reports/
+        retention-days: 30
