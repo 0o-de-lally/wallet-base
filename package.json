@@ -45,8 +45,6 @@
     "eslint": "^9.32.0",
     "eslint-plugin-react": "^7.37.5",
     "expo": "53.0.20",
-    "expo-constants": "~17.1.7",
-    "expo-linking": "~7.1.7",
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "typescript": "~5.8.3",
