@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from "react";
+import { secureError } from "../../../util/error-utils";
 import { Modal, View, Text } from "react-native";
 import { styles } from "../../../styles/styles";
 import { ActionButton } from "../../common/ActionButton";
@@ -32,26 +33,26 @@ export const TransactionPinModal = memo(
         case "vouch":
           return "Authorize Vouch";
         default:
-          return "Verify PIN";
+          return "Verify Password";
       }
     };
 
     const getModalSubtitle = () => {
       switch (operationType) {
         case "transfer":
-          return "Enter your PIN to access private key for transfer signing";
+          return "Enter your password to access private key for transfer signing";
         case "v8_rejoin":
-          return "Enter your PIN to access private key for V8 migration transaction";
+          return "Enter your password to access private key for V8 migration transaction";
         case "vouch":
-          return "Enter your PIN to access private key for vouching transaction";
+          return "Enter your password to access private key for vouching transaction";
         default:
-          return "Enter your PIN to access private key for transaction signing";
+          return "Enter your password to access private key for transaction signing";
       }
     };
 
     const handleSubmit = useCallback(async () => {
       if (!pin.trim()) {
-        setPinError("Please enter your PIN");
+        setPinError("Please enter your password");
         return;
       }
 
@@ -61,8 +62,8 @@ export const TransactionPinModal = memo(
         await onPinSubmit(pin);
         setPin(""); // Clear PIN on success
       } catch (error) {
-        console.error("PIN submission error:", error);
-        setPinError("Failed to verify PIN. Please try again.");
+        secureError("Password submission error:", error);
+        setPinError("Failed to verify password. Please try again.");
       }
     }, [pin, onPinSubmit]);
 
@@ -95,15 +96,16 @@ export const TransactionPinModal = memo(
 
             <Text style={styles.modalSubtitle}>{getModalSubtitle()}</Text>
 
-            <View style={{ marginVertical: 20 }}>
+            <View style={styles.marginVertical20}>
               <PinInputField
-                label="PIN"
+                label="Password"
                 value={pin}
                 onChangeText={handlePinChange}
                 editable={!isLoading}
                 autoFocus={true}
                 error={pinError || undefined}
                 onSubmit={handleSubmit}
+                showToggle={true}
               />
             </View>
 
@@ -113,7 +115,7 @@ export const TransactionPinModal = memo(
                 onPress={handleSubmit}
                 isLoading={isLoading}
                 disabled={isLoading || !pin.trim()}
-                accessibilityLabel="Verify PIN for transaction"
+                accessibilityLabel="Verify password for transaction"
               />
 
               <ActionButton
@@ -121,7 +123,7 @@ export const TransactionPinModal = memo(
                 onPress={handleClose}
                 variant="secondary"
                 disabled={isLoading}
-                accessibilityLabel="Cancel PIN verification"
+                accessibilityLabel="Cancel password verification"
               />
             </View>
           </View>

@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { SecureStorageForm } from "../secure-storage/SecureStorageForm";
 import { useSecureStorage } from "../../hooks/use-secure-storage";
 import { PinInputModal } from "../pin-input/PinInputModal";
@@ -29,7 +30,10 @@ export const AccountSettings = memo(
         const profile = appConfig.profiles[profileName].get();
 
         if (!profile) {
-          console.error(`Profile '${profileName}' not found`);
+          devError(
+            `Account settings - profile not found: ${profileName}`,
+            new Error(`Profile '${profileName}' not found`),
+          );
           setIsLoading(false);
           return;
         }
@@ -42,14 +46,17 @@ export const AccountSettings = memo(
         if (foundAccount) {
           setAccount(foundAccount);
         } else {
-          console.error(
-            `Account with ID '${accountId}' not found in profile '${profileName}'`,
+          devError(
+            `Account settings - account not found`,
+            new Error(
+              `Account with ID '${accountId}' not found in profile '${profileName}'`,
+            ),
           );
         }
 
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching account:", error);
+        devError("Account settings - fetch account", error);
         setIsLoading(false);
       }
     };

@@ -4,8 +4,10 @@ import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
+import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
+import { devLog, devError } from "../../util/error-utils";
 
-// Define callback types for PIN operations
+// Define callback types for authentication secret operations
 type PinActionCallback = (pin: string) => Promise<boolean>;
 
 interface PinInputModalProps {
@@ -18,7 +20,7 @@ interface PinInputModalProps {
     | "schedule_reveal"
     | "execute_reveal"
     | "clear_all";
-  // Callbacks for different PIN operations - only one will be called based on purpose
+  // Callback invoked to process the entered password
   onPinAction: PinActionCallback;
   actionTitle?: string;
   actionSubtitle?: string;
@@ -35,35 +37,40 @@ export const PinInputModal = memo(
     actionSubtitle,
     autoCloseOnSuccess = true, // Default to true for backward compatibility
   }: PinInputModalProps) => {
+    // Authentication protection - prevents screenshots during PIN modal interactions
+    useAuthenticationProtection("PinInputModal");
     // Ensure onPinAction is always a function even if undefined is passed
     const safeOnPinAction = useCallback(
       async (pin: string) => {
         if (typeof onPinAction === "function") {
           try {
-            console.log(`Executing onPinAction for purpose: ${purpose}`);
+            devLog(`Executing onPinAction for purpose: ${purpose}`);
             const wasSuccessful = await onPinAction(pin);
 
             if (wasSuccessful) {
-              console.log(`Completed onPinAction for purpose: ${purpose}`);
+              devLog(`Completed onPinAction for purpose: ${purpose}`);
             } else {
-              console.log(
+              devLog(
                 `PIN action failed for purpose: ${purpose} (e.g., incorrect PIN)`,
               );
             }
             return wasSuccessful;
           } catch (error) {
-            console.error(
-              `Error in onPinAction for purpose "${purpose}":`,
+            devError(
+              "pin-input-modal",
               error,
+              `Error in onPinAction for purpose "${purpose}"`,
             );
             throw error; // Re-throw to be caught by the caller
           }
         } else {
-          console.error(
-            `ERROR: Missing onPinAction handler for purpose "${purpose}"`,
+          devError(
+            "pin-input-modal",
+            new Error(`Missing onPinAction handler for purpose "${purpose}"`),
+            "ERROR: Missing onPinAction handler",
           );
           // Log additional context to help debug
-          console.log("PinInputModal props received:", {
+          devLog("PinInputModal props received:", {
             purpose,
             hasOnPinAction: !!onPinAction,
             typeOfOnPinAction: typeof onPinAction,
@@ -110,7 +117,7 @@ export const PinInputModal = memo(
 
     const processPinSecurely = useCallback(async () => {
       if (!pinValue || !pinValue.trim()) {
-        setError("PIN is required");
+        setError("Password is required");
         return;
       }
 
@@ -131,10 +138,10 @@ export const PinInputModal = memo(
             onClose();
           }
         } else {
-          setError("Incorrect PIN. Please try again.");
+          setError("Incorrect password. Please try again.");
         }
       } catch (error) {
-        console.error("Error processing PIN:", error);
+        devError("pin-input-modal", error, "Error processing password");
         setError("Error processing your request");
       } finally {
         setIsVerifying(false);
@@ -181,7 +188,7 @@ export const PinInputModal = memo(
         case "clear_all":
           return "Clear Account Data";
         default:
-          return "Enter PIN";
+          return "Enter Password";
       }
     }, [purpose, actionTitle]);
 
@@ -190,13 +197,13 @@ export const PinInputModal = memo(
 
       switch (purpose) {
         case "schedule_reveal":
-          return `Enter your PIN to schedule a reveal of the secured data. You'll need to wait ${formatWaitingPeriod()} before you can reveal it.`;
+          return `Enter your password to schedule a reveal of the secured data. You'll need to wait ${formatWaitingPeriod()} before you can reveal it.`;
         case "execute_reveal":
-          return "Enter your PIN again to reveal the secured data. This data will be visible on screen.";
+          return "Enter your password again to reveal the secured data. This data will be visible on screen.";
         case "clear_all":
-          return "Enter your PIN to permanently delete all secure data for this account. This action cannot be undone.";
+          return "Enter your password to permanently delete all secure data for this account. This action cannot be undone.";
         default:
-          return `Please enter your PIN to ${getActionText()} this secure data.`;
+          return `Please enter your password to ${getActionText()} this secure data.`;
       }
     }, [purpose, actionSubtitle, getActionText]);
 
@@ -218,13 +225,14 @@ export const PinInputModal = memo(
             <PinInputField
               value={pinValue}
               onChangeText={handlePinChange}
-              placeholder="******"
+              placeholder="********"
               label=""
               error={error ? error : undefined}
               autoFocus={true}
               onSubmit={processPinSecurely}
               clearOnSubmit={true}
               ref={pinInputRef}
+              showToggle={true}
             />
 
             <View style={styles.modalButtons}>
@@ -233,16 +241,16 @@ export const PinInputModal = memo(
                 variant="secondary"
                 onPress={handleCancel}
                 disabled={isVerifying}
-                accessibilityLabel="Cancel PIN entry"
-                style={{ flex: 1, marginRight: 8 }}
+                accessibilityLabel="Cancel password entry"
+                style={[styles.flexOne, styles.marginRight8]}
               />
 
               <ActionButton
                 text="Verify"
                 onPress={processPinSecurely}
                 isLoading={isVerifying}
-                accessibilityLabel="Verify PIN"
-                style={{ flex: 1, marginLeft: 8 }}
+                accessibilityLabel="Verify password"
+                style={[styles.flexOne, styles.marginLeft8]}
               />
             </View>
           </View>

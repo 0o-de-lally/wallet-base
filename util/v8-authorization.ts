@@ -1,6 +1,8 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
+import { secureLog } from "./error-utils";
+
 export interface V8AuthData {
   is_v8_authorized: boolean;
   error?: string;
@@ -22,12 +24,12 @@ export async function fetchAccountV8Authorization(
     // Create the view payload for the reauthorization function
     const payload = LibraViews.reauthorization_isV8Authorized(accountAddress);
 
-    console.log("Fetching v8 authorization for account:", payload);
+    secureLog("Fetching v8 authorization for account:", payload);
 
     // Call the view function
     const result = await client.viewJson(payload);
 
-    console.log("V8 Auth API response for", accountAddress, ":", result);
+    secureLog("V8 Auth API response for", accountAddress, ":", result);
 
     // The result should be a boolean or an array containing a boolean
     let is_v8_authorized = false;
@@ -39,7 +41,7 @@ export async function fetchAccountV8Authorization(
     } else if (result && typeof result === "object" && "value" in result) {
       is_v8_authorized = Boolean(result.value);
     } else {
-      console.log(
+      secureLog(
         "Unexpected v8 auth response structure:",
         JSON.stringify(result, null, 2),
       );

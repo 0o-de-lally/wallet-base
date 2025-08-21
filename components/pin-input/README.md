@@ -1,20 +1,20 @@
-# PIN Input Components Security Implementation
+# Password Input Components Security Implementation
 
 ## Security Architecture
 
-The PIN security system has been consolidated to reduce duplication and improve maintainability:
+The password security system has been consolidated to reduce duplication and improve maintainability:
 
 ### Component Layer
-- **PinInputField/PinInputModal**: User interface components for PIN entry
-- Uses IoC pattern to minimize PIN storage and movement between components
+- **PinInputField/PinInputModal**: User interface components for password entry
+- Uses IoC pattern to minimize password storage and movement between components
 
 ### Security Layer (Consolidated)
-- **pin-security.ts**: Single source of truth for PIN security operations
-  - PIN hashing with proper salt and iterations
-  - Constant-time PIN comparison to prevent timing attacks
-  - PIN format validation
-  - PIN-based encryption/decryption coordination
-  - Secure PIN processing with memory clearing
+- **pin-security.ts**: Single source of truth for password security operations
+  - Password hashing with proper salt and iterations
+  - Constant-time password comparison to prevent timing attacks
+  - Password format validation
+  - Password-based encryption/decryption coordination
+  - Secure password processing with memory clearing
 
 - **PinProcessor**: (Deprecated - for backward compatibility only)
   - Now re-exports from pin-security.ts
@@ -23,26 +23,26 @@ The PIN security system has been consolidated to reduce duplication and improve 
 ### Cryptographic Layer
 - **crypto.ts**: Low-level encryption/decryption operations
   - AES-GCM encryption for data security
-  - PBKDF2 key derivation from PIN
+  - PBKDF2 key derivation from password
   - Secure random generation
 
 ### Storage Layer
 - **secure-store.ts**: Handles persistent secure storage
   - Manages encrypted data storage using Expo SecureStore
-  - Never stores raw PINs, only securely hashed values
+  - Never stores raw passwords, only securely hashed values
 
 ## Current Implementation
 
 The implementation has been improved to enhance security:
 
 1. **Consolidated Security Logic**:
-   - Moved all PIN handling to pin-security.ts
+   - Moved all password handling to pin-security.ts
    - Eliminated duplication between files
-   - Single source of truth for PIN operations
+   - Single source of truth for password operations
 
 2. **Improved IoC Implementation**:
-   - Consistent use of processWithPin across all PIN operations
-   - Standardized approach to PIN memory management
+   - Consistent use of processWithPin across all password operations
+   - Standardized approach to password memory management
 
 3. **Better Maintainability**:
    - Clear separation between UI components and security logic
@@ -66,9 +66,9 @@ To update existing code:
 ### Phase 2
 - Remove PinProcessor completely
 - Implement full IoC pattern through all PIN-handling components
-- Add timeouts for automatic PIN clearing
+- Add timeouts for automatic password clearing
 
 ### Phase 3
-- Migrate to per-digit PIN input for enhanced security
-- Implement Context API for secure digit collection
+- Migrate to per-character password input for enhanced security
+- Implement Context API for secure character collection
 - Explore WebAssembly for sensitive cryptographic operations

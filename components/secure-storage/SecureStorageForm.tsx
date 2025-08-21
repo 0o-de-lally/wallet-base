@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect } from "react";
 import { View } from "react-native";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { MnemonicInput } from "../common/MnemonicInput";
 import { MnemonicManagement } from "./MnemonicManagement";
 import { ActionButton } from "../common/ActionButton";
@@ -53,7 +54,7 @@ export const SecureStorageForm = memo(
         const hasData = await checkHasStoredData(accountId);
         setHasStoredData(hasData);
       } catch (error) {
-        console.error("Error checking stored data after clear:", error);
+        devError("Secure storage - check data after clear", error);
         setHasStoredData(false);
       }
     };
@@ -66,7 +67,7 @@ export const SecureStorageForm = memo(
           const hasData = await checkHasStoredData(accountId);
           setHasStoredData(hasData);
         } catch (error) {
-          console.error("Error checking stored data:", error);
+          devError("Secure storage - check stored data", error);
           setHasStoredData(false);
         } finally {
           setIsCheckingData(false);
@@ -84,7 +85,7 @@ export const SecureStorageForm = memo(
             const hasData = await checkHasStoredData(accountId);
             setHasStoredData(hasData);
           } catch (error) {
-            console.error("Error rechecking stored data:", error);
+            devError("Secure storage - recheck stored data", error);
           }
         };
 

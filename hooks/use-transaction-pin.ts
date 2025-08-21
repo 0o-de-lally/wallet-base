@@ -1,8 +1,15 @@
 import { useState, useCallback } from "react";
 import { getValue } from "../util/secure-store";
-import { secureDecryptWithPin, verifyStoredPin } from "../util/pin-security";
+import {
+  secureDecryptWithPassword,
+  verifyStoredPassword,
+} from "../util/password-security";
 import { useModal } from "../context/ModalContext";
-import { reportErrorAuto } from "../util/error-utils";
+import { reportErrorAuto, devError } from "../util/error-utils";
+import {
+  getAccountStorageKey,
+  migrateToObfuscatedKey,
+} from "../util/key-obfuscation";
 
 interface UseTransactionPinProps {
   accountId: string;
@@ -17,7 +24,31 @@ export function useTransactionPin({
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getStorageKey = useCallback((id: string) => `account_${id}`, []);
+  /**
+   * Resolves the current storage key for an account, migrating from legacy
+   * predictable key (account_<id>) to obfuscated key if necessary.
+   */
+  const resolveStorageKey = useCallback(async (id: string): Promise<string> => {
+    const legacyKey = `account_${id}`;
+
+    try {
+      const legacyValue = await getValue(legacyKey);
+      if (legacyValue) {
+        // Attempt migration to obfuscated key
+        const migrated = await migrateToObfuscatedKey(legacyKey, "account");
+        if (migrated) {
+          return migrated;
+        }
+        // Fallback: legacy key still (migration failed)
+        return legacyKey;
+      }
+    } catch {
+      // Intentionally ignoring migration read errors; will fall back to new obfuscated key
+    }
+
+    // Generate (or reuse existing) obfuscated key
+    return await getAccountStorageKey(id);
+  }, []);
 
   const requestMnemonicWithPin = useCallback(() => {
     setPinModalVisible(true);
@@ -34,15 +65,15 @@ export function useTransactionPin({
 
       try {
         // Verify the PIN first
-        const isPinValid = await verifyStoredPin(pin);
-        if (!isPinValid) {
+        const pinResult = await verifyStoredPassword(pin);
+        if (!pinResult.isValid) {
           showAlert("Error", "Invalid PIN. Please try again.");
           setIsLoading(false);
           return;
         }
 
-        // Get the encrypted mnemonic from storage
-        const key = getStorageKey(accountId);
+        // Resolve (and possibly migrate) storage key
+        const key = await resolveStorageKey(accountId);
         const encryptedMnemonic = await getValue(key);
 
         if (!encryptedMnemonic) {
@@ -56,7 +87,7 @@ export function useTransactionPin({
         }
 
         // Decrypt the mnemonic using the PIN
-        const decryptResult = await secureDecryptWithPin(
+        const decryptResult = await secureDecryptWithPassword(
           encryptedMnemonic,
           pin,
         );
@@ -75,7 +106,11 @@ export function useTransactionPin({
         setIsLoading(false);
         onMnemonicRetrieved(decryptResult.value);
       } catch (error) {
-        console.error("Error retrieving mnemonic with PIN:", error);
+        devError(
+          "use-transaction-pin",
+          error,
+          "Error retrieving mnemonic with PIN",
+        );
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         showAlert("Error", `Failed to retrieve mnemonic: ${errorMessage}`);
@@ -85,7 +120,7 @@ export function useTransactionPin({
         setIsLoading(false);
       }
     },
-    [accountId, getStorageKey, showAlert, onMnemonicRetrieved],
+    [accountId, resolveStorageKey, showAlert, onMnemonicRetrieved],
   );
 
   const closePinModal = useCallback(() => {

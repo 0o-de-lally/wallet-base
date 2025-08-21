@@ -3,7 +3,7 @@ import { initializeRevealController } from "./reveal-controller";
 import { initializeLibraClient } from "./libra-client";
 import { resetAppToCleanState } from "./clear-storage-controller";
 import { startBalancePolling } from "./balance-polling-service";
-import { initializeErrorLogging } from "./error-utils";
+import { initializeErrorLogging, devLog, devError } from "./error-utils";
 import { SHOULD_RESET_APP_DATA } from "./environment";
 import {
   hasHardwareAsync,
@@ -28,26 +28,26 @@ export async function initializeApp() {
     // Check if we should reset app data based on environment variable
     // Only reset once per session to avoid infinite loops
     if (SHOULD_RESET_APP_DATA && !hasResetInThisSession) {
-      console.log(
+      devLog(
         "EXPO_PUBLIC_RESET_APP_DATA is set - resetting app to clean state (once per session)",
       );
       await resetAppToCleanState();
       hasResetInThisSession = true;
-      console.log("App reset completed - continuing with initialization");
+      devLog("App reset completed - continuing with initialization");
     } else if (SHOULD_RESET_APP_DATA && hasResetInThisSession) {
-      console.log(
+      devLog(
         "Reset already performed in this session - skipping duplicate reset",
       );
     }
 
     // Check if biometric authentication is available
     const hasHardware = await hasHardwareAsync();
-    console.log("Biometric hardware available:", hasHardware);
+    devLog("Biometric hardware available:", hasHardware);
 
     // Prepare local authentication if available
     if (hasHardware) {
       const isEnrolled = await isEnrolledAsync();
-      console.log("Biometrics enrolled:", isEnrolled);
+      devLog("Biometrics enrolled:", isEnrolled);
 
       if (isEnrolled) {
         // Pre-warm the biometric subsystem
@@ -65,12 +65,12 @@ export async function initializeApp() {
     // Only initialize a default profile if we truly have no profiles
     if (profileCount === 0) {
       // Log the state before initialization
-      console.log("Before initialization:", JSON.stringify(appConfig.get()));
+      devLog("Before initialization:", JSON.stringify(appConfig.get()));
 
       maybeInitializeDefaultProfile();
 
       // Log the state after initialization
-      console.log("After initialization:", JSON.stringify(appConfig.get()));
+      devLog("After initialization:", JSON.stringify(appConfig.get()));
     }
 
     // Verify active account validity
@@ -88,7 +88,7 @@ export async function initializeApp() {
       }
 
       if (!accountExists) {
-        console.log("Active account doesn't exist, resetting");
+        devLog("Active account doesn't exist, resetting");
         appConfig.activeAccountId.set(null);
       }
     }
@@ -99,9 +99,9 @@ export async function initializeApp() {
     // Initialize global LibraClient instance
     try {
       initializeLibraClient();
-      console.log("Global LibraClient initialized successfully");
+      devLog("Global LibraClient initialized successfully");
     } catch (error) {
-      console.error("Failed to initialize LibraClient:", error);
+      devError("app-init", error, "Failed to initialize LibraClient");
       // Don't fail app initialization if LibraClient fails
       // It can be initialized later when needed
     }
@@ -109,15 +109,15 @@ export async function initializeApp() {
     // Start the background balance polling service
     try {
       startBalancePolling();
-      console.log("Balance polling service started successfully");
+      devLog("Balance polling service started successfully");
     } catch (error) {
-      console.error("Failed to start balance polling service:", error);
+      devError("app-init", error, "Failed to start balance polling service");
       // Don't fail app initialization if balance polling fails
     }
 
     return true;
   } catch (error) {
-    console.error("Failed to initialize app:", error);
+    devError("app-init", error, "Failed to initialize app");
     return false;
   }
 }

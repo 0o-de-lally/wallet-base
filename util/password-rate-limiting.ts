@@ -1,0 +1,156 @@
+/**
+ * Password Rate Limiting Module
+ *
+ * Implements exponential backoff for password verification attempts to prevent
+ * brute force attacks. Uses secure storage to maintain attempt counters
+ * and lockout timestamps.
+ */
+
+import { getValue, saveValue, deleteValue } from "./secure-store";
+import { devError, devLog } from "./error-utils";
+
+interface AttemptRecord {
+  count: number;
+  lastAttempt: number;
+  lockoutUntil?: number;
+}
+
+// Rate limiting configuration
+const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5;
+const INITIAL_LOCKOUT_DURATION = 30000; // 30 seconds
+const MAX_LOCKOUT_DURATION = 300000; // 5 minutes
+const LOCKOUT_MULTIPLIER = 2;
+
+const ATTEMPT_RECORD_KEY = "password_attempt_record";
+
+/**
+ * Gets the current attempt record from secure storage
+ */
+async function getAttemptRecord(): Promise<AttemptRecord> {
+  try {
+    const recordJson = await getValue(ATTEMPT_RECORD_KEY);
+    if (recordJson) {
+      return JSON.parse(recordJson);
+    }
+  } catch (error) {
+    devError("password-rate-limiting", error, "Error reading attempt record");
+  }
+
+  // Return default record if none exists or error occurred
+  return {
+    count: 0,
+    lastAttempt: 0,
+  };
+}
+
+/**
+ * Saves the attempt record to secure storage
+ */
+async function saveAttemptRecord(record: AttemptRecord): Promise<void> {
+  try {
+    await saveValue(ATTEMPT_RECORD_KEY, JSON.stringify(record));
+  } catch (error) {
+    devError("password-rate-limiting", error, "Error saving attempt record");
+    // Don't throw - rate limiting failure shouldn't break the app
+  }
+}
+
+/**
+ * Checks if password attempts are currently locked out
+ * @returns Object with lockout status and remaining time
+ */
+export async function checkLockoutStatus(): Promise<{
+  isLockedOut: boolean;
+  remainingTime: number;
+  attemptsRemaining: number;
+}> {
+  const record = await getAttemptRecord();
+  const now = Date.now();
+
+  // Check if we're in an active lockout period
+  if (record.lockoutUntil && now < record.lockoutUntil) {
+    return {
+      isLockedOut: true,
+      remainingTime: record.lockoutUntil - now,
+      attemptsRemaining: 0,
+    };
+  }
+
+  // If lockout period has expired, reset the attempt count
+  if (record.lockoutUntil && now >= record.lockoutUntil) {
+    const resetRecord: AttemptRecord = {
+      count: 0,
+      lastAttempt: 0,
+    };
+    await saveAttemptRecord(resetRecord);
+
+    return {
+      isLockedOut: false,
+      remainingTime: 0,
+      attemptsRemaining: MAX_ATTEMPTS_BEFORE_LOCKOUT,
+    };
+  }
+
+  return {
+    isLockedOut: false,
+    remainingTime: 0,
+    attemptsRemaining: Math.max(0, MAX_ATTEMPTS_BEFORE_LOCKOUT - record.count),
+  };
+}
+
+/**
+ * Records a failed password attempt and applies lockout if necessary
+ * @returns Updated lockout status
+ */
+export async function recordFailedAttempt(): Promise<{
+  isLockedOut: boolean;
+  remainingTime: number;
+  attemptsRemaining: number;
+}> {
+  const record = await getAttemptRecord();
+  const now = Date.now();
+
+  // Increment attempt count
+  const newCount = record.count + 1;
+
+  const newRecord: AttemptRecord = {
+    count: newCount,
+    lastAttempt: now,
+  };
+
+  // Check if we need to apply lockout
+  if (newCount >= MAX_ATTEMPTS_BEFORE_LOCKOUT) {
+    // Calculate lockout duration with exponential backoff
+    const lockoutDuration = Math.min(
+      INITIAL_LOCKOUT_DURATION *
+        Math.pow(
+          LOCKOUT_MULTIPLIER,
+          Math.floor(newCount / MAX_ATTEMPTS_BEFORE_LOCKOUT) - 1,
+        ),
+      MAX_LOCKOUT_DURATION,
+    );
+
+    newRecord.lockoutUntil = now + lockoutDuration;
+
+    devLog(
+      `Password lockout activated for ${lockoutDuration}ms after ${newCount} failed attempts`,
+    );
+  }
+
+  await saveAttemptRecord(newRecord);
+
+  return checkLockoutStatus();
+}
+
+/**
+ * Records a successful password attempt and resets the counter
+ */
+export async function recordSuccessfulAttempt(): Promise<void> {
+  try {
+    // Clear the attempt record on successful authentication
+    await deleteValue(ATTEMPT_RECORD_KEY);
+  } catch (error) {
+    devError("password-rate-limiting", error, "Error clearing attempt record");
+    // Don't throw - this is not critical for functionality
+  }
+}

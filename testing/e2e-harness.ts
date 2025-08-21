@@ -1,5 +1,7 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
+import { secureError } from "../util/error-utils";
+
 async function waitForDeviceBoot() {
   // Wait until device is recognized
   spawnSync("adb", ["wait-for-device"], { stdio: "inherit" });
@@ -101,7 +103,7 @@ async function main() {
     await spawnMaestroTest();
   } catch (err) {
     killAll();
-    console.error(err);
+    secureError(err);
     process.exit(1);
   }
   killAll();
@@ -109,6 +111,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  secureError(err);
   process.exit(1);
 });

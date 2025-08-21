@@ -7,12 +7,12 @@ import { PinInputModal } from "../pin-input/PinInputModal";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { PinRotationFlow } from "../pin-input/PinRotationFlow";
 import { PinOperationsSection } from "./PinOperationsSection";
-import { PinRotationProgressDisplay } from "./PinRotationProgress";
+import { PasswordRotationProgressDisplay } from "./PinRotationProgress";
 import { usePinManagement } from "./hooks/usePinManagement";
-import { usePinRotation } from "./hooks/usePinRotation";
+import { usePasswordRotation } from "./hooks/usePinRotation";
 
 /**
- * Main PIN management container component
+ * Main password / (legacy PIN) management container component
  */
 const PinManagementContainer = memo(() => {
   const {
@@ -39,11 +39,11 @@ const PinManagementContainer = memo(() => {
 
   const {
     rotationProgress,
-    handleVerifyPin,
-    validateOldPin,
+    handleVerifyPassword,
+    validateOldPassword,
     executeRotation,
     getRotationMessage,
-  } = usePinRotation();
+  } = usePasswordRotation();
 
   const { showAlert } = useModal();
 
@@ -54,13 +54,13 @@ const PinManagementContainer = memo(() => {
     async (pin: string): Promise<boolean> => {
       setLoading(true);
       try {
-        return await handleVerifyPin(pin);
+        return await handleVerifyPassword(pin);
       } finally {
         setLoading(false);
         updateModalState({ pinModalVisible: false });
       }
     },
-    [handleVerifyPin, setLoading, updateModalState],
+    [handleVerifyPassword, setLoading, updateModalState],
   );
 
   /**
@@ -71,7 +71,10 @@ const PinManagementContainer = memo(() => {
       setLoading(true);
 
       try {
-        const isValid = await validateOldPin(oldPinValue, accountsWithData);
+        const isValid = await validateOldPassword(
+          oldPinValue,
+          accountsWithData,
+        );
         if (isValid) {
           // Store the old PIN for re-encryption later
           setOldPin(oldPinValue);
@@ -86,7 +89,13 @@ const PinManagementContainer = memo(() => {
         setLoading(false);
       }
     },
-    [validateOldPin, accountsWithData, setOldPin, updateModalState, setLoading],
+    [
+      validateOldPassword,
+      accountsWithData,
+      setOldPin,
+      updateModalState,
+      setLoading,
+    ],
   );
 
   /**
@@ -144,7 +153,7 @@ const PinManagementContainer = memo(() => {
       if (success) {
         // Update pin exists state
         setPinExists(true);
-        showAlert("Success", "PIN created successfully!");
+        showAlert("Success", "Password created successfully!");
       }
 
       // Reset the operation
@@ -207,7 +216,7 @@ const PinManagementContainer = memo(() => {
     <View style={styles.container}>
       {/* Show PIN rotation progress inline when active */}
       {showRotationProgress && (
-        <PinRotationProgressDisplay
+        <PasswordRotationProgressDisplay
           progress={rotationProgress}
           onDismiss={handleDismissProgress}
         />
@@ -234,12 +243,14 @@ const PinManagementContainer = memo(() => {
         }
         purpose="retrieve"
         actionTitle={
-          currentOperation === "rotate" ? "Verify Current PIN" : "Verify PIN"
+          currentOperation === "rotate"
+            ? "Verify Current Secret"
+            : "Verify Password"
         }
         actionSubtitle={
           currentOperation === "rotate"
-            ? "Enter your current PIN to begin the PIN change process"
-            : "Enter your PIN to verify it's correct"
+            ? "Enter your current secret (PIN or password) to begin the change process"
+            : "Enter your password to verify it's correct"
         }
       />
 
@@ -261,7 +272,7 @@ const PinManagementContainer = memo(() => {
       {/* Confirmation Modal for PIN Rotation */}
       <ConfirmationModal
         visible={rotatePinModalVisible}
-        title="Rotate PIN"
+        title="Change Password"
         message={getRotationMessage(accountsWithData)}
         confirmText="Continue"
         onConfirm={confirmRotatePin}

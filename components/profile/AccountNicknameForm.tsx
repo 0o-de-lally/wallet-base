@@ -1,6 +1,7 @@
 import React, { memo, useState } from "react";
 import { View, Text, Alert } from "react-native";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { FormInput } from "../common/FormInput";
 import { ActionButton } from "../common/ActionButton";
 import { updateAccountNickname } from "../../util/app-config-store";
@@ -60,7 +61,7 @@ export const AccountNicknameForm = memo(
           setError("Failed to update nickname. Account not found.");
         }
       } catch (err) {
-        console.error("Error updating nickname:", err);
+        devError("Account nickname update", err);
         setError("An unexpected error occurred while updating the nickname.");
       } finally {
         setIsLoading(false);

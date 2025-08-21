@@ -2,6 +2,7 @@ import React, { memo, useState, useEffect, useRef, useCallback } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
 import { styles, colors, namedColors } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
+import { useCriticalDataProtection } from "../../hooks/use-screenshot-protection";
 
 // Configuration for auto-hiding revealed values
 const AUTO_HIDE_DELAY_MS = 30 * 1000; // 30 seconds
@@ -38,6 +39,8 @@ export const RevealStatusUI = memo(
     onCancelReveal,
     onClearRevealedValue,
   }: RevealStatusUIProps) => {
+    // Critical data protection - prevents screenshots when mnemonic is revealed
+    useCriticalDataProtection("RevealStatusUI");
     const [waitTimeDisplay, setWaitTimeDisplay] = useState("");
     const [expiryTimeDisplay, setExpiryTimeDisplay] = useState("");
     const [hideCountdown, setHideCountdown] = useState<number>(

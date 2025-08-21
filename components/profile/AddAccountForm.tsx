@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Text } from "react-native";
 import { styles } from "../../styles/styles";
+import { devLog } from "../../util/error-utils";
 import { getProfileForAccount } from "../../util/app-config-store";
 import ConfirmationModal from "../modal/ConfirmationModal";
 import { FormInput } from "../common/FormInput";
@@ -108,15 +109,15 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
 
   // Profile selection handler - Simplified and more direct
   const handleProfileSelect = (profile: string) => {
-    console.log("Profile selected in handler:", profile);
+    devLog("Profile selected in handler:", profile);
     setSelectedProfile(profile);
     setError(null); // Clear errors on profile change
   };
 
   // Debug the current selection state
   useEffect(() => {
-    console.log("Current selected profile:", selectedProfile);
-    console.log("Available profiles:", profileNames);
+    devLog("Current selected profile:", selectedProfile);
+    devLog("Available profiles:", profileNames);
   }, [selectedProfile, profileNames]);
 
   return (

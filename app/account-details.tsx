@@ -7,8 +7,12 @@ import { HistoricalTransactions } from "../components/transaction/HistoricalTran
 import { AccountNotFoundCard } from "../components/transaction/AccountNotFoundCard";
 import { appConfig, type AccountState } from "../util/app-config-store";
 import { shortenAddress } from "../util/format-utils";
+import { useFinancialDataProtection } from "../hooks/use-screenshot-protection";
 
 export default function AccountDetailsScreen() {
+  // Financial data protection - prevents screenshots of account details and balances
+  useFinancialDataProtection(true, "AccountDetailsScreen");
+
   const { accountId, profileName } = useLocalSearchParams<{
     accountId: string;
     profileName: string;

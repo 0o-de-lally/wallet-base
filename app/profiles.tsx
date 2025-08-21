@@ -33,7 +33,7 @@ const ProfilesScreen = observer(() => {
   }
 
   return (
-    <SetupGuard requiresPin={true} requiresAccount={false}>
+    <SetupGuard requiresPassword={true} requiresAccount={false}>
       <Stack.Screen
         options={{
           title: "Profile Management",

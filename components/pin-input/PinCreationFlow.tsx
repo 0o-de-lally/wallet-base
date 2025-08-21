@@ -4,10 +4,14 @@ import { Modal, View, Text } from "react-native";
 import { styles } from "../../styles/styles";
 import { ActionButton } from "../common/ActionButton";
 import { PinInputField } from "./PinInputField";
-import { hashPin, validatePin } from "../../util/pin-security";
-import { saveValue } from "../../util/secure-store";
+import {
+  storePasswordHash,
+  validatePasswordPolicy,
+} from "../../util/password-security";
+import { devError } from "../../util/error-utils";
 import { useModal } from "../../context/ModalContext";
 import { refreshSetupStatus } from "../../util/setup-state";
+import { useAuthenticationProtection } from "../../hooks/use-screenshot-protection";
 
 interface PinCreationFlowProps {
   visible: boolean;
@@ -18,6 +22,9 @@ interface PinCreationFlowProps {
 
 export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
   ({ visible, onComplete, onCancel, showSuccessAlert = true }) => {
+    // Authentication protection - prevents screenshots during PIN creation
+    useAuthenticationProtection("PinCreationFlow");
+
     const [step, setStep] = useState<"create" | "confirm">("create");
     const [pin, setPin] = useState("");
     const [confirmPin, setConfirmPin] = useState("");
@@ -51,44 +58,48 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
     }, []);
 
     const validateAndProceed = useCallback(() => {
-      if (!validatePin(pin)) {
-        setError("PIN must be exactly 6 digits");
+      if (!validatePasswordPolicy(pin)) {
+        setError("Password must be at least 8 characters");
         return;
       }
-
       setStep("confirm");
     }, [pin]);
 
     const createPin = useCallback(async () => {
       if (pin !== confirmPin) {
-        setError("PINs do not match. Please try again.");
+        setError("Passwords do not match. Please try again.");
         return;
       }
 
+      if (!validatePasswordPolicy(pin)) {
+        setError("Password must be at least 8 characters");
+        return;
+      }
+
+      setIsCreating(true);
+      // set a timeout to simulate async operation
+      setTimeout(() => {}, 100);
+
       try {
-        setIsCreating(true);
         setError(null);
-
-        // Hash the PIN and store it
-        const hashedPin = await hashPin(pin);
-        await saveValue("user_pin", JSON.stringify(hashedPin));
-
-        // Clear PIN from memory
+        const success = await storePasswordHash(pin);
+        if (!success) {
+          throw new Error("Failed to store password");
+        }
         setPin("");
         setConfirmPin("");
-
-        // Refresh setup status to trigger UI updates
         refreshSetupStatus();
-
         if (showSuccessAlert) {
-          showAlert("PIN Created", "Your PIN has been created successfully.");
+          showAlert(
+            "Password Created",
+            "Your password has been created successfully.",
+          );
         }
-
-        resetState();
         onComplete(true);
+        resetState();
       } catch (error) {
-        console.error("Error creating PIN:", error);
-        setError("Failed to create PIN. Please try again.");
+        devError("pin-creation", error, "Error creating password");
+        setError("Failed to create password. Please try again.");
         setIsCreating(false);
       }
     }, [pin, confirmPin, showSuccessAlert, showAlert, resetState, onComplete]);
@@ -101,20 +112,21 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
 
     const renderCreateStep = () => (
       <>
-        <Text style={styles.modalTitle}>Create Your PIN</Text>
+        <Text style={styles.modalTitle}>Create Your Password</Text>
         <Text style={styles.modalSubtitle}>
-          Choose a 6-digit PIN to secure your wallet. You&apos;ll need this PIN
-          to access your accounts and sensitive operations.
+          Choose a strong password (minimum 8 characters) to secure your wallet.
+          You&apos;ll need this password to access sensitive operations.
         </Text>
 
         <PinInputField
-          label="Enter 6-digit PIN:"
+          label="Enter password:"
           value={pin}
           onChangeText={handlePinChange}
-          placeholder="******"
+          placeholder="********"
           error={error || undefined}
           autoFocus={true}
-          maxLength={6}
+          maxLength={128}
+          showToggle={true}
         />
 
         <View style={styles.modalButtons}>
@@ -128,8 +140,8 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           <ActionButton
             text="Next"
             onPress={validateAndProceed}
-            disabled={pin.length !== 6}
-            accessibilityLabel="Proceed to confirm PIN"
+            disabled={!validatePasswordPolicy(pin)}
+            accessibilityLabel="Proceed to confirm password"
           />
         </View>
       </>
@@ -137,19 +149,20 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
 
     const renderConfirmStep = () => (
       <>
-        <Text style={styles.modalTitle}>Confirm Your PIN</Text>
+        <Text style={styles.modalTitle}>Confirm Your Password</Text>
         <Text style={styles.modalSubtitle}>
-          Please enter your PIN again to confirm it.
+          Please enter your password again to confirm it.
         </Text>
 
         <PinInputField
-          label="Confirm 6-digit PIN:"
+          label="Confirm password:"
           value={confirmPin}
           onChangeText={handleConfirmPinChange}
-          placeholder="******"
+          placeholder="********"
           error={error || undefined}
           autoFocus={true}
-          maxLength={6}
+          maxLength={128}
+          showToggle={true}
         />
 
         <View style={styles.modalButtons}>
@@ -162,11 +175,11 @@ export const PinCreationFlow: React.FC<PinCreationFlowProps> = memo(
           />
 
           <ActionButton
-            text="Create PIN"
+            text="Confirm Password"
             onPress={createPin}
-            disabled={confirmPin.length !== 6}
+            disabled={!validatePasswordPolicy(confirmPin)}
             isLoading={isCreating}
-            accessibilityLabel="Create PIN"
+            accessibilityLabel="Confirm password"
           />
         </View>
       </>

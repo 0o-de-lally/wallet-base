@@ -24,7 +24,7 @@ This feature allows you to completely wipe all application data to simulate a cl
 When the reset is triggered, the following data is completely removed:
 
 - **Secure Storage**: All sensitive data stored with `expo-secure-store` including:
-  - User PINs and authentication data
+  - User passwords and authentication data
   - Private keys and wallet data
   - User tokens and settings
   - All account-specific secure data

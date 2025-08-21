@@ -6,6 +6,7 @@ import { RevealStatusUI } from "../reveal/RevealStatusUI";
 import { PinInputModal } from "../pin-input/PinInputModal";
 import { observer } from "@legendapp/state/react";
 import { formatWaitingPeriod } from "../../util/reveal-controller";
+import { useCriticalDataProtection } from "../../hooks/use-screenshot-protection";
 
 interface SecretRevealProps {
   accountId: string;
@@ -14,6 +15,9 @@ interface SecretRevealProps {
 
 export const SecretReveal = memo(
   observer(({ accountId, accountName }: SecretRevealProps) => {
+    // Critical data protection - prevents screenshots during mnemonic reveal
+    useCriticalDataProtection("SecretReveal");
+
     const {
       storedValue,
       isLoading,

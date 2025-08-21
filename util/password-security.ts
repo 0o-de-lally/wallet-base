@@ -1,0 +1,516 @@
+/**
+ * Password Security Module
+ *
+ * This module implements password handling with current Expo/React Native constraints in mind.
+ * It balances security and cross-platform compatibility within the existing toolchain.
+ *
+ * Current approach:
+ * - Uses JavaScript cryptographic libraries (@noble/hashes) for Scrypt implementation
+ *   as Expo doesn't provide direct OS-level keychain access for cryptographic operations
+ * - Implements best practices within JS constraints (constant-time comparisons,
+ *   proper key derivation with salt and parameters)
+ *
+ * Security considerations:
+ * - No sensitive data is ever stored in plaintext - all secrets are encrypted
+ * - All operations involving secrets require explicit password entry, separate from the OS
+ *   authentication. This is intentionally burdensome but necessary for a crypto wallet
+ *   where security cannot be compromised for convenience
+ * - The original password is never stored anywhere
+ * - We minimize password retention in memory and attempt to clear sensitive data when possible,
+ *   though JavaScript's garbage collection makes this imperfect
+ * - We use secure random salt generation via native crypto API (which uses OS-level randomness)
+ * - Constant-time comparison prevents timing attacks, though we recognize this is a
+ *   secondary defense as most attacks would target the application layer directly
+ * - We acknowledge that an attacker with debug access to the device/application can
+ *   bypass most client-side protections regardless of implementation details
+ *
+ * Known limitations:
+ * - Cryptographic operations (Scrypt, hash comparisons) happen in JavaScript
+ *   rather than at the OS level or in native code
+ * - Memory management in JavaScript is not as controllable as in lower-level languages
+ * - JavaScript strings are immutable and may leave copies in memory until garbage collection
+ *
+ * Future improvements:
+ * - Move cryptographic operations to OS-level APIs when Expo support improves
+ * - Consider native modules (Rust/C++ via JSI) for sensitive cryptographic operations
+ * - Evaluate WebAssembly for improved performance and security isolation
+ *
+ * @module pin_security
+ */
+import { scrypt } from "@noble/hashes/scrypt";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { gcm } from "@noble/ciphers/aes";
+import { getRandomBytes } from "./random";
+import { constantTimeEqual } from "./security-utils";
+import { getValue, saveValue } from "./secure-store";
+import {
+  checkLockoutStatus,
+  recordFailedAttempt,
+  recordSuccessfulAttempt,
+} from "./password-rate-limiting";
+import { devError } from "./error-utils";
+
+// Define a custom type for the hashed password
+type HashedPassword = {
+  salt: string;
+  hash: string;
+  N: number; // Scrypt cost parameter
+  r: number; // Scrypt block size parameter
+  p: number; // Scrypt parallelization parameter
+  version: number; // Always required - current version
+};
+
+// Current password version - always saved with stored passwords
+const CURRENT_SECRET_VERSION = 2; // password >=8 chars
+
+// Scrypt parameters for secure password hashing (matching crypto.ts)
+const SCRYPT_CONFIG = {
+  N: 8192, // Cost parameter (8K, 4x faster)
+  r: 8, // Block size parameter
+  p: 1, // Parallelization parameter
+  dkLen: 32, // Derived key length (256 bits)
+};
+
+/**
+ * Generates a secure key from a password using Scrypt (memory-hard function)
+ *
+ * @param passwordData - The password as Uint8Array
+ * @param salt - The salt for key derivation as Uint8Array
+ * @returns Key suitable for AES encryption
+ */
+function generateKeyFromPassword(
+  passwordData: Uint8Array,
+  salt: Uint8Array,
+): Uint8Array {
+  // Use Scrypt for memory-hard key derivation with provided salt
+  return scrypt(passwordData, salt, SCRYPT_CONFIG);
+}
+
+/**
+ * Encrypts data using a password.
+ * Uses AES-GCM for secure encryption with per-record salt.
+ *
+ * @param value - The data to encrypt as Uint8Array
+ * @param password - The password as Uint8Array
+ * @returns The encrypted data as Uint8Array (salt + nonce + ciphertext)
+ */
+function encryptWithPassword(
+  value: Uint8Array,
+  password: Uint8Array,
+): Uint8Array {
+  if (!value || value.length === 0) return new Uint8Array(0);
+
+  try {
+    // Generate a random salt for this encryption (16 bytes)
+    const salt = getRandomBytes(16);
+
+    // Generate a key from the password and salt
+    const keyBytes = generateKeyFromPassword(password, salt);
+
+    // Generate a random nonce/IV using our random utility
+    const nonce = getRandomBytes(12); // 12-byte nonce is standard for GCM
+
+    // Use AES-GCM for authenticated encryption
+    const cipher = gcm(keyBytes, nonce);
+    const ciphertext = cipher.encrypt(value);
+
+    // Combine salt + nonce + ciphertext for storage
+    const result = new Uint8Array(
+      salt.length + nonce.length + ciphertext.length,
+    );
+    result.set(salt, 0);
+    result.set(nonce, salt.length);
+    result.set(ciphertext, salt.length + nonce.length);
+
+    return result;
+  } catch (e) {
+    devError("password-security", e, "Encryption error");
+    return new Uint8Array(0);
+  }
+}
+
+/**
+ * Decrypts a value that was encrypted with a password.
+ * Uses AES-GCM authentication tag for integrity verification.
+ *
+ * @param encryptedValue - The encrypted data as Uint8Array (salt + nonce + ciphertext)
+ * @param password - The password as Uint8Array
+ * @returns An object with the decrypted data and verification status,
+ *          or null if decryption fails
+ */
+function decryptWithPassword(
+  encryptedValue: Uint8Array,
+  password: Uint8Array,
+): { value: Uint8Array; verified: boolean } | null {
+  if (!encryptedValue || encryptedValue.length < 28) {
+    // 16 (salt) + 12 (nonce) minimum
+    return null;
+  }
+
+  try {
+    // Extract salt (first 16 bytes), nonce (next 12 bytes), and ciphertext (rest)
+    const salt = encryptedValue.slice(0, 16);
+    const nonce = encryptedValue.slice(16, 28);
+    const ciphertext = encryptedValue.slice(28);
+
+    // Generate key from password and extracted salt
+    const keyBytes = generateKeyFromPassword(password, salt);
+
+    // Create AES-GCM decipher
+    const decipher = gcm(keyBytes, nonce);
+
+    // Decrypt data - AES-GCM will verify integrity automatically
+    let decryptedBytes;
+    try {
+      decryptedBytes = decipher.decrypt(ciphertext);
+    } catch {
+      // AES-GCM authentication failed - wrong password or corrupted data
+      return { value: new Uint8Array(0), verified: false };
+    }
+
+    // If we reach here, AES-GCM authentication passed
+    return { value: decryptedBytes, verified: true };
+  } catch (error) {
+    devError("password-security", error, "Decryption error");
+    return null;
+  }
+}
+
+/**
+ * Helper functions for string conversion.
+ */
+function stringToUint8Array(str: string): Uint8Array {
+  return new TextEncoder().encode(str);
+}
+
+export function uint8ArrayToBase64(array: Uint8Array): string {
+  return btoa(String.fromCharCode(...array));
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+}
+
+/**
+ * Hashes a password using Scrypt for secure storage and verification.
+ * @param password - The password to hash
+ * @returns Promise resolving to the hashed password data
+ */
+async function hashPassword(password: string): Promise<HashedPassword> {
+  try {
+    // Generate a random salt (16 bytes)
+    const saltBytes = getRandomBytes(16);
+    const salt = bytesToHex(saltBytes);
+
+    // Use Noble's Scrypt implementation to derive a key from the password
+    const encoder = new TextEncoder();
+    const passwordBytes = encoder.encode(password);
+    const derivedKey = scrypt(passwordBytes, hexToBytes(salt), SCRYPT_CONFIG);
+
+    // Convert to hex string
+    const hash = bytesToHex(derivedKey);
+
+    return {
+      salt,
+      hash,
+      N: SCRYPT_CONFIG.N,
+      r: SCRYPT_CONFIG.r,
+      p: SCRYPT_CONFIG.p,
+      version: CURRENT_SECRET_VERSION,
+    };
+  } catch (error) {
+    devError("password-security", error, "Password hashing failed");
+    throw new Error("Failed to hash password");
+  }
+}
+
+/**
+ * Securely compares two hashed passwords using constant-time comparison.
+ * @param storedHashedPassword Stored hashed password
+ * @param inputPassword Raw password input to verify
+ * @returns Promise resolving to true if the passwords match, false otherwise
+ */
+async function comparePasswords(
+  storedHashedPassword: HashedPassword,
+  inputPassword: string,
+): Promise<boolean> {
+  try {
+    // Generate hash from input password using the same salt and Scrypt parameters
+    const encoder = new TextEncoder();
+    const passwordBytes = encoder.encode(inputPassword);
+    const derivedKey = scrypt(
+      passwordBytes,
+      hexToBytes(storedHashedPassword.salt),
+      {
+        N: storedHashedPassword.N,
+        r: storedHashedPassword.r,
+        p: storedHashedPassword.p,
+        dkLen: 32, // 32 bytes = 256 bits
+      },
+    );
+
+    const hash = bytesToHex(derivedKey);
+
+    // Use constant-time comparison to prevent timing attacks
+    return constantTimeEqual(hash, storedHashedPassword.hash);
+  } catch (error) {
+    devError("password-security", error, "Password comparison failed");
+    return false;
+  }
+}
+
+/**
+ * Processes a password operation with some memory clearing (limited by JavaScript constraints)
+ * @param password - The password to use (will be attempted to be cleared after use)
+ * @param operation - The async operation to perform with the password
+ * @returns Promise resolving to the operation result
+ */
+async function processWithPassword<T>(
+  password: string,
+  operation: (password: string) => Promise<T>,
+): Promise<T> {
+  try {
+    // Execute the operation with the password
+    return await operation(password);
+  } finally {
+    // Best-effort memory clearing within JavaScript's limitations
+    // This doesn't guarantee the password is fully removed from memory
+    // due to JavaScript's garbage collection and string immutability
+    password = "";
+  }
+}
+
+// /**
+//  * Stores a password hash securely after validating it meets requirements
+//  * @param password - The password to store (will be cleared after use)
+//  * @returns Promise resolving to true if successful, false otherwise
+//  */
+// export async function storePasswordHash(password: string): Promise<boolean> {
+//   return processWithPassword(password, async (securePassword) => {
+//     try {
+//       // Hash the password using Scrypt
+//       const hashedPin = await hashPin(securePin);
+
+//       // Store the hash as JSON in secure storage
+//       const hashedPinJson = JSON.stringify(hashedPin);
+//       await saveValue("user_pin", hashedPinJson);
+
+//       return true;
+//     } catch (error) {
+//       devError("password-security", error, "Failed to store password hash");
+//       return false;
+//     }
+//   });
+// }
+
+/**
+ * Validates a password against the stored hash with rate limiting
+ * @param password - The password to validate (will be cleared after use)
+ * @returns Promise resolving to object with validation result and lockout info
+ */
+async function validatePasswordWithRateLimit(password: string): Promise<{
+  isValid: boolean;
+  isLockedOut: boolean;
+  remainingTime: number;
+  attemptsRemaining: number;
+}> {
+  return processWithPassword(password, async (securePassword) => {
+    try {
+      // Check if we're currently locked out
+      const lockoutStatus = await checkLockoutStatus();
+
+      if (lockoutStatus.isLockedOut) {
+        return {
+          isValid: false,
+          isLockedOut: true,
+          remainingTime: lockoutStatus.remainingTime,
+          attemptsRemaining: 0,
+        };
+      }
+
+      const savedPasswordJson = await getValue("user_password");
+
+      if (!savedPasswordJson) {
+        // Record failed attempt for missing password
+        const newLockoutStatus = await recordFailedAttempt();
+        return {
+          isValid: false,
+          isLockedOut: newLockoutStatus.isLockedOut,
+          remainingTime: newLockoutStatus.remainingTime,
+          attemptsRemaining: newLockoutStatus.attemptsRemaining,
+        };
+      }
+
+      // Parse the stored password from JSON
+      const storedHashedPassword: HashedPassword =
+        JSON.parse(savedPasswordJson);
+
+      // Verify password using Scrypt comparison
+      const isValid = await comparePasswords(
+        storedHashedPassword,
+        securePassword,
+      );
+
+      if (isValid) {
+        // Record successful attempt (clears rate limiting)
+        await recordSuccessfulAttempt();
+        return {
+          isValid: true,
+          isLockedOut: false,
+          remainingTime: 0,
+          attemptsRemaining: 0,
+        };
+      } else {
+        // Record failed attempt
+        const newLockoutStatus = await recordFailedAttempt();
+        return {
+          isValid: false,
+          isLockedOut: newLockoutStatus.isLockedOut,
+          remainingTime: newLockoutStatus.remainingTime,
+          attemptsRemaining: newLockoutStatus.attemptsRemaining,
+        };
+      }
+    } catch (error) {
+      devError("password-security", error, "Password validation failed");
+      // On error, record as failed attempt for security
+      const newLockoutStatus = await recordFailedAttempt();
+      return {
+        isValid: false,
+        isLockedOut: newLockoutStatus.isLockedOut,
+        remainingTime: newLockoutStatus.remainingTime,
+        attemptsRemaining: newLockoutStatus.attemptsRemaining,
+      };
+    }
+  });
+}
+
+/**
+ * Stores a password hash securely after validating it meets requirements
+ * @param password - The password to store (will be cleared after use)
+ * @returns Promise resolving to true if successful, false otherwise
+ */
+export async function storePasswordHash(password: string): Promise<boolean> {
+  return processWithPassword(password, async (securePassword) => {
+    try {
+      // Validate password policy
+      if (!validatePasswordPolicy(securePassword)) {
+        devError(
+          "password-security",
+          new Error("Password does not meet policy requirements"),
+          "Password does not meet policy requirements",
+        );
+        return false;
+      }
+
+      // Hash the password using Scrypt
+      const hashedPassword = await hashPassword(securePassword);
+
+      // Store the hash as JSON in secure storage
+      const hashedPasswordJson = JSON.stringify(hashedPassword);
+      await saveValue("user_password", hashedPasswordJson);
+
+      return true;
+    } catch (error) {
+      devError("password-security", error, "Failed to store password hash");
+      return false;
+    }
+  });
+}
+
+// Export password functions
+export { hashPassword };
+
+/**
+ * Validates password format (synchronous)
+ * @param password - The password to validate
+ * @returns true if password format is valid, false otherwise
+ */
+
+// Password policy: Minimum 8 chars after trim. Accept any printable characters.
+export function validatePasswordPolicy(password: string): boolean {
+  if (typeof password !== "string") return false;
+  if (password.trim().length < 8) return false;
+  // Reject if contains unprintable control characters
+  if (/[^\x20-\x7E]/.test(password)) return false;
+  return true;
+}
+
+// Main password verification function with rate limiting
+export const verifyStoredPassword = validatePasswordWithRateLimit;
+
+// High-level wrapper functions for data encryption/decryption with password
+export async function secureEncryptWithPassword(
+  data: string,
+  password: string,
+): Promise<string | null> {
+  return processWithPassword(password, async (securePassword) => {
+    try {
+      // Convert data to Uint8Array for encryption
+      const dataBytes = stringToUint8Array(data);
+      const passwordBytes = stringToUint8Array(securePassword);
+
+      // Encrypt using the internal crypto function
+      const encryptedBytes = encryptWithPassword(dataBytes, passwordBytes);
+
+      if (!encryptedBytes || encryptedBytes.length === 0) {
+        devError(
+          "password-security",
+          new Error("Encryption failed - empty result"),
+          "Encryption failed - empty result",
+        );
+        return null;
+      }
+
+      // Convert to base64 for storage
+      return uint8ArrayToBase64(encryptedBytes);
+    } catch (error) {
+      devError("password-security", error, "Encryption failed");
+      return null;
+    }
+  });
+}
+
+export async function secureDecryptWithPassword(
+  encryptedData: string,
+  password: string,
+): Promise<{ value: string; verified: boolean } | null> {
+  return processWithPassword(password, async (securePassword) => {
+    try {
+      // Convert from base64 to Uint8Array
+      const encryptedBytes = base64ToUint8Array(encryptedData);
+      const passwordBytes = stringToUint8Array(securePassword);
+
+      // Decrypt using the internal crypto function
+      const result = decryptWithPassword(encryptedBytes, passwordBytes);
+
+      if (!result) {
+        devError(
+          "password-security",
+          new Error("Decryption failed - null result"),
+          "Decryption failed - null result",
+        );
+        return null;
+      }
+
+      if (!result.verified) {
+        devError(
+          "password-security",
+          new Error("Decryption failed - verification failed"),
+          "Decryption failed - verification failed",
+        );
+        return { value: "", verified: false };
+      }
+
+      // Convert back to string
+      const value = new TextDecoder().decode(result.value);
+      return { value, verified: true };
+    } catch (error) {
+      devError(
+        "password-security",
+        error,
+        "Decryption failed - possibly due to incorrect password",
+      );
+      return null;
+    }
+  });
+}
