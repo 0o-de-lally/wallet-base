@@ -48,7 +48,7 @@ async function spawnExpoAndroid() {
     
     if (isCI) {
       // In CI, use expo directly with non-interactive flags
-      expoProc = spawn("npx", ["expo", "run:android", "--no-install"], {
+      expoProc = spawn("bunx", ["expo", "run:android", "--no-install"], {
         stdio: ["pipe", "pipe", "inherit"],
         env: { ...process.env, EXPO_NO_PROMPTS: "true" },
       });
