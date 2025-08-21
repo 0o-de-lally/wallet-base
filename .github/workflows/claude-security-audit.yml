@@ -20,6 +20,9 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Create reports directory
+      run: mkdir -p .docs/reports
+
     - name: Run Claude Security Audit
       uses: anthropics/claude-code-action@beta
       with:
