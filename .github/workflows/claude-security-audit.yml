@@ -25,6 +25,7 @@ jobs:
       with:
         mode: agent
         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         custom_instructions: |
           With /security-audit-specialist
           Conduct a comprehensive security audit of this cryptocurrency wallet application.
