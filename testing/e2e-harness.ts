@@ -45,7 +45,7 @@ function spawnEmulator() {
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
     const isCI = process.env.CI === "true";
-    
+
     if (isCI) {
       // In CI, use expo directly with non-interactive flags
       expoProc = spawn("bunx", ["expo", "run:android", "--no-install"], {
