@@ -60,31 +60,39 @@ The main test case (`maestro/home.yaml:testing/e2e-harness.ts:74`) validates:
 
 ### Comprehensive Test Harness Solution
 
-Our test harness addresses mobile blockchain testing complexity through a **5-stage orchestrated process**:
+Our test harness addresses mobile blockchain testing complexity through an **optimized 5-stage orchestrated process**:
 
-1. **Build the App** - Compile and bundle the React Native application
-2. **Start an Emulator** - Launch Android Virtual Device with proper configuration  
-3. **Install App on Emulator** - Deploy the built application to the running emulator
+1. **Check Emulator Availability** - Verify that Android Virtual Devices exist without starting them
+2. **Build the App** - Compile and bundle the React Native application
+3. **Start an Emulator** - Launch Android Virtual Device after successful build
 4. **Drive the App** - Execute user interaction flows via Maestro automation
 5. **Start Ephemeral Twin Blockchains** - Spin up Docker-based blockchain nodes for API testing
 
+This resource-efficient ordering ensures the emulator doesn't consume system resources during the build process and fails fast if no emulators are available.
+
 ### E2E Test Harness (`testing/e2e-harness.ts`)
 
-The test harness orchestrates these components in sequence:
+The test harness orchestrates these components in optimized sequence:
 
-1. **Android Emulator Management** (`testing/e2e-harness.ts:30-43`)
-   - Spawns emulator with CI-specific configurations
-   - Handles headless mode for GitHub Actions (`-no-window` flag)
+1. **Emulator Availability Check** (`testing/e2e-harness.ts:32-52`)
+   - Verifies Android Virtual Devices exist using `emulator -list-avds`
+   - Lists available AVDs for transparency
+   - Exits early with clear error messages if no AVDs found
+   - Provides setup guidance for missing emulators
+
+2. **Expo Development Server** (`testing/e2e-harness.ts:70-100`)
+   - Builds Android app first (before starting emulator)
+   - Shows full build logs in stdout for debugging
+   - Monitors for "Android Bundled" completion signal
+   - Uses `bun android` locally, `bunx expo run:android --no-install` in CI
+
+3. **Android Emulator Management** (`testing/e2e-harness.ts:54-68`)
+   - Starts emulator only after successful build
    - Uses dynamic AVD selection (first available)
+   - Handles headless mode for CI (`-no-window` flag)
    - Waits for complete device boot cycle
 
-2. **Expo Development Server** (`testing/e2e-harness.ts:45-70`)
-   - Starts bundler and builds Android app
-   - Monitors stdout for "Android Bundled" completion signal
-   - Automatically installs app on connected emulator
-   - Provides development-mode app deployment
-
-3. **Maestro Test Execution** (`testing/e2e-harness.ts:72-83`)
+4. **Maestro Test Execution** (`testing/e2e-harness.ts:102-113`)
    - Runs Maestro tests against live emulator
    - Executes tests from `./maestro` directory
    - Returns proper exit codes for CI integration

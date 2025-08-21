@@ -29,6 +29,28 @@ process.on("SIGINT", () => {
 });
 process.on("exit", killAll);
 
+function checkEmulatorAvailable(): boolean {
+  try {
+    const result = spawnSync("emulator", ["-list-avds"], { encoding: "utf8" });
+    if (result.error) {
+      console.error("Emulator command not found. Make sure Android SDK is installed and emulator is in PATH.");
+      return false;
+    }
+    
+    const avds = result.stdout.trim();
+    if (!avds) {
+      console.error("No Android Virtual Devices (AVDs) found. Please create an AVD first.");
+      return false;
+    }
+    
+    console.log(`Found AVDs: ${avds.split('\n').join(', ')}`);
+    return true;
+  } catch (error) {
+    console.error("Failed to check emulator availability:", error);
+    return false;
+  }
+}
+
 function spawnEmulator() {
   const isCI = process.env.CI === "true";
   const args = ["-avd", "$(emulator -list-avds | head -n 1)"];
@@ -37,6 +59,7 @@ function spawnEmulator() {
     args.push("-no-window");
   }
 
+  console.log("Starting emulator...");
   emulatorProc = spawn("emulator", args, {
     shell: true,
     stdio: "inherit",
@@ -64,6 +87,7 @@ async function spawnExpoAndroid() {
 
     expoProc.stdout?.on("data", (data: Buffer) => {
       const text = data.toString();
+      process.stdout.write(text); // Forward all output to stdout
       if (text.includes("Android Bundled") && !isResolved) {
         isResolved = true;
         resolve();
@@ -96,10 +120,22 @@ function spawnMaestroTest() {
 }
 
 async function main() {
-  spawnEmulator();
-  await waitForDeviceBoot();
+  // First check if emulator is available
+  console.log("Checking emulator availability...");
+  if (!checkEmulatorAvailable()) {
+    process.exit(1);
+  }
+
   try {
+    // Build the Android app first
+    console.log("Building Android app...");
     await spawnExpoAndroid();
+    
+    // Now start the emulator
+    spawnEmulator();
+    await waitForDeviceBoot();
+    
+    // Run the tests
     await spawnMaestroTest();
   } catch (err) {
     killAll();
