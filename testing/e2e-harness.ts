@@ -44,9 +44,20 @@ function spawnEmulator() {
 
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
-    expoProc = spawn("bun", ["android"], {
-      stdio: ["pipe", "pipe", "inherit"],
-    });
+    const isCI = process.env.CI === "true";
+    
+    if (isCI) {
+      // In CI, use expo directly with non-interactive flags
+      expoProc = spawn("npx", ["expo", "run:android", "--no-install"], {
+        stdio: ["pipe", "pipe", "inherit"],
+        env: { ...process.env, EXPO_NO_PROMPTS: "true" },
+      });
+    } else {
+      // Local development, use bun script
+      expoProc = spawn("bun", ["android"], {
+        stdio: ["pipe", "pipe", "inherit"],
+      });
+    }
     let isResolved = false;
 
     expoProc.stdout?.on("data", (data: Buffer) => {

@@ -39,6 +39,9 @@ jobs:
       - name: bun install
         run: bun install
 
+      - name: Install expo dependencies
+        run: bun expo install --fix
+
       - name: install maestro
         uses: dniHze/maestro-test-action@v1
 
