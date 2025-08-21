@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common/ActionButton";
 import { CopyButton } from "../common/CopyButton";
 import { styles, colors } from "../../styles/styles";
+import { useCriticalDataProtection } from "../../hooks/use-screenshot-protection";
 
 interface GeneratedMnemonicDisplayProps {
   mnemonic: string;
@@ -14,9 +15,12 @@ interface GeneratedMnemonicDisplayProps {
 export const GeneratedMnemonicDisplay: React.FC<
   GeneratedMnemonicDisplayProps
 > = ({ mnemonic, onRegenerate, isLoading = false }) => {
+  // Critical data protection - prevents screenshots and screen recording
+  useCriticalDataProtection("GeneratedMnemonicDisplay");
+
   return (
     <View style={styles.container}>
-      <View style={{ marginBottom: 20 }}>
+      <View style={styles.marginBottom20}>
         <ActionButton
           text="Generate New"
           onPress={onRegenerate}

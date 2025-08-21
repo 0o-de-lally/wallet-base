@@ -23,7 +23,16 @@ export default defineConfig([
   },
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": "error"
+      "@typescript-eslint/no-unused-vars": "error",
+      // Forbid console usage except in error-utils.ts for secure logging
+      "no-console": "error"
+    }
+  },
+  {
+    // Allow console usage only in the secure logging utility
+    files: ["util/error-utils.ts"],
+    rules: {
+      "no-console": "off"
     }
   }
 ]);

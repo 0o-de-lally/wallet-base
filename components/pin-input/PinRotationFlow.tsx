@@ -3,8 +3,11 @@ import { View, Text, Modal } from "react-native";
 import { PinInputField } from "./PinInputField";
 import { ActionButton } from "../common/ActionButton";
 import { styles } from "../../styles/styles";
-import { validatePin, hashPin } from "../../util/pin-security";
-import { saveValue } from "../../util/secure-store";
+import { devError } from "../../util/error-utils";
+import {
+  validatePasswordPolicy,
+  storePasswordHash,
+} from "../../util/password-security";
 import { refreshSetupStatus } from "../../util/setup-state";
 
 interface PinRotationFlowProps {
@@ -69,48 +72,41 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
   );
 
   const validateAndProceed = useCallback(() => {
-    if (!validatePin(pin)) {
-      setError("PIN must be exactly 6 digits");
+    if (!validatePasswordPolicy(pin)) {
+      setError("Password must be at least 8 characters");
       return;
     }
-
     setError(null);
     setStep("confirm");
   }, [pin]);
 
   const createPin = useCallback(async () => {
-    if (!validatePin(pin) || !validatePin(confirmPin)) {
-      setError("PIN must be exactly 6 digits");
+    if (!validatePasswordPolicy(pin) || !validatePasswordPolicy(confirmPin)) {
+      setError("Password must be at least 8 characters");
       setIsCreating(false);
       return;
     }
 
     if (pin !== confirmPin) {
-      setError("PINs do not match");
+      setError("Passwords do not match");
       setIsCreating(false);
       return;
     }
 
     try {
-      // Hash the PIN and store it
-      const hashedPin = await hashPin(pin);
-      await saveValue("user_pin", JSON.stringify(hashedPin));
-
-      // Refresh setup status to trigger UI updates
+      const success = await storePasswordHash(pin);
+      if (!success) {
+        throw new Error("Failed to store password");
+      }
       refreshSetupStatus();
-
-      // Provide the raw PIN to the parent for re-encryption
       const rawPin = pin;
-
-      // Clear PIN from memory
       setPin("");
       setConfirmPin("");
-
       resetState();
       onComplete(true, rawPin);
     } catch (error) {
-      console.error("Error creating PIN:", error);
-      setError("Failed to create PIN. Please try again.");
+      devError("Pin rotation password creation", error);
+      setError("Failed to create password. Please try again.");
       setIsCreating(false);
     }
   }, [pin, confirmPin, resetState, onComplete]);
@@ -131,20 +127,21 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
 
   const renderCreateStep = () => (
     <>
-      <Text style={styles.modalTitle}>Create Your New PIN</Text>
+      <Text style={styles.modalTitle}>Create Your New Password</Text>
       <Text style={styles.modalSubtitle}>
-        Choose a new 6-digit PIN to secure your wallet. All your encrypted data
-        will be re-encrypted with this new PIN.
+        Choose a new password (minimum 8 characters). All encrypted data will be
+        re-encrypted with it.
       </Text>
 
       <PinInputField
-        label="Enter new 6-digit PIN:"
+        label="Enter new password:"
         value={pin}
         onChangeText={handlePinChange}
-        placeholder="******"
+        placeholder="********"
         error={error || undefined}
         autoFocus={true}
-        maxLength={6}
+        maxLength={128}
+        showToggle={true}
       />
 
       <View style={styles.modalButtons}>
@@ -158,8 +155,8 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         <ActionButton
           text="Next"
           onPress={validateAndProceed}
-          disabled={pin.length !== 6}
-          accessibilityLabel="Proceed to confirm new PIN"
+          disabled={!validatePasswordPolicy(pin)}
+          accessibilityLabel="Proceed to confirm new password"
         />
       </View>
     </>
@@ -167,19 +164,20 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
 
   const renderConfirmStep = () => (
     <>
-      <Text style={styles.modalTitle}>Confirm Your New PIN</Text>
+      <Text style={styles.modalTitle}>Confirm Your New Password</Text>
       <Text style={styles.modalSubtitle}>
-        Please enter your new PIN again to confirm it.
+        Please enter your new password again to confirm it.
       </Text>
 
       <PinInputField
-        label="Confirm new PIN:"
+        label="Confirm new password:"
         value={confirmPin}
         onChangeText={handleConfirmPinChange}
-        placeholder="******"
+        placeholder="********"
         error={error || undefined}
         autoFocus={true}
-        maxLength={6}
+        maxLength={128}
+        showToggle={true}
       />
 
       <View style={styles.modalButtons}>
@@ -192,11 +190,11 @@ export const PinRotationFlow: React.FC<PinRotationFlowProps> = ({
         />
 
         <ActionButton
-          text="Rotate PIN"
+          text="Rotate Secret"
           onPress={handleCreatePin}
           isLoading={isCreating}
-          disabled={isCreating || confirmPin.length !== 6}
-          accessibilityLabel="Confirm PIN rotation"
+          disabled={isCreating || !validatePasswordPolicy(confirmPin)}
+          accessibilityLabel="Confirm password rotation"
         />
       </View>
     </>

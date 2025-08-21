@@ -49,7 +49,7 @@ export const Settings: React.FC<SettingsProps> = observer(
             | `/profiles`
             | `/create-account`
             | `/recover-account`
-            | `/pin`,
+            | `/password`,
         );
       },
       [router],
@@ -109,12 +109,12 @@ export const Settings: React.FC<SettingsProps> = observer(
                       }
                       onPress={toggleProfileSwitcher}
                       size="small"
-                      style={{ marginTop: 10 }}
+                      style={styles.marginTop10}
                       accessibilityLabel="Toggle profile switcher"
                     />
                   )}
                 {showProfileSwitcher && (
-                  <View style={{ marginTop: 10 }}>
+                  <View style={styles.marginTop10}>
                     <Dropdown
                       label="Switch to Profile"
                       value={currentProfileName || ""}
@@ -129,18 +129,18 @@ export const Settings: React.FC<SettingsProps> = observer(
             <ActionButton
               text="Add Signing Account"
               onPress={() => navigateToScreen("/recover-account")}
-              style={{ marginTop: 10 }}
+              style={styles.marginTop10}
               accessibilityLabel="Recover an existing account"
             />
             <ActionButton
               text="Add View-Only Account"
               onPress={() => navigateToScreen("/create-account")}
-              style={{ marginTop: 10 }}
+              style={styles.marginTop10}
               accessibilityLabel="Add a new view-only account"
             />
             <ActionButton
               text="Manage Profiles"
-              style={{ marginTop: 10 }}
+              style={styles.marginTop10}
               onPress={() => navigateToScreen("/profiles")}
               accessibilityLabel="View and manage accounts"
             />
@@ -149,8 +149,8 @@ export const Settings: React.FC<SettingsProps> = observer(
           {/* Security */}
           <SectionContainer title="Security" style={styles.listItem}>
             <ActionButton
-              text="Change PIN"
-              onPress={() => navigateToScreen("/pin")}
+              text="Change Password"
+              onPress={() => navigateToScreen("/password")}
               accessibilityLabel="Change your transaction PIN"
             />
           </SectionContainer>
@@ -173,13 +173,13 @@ export const Settings: React.FC<SettingsProps> = observer(
                   );
                 }
               }}
-              style={{ marginTop: 10 }}
+              style={styles.marginTop10}
               accessibilityLabel="Show current LibraClient configuration"
             />
             <ActionButton
               text="View Debug Logs"
               onPress={() => navigateToScreen("/error-logs")}
-              style={{ marginTop: 10 }}
+              style={styles.marginTop10}
               accessibilityLabel="View debug and error logs"
             />
           </SectionContainer>
@@ -213,7 +213,7 @@ export const Settings: React.FC<SettingsProps> = observer(
                   true,
                 );
               }}
-              style={{ marginTop: 0 }}
+              style={styles.marginTop0}
               accessibilityLabel="Clear all app data and reset to first-time user state"
               isDestructive={true}
             />

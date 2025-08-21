@@ -4,12 +4,16 @@ import { useSelector } from "@legendapp/state/react";
 import { styles } from "../../styles/styles";
 import { formatLibraAmount } from "../../util/format-utils";
 import { appConfig } from "../../util/app-config-store";
+import { useFinancialDataProtection } from "../../hooks/use-screenshot-protection";
 
 interface AccountTotalsProps {
   profileName: string;
 }
 
 export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
+  // Financial data protection - prevents screenshots of wallet balances
+  useFinancialDataProtection(true, "AccountTotals");
+
   // Get account balance totals from Legend state, tracking specific balance properties
   const balanceTotals = useSelector(() => {
     const profiles = appConfig.profiles.get();
@@ -42,15 +46,9 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
   }
 
   return (
-    <View style={{ marginTop: 20 }}>
+    <View style={styles.marginTop24}>
       {/* Table-like layout for aligned values */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 4,
-        }}
-      >
+      <View style={styles.flexRowSpaceBetweenWithMargin}>
         <Text style={[styles.balanceText, styles.balancePrimary]}>
           Total Unlocked:
         </Text>
@@ -59,7 +57,7 @@ export const AccountTotals = memo(({ profileName }: AccountTotalsProps) => {
         </Text>
       </View>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={styles.flexRowSpaceBetween}>
         <Text style={styles.balanceText}>Total Balance:</Text>
         <Text style={styles.balanceText}>
           {formatLibraAmount(balanceTotals.totalBalance)}

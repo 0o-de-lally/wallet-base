@@ -4,35 +4,29 @@ import { Ionicons } from "@expo/vector-icons";
 import { shortenAddress } from "../../util/format-utils";
 import { styles, namedColors } from "../../styles/styles";
 import { SectionContainer } from "../common/SectionContainer";
-import { PinRotationProgress } from "../../util/pin-rotation";
+import { PasswordRotationProgress } from "../../util/password-rotation";
 
-interface PinRotationProgressDisplayProps {
-  progress: PinRotationProgress;
+interface PasswordRotationProgressDisplayProps {
+  progress: PasswordRotationProgress;
   onDismiss: () => void;
 }
 
 /**
  * Component that displays the progress of PIN rotation and data re-encryption
  */
-export const PinRotationProgressDisplay: React.FC<
-  PinRotationProgressDisplayProps
+export const PasswordRotationProgressDisplay: React.FC<
+  PasswordRotationProgressDisplayProps
 > = ({ progress, onDismiss }) => {
   const isComplete =
     progress.total === 0 ||
     progress.completed + progress.failed.length >= progress.total;
 
   return (
-    <View style={{ position: "relative" }}>
+    <View style={styles.positionRelative}>
       {/* Dismiss button - only shown when complete */}
       {isComplete && (
         <TouchableOpacity
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            zIndex: 1,
-            padding: 8,
-          }}
+          style={styles.dismissButton}
           onPress={onDismiss}
           accessibilityLabel="Dismiss progress"
           accessibilityHint="Close the PIN rotation progress display"
@@ -60,7 +54,7 @@ export const PinRotationProgressDisplay: React.FC<
  * Internal component for the progress content
  */
 const InlineProgressContent: React.FC<{
-  progress: PinRotationProgress;
+  progress: PasswordRotationProgress;
 }> = ({ progress }) => {
   const progressPercentage =
     progress.total > 0
@@ -72,7 +66,7 @@ const InlineProgressContent: React.FC<{
     progress.completed + progress.failed.length >= progress.total;
 
   return (
-    <View style={{ paddingVertical: 16, paddingHorizontal: 4 }}>
+    <View style={styles.progressContainer}>
       <Text
         style={[styles.description, { marginBottom: 16, textAlign: "center" }]}
       >
@@ -82,7 +76,7 @@ const InlineProgressContent: React.FC<{
       </Text>
 
       {!isComplete && (
-        <View style={{ alignItems: "center", marginVertical: 12 }}>
+        <View style={styles.progressCenter}>
           <ActivityIndicator size="small" color={namedColors.blue} />
         </View>
       )}
@@ -146,9 +140,9 @@ const InlineProgressContent: React.FC<{
  * Component for displaying completion summary
  */
 const CompletionSummary: React.FC<{
-  progress: PinRotationProgress;
+  progress: PasswordRotationProgress;
 }> = ({ progress }) => (
-  <View style={{ marginTop: 16, paddingHorizontal: 8 }}>
+  <View style={styles.statusContainer}>
     <View
       style={{
         flexDirection: "row",
@@ -160,7 +154,7 @@ const CompletionSummary: React.FC<{
         name="checkmark-circle"
         size={20}
         color={namedColors.green}
-        style={{ marginRight: 8, verticalAlign: "middle" }}
+        style={styles.statusIconText}
       />
       <Text style={[{ color: namedColors.green, verticalAlign: "middle" }]}>
         Successfully re-encrypted: {progress.completed} account
@@ -180,7 +174,7 @@ const CompletionSummary: React.FC<{
           name="warning"
           size={20}
           color={namedColors.red}
-          style={{ marginRight: 8, marginTop: -1 }}
+          style={styles.statusIconTextWithMarginTop}
         />
         <Text
           style={[
@@ -212,12 +206,12 @@ const FailureWarning: React.FC = () => (
       borderLeftColor: namedColors.red,
     }}
   >
-    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+    <View style={styles.statusRowStart}>
       <Ionicons
         name="alert-circle"
         size={16}
         color={namedColors.red}
-        style={{ marginRight: 8, marginTop: 2 }}
+        style={styles.statusIconWithMarginTop}
       />
       <Text
         style={[styles.description, { fontSize: 12, lineHeight: 18, flex: 1 }]}

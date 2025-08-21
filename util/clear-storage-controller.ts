@@ -3,6 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Remove unused imports
 import { clearAllScheduledReveals } from "./reveal-controller";
 
+import { secureLog, secureError } from "./error-utils";
+
 /**
  * Clears all storage without PIN verification
  * This is a dangerous operation that should be used with caution
@@ -18,7 +20,7 @@ async function clearAllStorage(): Promise<void> {
 
     // Clear all account data
     if (accountKeys.length > 0) {
-      console.log(`Clearing ${accountKeys.length} account keys`);
+      secureLog(`Clearing ${accountKeys.length} account keys`);
     }
 
     // Clear all secure storage
@@ -27,9 +29,9 @@ async function clearAllStorage(): Promise<void> {
     // Clear all scheduled reveals
     clearAllScheduledReveals();
 
-    console.log("All secure data cleared successfully");
+    secureLog("All secure data cleared successfully");
   } catch (error) {
-    console.error(
+    secureError(
       "Error clearing all data:",
       error instanceof Error ? error.message : String(error),
     );
@@ -46,7 +48,7 @@ async function clearAllStorage(): Promise<void> {
  */
 export async function resetAppToCleanState(): Promise<void> {
   try {
-    console.log("Starting complete app data reset...");
+    secureLog("Starting complete app data reset...");
 
     // Clear all secure storage (expo-secure-store)
     await clearAllStorage();
@@ -54,9 +56,9 @@ export async function resetAppToCleanState(): Promise<void> {
     // Clear all AsyncStorage (includes Legend State persistence)
     await AsyncStorage.clear();
 
-    console.log("App data reset completed - app is now in clean state");
+    secureLog("App data reset completed - app is now in clean state");
   } catch (error) {
-    console.error(
+    secureError(
       "Error during app reset:",
       error instanceof Error ? error.message : String(error),
     );

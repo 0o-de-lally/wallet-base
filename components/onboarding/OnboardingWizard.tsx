@@ -3,10 +3,11 @@ import { Text, ScrollView, View } from "react-native";
 import { observer } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
 import { styles } from "../../styles/styles";
+import { devError } from "../../util/error-utils";
 import { SectionContainer } from "../common/SectionContainer";
 import { PinCreationFlow } from "../pin-input/PinCreationFlow";
 import { useModal } from "../../context/ModalContext";
-import { hasPINSetup, hasAccounts } from "../../util/user-state";
+import { hasPasswordSetup, hasAccounts } from "../../util/user-state";
 import { maybeInitializeDefaultProfile } from "../../util/app-config-store";
 import { resetAppToFirstTimeUser } from "../../util/dev-utils";
 import { WelcomeStep } from "./WelcomeStep";
@@ -35,7 +36,7 @@ export const OnboardingWizard: React.FC = observer(() => {
       maybeInitializeDefaultProfile();
       await new Promise((resolve) => setTimeout(resolve, 100)); // Brief delay for initialization
 
-      const pinExists = await hasPINSetup();
+      const pinExists = await hasPasswordSetup();
       const accountsExist = hasAccounts();
 
       setHasPin(pinExists);
@@ -47,7 +48,7 @@ export const OnboardingWizard: React.FC = observer(() => {
         return;
       }
     } catch (error) {
-      console.error("Error checking status:", error);
+      devError("Onboarding status check", error);
     } finally {
       setIsLoading(false);
     }
@@ -72,6 +73,8 @@ export const OnboardingWizard: React.FC = observer(() => {
         // Small delay to ensure PIN is fully stored before checking status
         await new Promise((resolve) => setTimeout(resolve, 200));
         await checkStatus(); // Re-check status after PIN creation
+        // Navigate to next step of wallet setup wizard
+        setAccountChoice("create");
       }
     },
     [checkStatus],
@@ -94,7 +97,7 @@ export const OnboardingWizard: React.FC = observer(() => {
             "All app data has been reset. You can now start fresh.",
           );
         } catch (error) {
-          console.error("Error resetting app:", error);
+          devError("Onboarding app reset", error);
           showAlert(
             "Reset Failed",
             "Failed to reset app data. Please try again.",

@@ -14,6 +14,10 @@ import {
 } from "../../../util/vouch-utils";
 import type { AccountState } from "../../../util/app-config-store";
 
+import { secureLog } from "../../../util/error-utils";
+
+import { secureError } from "../../../util/error-utils";
+
 interface VouchData {
   recipient: AccountAddress;
 }
@@ -56,14 +60,14 @@ export const VouchForm = memo(
           client,
           account.account_address,
         );
-        console.log("VouchForm received data:", {
+        secureLog("VouchForm received data:", {
           received_count: data.received_vouches.length,
           given_count: data.given_vouches.length,
           data,
         });
         setVouchInfo(data);
       } catch (error) {
-        console.warn("Failed to load vouch info:", error);
+        secureError("Failed to load vouch info:", error);
       } finally {
         setLoadingVouchInfo(false);
       }
@@ -206,7 +210,7 @@ export const VouchForm = memo(
             <View>
               <TouchableOpacity
                 onPress={() => setShowReceivedVouches(!showReceivedVouches)}
-                style={{ marginBottom: 8 }}
+                style={styles.marginBottom8}
                 accessibilityRole="button"
                 accessibilityLabel={`${showReceivedVouches ? "Hide" : "Show"} received vouches list`}
               >
@@ -215,7 +219,7 @@ export const VouchForm = memo(
                 </Text>
               </TouchableOpacity>
               {showReceivedVouches && vouchInfo.received_vouches.length > 0 && (
-                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                <View style={styles.spacingContainer}>
                   {vouchInfo.received_vouches
                     .slice(0, 10)
                     .map((addr, index) => (
@@ -243,7 +247,7 @@ export const VouchForm = memo(
               )}
               <TouchableOpacity
                 onPress={() => setShowGivenVouches(!showGivenVouches)}
-                style={{ marginBottom: 8 }}
+                style={styles.marginBottom8}
                 accessibilityRole="button"
                 accessibilityLabel={`${showGivenVouches ? "Hide" : "Show"} given vouches list`}
               >
@@ -252,7 +256,7 @@ export const VouchForm = memo(
                 </Text>
               </TouchableOpacity>
               {showGivenVouches && vouchInfo.given_vouches.length > 0 && (
-                <View style={{ marginTop: 4, marginBottom: 8 }}>
+                <View style={styles.spacingContainer}>
                   {vouchInfo.given_vouches.slice(0, 10).map((addr, index) => (
                     <Text
                       key={index}

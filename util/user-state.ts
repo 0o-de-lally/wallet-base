@@ -1,5 +1,6 @@
 import { appConfig } from "./app-config-store";
 import { getValue } from "./secure-store";
+import { devLog, devError } from "./error-utils";
 
 /**
  * Utility functions to determine user state and onboarding status
@@ -26,7 +27,7 @@ function getProfiles(): Record<string, Profile> | null {
     const profiles = appConfig.profiles.get();
     return profiles && typeof profiles === "object" ? profiles : null;
   } catch (error) {
-    console.error("Error getting profiles:", error);
+    devError("user-state", error, "Error getting profiles");
     return null;
   }
 }
@@ -34,12 +35,12 @@ function getProfiles(): Record<string, Profile> | null {
 /**
  * Checks if the user has completed the basic setup (has PIN)
  */
-export async function hasPINSetup(): Promise<boolean> {
+export async function hasPasswordSetup(): Promise<boolean> {
   try {
-    const savedPin = await getValue("user_pin");
+    const savedPin = await getValue("user_password");
     return savedPin !== null;
   } catch (error) {
-    console.error("Error checking basic setup status:", error);
+    devError("user-state", error, "Error checking basic setup status");
     return false;
   }
 }
@@ -58,7 +59,7 @@ export function hasAccounts(): boolean {
       (profile) => profile && profile.accounts && profile.accounts.length > 0,
     );
   } catch (error) {
-    console.error("Error checking accounts status:", error);
+    devError("user-state", error, "Error checking accounts status");
     return false;
   }
 }
@@ -66,7 +67,7 @@ export function hasAccounts(): boolean {
 // Removed unused exports: hasAccountsWithLogging, isFirstTimeUser
 
 /**
-    console.error("Error checking first-time user status:", error);
+    devError("user-state", error, "Error checking first-time user status");
     // If we can't determine, assume first-time for safety
     return true;
   }
@@ -79,12 +80,12 @@ function getProfileCount(): number {
   try {
     const profiles = getProfiles();
     if (!profiles) {
-      console.log("No profiles found, profile count is 0");
+      devLog("No profiles found, profile count is 0");
       return 0;
     }
     return Object.keys(profiles).length;
   } catch (error) {
-    console.error("Error getting profile count:", error);
+    devError("user-state", error, "Error getting profile count");
     return 0;
   }
 }

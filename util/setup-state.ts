@@ -1,6 +1,7 @@
 import { observable } from "@legendapp/state";
-import { hasPINSetup, hasAccounts } from "./user-state";
+import { hasPasswordSetup, hasAccounts } from "./user-state";
 import { appConfig, maybeInitializeDefaultProfile } from "./app-config-store";
+import { devLog, devError } from "./error-utils";
 
 type SetupStatus = "loading" | "needs-pin" | "needs-account" | "complete";
 
@@ -27,7 +28,7 @@ const setupState = observable<SetupState>({
  */
 async function updateSetupStatus(): Promise<void> {
   try {
-    console.log("Updating setup status...");
+    devLog("Updating setup status...");
     setupState.status.set("loading");
 
     // Wait a short time for persistence to hydrate if needed
@@ -42,18 +43,18 @@ async function updateSetupStatus(): Promise<void> {
         // Give appConfig.profiles a chance to be defined
         const profiles = appConfig.profiles?.get();
         if (!profiles || Object.keys(profiles).length === 0) {
-          console.log(
+          devLog(
             "No profiles found during setup status check, initializing default profile",
           );
           maybeInitializeDefaultProfile();
         } else {
-          console.log(
+          devLog(
             "Found existing profiles during setup status check:",
             Object.keys(profiles),
           );
         }
       } else {
-        console.log("AppConfig not yet available during setup status check");
+        devLog("AppConfig not yet available during setup status check");
         // If appConfig is not available, assume we need to set up everything
         setupState.status.set("needs-pin");
         setupState.hasPin.set(false);
@@ -62,18 +63,22 @@ async function updateSetupStatus(): Promise<void> {
         return;
       }
     } catch (initError) {
-      console.log("Error during profile initialization check:", initError);
+      devError(
+        "setup-state",
+        initError,
+        "Error during profile initialization check",
+      );
       // Continue with status check even if profile initialization fails
     }
 
-    const pinExists = await hasPINSetup();
+    const pinExists = await hasPasswordSetup();
     const accountsExist = hasAccounts();
 
     setupState.hasPin.set(pinExists);
     setupState.hasUserAccounts.set(accountsExist);
     setupState.lastChecked.set(Date.now());
 
-    console.log("Setup status updated:", { pinExists, accountsExist });
+    devLog("Setup status updated:", { pinExists, accountsExist });
 
     if (!pinExists) {
       setupState.status.set("needs-pin");
@@ -83,7 +88,7 @@ async function updateSetupStatus(): Promise<void> {
       setupState.status.set("complete");
     }
   } catch (error) {
-    console.error("Error updating setup status:", error);
+    devError("setup-state", error, "Error updating setup status");
     // On error, assume user needs PIN for safety
     setupState.status.set("needs-pin");
     setupState.hasPin.set(false);
@@ -97,14 +102,14 @@ async function updateSetupStatus(): Promise<void> {
  * Call this when you know setup state has changed (e.g., after PIN creation, account creation, etc.)
  */
 export function refreshSetupStatus(): void {
-  console.log("Forcing setup status refresh");
+  devLog("Forcing setup status refresh");
 
   // Immediate update
   updateSetupStatus();
 
   // Also schedule a delayed update to catch any state propagation delays
   setTimeout(() => {
-    console.log("Delayed setup status refresh");
+    devLog("Delayed setup status refresh");
     updateSetupStatus();
   }, 100);
 }

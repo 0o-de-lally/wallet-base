@@ -1,4 +1,4 @@
-import { uint8ArrayToBase64 } from "./crypto";
+import { uint8ArrayToBase64 } from "./password-security";
 import { getRandomBytes } from "./random";
 import {
   addAccountToProfile,
@@ -9,6 +9,8 @@ import type { AccountState } from "./app-config-store";
 import { AccountAddress } from "open-libra-sdk";
 import { refreshSetupStatus } from "./setup-state";
 import { refreshNewAccount } from "./balance-polling-service";
+
+import { secureError } from "./error-utils";
 
 /**
  * Creates a new account in the specified profile
@@ -74,10 +76,7 @@ export async function createAccount(
       // Add a small delay to ensure the account is properly saved
       setTimeout(() => {
         refreshNewAccount(account.id).catch((error) => {
-          console.warn(
-            "Failed to immediately refresh new account data:",
-            error,
-          );
+          secureError("Failed to immediately refresh new account data:", error);
         });
       }, 100); // 100ms delay
 
@@ -93,7 +92,7 @@ export async function createAccount(
       };
     }
   } catch (error) {
-    console.error("Failed to create account:", error);
+    secureError("Failed to create account:", error);
     return {
       success: false,
       error: "Failed to create account. Please try again.",

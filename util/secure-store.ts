@@ -1,4 +1,5 @@
-import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
+import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
+import { devLog, devError } from "./error-utils";
 
 /**
  * Updates the internal keys list maintained for getAllKeys functionality
@@ -33,7 +34,7 @@ async function updateKeysList(
     // Save updated keys list
     await setItemAsync("all_storage_keys", JSON.stringify(currentKeys));
   } catch (error) {
-    console.error("Error updating keys list:", error);
+    devError("Error updating keys list:", error);
     // Don't throw here to avoid breaking the main operation
   }
 }
@@ -53,7 +54,7 @@ export async function saveValue(key: string, value: string): Promise<void> {
     // Update the keys list
     await updateKeysList(key, "add");
   } catch (error) {
-    console.error("Error saving to secure store:", error);
+    devError("Error saving to secure store", error);
     throw error;
   }
 }
@@ -70,7 +71,7 @@ export async function getValue(key: string): Promise<string | null> {
     const result = await getItemAsync(key);
     return result;
   } catch (error) {
-    console.error("Error retrieving from secure store:", error);
+    devError("Error retrieving from secure store", error);
     throw error;
   }
 }
@@ -89,7 +90,7 @@ export async function deleteValue(key: string): Promise<void> {
     // Update the keys list
     await updateKeysList(key, "remove");
   } catch (error) {
-    console.error("Error deleting from secure store:", error);
+    devError("Error deleting from secure store", error);
     throw error;
   }
 }
@@ -108,7 +109,8 @@ export async function clearAllSecureStorage(): Promise<void> {
   try {
     // Add all your application's secure storage keys here
     const appKeys = [
-      "user_pin", // Added the actual PIN storage key
+      "user_pin", // Legacy key - kept for migration cleanup purposes
+      "user_password",
       "user_pin_hash",
       "user_pin_salt",
       "user_token",
@@ -119,9 +121,9 @@ export async function clearAllSecureStorage(): Promise<void> {
     ];
 
     await Promise.all(appKeys.map((key) => deleteValue(key)));
-    console.log(`Cleared all ${appKeys.length} secure storage keys`);
+    devLog(`Cleared all ${appKeys.length} secure storage keys`);
   } catch (error) {
-    console.error("Error clearing secure storage:", error);
+    devError("Error clearing secure storage", error);
     throw error;
   }
 }
@@ -138,7 +140,7 @@ export async function getAllKeys(): Promise<string[]> {
     const keysListJson = await getItemAsync("all_storage_keys");
     return keysListJson ? JSON.parse(keysListJson) : [];
   } catch (error) {
-    console.error("Error getting all keys:", error);
+    devError("Error getting all keys", error);
     return [];
   }
 }
@@ -149,15 +151,21 @@ export async function getAllKeys(): Promise<string[]> {
  */
 export async function rebuildKeysList(): Promise<void> {
   try {
-    console.log("Rebuilding keys list...");
+    devLog("Rebuilding keys list...");
 
     // Try to detect existing keys using known patterns
     const knownKeys: string[] = [];
 
     // Check for common key patterns
     const patternsToCheck = [
-      "user_pin",
-      // Account keys - we'll need to check based on current profiles
+      "user_password",
+      "user_pin", // Legacy key - kept for migration cleanup purposes
+      "user_pin_hash",
+      "user_pin_salt",
+      "user_token",
+      "private_key",
+      "walletData",
+      "settings",
     ];
 
     for (const key of patternsToCheck) {
@@ -175,15 +183,28 @@ export async function rebuildKeysList(): Promise<void> {
     // This requires importing appConfig, but we'll do it dynamically to avoid circular imports
     try {
       const { appConfig } = await import("./app-config-store");
+      const { getAccountStorageKey } = await import("./key-obfuscation");
       const profiles = appConfig.profiles.get();
 
       for (const [, profile] of Object.entries(profiles)) {
         for (const account of profile.accounts) {
-          const accountKey = `account_${account.id}`;
+          // Check legacy key pattern first
+          const legacyKey = `account_${account.id}`;
           try {
-            const value = await getItemAsync(accountKey);
-            if (value !== null) {
-              knownKeys.push(accountKey);
+            const legacyValue = await getItemAsync(legacyKey);
+            if (legacyValue !== null) {
+              knownKeys.push(legacyKey);
+            }
+          } catch {
+            // Key doesn't exist, ignore
+          }
+
+          // Check obfuscated key pattern
+          try {
+            const obfuscatedKey = await getAccountStorageKey(account.id);
+            const obfuscatedValue = await getItemAsync(obfuscatedKey);
+            if (obfuscatedValue !== null) {
+              knownKeys.push(obfuscatedKey);
             }
           } catch {
             // Key doesn't exist, ignore
@@ -191,15 +212,15 @@ export async function rebuildKeysList(): Promise<void> {
         }
       }
     } catch (error) {
-      console.error("Error checking account keys:", error);
+      devError("Error checking account keys", error);
     }
 
     // Save the rebuilt keys list
     await setItemAsync("all_storage_keys", JSON.stringify(knownKeys));
 
-    console.log("Keys list rebuilt with keys:", knownKeys);
+    devLog("Keys list rebuilt with keys:", knownKeys);
   } catch (error) {
-    console.error("Error rebuilding keys list:", error);
+    devError("Error rebuilding keys list", error);
     throw error;
   }
 }

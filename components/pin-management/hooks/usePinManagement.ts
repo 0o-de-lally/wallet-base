@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { getValue } from "../../../util/secure-store";
-import { getAllAccountsWithStoredData } from "../../../util/pin-rotation";
+import { getAllAccountsWithStoredData } from "../../../util/password-rotation";
 import { PinManagementState, PinModalState } from "../types";
+import { devError } from "../../../util/error-utils";
 
 /**
  * Custom hook for managing PIN-related state and operations
@@ -36,10 +37,10 @@ export const usePinManagement = () => {
    */
   const checkExistingPin = useCallback(async () => {
     try {
-      const savedPin = await getValue("user_pin");
+      const savedPin = await getValue("user_password");
       setState((prev) => ({ ...prev, pinExists: savedPin !== null }));
     } catch (error) {
-      console.error("Error checking existing PIN:", error);
+      devError("Pin management - check existing password", error);
     }
   }, []);
 
@@ -51,7 +52,7 @@ export const usePinManagement = () => {
       const accounts = await getAllAccountsWithStoredData();
       setState((prev) => ({ ...prev, accountsWithData: accounts.length }));
     } catch (error) {
-      console.error("Error loading accounts with data:", error);
+      devError("Pin management - load accounts", error);
     }
   }, []);
 

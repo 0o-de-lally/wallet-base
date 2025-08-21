@@ -2,6 +2,7 @@ import React from "react";
 import { ActionButton } from "../common/ActionButton";
 import { FormInput } from "../common/FormInput";
 import { AccountMode } from "./types";
+import { styles } from "../../styles/styles";
 
 interface RecoveryActionSectionProps {
   nickname: string;
@@ -63,7 +64,7 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
         isLoading={isLoading}
         accessibilityLabel={getAccessibilityLabel()}
         accessibilityHint={getAccessibilityHint()}
-        style={{ width: "100%", marginHorizontal: 0 }}
+        style={[styles.width100Percent, styles.marginHorizontal0]}
       />
 
       {canRetryMnemonicSave && onRetryMnemonicSave && (
@@ -74,7 +75,11 @@ export const RecoveryActionSection: React.FC<RecoveryActionSectionProps> = ({
           isLoading={isLoading}
           accessibilityLabel="Retry saving recovery phrase"
           accessibilityHint="Attempt to save the recovery phrase again after PIN failure"
-          style={{ width: "100%", marginHorizontal: 0, marginTop: 12 }}
+          style={[
+            styles.width100Percent,
+            styles.marginHorizontal0,
+            styles.marginTop12,
+          ]}
           variant="secondary"
         />
       )}

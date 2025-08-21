@@ -1,0 +1,367 @@
+/**
+ * Password Rotation Utilities
+ *
+ * Handles the complete password rotation workflow, including re-encrypting
+ * all account data with the new password.
+ */
+
+import { appConfig } from "./app-config-store";
+import { getAllKeys, getValue, saveValue, deleteValue } from "./secure-store";
+import {
+  secureDecryptWithPassword,
+  secureEncryptWithPassword,
+  hashPassword,
+} from "./password-security";
+import { reportErrorAuto, devLog, devError } from "./error-utils";
+import { getAccountStorageKey } from "./key-obfuscation";
+
+import { secureError } from "./error-utils";
+
+interface AccountWithStoredData {
+  accountId: string;
+  profileName: string;
+  nickname?: string;
+  accountAddress: string;
+}
+
+export interface PasswordRotationProgress {
+  total: number;
+  completed: number;
+  current?: string; // current account being processed
+  failed: string[]; // list of account IDs that failed
+}
+
+interface PasswordRotationResult {
+  success: boolean;
+  rotatedCount: number;
+  failedAccounts: string[];
+  error?: string;
+}
+
+/**
+ * Gets all accounts that have stored encrypted data in secure storage
+ */
+export async function getAllAccountsWithStoredData(): Promise<
+  AccountWithStoredData[]
+> {
+  try {
+    const profiles = appConfig.profiles.get();
+    const results: AccountWithStoredData[] = [];
+
+    for (const [profileName, profile] of Object.entries(profiles)) {
+      for (const account of profile.accounts) {
+        const legacyKey = `account_${account.id}`;
+        let hasData = false;
+        try {
+          const legacyVal = await getValue(legacyKey);
+          if (legacyVal) {
+            hasData = true;
+          } else {
+            const obfKey = await getAccountStorageKey(account.id);
+            const obfVal = await getValue(obfKey);
+            hasData = obfVal !== null;
+          }
+        } catch {
+          // ignore per-account errors
+        }
+        if (hasData) {
+          results.push({
+            accountId: account.id,
+            profileName,
+            nickname: account.nickname,
+            accountAddress: account.account_address,
+          });
+        }
+      }
+    }
+    return results;
+  } catch (error) {
+    devError("pin-rotation", error, "Error getting accounts with stored data");
+    reportErrorAuto("getAllAccountsWithStoredData", error);
+    return [];
+  }
+}
+
+/**
+ * Rotates the password and re-encrypts all account data
+ */
+export async function rotatePasswordAndReencryptData(
+  oldPassword: string,
+  newPassword: string,
+  onProgress?: (progress: PasswordRotationProgress) => void,
+): Promise<PasswordRotationResult> {
+  try {
+    // First, get all accounts with stored data
+    const accountsWithData = await getAllAccountsWithStoredData();
+
+    if (accountsWithData.length === 0) {
+      // No data to re-encrypt, just update the password
+      const hashedPassword = await hashPassword(newPassword);
+      await saveValue("user_password", JSON.stringify(hashedPassword));
+
+      return {
+        success: true,
+        rotatedCount: 0,
+        failedAccounts: [],
+      };
+    }
+
+    const progress: PasswordRotationProgress = {
+      total: accountsWithData.length,
+      completed: 0,
+      failed: [],
+    };
+
+    // Report initial progress
+    onProgress?.(progress);
+
+    // Re-encrypt each account's data
+    for (const account of accountsWithData) {
+      try {
+        progress.current = account.accountAddress;
+        onProgress?.(progress);
+
+        const success = await reencryptAccountData(
+          account.accountId,
+          oldPassword,
+          newPassword,
+        );
+
+        if (success) {
+          progress.completed++;
+        } else {
+          progress.failed.push(account.accountId);
+        }
+
+        onProgress?.(progress);
+      } catch (error) {
+        devError(
+          "pin-rotation",
+          error,
+          `Failed to re-encrypt data for account ${account.accountId}`,
+        );
+        progress.failed.push(account.accountId);
+        onProgress?.(progress);
+      }
+    }
+
+    // Update the stored password hash with the new password
+    const hashedPassword = await hashPassword(newPassword);
+    await saveValue("user_password", JSON.stringify(hashedPassword));
+
+    return {
+      success: progress.failed.length === 0,
+      rotatedCount: progress.completed,
+      failedAccounts: progress.failed,
+    };
+  } catch (error) {
+    devError("pin-rotation", error, "Error during password rotation");
+    reportErrorAuto("rotatePasswordAndReencryptData", error);
+
+    return {
+      success: false,
+      rotatedCount: 0,
+      failedAccounts: [],
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Re-encrypts a single account's data with the new password
+ */
+async function reencryptAccountData(
+  accountId: string,
+  oldPassword: string,
+  newPassword: string,
+): Promise<boolean> {
+  try {
+    const legacyKey = `account_${accountId}`;
+    let sourceKey: string | null = null;
+    let encryptedData: string | null = await getValue(legacyKey);
+    if (encryptedData) {
+      sourceKey = legacyKey;
+    } else {
+      const obfKey = await getAccountStorageKey(accountId);
+      encryptedData = await getValue(obfKey);
+      if (encryptedData) {
+        sourceKey = obfKey;
+      }
+    }
+
+    if (!sourceKey || !encryptedData) {
+      secureError(`No encrypted data found for account ${accountId}`);
+      return true;
+    }
+    if (!encryptedData) {
+      secureError(`No encrypted data found for account ${accountId}`);
+      return true; // No data to re-encrypt is not a failure
+    }
+
+    // Decrypt with old password
+    const decryptResult = await secureDecryptWithPassword(
+      encryptedData,
+      oldPassword,
+    );
+    if (!decryptResult || !decryptResult.verified) {
+      devError(
+        "pin-rotation",
+        new Error("Failed to decrypt data with old password"),
+        `Failed to decrypt data for account ${accountId} with old password`,
+      );
+      return false;
+    }
+
+    // Re-encrypt with new password
+    const newEncryptedData = await secureEncryptWithPassword(
+      decryptResult.value,
+      newPassword,
+    );
+    if (!newEncryptedData) {
+      devError(
+        "pin-rotation",
+        new Error("Failed to encrypt data with new password"),
+        `Failed to encrypt data for account ${accountId} with new password`,
+      );
+      return false;
+    }
+
+    // Determine target (always obfuscated) key
+    const targetKey = await getAccountStorageKey(accountId);
+    await saveValue(targetKey, newEncryptedData);
+
+    // If we migrated from legacy key, delete it
+    if (sourceKey === legacyKey && targetKey !== legacyKey) {
+      try {
+        await deleteValue(legacyKey);
+      } catch {
+        // Non-fatal: legacy key deletion failure. Data already migrated to obfuscated key.
+      }
+    }
+
+    devLog(`Successfully re-encrypted data for account ${accountId}`);
+    return true;
+  } catch (error) {
+    devError("pin-rotation", error, `Error re-encrypting account ${accountId}`);
+    reportErrorAuto("reencryptAccountData", error, { accountId });
+    return false;
+  }
+}
+
+/**
+ * Validates that the old password can decrypt existing data before rotation
+ */
+export async function validateOldPasswordCanDecryptData(
+  oldPassword: string,
+): Promise<{
+  isValid: boolean;
+  testedAccounts: number;
+  error?: string;
+}> {
+  try {
+    const accountsWithData = await getAllAccountsWithStoredData();
+
+    if (accountsWithData.length === 0) {
+      return { isValid: true, testedAccounts: 0 };
+    }
+
+    // Test the old password on a few accounts to make sure it works
+    const accountsToTest = accountsWithData.slice(
+      0,
+      Math.min(3, accountsWithData.length),
+    );
+
+    for (const account of accountsToTest) {
+      const legacyKey = `account_${account.accountId}`;
+      let encryptedData = await getValue(legacyKey);
+      if (!encryptedData) {
+        const obfKey = await getAccountStorageKey(account.accountId);
+        encryptedData = await getValue(obfKey);
+      }
+
+      if (encryptedData) {
+        const decryptResult = await secureDecryptWithPassword(
+          encryptedData,
+          oldPassword,
+        );
+        if (!decryptResult || !decryptResult.verified) {
+          return {
+            isValid: false,
+            testedAccounts: accountsToTest.length,
+            error: `Cannot decrypt data for account ${account.accountId}`,
+          };
+        }
+      }
+    }
+
+    return { isValid: true, testedAccounts: accountsToTest.length };
+  } catch (error) {
+    devError("pin-rotation", error, "Error validating old password");
+    return {
+      isValid: false,
+      testedAccounts: 0,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Debug function to test storage key discovery
+ */
+export async function debugStorageKeys(): Promise<void> {
+  try {
+    devLog("=== DEBUG: Storage Key Discovery ===");
+
+    // First rebuild the keys list to make sure it's up to date
+    devLog("Rebuilding keys list...");
+    const { rebuildKeysList } = await import("./secure-store");
+    await rebuildKeysList();
+
+    const allKeys = await getAllKeys();
+    devLog("All keys in storage:", allKeys);
+
+    const accountKeys = allKeys.filter(
+      (key) => key.startsWith("account_") || key.startsWith("obf_"),
+    );
+
+    const profiles = appConfig.profiles.get();
+    devLog("Current profiles config:", profiles);
+
+    // Test each account key
+    for (const key of accountKeys) {
+      let accountId = key;
+      if (key.startsWith("account_")) {
+        accountId = key.replace("account_", "");
+      } else if (key.startsWith("obf_")) {
+        // Cannot directly derive accountId from obfuscated key; skip mapping here
+        devLog(`Obfuscated key detected: ${key}`);
+      }
+      devLog(`Testing key: ${key} -> derived ID: ${accountId}`);
+
+      const data = await getValue(key);
+      devLog(`Data exists for ${key}:`, data !== null);
+
+      // Look for this account in profiles
+      let found = false;
+      for (const [profileName, profile] of Object.entries(profiles)) {
+        const account = profile.accounts.find((acc) => acc.id === accountId);
+        if (account) {
+          devLog(
+            `Found account ${accountId} in profile ${profileName}:`,
+            account,
+          );
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        devLog(`Account ${accountId} not found in any profile!`);
+      }
+    }
+
+    devLog("=== END DEBUG ===");
+  } catch (error) {
+    devError("pin-rotation", error, "Error in debugStorageKeys");
+  }
+}

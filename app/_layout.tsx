@@ -17,24 +17,24 @@ import { View, StatusBar } from "react-native";
 import { AuthenticationView } from "../components/auth/AuthenticationView";
 import { InitializationError } from "@/components/InitializationError";
 import { InitializingApp } from "@/components/InitializingApp";
+import { PrivacyOverlay } from "../components/privacy/PrivacyOverlay";
+import { ScreenCaptureProtectionProvider } from "../context/ScreenCaptureProtectionContext";
 import { styles } from "../styles/styles";
+import { devLog, devError } from "../util/error-utils";
 
 // Enable screens for react-native-screens
 enableScreens();
 
-// Layout wrapper to avoid duplication - only includes the ModalProvider once
+// Layout wrapper to avoid duplication - includes global providers and security context
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <SafeAreaProvider>
     <ModalProvider>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: styles.headerContainer.backgroundColor,
-        }}
-      >
-        <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
-        {children}
-      </View>
+      <ScreenCaptureProtectionProvider>
+        <View style={styles.appWrapper}>
+          <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+          {children}
+        </View>
+      </ScreenCaptureProtectionProvider>
     </ModalProvider>
   </SafeAreaProvider>
 );
@@ -58,7 +58,7 @@ const RootLayout = observer(() => {
 
       // If device doesn't support biometrics or has no enrollments, default to allowing access
       if (!hasHardware || !isEnrolled) {
-        console.log("Biometric authentication not available, allowing access");
+        devLog("Biometric authentication not available, allowing access");
         setIsAuthenticated(true);
         return;
       }
@@ -83,7 +83,7 @@ const RootLayout = observer(() => {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error("Authentication error:", error);
+      devError("Authentication", error);
       setAuthError("Authentication error occurred. Please try again.");
       // On error, allow access by default for better user experience
       setIsAuthenticated(true);
@@ -100,7 +100,7 @@ const RootLayout = observer(() => {
         // Trigger authentication after initialization
         authenticate();
       } catch (error) {
-        console.error("Failed to initialize:", error);
+        devError("App initialization", error);
         setInitError(error instanceof Error ? error : new Error(String(error)));
         setAuthChecking(false);
       }
@@ -156,6 +156,8 @@ const RootLayout = observer(() => {
           animation: "fade",
         }}
       />
+      {/* Privacy overlay that activates when app goes to background */}
+      <PrivacyOverlay message="Return to continue using your wallet securely" />
     </Layout>
   );
 });

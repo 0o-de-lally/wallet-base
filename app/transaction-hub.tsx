@@ -15,7 +15,7 @@ export default function TransactionHubScreen() {
 
   if (!accountId || !profileName) {
     return (
-      <SetupGuard requiresPin={true} requiresAccount={true}>
+      <SetupGuard requiresPassword={true} requiresAccount={true}>
         <View style={styles.root}>
           <Stack.Screen
             options={{
@@ -31,7 +31,7 @@ export default function TransactionHubScreen() {
               text="← Back"
               onPress={() => router.back()}
               size="small"
-              style={{ marginTop: 16 }}
+              style={styles.marginTop16}
             />
           </View>
         </View>
@@ -40,7 +40,7 @@ export default function TransactionHubScreen() {
   }
 
   return (
-    <SetupGuard requiresPin={true} requiresAccount={true}>
+    <SetupGuard requiresPassword={true} requiresAccount={true}>
       <View style={styles.root}>
         <Stack.Screen
           options={{

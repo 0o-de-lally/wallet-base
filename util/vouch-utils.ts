@@ -1,6 +1,8 @@
 import { LibraViews, type LibraClient } from "open-libra-sdk";
 import { categorizeError, reportError } from "./error-utils";
 
+import { secureLog } from "./error-utils";
+
 export interface VouchData {
   received_vouches: string[]; // Array of addresses that vouched for this account
   given_vouches: string[]; // Array of addresses this account vouched for
@@ -20,7 +22,7 @@ export async function fetchAccountVouchData(
   }
 
   try {
-    console.log("Fetching vouch data for account:", accountAddress);
+    secureLog("Fetching vouch data for account:", accountAddress);
 
     // Fetch received vouches (people who vouched for this account)
     const receivedPayload =
@@ -32,7 +34,7 @@ export async function fetchAccountVouchData(
       LibraViews.vouch_getGivenVouchesNotExpired(accountAddress);
     const givenResult = await client.viewJson(givenPayload);
 
-    console.log("Vouch API response for", accountAddress, ":", {
+    secureLog("Vouch API response for", accountAddress, ":", {
       received: receivedResult,
       given: givenResult,
     });
@@ -71,7 +73,7 @@ export async function fetchAccountVouchData(
       given_vouches = [givenResult];
     }
 
-    console.log("Parsed vouch data:", {
+    secureLog("Parsed vouch data:", {
       received_count: received_vouches.length,
       given_count: given_vouches.length,
       received_vouches: received_vouches.slice(0, 3), // Log first 3 for debugging

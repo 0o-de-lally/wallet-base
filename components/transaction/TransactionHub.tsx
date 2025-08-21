@@ -14,6 +14,7 @@ import { V8Migration } from "./components/V8Migration";
 import { TransactionPinModal } from "./components/TransactionPinModal";
 import { useTransactionExecutor } from "./components/TransactionExecutor";
 import { SectionContainer } from "../common/SectionContainer";
+import { devError } from "../../util/error-utils";
 
 interface TransactionHubProps {
   accountId: string;
@@ -120,7 +121,10 @@ export const TransactionHub = memo(
           const profile = profiles[profileName];
 
           if (!profile) {
-            console.error(`Profile '${profileName}' not found`);
+            devError(
+              `Transaction hub - profile not found: ${profileName}`,
+              new Error(`Profile '${profileName}' not found`),
+            );
             return;
           }
 
@@ -130,12 +134,15 @@ export const TransactionHub = memo(
           if (foundAccount) {
             setAccount(foundAccount);
           } else {
-            console.error(
-              `Account with ID '${accountId}' not found in profile '${profileName}'`,
+            devError(
+              `Transaction hub - account not found`,
+              new Error(
+                `Account with ID '${accountId}' not found in profile '${profileName}'`,
+              ),
             );
           }
         } catch (error) {
-          console.error("Error loading account:", error);
+          devError("Transaction hub - load account", error);
         } finally {
           setIsLoading(false);
         }
