@@ -1,0 +1,75 @@
+name: Claude Security Audit
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Claude Code
+      run: |
+        curl -fsSL https://claude.ai/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Create reports directory
+      run: mkdir -p .docs/reports
+
+    - name: Run Claude security audit
+      env:
+        CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      run: |
+        # Generate timestamp for report filename
+        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+        REPORT_FILE=".docs/reports/security-audit-${TIMESTAMP}.md"
+
+        # Run Claude as security-audit-specialist
+        claude --model claude-sonnet-4 --agent security-audit-specialist \
+          "Conduct a comprehensive security audit of this cryptocurrency wallet application.
+           Focus on:
+           - Cryptographic implementations and key management
+           - Secure storage of sensitive data (mnemonics, PINs, keys)
+           - Authentication and authorization mechanisms
+           - Input validation and sanitization
+           - Mobile platform security considerations
+           - Potential vulnerabilities in transaction handling
+           - Screen capture protection and data leakage prevention
+           - Code injection and tampering risks
+
+           Provide a detailed security assessment report with:
+           1. Executive summary of security posture
+           2. Critical findings and vulnerabilities
+           3. Medium/low priority issues
+           4. Compliance with mobile security best practices
+           5. Recommendations for remediation
+           6. Security architecture analysis
+
+           Format the output as a comprehensive markdown report." > "$REPORT_FILE"
+
+    - name: Commit security audit report
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .docs/reports/
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Add automated security audit report
+
+          🤖 Generated with Claude Security Audit Workflow
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
