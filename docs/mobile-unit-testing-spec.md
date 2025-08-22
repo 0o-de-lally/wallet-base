@@ -114,7 +114,7 @@ tests/
 #### Maestro Integration
 ```yaml
 # maestro/unit-tests.yaml
-appId: com.carpe.wallet
+appId: app.carpe.wallet_base
 ---
 - runFlow:
     file: navigate-to-test-runner.yaml
@@ -122,7 +122,7 @@ appId: com.carpe.wallet
 - waitForAnimationToEnd
 - assertVisible: "All tests passed"
 # or
-- assertVisible: 
+- assertVisible:
     text: "Tests: 45 passed, 0 failed"
 ```
 

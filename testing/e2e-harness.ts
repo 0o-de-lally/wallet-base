@@ -92,7 +92,7 @@ async function main() {
         "⚠️  No relevant packages found. Waiting for installation...",
       );
       // Wait for app to be properly installed on device (5 minute timeout)
-      await waitForAppInstallation("com.carpe", 300000);
+      await waitForAppInstallation("app.carpe.wallet_base", 300000);
     } else {
       console.log(
         `✅ Found ${installedPackages.length} relevant packages - app appears to be installed!`,
