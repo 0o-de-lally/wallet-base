@@ -3,8 +3,11 @@ import { WebSocket } from "ws";
 import { readFileSync } from "fs";
 
 import { secureError } from "../util/error-utils";
-import { waitForDeviceBoot, checkEmulatorAvailable, spawnEmulator } from "./emulator-setup";
-
+import {
+  waitForDeviceBoot,
+  checkEmulatorAvailable,
+  spawnEmulator,
+} from "./emulator-setup";
 
 let emulatorProc: ChildProcess | undefined;
 let expoProc: ChildProcess | undefined;
@@ -23,7 +26,6 @@ process.on("SIGINT", () => {
   process.exit(1);
 });
 process.on("exit", killAll);
-
 
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
@@ -46,7 +48,10 @@ async function spawnExpoAndroid() {
     expoProc.stdout?.on("data", (data: Buffer) => {
       const text = data.toString();
       process.stdout.write(text); // Forward all output to stdout
-      if ((text.includes("Metro waiting") || text.includes("Waiting on")) && !isResolved) {
+      if (
+        (text.includes("Metro waiting") || text.includes("Waiting on")) &&
+        !isResolved
+      ) {
         isResolved = true;
         resolve();
       }
@@ -67,24 +72,26 @@ async function spawnExpoAndroid() {
 async function connectToDebugger(): Promise<void> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      reject(new Error('Timeout connecting to Metro debugger'));
+      reject(new Error("Timeout connecting to Metro debugger"));
     }, 30000);
 
-    debuggerWs = new WebSocket('ws://localhost:8081/debugger-proxy?role=debugger&name=e2e-test');
-    
-    debuggerWs.on('open', () => {
+    debuggerWs = new WebSocket(
+      "ws://localhost:8081/debugger-proxy?role=debugger&name=e2e-test",
+    );
+
+    debuggerWs.on("open", () => {
       clearTimeout(timeout);
-      console.log('Connected to Metro debugger');
+      console.log("Connected to Metro debugger");
       resolve();
     });
-    
-    debuggerWs.on('error', (error) => {
+
+    debuggerWs.on("error", (error) => {
       clearTimeout(timeout);
       reject(new Error(`WebSocket connection failed: ${error.message}`));
     });
-    
-    debuggerWs.on('close', () => {
-      console.log('Debugger WebSocket connection closed');
+
+    debuggerWs.on("close", () => {
+      console.log("Debugger WebSocket connection closed");
     });
   });
 }
@@ -92,23 +99,23 @@ async function connectToDebugger(): Promise<void> {
 async function executeJavaScript(code: string): Promise<any> {
   return new Promise((resolve, reject) => {
     if (!debuggerWs || debuggerWs.readyState !== WebSocket.OPEN) {
-      reject(new Error('WebSocket not connected'));
+      reject(new Error("WebSocket not connected"));
       return;
     }
 
     const messageId = Date.now();
     const message = {
       id: messageId,
-      method: 'Runtime.evaluate',
+      method: "Runtime.evaluate",
       params: {
         expression: code,
         returnByValue: true,
-        awaitPromise: true
-      }
+        awaitPromise: true,
+      },
     };
 
     const timeout = setTimeout(() => {
-      reject(new Error('Timeout executing JavaScript'));
+      reject(new Error("Timeout executing JavaScript"));
     }, 10000);
 
     const messageHandler = (data: Buffer) => {
@@ -116,12 +123,20 @@ async function executeJavaScript(code: string): Promise<any> {
         const response = JSON.parse(data.toString());
         if (response.id === messageId) {
           clearTimeout(timeout);
-          debuggerWs?.removeListener('message', messageHandler);
-          
+          debuggerWs?.removeListener("message", messageHandler);
+
           if (response.error) {
-            reject(new Error(`JavaScript execution error: ${JSON.stringify(response.error)}`));
+            reject(
+              new Error(
+                `JavaScript execution error: ${JSON.stringify(response.error)}`,
+              ),
+            );
           } else if (response.result?.exceptionDetails) {
-            reject(new Error(`JavaScript exception: ${response.result.exceptionDetails.text}`));
+            reject(
+              new Error(
+                `JavaScript exception: ${response.result.exceptionDetails.text}`,
+              ),
+            );
           } else {
             resolve(response.result?.result?.value);
           }
@@ -131,21 +146,21 @@ async function executeJavaScript(code: string): Promise<any> {
       }
     };
 
-    debuggerWs.on('message', messageHandler);
+    debuggerWs.on("message", messageHandler);
     debuggerWs.send(JSON.stringify(message));
   });
 }
 
 async function runWebSocketTests(): Promise<void> {
-  console.log('Starting WebSocket-based tests...');
-  
+  console.log("Starting WebSocket-based tests...");
+
   try {
     // First, load and execute the test file on the device
-    console.log('Loading test module on device...');
-    
+    console.log("Loading test module on device...");
+
     // Read the test file content
-    const testContent = readFileSync('./test/hello-world.test.js', 'utf8');
-    
+    const testContent = readFileSync("./test/hello-world.test.js", "utf8");
+
     // Execute the test content on the device
     await executeJavaScript(`
       // Load the test module
@@ -159,11 +174,10 @@ async function runWebSocketTests(): Promise<void> {
         throw error;
       });
     `);
-    
-    console.log('✅ WebSocket tests completed successfully');
-    
+
+    console.log("✅ WebSocket tests completed successfully");
   } catch (error) {
-    console.error('❌ WebSocket test execution failed:', error);
+    console.error("❌ WebSocket test execution failed:", error);
     throw error;
   }
 }
@@ -181,20 +195,22 @@ async function main() {
     if (!isCI) {
       emulatorProc = spawnEmulator();
     } else {
-      console.log("Running in CI - skipping emulator startup (already handled by CI)");
+      console.log(
+        "Running in CI - skipping emulator startup (already handled by CI)",
+      );
     }
     await waitForDeviceBoot();
 
     // WebSocket-based testing
     console.log("🔗 Running WebSocket-based tests...");
-    
+
     // Start Expo in development mode
     console.log("Starting Expo in development mode...");
     await spawnExpoAndroid();
 
     // Wait a bit for Metro to be fully ready
     console.log("Waiting for Metro to initialize...");
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Connect to Metro debugger and run tests
     await connectToDebugger();

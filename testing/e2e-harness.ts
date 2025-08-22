@@ -1,8 +1,13 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
 import { secureError } from "../util/error-utils";
-import { waitForDeviceBoot, checkEmulatorAvailable, spawnEmulator, waitForAppInstallation, findInstalledAppPackages } from "./emulator-setup";
-
+import {
+  waitForDeviceBoot,
+  checkEmulatorAvailable,
+  spawnEmulator,
+  waitForAppInstallation,
+  findInstalledAppPackages,
+} from "./emulator-setup";
 
 let emulatorProc: ChildProcess | undefined;
 let expoProc: ChildProcess | undefined;
@@ -19,7 +24,6 @@ process.on("SIGINT", () => {
   process.exit(1);
 });
 process.on("exit", killAll);
-
 
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
@@ -49,7 +53,6 @@ async function spawnExpoAndroid() {
     });
   });
 }
-
 
 function spawnMaestroTest() {
   return new Promise<void>((resolve, reject) => {
@@ -83,13 +86,17 @@ async function main() {
     // First, let's see what packages are actually installed
     console.log("\n🔍 Checking what packages are installed...");
     const installedPackages = findInstalledAppPackages();
-    
+
     if (installedPackages.length === 0) {
-      console.log("⚠️  No relevant packages found. Waiting for installation...");
+      console.log(
+        "⚠️  No relevant packages found. Waiting for installation...",
+      );
       // Wait for app to be properly installed on device (5 minute timeout)
       await waitForAppInstallation("com.carpe", 300000);
     } else {
-      console.log(`✅ Found ${installedPackages.length} relevant packages - app appears to be installed!`);
+      console.log(
+        `✅ Found ${installedPackages.length} relevant packages - app appears to be installed!`,
+      );
     }
 
     // Run the tests

@@ -30,7 +30,7 @@ export default defineConfig([
   },
   {
     // Allow console usage only in the secure logging utility
-    files: ["util/error-utils.ts"],
+    files: ["util/error-utils.ts", "testing/*"],
     rules: {
       "no-console": "off"
     }

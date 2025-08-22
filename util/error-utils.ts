@@ -36,7 +36,9 @@ import { observable } from "@legendapp/state";
 type LogValue = string | number | boolean | object | null | undefined;
 
 // Check if we're in development mode
-const isDevelopment = (typeof __DEV__ !== 'undefined' ? __DEV__ : false) || process.env.NODE_ENV === "development";
+const isDevelopment =
+  (typeof __DEV__ !== "undefined" ? __DEV__ : false) ||
+  process.env.NODE_ENV === "development";
 
 /**
  * Error log entry interface
