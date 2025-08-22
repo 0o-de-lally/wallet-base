@@ -1,4 +1,4 @@
-import { spawn, spawnSync, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 
 import { secureError } from "../util/error-utils";
 import {

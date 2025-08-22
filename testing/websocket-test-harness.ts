@@ -1,4 +1,4 @@
-import { spawn, spawnSync, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import { WebSocket } from "ws";
 import { readFileSync } from "fs";
 
@@ -96,7 +96,7 @@ async function connectToDebugger(): Promise<void> {
   });
 }
 
-async function executeJavaScript(code: string): Promise<any> {
+async function executeJavaScript(code: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     if (!debuggerWs || debuggerWs.readyState !== WebSocket.OPEN) {
       reject(new Error("WebSocket not connected"));
@@ -141,7 +141,7 @@ async function executeJavaScript(code: string): Promise<any> {
             resolve(response.result?.result?.value);
           }
         }
-      } catch (parseError) {
+      } catch {
         // Ignore parse errors for other messages
       }
     };

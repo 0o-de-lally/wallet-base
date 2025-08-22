@@ -37,7 +37,7 @@ export function checkEmulatorAvailable(): boolean {
   }
 }
 
-export function checkRunningEmulators(): boolean {
+function checkRunningEmulators(): boolean {
   try {
     const result = spawnSync("adb", ["devices"], { encoding: "utf8" });
     if (result.error) {
@@ -121,7 +121,6 @@ export async function waitForAppInstallation(
   maxWaitTime: number = 60000,
 ): Promise<void> {
   console.log(`Waiting for app installation: ${packageName}`);
-  const startTime = Date.now();
   let attemptCount = 0;
 
   // Create a timeout promise that rejects after maxWaitTime
@@ -135,8 +134,8 @@ export async function waitForAppInstallation(
     }, maxWaitTime);
   });
 
-  // Create the polling promise
-  const pollingPromise = new Promise<void>(async (resolve) => {
+  // Create the polling function
+  const pollForPackage = async (): Promise<void> => {
     while (true) {
       attemptCount++;
       console.log(
@@ -180,7 +179,6 @@ export async function waitForAppInstallation(
 
           if (isInstalled) {
             console.log(`✅ App ${packageName} is installed on device`);
-            resolve();
             return;
           } else {
             console.log(
@@ -202,8 +200,8 @@ export async function waitForAppInstallation(
       console.log(`⏳ Waiting 3 seconds before next check...`);
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-  });
+  };
 
   // Race between timeout and polling - whichever completes first wins
-  return Promise.race([pollingPromise, timeoutPromise]);
+  return Promise.race([pollForPackage(), timeoutPromise]);
 }
