@@ -205,3 +205,32 @@ export async function waitForAppInstallation(
   // Race between timeout and polling - whichever completes first wins
   return Promise.race([pollForPackage(), timeoutPromise]);
 }
+
+export async function spawnExpoAndroid() {
+  return new Promise<void>((resolve, reject) => {
+    // Use bun script for all environments
+    const expoProc = spawn("bun", ["android"], {
+      stdio: ["pipe", "pipe", "inherit"],
+    });
+    let isResolved = false;
+
+    expoProc.stdout?.on("data", (data: Buffer) => {
+      const text = data.toString();
+      process.stdout.write(text); // Forward all output to stdout
+      if (text.includes("Android Bundled") && !isResolved) {
+        isResolved = true;
+        resolve();
+      }
+    });
+
+    expoProc.on("exit", (code: number | null) => {
+      if (!isResolved) {
+        if (code !== 0 && code !== null) {
+          reject(new Error(`Expo failed with code ${code}`));
+        } else {
+          resolve();
+        }
+      }
+    });
+  });
+}
