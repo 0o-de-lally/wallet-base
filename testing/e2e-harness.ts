@@ -1,17 +1,8 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
 import { secureError } from "../util/error-utils";
+import { waitForDeviceBoot, checkEmulatorAvailable, spawnEmulator, waitForAppInstallation, findInstalledAppPackages } from "./emulator-setup";
 
-async function waitForDeviceBoot() {
-  // Wait until device is recognized
-  spawnSync("adb", ["wait-for-device"], { stdio: "inherit" });
-  // Poll for sys.boot_completed
-  while (true) {
-    const result = spawnSync("adb", ["shell", "getprop", "sys.boot_completed"]);
-    if (result.stdout.toString().trim() === "1") break;
-    await new Promise((res) => setTimeout(res, 1000));
-  }
-}
 
 let emulatorProc: ChildProcess | undefined;
 let expoProc: ChildProcess | undefined;
@@ -29,60 +20,13 @@ process.on("SIGINT", () => {
 });
 process.on("exit", killAll);
 
-function checkEmulatorAvailable(): boolean {
-  try {
-    const result = spawnSync("emulator", ["-list-avds"], { encoding: "utf8" });
-    if (result.error) {
-      console.error("Emulator command not found. Make sure Android SDK is installed and emulator is in PATH.");
-      return false;
-    }
-    
-    const avds = result.stdout.trim();
-    if (!avds) {
-      console.error("No Android Virtual Devices (AVDs) found. Please create an AVD first.");
-      return false;
-    }
-    
-    console.log(`Found AVDs: ${avds.split('\n').join(', ')}`);
-    return true;
-  } catch (error) {
-    console.error("Failed to check emulator availability:", error);
-    return false;
-  }
-}
-
-function spawnEmulator() {
-  const isCI = process.env.CI === "true";
-  const args = ["-avd", "$(emulator -list-avds | head -n 1)"];
-
-  if (isCI) {
-    args.push("-no-window");
-  }
-
-  console.log("Starting emulator...");
-  emulatorProc = spawn("emulator", args, {
-    shell: true,
-    stdio: "inherit",
-    detached: true,
-  });
-}
 
 async function spawnExpoAndroid() {
   return new Promise<void>((resolve, reject) => {
-    const isCI = process.env.CI === "true";
-
-    if (isCI) {
-      // In CI, use expo directly with non-interactive flags
-      expoProc = spawn("bunx", ["expo", "run:android", "--no-install"], {
-        stdio: ["pipe", "pipe", "inherit"],
-        env: { ...process.env, EXPO_NO_PROMPTS: "true" },
-      });
-    } else {
-      // Local development, use bun script
-      expoProc = spawn("bun", ["android"], {
-        stdio: ["pipe", "pipe", "inherit"],
-      });
-    }
+    // Use bun script for all environments
+    expoProc = spawn("bun", ["android"], {
+      stdio: ["pipe", "pipe", "inherit"],
+    });
     let isResolved = false;
 
     expoProc.stdout?.on("data", (data: Buffer) => {
@@ -106,6 +50,7 @@ async function spawnExpoAndroid() {
   });
 }
 
+
 function spawnMaestroTest() {
   return new Promise<void>((resolve, reject) => {
     maestroProc = spawn("maestro", ["test", "./maestro"], { stdio: "inherit" });
@@ -127,14 +72,26 @@ async function main() {
   }
 
   try {
-    // Build the Android app first
-    console.log("Building Android app...");
-    await spawnExpoAndroid();
-    
-    // Now start the emulator
-    spawnEmulator();
+    // Start the emulator first
+    emulatorProc = spawnEmulator();
     await waitForDeviceBoot();
+
+    // Build and install the Android app
+    console.log("Building and installing Android app...");
+    await spawnExpoAndroid();
+
+    // First, let's see what packages are actually installed
+    console.log("\n🔍 Checking what packages are installed...");
+    const installedPackages = findInstalledAppPackages();
     
+    if (installedPackages.length === 0) {
+      console.log("⚠️  No relevant packages found. Waiting for installation...");
+      // Wait for app to be properly installed on device (5 minute timeout)
+      await waitForAppInstallation("com.carpe", 300000);
+    } else {
+      console.log(`✅ Found ${installedPackages.length} relevant packages - app appears to be installed!`);
+    }
+
     // Run the tests
     await spawnMaestroTest();
   } catch (err) {

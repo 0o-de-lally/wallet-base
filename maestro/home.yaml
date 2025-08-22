@@ -1,6 +1,6 @@
-appId: app.carpe.wallet_base
+appId: com.carpe
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "Wallet Setup"
+    visible: Wallet Setup
     timeout: 300000
