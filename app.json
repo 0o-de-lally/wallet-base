@@ -44,7 +44,8 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withFlagSecure.js"
+      "./plugins/withFlagSecure.js",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
