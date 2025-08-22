@@ -1,4 +1,4 @@
-appId: com.carpe
+appId: app.carpe.wallet_base
 ---
 - launchApp
 - extendedWaitUntil:
