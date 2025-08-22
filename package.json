@@ -7,6 +7,7 @@
     "android": "expo run android --variant debug",
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
+    "test:debug": "bun test tests/debug-execution.test.ts",
     "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:tsc": "bunx tsc --noEmit",
