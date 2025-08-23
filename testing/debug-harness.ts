@@ -30,11 +30,54 @@ export class ReactNativeDebugClient {
    * Get list of available debug targets from Metro bundler
    */
   async getAvailableTargets(): Promise<DebugTarget[]> {
-    const response = await fetch('http://localhost:8081/json/list');
-    if (!response.ok) {
-      throw new Error(`Failed to get debug targets: ${response.status} ${response.statusText}`);
+    // Try multiple times as sometimes the debugger targets take time to appear
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const response = await fetch('http://localhost:8081/json/list', {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/91.0.4472.124 Safari/537.36'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to get debug targets: ${response.status} ${response.statusText}`);
+        }
+        
+        const targets = await response.json();
+        
+        if (!Array.isArray(targets)) {
+          throw new Error('Invalid response format: expected array');
+        }
+        
+        // If we got targets, return them
+        if (targets.length > 0) {
+          return targets;
+        }
+        
+        // If no targets found, wait and retry (except on last attempt)
+        if (i < maxRetries - 1) {
+          console.log(`No debug targets found, retrying in 1 second... (attempt ${i + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+        
+        throw new Error('No React Native debug targets found. Make sure your app is running with remote debugging enabled.');
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        if (i < maxRetries - 1) {
+          console.log(`Connection attempt ${i + 1} failed:`, error.message);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
     }
-    return await response.json();
+    
+    throw lastError || new Error('Failed to connect to Metro debugger');
   }
 
   /**

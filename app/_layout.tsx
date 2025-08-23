@@ -1,5 +1,18 @@
 import "../util/polyfills";
 
+// Load test modules in development mode for Runtime.evaluate testing
+if (__DEV__) {
+  // Import and expose test modules globally for debugger access
+  import("../util/secure-store").then((SecureStore) => {
+    (globalThis as any).__TEST_MODULES__ = {
+      SecureStore,
+    };
+    console.log("✅ Test modules loaded for debugger access");
+  }).catch((error) => {
+    console.warn("❌ Failed to load test modules:", error);
+  });
+}
+
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { ModalProvider } from "../context/ModalContext";
