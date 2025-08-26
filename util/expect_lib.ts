@@ -73,7 +73,10 @@ function getProperty(obj: any, path: string): any {
 
 // Create matcher implementation
 function createMatchers(actual: any, isNot: boolean = false): Matchers {
-  const matchers: Matchers = {
+  const matchers: Matchers = {} as Matchers;
+  
+  // Define matchers without circular references
+  Object.assign(matchers, {
     toBe: (expected: any) => {
       const pass = Object.is(actual, expected);
       if (isNot ? pass : !pass) {
@@ -250,10 +253,17 @@ function createMatchers(actual: any, isNot: boolean = false): Matchers {
         const errorMessage = thrownError instanceof Error ? thrownError.message : String(thrownError);
         throw new Error(`Expected function ${isNot ? 'not ' : ''}to throw${expected ? ` ${expected}` : ''}, but it threw: ${errorMessage}`);
       }
+    }
+  });
+  
+  // Add .not property after matchers are defined to avoid circular references
+  Object.defineProperty(matchers, 'not', {
+    get() {
+      return createMatchers(actual, !isNot);
     },
-    
-    not: createMatchers(actual, !isNot)
-  };
+    enumerable: false,
+    configurable: true
+  });
   
   return matchers;
 }
