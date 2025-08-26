@@ -2,18 +2,17 @@
 // This component exposes test modules globally for debugger access
 
 import React from "react";
-import { expect } from "bun:test";
 import * as SecureStore from "../util/secure-store";
+import expect from "expect";
 
-
-// Bun test examples to verify test runner picks up errors
+// Test functions for debugger access using expect library
 function testPasses() {
-  expect("hello").toBe("hello");
-};
+  return expect("hello").toBe("hello");
+}
 
 function testFails() {
-  expect("world").toBe("hello");
-};
+  return expect("world").toBe("hello");
+}
 
 const TestModuleExposer: React.FC = () => {
   (globalThis as any).__TEST_MODULES__ = {
