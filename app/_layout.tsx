@@ -1,20 +1,8 @@
 import "../util/polyfills";
 
-// Load test modules in development mode for Runtime.evaluate testing
-if (__DEV__) {
-  // Import and expose test modules globally for debugger access
-  import("../util/secure-store").then((SecureStore) => {
-    (globalThis as any).__TEST_MODULES__ = {
-      SecureStore,
-    };
-    console.log("✅ Test modules loaded for debugger access");
-  }).catch((error) => {
-    console.warn("❌ Failed to load test modules:", error);
-  });
-}
-
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
+import TestModuleExposer from "./_tests";
 import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
@@ -157,6 +145,7 @@ const RootLayout = observer(() => {
   // Return main app if authenticated
   return (
     <Layout>
+      {__DEV__ && <TestModuleExposer />}
       <Stack
         screenOptions={{
           headerStyle: {
