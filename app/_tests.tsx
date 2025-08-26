@@ -3,9 +3,9 @@
 
 import React from "react";
 import * as SecureStore from "../util/secure-store";
-import expect from "expect";
+import { expect } from "../util/expect_lib";
 
-// Test functions for debugger access using expect library
+// Test functions for debugger access using custom expect library
 function testPasses() {
   return expect("hello").toBe("hello");
 }
