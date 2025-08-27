@@ -6,7 +6,12 @@ import pluginReact from "eslint-plugin-react";
 
 export default defineConfig([
   {
-    ignores: ["metro.config.js"]
+    ignores: [
+      "metro.config.js", 
+      "**/dist/**",
+      "**/node_modules/**",
+      ".expo/**"
+    ]
   },
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], languageOptions: { globals: { ...globals.browser, ...globals.node } } },
@@ -29,10 +34,34 @@ export default defineConfig([
     }
   },
   {
-    // Allow console usage only in the secure logging utility
-    files: ["util/error-utils.ts", "testing/*"],
+    // Allow console usage in utilities, CLI, and device test files
+    files: [
+      "util/error-utils.ts", 
+      "testing/*", 
+      "packages/rn-test-harness/src/cli.ts",
+      "packages/rn-test-harness/src/device-test-utils.ts",
+      "packages/rn-test-harness/src/test-harness.ts",
+      "packages/rn-test-harness/src/TestModuleExposer.tsx",
+      "packages/rn-test-harness/src/debug-client.ts"
+    ],
     rules: {
       "no-console": "off"
+    }
+  },
+  {
+    // Allow any types in expect library and debug harness as they handle arbitrary values
+    files: [
+      "packages/rn-test-harness/src/expect-lib.ts",
+      "packages/rn-test-harness/src/test-harness.ts",
+      "packages/rn-test-harness/src/device-test-utils.ts",
+      "packages/rn-test-harness/src/TestModuleExposer.tsx",
+      "packages/rn-test-harness/src/debug-client.ts",
+      "testing/debug-harness.ts"
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-extra-boolean-cast": "off",
+      "@typescript-eslint/ban-ts-comment": "off"
     }
   }
 ]);

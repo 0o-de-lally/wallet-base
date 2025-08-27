@@ -50,7 +50,6 @@ const RootLayout = observer(() => {
   const [authChecking, setAuthChecking] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
-
   // Function to authenticate the user
   const authenticate = async () => {
     try {
@@ -165,6 +164,5 @@ const RootLayout = observer(() => {
     </Layout>
   );
 });
-
 
 export default RootLayout;

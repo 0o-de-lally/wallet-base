@@ -7,9 +7,9 @@ export {
   test,
   getRegisteredTests,
   createRunAllTests,
-  loadTestFunctions
-} from './device-test-utils';
+  loadTestFunctions,
+} from "./device-test-utils";
 
-export { default as TestModuleExposer } from './TestModuleExposer';
+export { default as TestModuleExposer } from "./TestModuleExposer";
 
-export { expect } from './expect-lib';
+export { expect } from "./expect-lib";

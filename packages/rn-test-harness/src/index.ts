@@ -5,5 +5,5 @@
 // - '@wallet-test/rn-test-harness/device' for React Native apps
 
 // Re-export everything for backwards compatibility
-export * from './node';
-export * from './device';
+export * from "./node";
+export * from "./device";

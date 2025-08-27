@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket from "ws";
 
 export interface DebugTarget {
   id: string;
@@ -23,7 +23,10 @@ interface ChromeDevToolsResponse {
 export class ReactNativeDebugClient {
   private ws: WebSocket | null = null;
   private messageId = 1;
-  private pendingMessages = new Map<number, { resolve: (value: any) => void; reject: (error: any) => void }>();
+  private pendingMessages = new Map<
+    number,
+    { resolve: (value: any) => void; reject: (error: any) => void }
+  >();
   private isConnected = false;
 
   /**
@@ -33,51 +36,59 @@ export class ReactNativeDebugClient {
     // Try multiple times as sometimes the debugger targets take time to appear
     const maxRetries = 3;
     let lastError: Error | null = null;
-    
+
     for (let i = 0; i < maxRetries; i++) {
       try {
-        const response = await fetch('http://localhost:8081/json/list', {
+        const response = await fetch("http://localhost:8081/json/list", {
           headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/91.0.4472.124 Safari/537.36'
-          }
+            Accept: "application/json",
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/91.0.4472.124 Safari/537.36",
+          },
         });
-        
+
         if (!response.ok) {
-          throw new Error(`Failed to get debug targets: ${response.status} ${response.statusText}`);
+          throw new Error(
+            `Failed to get debug targets: ${response.status} ${response.statusText}`,
+          );
         }
-        
+
         const targets = await response.json();
-        
+
         if (!Array.isArray(targets)) {
-          throw new Error('Invalid response format: expected array');
+          throw new Error("Invalid response format: expected array");
         }
-        
+
         // If we got targets, return them
         if (targets.length > 0) {
           return targets;
         }
-        
+
         // If no targets found, wait and retry (except on last attempt)
         if (i < maxRetries - 1) {
-          console.log(`No debug targets found, retrying in 1 second... (attempt ${i + 1}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(
+            `No debug targets found, retrying in 1 second... (attempt ${i + 1}/${maxRetries})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           continue;
         }
-        
-        throw new Error('No React Native debug targets found. Make sure your app is running with remote debugging enabled.');
-        
+
+        throw new Error(
+          "No React Native debug targets found. Make sure your app is running with remote debugging enabled.",
+        );
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (i < maxRetries - 1) {
-          console.log(`Connection attempt ${i + 1} failed:`, error.message);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.log(`Connection attempt ${i + 1} failed:`, errorMessage);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
     }
-    
-    throw lastError || new Error('Failed to connect to Metro debugger');
+
+    throw lastError || new Error("Failed to connect to Metro debugger");
   }
 
   /**
@@ -86,37 +97,38 @@ export class ReactNativeDebugClient {
   async connect(webSocketUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(webSocketUrl);
-      
+
       const timeout = setTimeout(() => {
-        reject(new Error('Connection timeout after 5 seconds'));
+        reject(new Error("Connection timeout after 5 seconds"));
       }, 5000);
 
-      this.ws.on('open', () => {
+      this.ws.on("open", () => {
         clearTimeout(timeout);
         this.isConnected = true;
         resolve();
       });
 
-      this.ws.on('message', (data) => {
+      this.ws.on("message", (data) => {
         try {
           const message: ChromeDevToolsResponse = JSON.parse(data.toString());
-          
+
           if (message.id && this.pendingMessages.has(message.id)) {
-            const { resolve: resolver, reject: rejecter } = this.pendingMessages.get(message.id)!;
+            const { resolve: resolver, reject: rejecter } =
+              this.pendingMessages.get(message.id)!;
             this.pendingMessages.delete(message.id);
-            
+
             if (message.error) {
-              rejecter(new Error(message.error.message || 'Unknown error'));
+              rejecter(new Error(message.error.message || "Unknown error"));
             } else {
               resolver(message);
             }
           }
-        } catch (e) {
+        } catch {
           // Ignore non-JSON messages (console logs, runtime events, etc.)
         }
       });
 
-      this.ws.on('error', (error) => {
+      this.ws.on("error", (error) => {
         clearTimeout(timeout);
         reject(error);
       });
@@ -128,7 +140,7 @@ export class ReactNativeDebugClient {
    */
   async sendCommand(method: string, params?: any): Promise<any> {
     if (!this.isConnected || !this.ws) {
-      throw new Error('Not connected to debug target');
+      throw new Error("Not connected to debug target");
     }
 
     const id = this.messageId++;
@@ -136,9 +148,9 @@ export class ReactNativeDebugClient {
 
     return new Promise((resolve, reject) => {
       this.pendingMessages.set(id, { resolve, reject });
-      
+
       this.ws!.send(JSON.stringify(message));
-      
+
       // 10 second timeout for responses
       const timeout = setTimeout(() => {
         if (this.pendingMessages.has(id)) {
@@ -150,7 +162,7 @@ export class ReactNativeDebugClient {
       // Clear timeout when resolved
       const originalResolve = this.pendingMessages.get(id)?.resolve;
       const originalReject = this.pendingMessages.get(id)?.reject;
-      
+
       if (originalResolve && originalReject) {
         this.pendingMessages.set(id, {
           resolve: (value) => {
@@ -160,7 +172,7 @@ export class ReactNativeDebugClient {
           reject: (error) => {
             clearTimeout(timeout);
             originalReject(error);
-          }
+          },
         });
       }
     });
@@ -170,43 +182,46 @@ export class ReactNativeDebugClient {
    * Evaluate JavaScript code on the React Native device
    */
   async evaluateJavaScript(expression: string): Promise<any> {
-    const response = await this.sendCommand('Runtime.evaluate', {
+    const response = await this.sendCommand("Runtime.evaluate", {
       expression,
       returnByValue: true,
-      awaitPromise: true
+      awaitPromise: true,
     });
-    
+
     // Handle nested result structure (Metro/RN specific)
     const result = response.result?.result || response.result;
-    
+
     if (response.result?.exceptionDetails) {
       const exception = response.result.exceptionDetails.exception;
-      const errorMessage = exception?.description || response.result.exceptionDetails.text || 'Unknown error';
+      const errorMessage =
+        exception?.description ||
+        response.result.exceptionDetails.text ||
+        "Unknown error";
       throw new Error(`JavaScript execution failed: ${errorMessage}`);
     }
-    
+
     // Return the actual value
     if (result?.value !== undefined) {
       return result.value;
     }
-    
+
     // Handle object references and other types without returnByValue
-    if (result?.type === 'object' && result?.description) {
+    if (result?.type === "object" && result?.description) {
       return result.description;
     }
-    
-    if (result?.type === 'number' && result?.description) {
+
+    if (result?.type === "number" && result?.description) {
       return Number(result.description);
     }
-    
-    if (result?.type === 'string' && result?.description) {
+
+    if (result?.type === "string" && result?.description) {
       return result.description;
     }
-    
-    if (result?.type === 'boolean' && result?.description) {
-      return result.description === 'true';
+
+    if (result?.type === "boolean" && result?.description) {
+      return result.description === "true";
     }
-    
+
     return result;
   }
 
@@ -214,28 +229,28 @@ export class ReactNativeDebugClient {
    * Enable Runtime domain for JavaScript evaluation
    */
   async enableRuntime(): Promise<void> {
-    await this.sendCommand('Runtime.enable');
+    await this.sendCommand("Runtime.enable");
   }
 
   /**
    * Enable Console domain for console message capture
    */
   async enableConsole(): Promise<void> {
-    await this.sendCommand('Console.enable');
+    await this.sendCommand("Console.enable");
   }
 
   /**
    * Enable Debugger domain for debugging capabilities
    */
   async enableDebugger(): Promise<void> {
-    await this.sendCommand('Debugger.enable');
+    await this.sendCommand("Debugger.enable");
   }
 
   /**
    * Get information about the JavaScript runtime
    */
   async getRuntimeInfo(): Promise<any> {
-    return await this.sendCommand('Runtime.getIsolateId');
+    return await this.sendCommand("Runtime.getIsolateId");
   }
 
   /**
@@ -263,42 +278,48 @@ export class ReactNativeDebugClient {
  */
 export async function connectToFirstTarget(): Promise<ReactNativeDebugClient> {
   const client = new ReactNativeDebugClient();
-  
+
   const targets = await client.getAvailableTargets();
   if (targets.length === 0) {
-    throw new Error('No React Native debug targets found. Make sure your app is running.');
+    throw new Error(
+      "No React Native debug targets found. Make sure your app is running.",
+    );
   }
-  
+
   const target = targets[0];
   if (!target.webSocketDebuggerUrl) {
-    throw new Error('Target has no WebSocket debugger URL');
+    throw new Error("Target has no WebSocket debugger URL");
   }
-  
+
   await client.connect(target.webSocketDebuggerUrl);
   await client.enableRuntime();
-  
+
   return client;
 }
 
 /**
  * Helper function to find a target by app ID
  */
-export async function connectToTargetByAppId(appId: string): Promise<ReactNativeDebugClient> {
+export async function connectToTargetByAppId(
+  appId: string,
+): Promise<ReactNativeDebugClient> {
   const client = new ReactNativeDebugClient();
-  
+
   const targets = await client.getAvailableTargets();
-  const target = targets.find(t => t.appId === appId || t.title?.includes(appId));
-  
+  const target = targets.find(
+    (t) => t.appId === appId || t.title?.includes(appId),
+  );
+
   if (!target) {
     throw new Error(`No target found with app ID: ${appId}`);
   }
-  
+
   if (!target.webSocketDebuggerUrl) {
-    throw new Error('Target has no WebSocket debugger URL');
+    throw new Error("Target has no WebSocket debugger URL");
   }
-  
+
   await client.connect(target.webSocketDebuggerUrl);
   await client.enableRuntime();
-  
+
   return client;
 }
