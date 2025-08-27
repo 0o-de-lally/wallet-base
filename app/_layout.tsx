@@ -33,6 +33,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       <ScreenCaptureProtectionProvider>
         <View style={styles.appWrapper}>
           <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+          {/* Render TestModuleExposer at top level in dev mode for testing */}
+          {__DEV__ && <TestModuleExposer />}
           {children}
         </View>
       </ScreenCaptureProtectionProvider>
@@ -47,6 +49,7 @@ const RootLayout = observer(() => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+
 
   // Function to authenticate the user
   const authenticate = async () => {
@@ -145,7 +148,6 @@ const RootLayout = observer(() => {
   // Return main app if authenticated
   return (
     <Layout>
-      {__DEV__ && <TestModuleExposer />}
       <Stack
         screenOptions={{
           headerStyle: {
@@ -163,5 +165,6 @@ const RootLayout = observer(() => {
     </Layout>
   );
 });
+
 
 export default RootLayout;

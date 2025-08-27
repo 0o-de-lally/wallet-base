@@ -95,6 +95,15 @@ export class UnitTestHarness {
     this.logger.log('\nRunning device-side tests...');
 
     try {
+      // First check if test modules are available
+      const testModulesAvailable = await this.debugClient.evaluateJavaScript(`
+        typeof globalThis.__TEST_MODULES__ !== 'undefined' && typeof globalThis.__TEST_MODULES__.runAllTests === 'function'
+      `);
+
+      if (!testModulesAvailable) {
+        throw new Error('Test modules not available. Make sure TestModuleExposer is rendered in your React Native app.');
+      }
+
       // Get test results from device
       const testResults = await this.debugClient.evaluateJavaScript(`
         globalThis.__TEST_MODULES__.runAllTests()
@@ -106,17 +115,35 @@ export class UnitTestHarness {
       assertDefined(testResults.results, 'Test results should be defined');
       assertGreaterThan(testResults.totalTests, 0, 'Should have at least one test');
 
-      // Process individual test results
+      // Group test results by filename
       const results = testResults.results;
-
+      const resultsByFile: { [filename: string]: any[] } = {};
+      
+      // Group results by filename
       for (const result of results) {
-        if (result.success) {
-          this.logger.success(result.testName || `Test ${result.index}`);
-        } else {
-          this.logger.failure(
-            result.testName || `Test ${result.index}`,
-            result.error || 'Unknown error'
-          );
+        const filename = result.filename || 'unknown';
+        if (!resultsByFile[filename]) {
+          resultsByFile[filename] = [];
+        }
+        resultsByFile[filename].push(result);
+      }
+
+      // Process and display results grouped by filename
+      for (const [filename, fileResults] of Object.entries(resultsByFile)) {
+        // Clean up filename for display (remove leading path parts)
+        const displayName = filename.replace(/^\.\//, '').replace(/^.*\//, '') || filename;
+        
+        this.logger.log(`\n${displayName}:`);
+        
+        for (const result of fileResults) {
+          if (result.success) {
+            this.logger.success(result.testName || `Test ${result.index}`);
+          } else {
+            this.logger.failure(
+              result.testName || `Test ${result.index}`,
+              result.error || 'Unknown error'
+            );
+          }
         }
       }
 

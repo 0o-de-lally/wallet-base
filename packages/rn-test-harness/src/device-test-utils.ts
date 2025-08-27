@@ -34,31 +34,42 @@ export function defineTest(name: string, testFn: () => void) {
 }
 
 // Jest/Bun-style test function
-const registeredTests: Array<{ name: string, testFn: () => void }> = [];
+const registeredTests: Array<{ name: string, testFn: () => void, filename?: string }> = [];
 
 export function test(name: string, testFn: () => void) {
-  registeredTests.push({ name, testFn });
+  const filename = (globalThis as any).__CURRENT_TEST_FILE__ || 'unknown';
+  registeredTests.push({ name, testFn, filename });
 }
 
 // Get all registered tests
 export function getRegisteredTests() {
-  return registeredTests.map(({ name, testFn }) => defineTest(name, testFn));
+  return registeredTests.map(({ name, testFn, filename }) => ({
+    testFunction: defineTest(name, testFn),
+    filename,
+    testName: name
+  }));
 }
 
 // Function to run all tests and return results
-export function createRunAllTests(testFunctions: (() => any)[]) {
+export function createRunAllTests(testObjects: Array<{ testFunction: () => any, filename?: string, testName?: string }>) {
   return () => {
     const results = [];
-    for (let i = 0; i < testFunctions.length; i++) {
+    for (let i = 0; i < testObjects.length; i++) {
       try {
-        const result = testFunctions[i]();
-        results.push({ index: i, ...result });
+        const testObj = testObjects[i];
+        const result = testObj.testFunction();
+        results.push({ 
+          index: i, 
+          filename: testObj.filename,
+          ...result 
+        });
       } catch (error: any) {
         results.push({
           index: i,
           success: false,
           error: error.message,
-          testName: 'test-' + i
+          testName: testObjects[i].testName || 'test-' + i,
+          filename: testObjects[i].filename
         });
       }
     }
@@ -69,7 +80,7 @@ export function createRunAllTests(testFunctions: (() => any)[]) {
 
 // Auto-discover and load test functions from .test.tsx files
 export function loadTestFunctions() {
-  const allTestFunctions: (() => any)[] = [];
+  const allTestObjects: Array<{ testFunction: () => any, filename?: string, testName?: string }> = [];
   
   // Clear previously registered tests
   registeredTests.length = 0;
@@ -82,15 +93,25 @@ export function loadTestFunctions() {
     
     for (const testPath of testModules.keys()) {
       try {
+        // Set current filename for test registration
+        (globalThis as any).__CURRENT_TEST_FILE__ = testPath;
+        
         // Import the test module - this will execute any test() calls
         testModules(testPath);
+        
+        // Clear current filename
+        delete (globalThis as any).__CURRENT_TEST_FILE__;
         
       } catch (error) {
         console.warn(`Failed to load test file ${testPath}:`, error);
         // Add a test that reports the import failure
-        allTestFunctions.push(defineTest(`import-error-${testPath.replace(/[^a-zA-Z0-9]/g, '-')}`, () => {
-          throw new Error(`Failed to import ${testPath}: ${error}`);
-        }));
+        allTestObjects.push({
+          testFunction: defineTest(`import-error-${testPath.replace(/[^a-zA-Z0-9]/g, '-')}`, () => {
+            throw new Error(`Failed to import ${testPath}: ${error}`);
+          }),
+          filename: testPath,
+          testName: `Import Error: ${testPath}`
+        });
       }
     }
     
@@ -101,8 +122,8 @@ export function loadTestFunctions() {
   }
   
   // Add all registered tests
-  allTestFunctions.push(...getRegisteredTests());
+  allTestObjects.push(...getRegisteredTests());
 
-  console.log(`Compiled ${allTestFunctions.length} test functions`);
-  return allTestFunctions;
+  console.log(`Compiled ${allTestObjects.length} test functions`);
+  return allTestObjects;
 }

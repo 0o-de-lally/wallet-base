@@ -452,6 +452,175 @@ async runDeviceTests() {
 | **Error Stack Traces** | ✅ Real source maps | ⚠️ Mock source maps |
 | **Debugging Experience** | ✅ Chrome DevTools | ✅ Chrome DevTools |
 
+### Why @testing-library/react-native is Inadequate
+
+While [`@testing-library/react-native`](https://www.npmjs.com/package/@testing-library/react-native) is a popular choice for React Native testing, it has fundamental limitations that make it unsuitable for comprehensive application testing:
+
+#### The Simulation Problem
+
+`@testing-library/react-native` runs on top of `react-test-renderer`, which creates a **simulated React Native environment in Node.js**. This approach has several critical flaws:
+
+```typescript
+// What @testing-library/react-native does
+import { render } from '@testing-library/react-native';
+
+test('SecureStore save', async () => {
+  // ❌ This runs in Node.js, not React Native
+  // ❌ SecureStore is mocked, not real
+  // ❌ No actual platform storage is involved
+  const { getByText } = render(<MySecureComponent />);
+  // ... test runs against fake environment
+});
+```
+
+**Problems with this approach:**
+
+1. **Fake Runtime**: Tests run in Node.js V8, not React Native's JavaScript Core
+2. **Mock Native Modules**: All platform APIs (SecureStore, AsyncStorage, etc.) are stubbed
+3. **No Platform Behavior**: iOS vs Android differences cannot be tested
+4. **Synthetic Component Tree**: `react-test-renderer` creates fake DOM-like structures
+5. **Mock Bridge**: The React Native bridge to native code is completely simulated
+
+#### react-test-renderer Limitations
+
+The underlying `react-test-renderer` has these fundamental issues for React Native:
+
+```typescript
+// react-test-renderer creates this fake structure:
+{
+  "type": "View",
+  "props": {},
+  "children": [
+    {
+      "type": "Text", 
+      "props": { "children": "Hello" },
+      "children": ["Hello"]
+    }
+  ]
+}
+// ❌ This is NOT how React Native actually renders components
+// ❌ No actual native Views or Text components are created
+// ❌ No platform-specific rendering behavior is tested
+```
+
+#### Real-World Failure Examples
+
+Here are scenarios where `@testing-library/react-native` gives false positives:
+
+**Example 1: SecureStore Platform Differences**
+```typescript
+// @testing-library/react-native test - PASSES ✅
+test('saves data securely', async () => {
+  await SecureStore.setItemAsync('key', 'value'); // Mocked - always "works"
+  expect(await SecureStore.getItemAsync('key')).toBe('value');
+});
+
+// Real device behavior - FAILS ❌
+// - iOS: Requires keychain access permissions
+// - Android: May fail due to hardware security module issues  
+// - Biometric lock: User must authenticate first
+// - Background mode: Storage may be locked
+```
+
+**Example 2: Platform-Specific Components**
+```typescript
+// @testing-library/react-native test - PASSES ✅  
+test('renders platform component', () => {
+  const { getByTestId } = render(<PlatformSpecificComponent />);
+  expect(getByTestId('my-component')).toBeTruthy();
+});
+
+// Real device behavior - FAILS ❌
+// - Component may render differently on iOS vs Android
+// - Native styling may break layout
+// - Platform-specific props may be ignored
+// - Accessibility behaviors differ between platforms
+```
+
+#### Device Testing vs @testing-library/react-native
+
+| Aspect | Device Testing (Our Approach) | @testing-library/react-native |
+|--------|--------------------------------|--------------------------------|
+| **Runtime** | ✅ Real React Native JavaScript Core | ❌ Node.js V8 simulation |
+| **Native Modules** | ✅ Actual SecureStore, AsyncStorage, etc. | ❌ Mocked implementations |
+| **Component Rendering** | ✅ Real native Views and Components | ❌ JSON tree simulation |
+| **Platform APIs** | ✅ Real iOS/Android behavior | ❌ Mock responses |
+| **Error Conditions** | ✅ Real platform errors (permissions, etc.) | ❌ Synthetic mock errors |
+| **Performance** | ✅ Real memory/CPU constraints | ❌ Node.js performance profile |
+| **Debugging** | ✅ Real React Native stack traces | ❌ Mock stack traces |
+| **Network** | ✅ Platform network stack | ❌ Node.js fetch/http mocks |
+
+#### When to Use Each Approach
+
+**Use Device Testing (Our Approach) for:**
+- Native module integration (SecureStore, AsyncStorage, etc.)
+- Platform-specific behavior testing
+- Cross-platform compatibility validation
+- Performance testing under real constraints
+- Security and permissions testing
+- Network behavior validation
+
+**Use @testing-library/react-native for:**
+- Pure component logic (no native dependencies)
+- UI interaction patterns (if isolated from platform)
+- Snapshot testing (with caution)
+- Fast feedback loops during development
+
+**Never rely solely on @testing-library/react-native for:**
+- Production confidence in React Native apps
+- Native module functionality
+- Platform-specific features
+- Security-critical components
+- Performance validation
+
+#### Historical Context: react-native-test-runner
+
+It's worth noting that [`react-native-test-runner`](https://www.npmjs.com/package/react-native-test-runner) attempted a similar device-side testing approach and was conceptually much more promising than simulation-based tools:
+
+```json
+{
+  "name": "react-native-test-runner",
+  "version": "5.0.0",
+  "description": "Run unit tests in react native environment",
+  "last-published": "4 years ago"
+}
+```
+
+**What react-native-test-runner got right:**
+- ✅ Recognized the need for device-side testing
+- ✅ Attempted to run tests in actual React Native environment
+- ✅ Understood that mocking native modules was insufficient
+
+**Why it didn't succeed:**
+- ❌ **Abandoned**: Last published 4 years ago (2020), no maintenance
+- ❌ **Complexity**: Required complex setup and configuration
+- ❌ **Limited tooling**: No modern CLI interface or developer experience
+- ❌ **Platform compatibility**: Struggled with newer React Native versions
+- ❌ **Documentation**: Poor documentation and examples
+- ❌ **Integration**: Difficult to integrate with existing build systems
+
+**Our approach vs react-native-test-runner:**
+
+| Feature | Our RN Test Harness | react-native-test-runner |
+|---------|---------------------|--------------------------|
+| **Active Maintenance** | ✅ Current, actively developed | ❌ Abandoned 4+ years |
+| **Modern RN Support** | ✅ React Native 0.70+ | ❌ Legacy RN versions only |
+| **Chrome DevTools Protocol** | ✅ Direct WebSocket connection | ❌ Custom protocol |
+| **CLI Interface** | ✅ Simple `rn-test-harness test` | ❌ Complex configuration |
+| **TypeScript Support** | ✅ Full TypeScript integration | ⚠️ Limited TypeScript |
+| **Test Discovery** | ✅ Automatic `*.test.tsx` discovery | ❌ Manual test registration |
+| **Developer Experience** | ✅ Jest/Bun-style `test()` syntax | ❌ Custom test format |
+| **Error Reporting** | ✅ Colored output, grouped by file | ❌ Basic text output |
+| **Runtime Separation** | ✅ Separate Node.js/RN entry points | ❌ Mixed runtime issues |
+
+The failure of `react-native-test-runner` despite being conceptually correct demonstrates the importance of:
+1. **Ongoing maintenance** and community support
+2. **Developer experience** that matches modern expectations
+3. **Simple integration** with existing toolchains
+4. **Comprehensive documentation** and examples
+
+Our implementation learns from both the successes of `react-native-test-runner`'s core concept and its failure to provide a sustainable, maintainable solution.
+
 ### Performance Implications
 
 #### Traditional Testing

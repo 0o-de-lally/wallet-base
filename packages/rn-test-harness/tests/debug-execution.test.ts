@@ -1,5 +1,5 @@
 import { test, expect, beforeAll, afterAll } from 'bun:test';
-import { ReactNativeDebugClient, connectToFirstTarget } from '../testing/debug-harness';
+import { ReactNativeDebugClient, connectToFirstTarget } from '../src/debug-client';
 
 // Test suite
 let debugClient: ReactNativeDebugClient;

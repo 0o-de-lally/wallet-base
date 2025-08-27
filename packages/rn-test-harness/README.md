@@ -13,14 +13,14 @@ A standalone testing harness for React Native applications that enables device-s
 
 ## Why Test on Device?
 
-Unlike traditional React Native testing tools (jest-expo, etc.) that use mocks and simulations, this harness runs your tests directly on the target runtime. This ensures:
+Unlike traditional React Native testing tools (jest-expo, @testing-library/react-native, etc.) that use mocks and simulations, this harness runs your tests directly on the target runtime. This ensures:
 
 - **Real Environment Testing** - Tests run on actual React Native runtime, not Node.js
 - **Native Module Access** - Direct access to platform-specific APIs without mocking
 - **Runtime Behavior** - Catch platform-specific bugs and runtime differences
 - **Production Parity** - Test environment matches your production environment
 
-See [architecture.md](./ARCHITECTURE.md) for detailed explanation of the testing philosophy and technical implementation.
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of the testing philosophy and technical implementation, including comprehensive analysis of why `@testing-library/react-native` and `react-test-renderer` are inadequate for React Native testing, and historical context about previous attempts like `react-native-test-runner`.
 
 ## Installation
 
