@@ -1,6 +1,6 @@
 // Secure store tests - testing the actual secure storage functionality
 import { expect } from "./expect_lib";
-import { test } from "./test-utils";
+import { test } from "@wallet-test/rn-test-harness/device";
 import * as SecureStore from "./secure-store";
 
 test('should have SecureStore module defined', () => {

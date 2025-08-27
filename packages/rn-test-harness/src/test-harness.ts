@@ -1,12 +1,12 @@
 /**
  * Standalone unit test harness for device-side React Native tests
- * No dependencies on Bun/Jest - creates its own test logging facade
+ * No dependencies on external test frameworks - creates its own test logging facade
  */
 
-import { ReactNativeDebugClient, connectToFirstTarget } from './debug-harness';
+import { ReactNativeDebugClient, connectToFirstTarget } from './debug-client';
 
 // Simple test logger facade
-class TestLogger {
+export class TestLogger {
   private passedTests = 0;
   private failedTests = 0;
   private totalTests = 0;
@@ -45,31 +45,22 @@ class TestLogger {
   }
 }
 
-// Import our existing expect library for assertions
-import { expect, assert } from '../util/expect_lib';
-
-// Convenience assertion wrappers using our expect library
-function assertEquals(actual: any, expected: any, message?: string) {
-  try {
-    expect(actual).toBe(expected);
-  } catch (error) {
-    throw new Error(message || error.message);
-  }
-}
-
-function assertGreaterThan(actual: number, expected: number, message?: string) {
-  try {
-    expect(actual).toBeGreaterThan(expected);
-  } catch (error) {
-    throw new Error(message || error.message);
+// Simple assertion functions (no external dependencies)
+function assert(condition: boolean, message: string = 'Assertion failed') {
+  if (!condition) {
+    throw new Error(message);
   }
 }
 
 function assertDefined(value: any, message?: string) {
-  try {
-    expect(value).toBeDefined();
-  } catch (error) {
-    throw new Error(message || error.message);
+  if (value === undefined) {
+    throw new Error(message || 'Expected value to be defined');
+  }
+}
+
+function assertGreaterThan(actual: number, expected: number, message?: string) {
+  if (actual <= expected) {
+    throw new Error(message || `Expected ${actual} to be greater than ${expected}`);
   }
 }
 
@@ -111,9 +102,9 @@ export class UnitTestHarness {
 
       this.logger.log(`Retrieved ${testResults.totalTests} test results from device`);
 
-      // Validate test results structure using our expect library
-      expect(testResults.results).toBeDefined();
-      expect(testResults.totalTests).toBeGreaterThan(0);
+      // Validate test results structure using simple assertions
+      assertDefined(testResults.results, 'Test results should be defined');
+      assertGreaterThan(testResults.totalTests, 0, 'Should have at least one test');
 
       // Process individual test results
       const results = testResults.results;
@@ -154,7 +145,7 @@ export class UnitTestHarness {
       this.logger.success(`${testName}: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
-      this.logger.failure(testName, error.message);
+      this.logger.failure(testName, (error as Error).message);
       throw error;
     }
   }
@@ -175,9 +166,3 @@ export async function runAllUnitTests() {
     throw error;
   }
 }
-
-// Export test utilities for custom test scenarios
-export { TestLogger };
-
-// Re-export expect library for convenience
-export { expect, assert } from '../util/expect_lib';

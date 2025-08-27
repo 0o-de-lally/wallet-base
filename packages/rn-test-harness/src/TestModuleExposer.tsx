@@ -1,8 +1,10 @@
-// Test module exposure for development mode
-// This component exposes test modules globally for debugger access
+/**
+ * React Native component that exposes test modules globally for debugger access
+ * This should be conditionally rendered in development mode only
+ */
 
 import React from "react";
-import { loadTestFunctions, createRunAllTests } from "../util/test-utils";
+import { loadTestFunctions, createRunAllTests } from './device-test-utils';
 
 const TestModuleExposer: React.FC = () => {
   // Load test functions at compile time using the utility function

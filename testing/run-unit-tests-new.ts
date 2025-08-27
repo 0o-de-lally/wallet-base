@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Simple runner script for the unit test harness
- * Can be run directly with: bun run testing/run-unit-tests.ts
+ * Test runner using the standalone @wallet-test/rn-test-harness package
  */
 
-import { runAllUnitTests, UnitTestHarness } from './unit-test-harness';
+import { runAllUnitTests, UnitTestHarness } from '@wallet-test/rn-test-harness/node';
 
 async function main() {
-  console.log('Starting React Native Unit Test Runner...');
+  console.log('Starting React Native Unit Test Runner (using packaged harness)...');
   console.log('=' .repeat(50));
   
   try {
@@ -29,12 +28,12 @@ async function main() {
     }
     
   } catch (error) {
-    console.error('\nTest runner failed:', error.message);
+    console.error('\nTest runner failed:', (error as Error).message);
     process.exit(1);
   }
 }
 
-// Advanced usage example
+// Advanced usage example using the packaged harness directly
 async function runCustomTests() {
   const harness = new UnitTestHarness();
   

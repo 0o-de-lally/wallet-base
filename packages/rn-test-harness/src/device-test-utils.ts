@@ -1,6 +1,6 @@
 /**
- * Test utilities for runtime test execution
- * Provides test discovery, execution, and result formatting
+ * Device-side test utilities for React Native testing
+ * These run inside the React Native app and expose test functionality to the debugger
  */
 
 // Wrapper function for debugger test execution
@@ -74,27 +74,35 @@ export function loadTestFunctions() {
   // Clear previously registered tests
   registeredTests.length = 0;
   
-  // Auto-discover test files using require.context (compile-time)
-  // This creates a webpack context that includes all .test.tsx files
-  const testModules = require.context('../', true, /\.test\.tsx$/);
-  
-  for (const testPath of testModules.keys()) {
-    try {
-      // Import the test module - this will execute any test() calls
-      testModules(testPath);
-      
-    } catch (error) {
-      console.warn(`Failed to load test file ${testPath}:`, error);
-      // Add a test that reports the import failure
-      allTestFunctions.push(defineTest(`import-error-${testPath.replace(/[^a-zA-Z0-9]/g, '-')}`, () => {
-        throw new Error(`Failed to import ${testPath}: ${error}`);
-      }));
+  try {
+    // Auto-discover test files using require.context (compile-time)
+    // This creates a webpack context that includes all .test.tsx files
+    // @ts-ignore - require.context is a webpack feature
+    const testModules = require.context('../../../', true, /\.test\.tsx$/);
+    
+    for (const testPath of testModules.keys()) {
+      try {
+        // Import the test module - this will execute any test() calls
+        testModules(testPath);
+        
+      } catch (error) {
+        console.warn(`Failed to load test file ${testPath}:`, error);
+        // Add a test that reports the import failure
+        allTestFunctions.push(defineTest(`import-error-${testPath.replace(/[^a-zA-Z0-9]/g, '-')}`, () => {
+          throw new Error(`Failed to import ${testPath}: ${error}`);
+        }));
+      }
     }
+    
+    console.log(`Discovered ${testModules.keys().length} test files`);
+  } catch (error) {
+    console.warn('require.context not available (not in webpack environment):', error);
+    // Fallback: no test file discovery available
   }
   
   // Add all registered tests
   allTestFunctions.push(...getRegisteredTests());
 
-  console.log(`Compiled ${allTestFunctions.length} test functions from ${testModules.keys().length} test files`);
+  console.log(`Compiled ${allTestFunctions.length} test functions`);
   return allTestFunctions;
 }

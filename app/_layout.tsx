@@ -2,7 +2,7 @@ import "../util/polyfills";
 
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
-import TestModuleExposer from "./_tests";
+import { TestModuleExposer } from "@wallet-test/rn-test-harness/device";
 import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";

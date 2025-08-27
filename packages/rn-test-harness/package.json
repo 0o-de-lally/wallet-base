@@ -1,0 +1,62 @@
+{
+  "name": "@wallet-test/rn-test-harness",
+  "version": "1.0.0",
+  "description": "Standalone React Native test harness for device-side unit testing",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "rn-test-harness": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./device": {
+      "import": "./dist/device.js",
+      "require": "./dist/device.js",
+      "types": "./dist/device.d.ts"
+    },
+    "./node": {
+      "import": "./dist/node.js",
+      "require": "./dist/node.js",
+      "types": "./dist/node.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "react-native",
+    "testing",
+    "harness",
+    "debug",
+    "unit-tests"
+  ],
+  "author": "Wallet Test Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "file:../../../",
+    "directory": "packages/rn-test-harness"
+  }
+}

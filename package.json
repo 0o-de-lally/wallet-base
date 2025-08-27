@@ -8,8 +8,9 @@
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
     "test:debug": "bun test tests/debug-execution.test.ts",
-    "test:unit": "bun ./testing/run-unit-tests.ts",
-    "test:unit:custom": "bun ./testing/run-unit-tests.ts --custom",
+    "test:unit": "bun ./testing/run-unit-tests-new.ts",
+    "test:unit:custom": "bun ./testing/run-unit-tests-new.ts --custom",
+    "test:unit:old": "bun ./testing/run-unit-tests.ts",
     "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:tsc": "bunx tsc --noEmit",
@@ -49,6 +50,7 @@
     "@types/bun": "latest",
     "@types/react": "~19.0.14",
     "@types/ws": "^8.18.1",
+    "@wallet-test/rn-test-harness": "workspace:*",
     "eslint": "^9.32.0",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.3.0",
@@ -57,6 +59,9 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.38.0"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "private": true,
   "expo": {
     "doctor": {

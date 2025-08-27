@@ -1,6 +1,6 @@
 // Basic test examples
 import { expect } from "../util/expect_lib";
-import { test } from "../util/test-utils";
+import { test } from "@wallet-test/rn-test-harness/device";
 
 test('string equality should work', () => {
   expect("hello").toBe("hello");
