@@ -8,7 +8,7 @@
     "emulator": "emulator -avd $(emulator -list-avds | head -n 1)",
     "e2e": "bun ./testing/e2e-harness.ts",
     "test:debug": "bun test tests/debug-execution.test.ts",
-    "test:unit": "bun ./testing/run-unit-tests-new.ts",
+    "test:unit": "node packages/rn-test-harness/dist/cli.js test",
     "test:unit:custom": "bun ./testing/run-unit-tests-new.ts --custom",
     "test:unit:old": "bun ./testing/run-unit-tests.ts",
     "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
