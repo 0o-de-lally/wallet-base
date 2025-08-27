@@ -67,15 +67,14 @@ Create test files using the familiar Jest/Bun syntax:
 
 ```typescript
 // components/MyComponent.test.tsx
-import { test } from '@wallet-test/rn-test-harness/device';
-import { expect } from '../util/expect_lib'; // Your custom expect library
+import { test, expect } from '@wallet-test/rn-test-harness/device';
 
-test('should render correctly', () => {
+test('render correctly', () => {
   const result = MyComponent.render();
   expect(result).toBeTruthy();
 });
 
-test('should handle user input', () => {
+test('handle user input', () => {
   const component = new MyComponent();
   component.handleInput('test');
   expect(component.value).toBe('test');
@@ -179,8 +178,7 @@ Add to your workspace `package.json`:
 ### Basic Test Pattern
 
 ```typescript
-import { test } from '@wallet-test/rn-test-harness/device';
-import { expect } from './expect_lib';
+import { test, expect } from '@wallet-test/rn-test-harness/device';
 
 test('string equality should work', () => {
   expect("hello").toBe("hello");
@@ -200,17 +198,16 @@ test('boolean values should be truthy/falsy', () => {
 ### Testing React Native Components
 
 ```typescript
-import { test } from '@wallet-test/rn-test-harness/device';
-import { expect } from './expect_lib';
+import { test, expect } from '@wallet-test/rn-test-harness/device';
 import * as SecureStore from 'expo-secure-store';
 
-test('should access native modules', () => {
+test('access native modules', () => {
   // Test actual native module access
   expect(SecureStore).toBeDefined();
   expect(typeof SecureStore.setItemAsync).toBe('function');
 });
 
-test('should test platform-specific behavior', () => {
+test('test platform-specific behavior', () => {
   // Test actual platform behavior, not mocks
   const result = Platform.OS === 'ios' ? 'iOS' : 'Android';
   expect(result).toMatch(/^(iOS|Android)$/);
@@ -263,6 +260,20 @@ Low-level debug client for direct Chrome DevTools Protocol access.
 
 #### `test(name: string, fn: () => void)`
 Register a test function for execution.
+
+#### `expect(value: any)`
+Custom expect implementation compatible with React Native runtime. We created our own expect library because popular alternatives like `jest-expect` and `chai` have Node.js dependencies that cannot compile in React Native runtime.
+
+**Supported matchers:**
+- `toBe(expected)` - Strict equality (===)
+- `toEqual(expected)` - Deep equality
+- `toBeTruthy()` / `toBeFalsy()` - Truthiness checks
+- `toBeNull()` / `toBeUndefined()` / `toBeDefined()` - Null/undefined checks
+- `toBeGreaterThan(expected)` / `toBeLessThan(expected)` - Numeric comparisons
+- `toContain(expected)` - Array/string contains
+- `toMatch(regex)` - Regex matching
+- `toThrow()` - Exception testing
+- `not` modifier - Negates any matcher
 
 #### `TestModuleExposer`
 React component that exposes test modules to the debug protocol.

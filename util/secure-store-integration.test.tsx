@@ -1,6 +1,5 @@
 // Comprehensive secure store integration tests - testing actual functionality on device
-import { expect } from "./expect_lib";
-import { test } from "@wallet-test/rn-test-harness/device";
+import { expect, test } from "@wallet-test/rn-test-harness/device";
 import * as SecureStore from "./secure-store";
 
 test('SecureStore module should be available with all functions', () => {
@@ -13,83 +12,153 @@ test('SecureStore module should be available with all functions', () => {
   expect(typeof SecureStore.rebuildKeysList).toBe('function');
 });
 
-test('saveValue should return a promise', () => {
-  const testKey = `test_save_${Date.now()}`;
-  const testValue = 'test_value';
+test('save and retrieve a value from SecureStore', async () => {
+  const testKey = `test_save_retrieve_${Date.now()}_${Math.random()}`;
+  const testValue = 'Hello SecureStore!';
   
-  const result = SecureStore.saveValue(testKey, testValue);
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+  // Save the value
+  await SecureStore.saveValue(testKey, testValue);
+  
+  // Retrieve the value
+  const retrievedValue = await SecureStore.getValue(testKey);
+  
+  // Verify it matches
+  expect(retrievedValue).toBe(testValue);
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey);
 });
 
-test('getValue should return a promise', () => {
-  const testKey = 'non_existent_key';
+test('return null for non-existent keys', async () => {
+  const nonExistentKey = `non_existent_${Date.now()}_${Math.random()}`;
   
-  const result = SecureStore.getValue(testKey);
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+  const result = await SecureStore.getValue(nonExistentKey);
+  expect(result).toBeNull();
 });
 
-test('deleteValue should return a promise', () => {
-  const testKey = 'non_existent_key';
+test('delete stored values', async () => {
+  const testKey = `test_delete_${Date.now()}_${Math.random()}`;
+  const testValue = 'Value to be deleted';
   
-  const result = SecureStore.deleteValue(testKey);
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+  // Save a value
+  await SecureStore.saveValue(testKey, testValue);
+  
+  // Verify it exists
+  const beforeDelete = await SecureStore.getValue(testKey);
+  expect(beforeDelete).toBe(testValue);
+  
+  // Delete it
+  await SecureStore.deleteValue(testKey);
+  
+  // Verify it's gone
+  const afterDelete = await SecureStore.getValue(testKey);
+  expect(afterDelete).toBeNull();
 });
 
-test('getAllKeys should return a promise', () => {
-  const result = SecureStore.getAllKeys();
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+test('overwrite existing values', async () => {
+  const testKey = `test_overwrite_${Date.now()}_${Math.random()}`;
+  const originalValue = 'Original value';
+  const newValue = 'Updated value';
+  
+  // Save original value
+  await SecureStore.saveValue(testKey, originalValue);
+  const first = await SecureStore.getValue(testKey);
+  expect(first).toBe(originalValue);
+  
+  // Overwrite with new value
+  await SecureStore.saveValue(testKey, newValue);
+  const second = await SecureStore.getValue(testKey);
+  expect(second).toBe(newValue);
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey);
 });
 
-test('clearAllSecureStorage should return a promise', () => {
-  const result = SecureStore.clearAllSecureStorage();
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+test('store and retrieve JSON data', async () => {
+  const testKey = `test_json_${Date.now()}_${Math.random()}`;
+  const testObject = {
+    name: 'Test User',
+    age: 30,
+    preferences: ['dark_mode', 'notifications'],
+    metadata: { version: '1.0', timestamp: Date.now() }
+  };
+  const jsonString = JSON.stringify(testObject);
+  
+  // Save JSON string
+  await SecureStore.saveValue(testKey, jsonString);
+  
+  // Retrieve and parse
+  const retrieved = await SecureStore.getValue(testKey);
+  expect(retrieved).toBe(jsonString);
+  
+  const parsedObject = JSON.parse(retrieved!);
+  expect(parsedObject.name).toBe('Test User');
+  expect(parsedObject.age).toBe(30);
+  expect(parsedObject.preferences).toContain('dark_mode');
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey);
 });
 
-test('rebuildKeysList should return a promise', () => {
-  const result = SecureStore.rebuildKeysList();
-  expect(result).toBeDefined();
-  expect(typeof result?.then).toBe('function');
+test('handle empty string values', async () => {
+  const testKey = `test_empty_${Date.now()}_${Math.random()}`;
+  const emptyValue = '';
+  
+  await SecureStore.saveValue(testKey, emptyValue);
+  const retrieved = await SecureStore.getValue(testKey);
+  
+  expect(retrieved).toBe(emptyValue);
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey);
 });
 
-test('SecureStore functions should not throw errors when called', () => {
-  const testKey = `test_no_throw_${Date.now()}`;
-  const testValue = 'test_value';
+test('handle large string values', async () => {
+  const testKey = `test_large_${Date.now()}_${Math.random()}`;
+  const largeValue = 'A'.repeat(1000); // 1KB string
   
-  // These should not throw synchronous errors
-  expect(() => SecureStore.saveValue(testKey, testValue)).not.toThrow();
-  expect(() => SecureStore.getValue(testKey)).not.toThrow();
-  expect(() => SecureStore.deleteValue(testKey)).not.toThrow();
-  expect(() => SecureStore.getAllKeys()).not.toThrow();
+  await SecureStore.saveValue(testKey, largeValue);
+  const retrieved = await SecureStore.getValue(testKey);
+  
+  expect(retrieved).toBe(largeValue);
+  expect(retrieved!.length).toBe(1000);
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey);
 });
 
-test('SecureStore should handle different value types', () => {
-  const testKey = `test_types_${Date.now()}`;
+test('getAllKeys should return array of stored keys', async () => {
+  const testKey1 = `test_keys_1_${Date.now()}_${Math.random()}`;
+  const testKey2 = `test_keys_2_${Date.now()}_${Math.random()}`;
   
-  // Test with string
-  expect(() => SecureStore.saveValue(testKey, 'string_value')).not.toThrow();
+  // Save some test data
+  await SecureStore.saveValue(testKey1, 'value1');
+  await SecureStore.saveValue(testKey2, 'value2');
   
-  // Test with JSON stringified object
-  const testObject = { name: 'test', value: 123 };
-  expect(() => SecureStore.saveValue(testKey, JSON.stringify(testObject))).not.toThrow();
+  // Get all keys
+  const allKeys = await SecureStore.getAllKeys();
   
-  // Test with empty string
-  expect(() => SecureStore.saveValue(testKey, '')).not.toThrow();
+  expect(Array.isArray(allKeys)).toBe(true);
+  expect(allKeys).toContain(testKey1);
+  expect(allKeys).toContain(testKey2);
+  
+  // Cleanup
+  await SecureStore.deleteValue(testKey1);
+  await SecureStore.deleteValue(testKey2);
 });
 
-test('SecureStore should handle edge cases for keys', () => {
-  const timestamp = Date.now();
+test('handle special characters in keys', async () => {
+  const specialKeys = [
+    `test_underscore_${Date.now()}`,
+    `test-dash-${Date.now()}`,
+    `test.dot.${Date.now()}`,
+    `test123numbers${Date.now()}`
+  ];
   
-  // Test with normal key
-  expect(() => SecureStore.saveValue(`normal_key_${timestamp}`, 'value')).not.toThrow();
-  
-  // Test with key containing underscores
-  expect(() => SecureStore.saveValue(`key_with_underscores_${timestamp}`, 'value')).not.toThrow();
-  
-  // Test with key containing numbers
-  expect(() => SecureStore.saveValue(`key123_${timestamp}`, 'value')).not.toThrow();
+  for (const key of specialKeys) {
+    await SecureStore.saveValue(key, 'test_value');
+    const retrieved = await SecureStore.getValue(key);
+    expect(retrieved).toBe('test_value');
+    await SecureStore.deleteValue(key);
+  }
 });

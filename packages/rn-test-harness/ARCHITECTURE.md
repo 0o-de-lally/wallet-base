@@ -7,6 +7,7 @@ This document explains the technical architecture and design philosophy behind t
 - [Testing Philosophy](#testing-philosophy)
 - [Technical Architecture](#technical-architecture)
 - [Chrome DevTools Protocol Integration](#chrome-devtools-protocol-integration)
+- [Custom Expect Implementation](#custom-expect-implementation)
 - [Device-side Test Exposure](#device-side-test-exposure)
 - [Runtime Separation Strategy](#runtime-separation-strategy)
 - [Test Discovery and Execution Flow](#test-discovery-and-execution-flow)
@@ -56,7 +57,7 @@ test('save secure data', async () => {
 ```typescript
 // Our approach - runs on actual React Native runtime
 import { test } from '@wallet-test/rn-test-harness/device';
-import { expect } from './expect_lib';
+import { expect } from './expect-lib';
 import * as SecureStore from 'expo-secure-store';
 
 test('save secure data', async () => {
@@ -207,6 +208,69 @@ Node.js Test Runner                    React Native Device
        │                                       │
        │ ◄─── Execution Result ────────────────── │
 ```
+
+## Custom Expect Implementation
+
+### Why We Built Our Own Expect Library
+
+A critical challenge in device-side testing is providing familiar assertion APIs without introducing Node.js dependencies. Popular expect libraries have fundamental compatibility issues with React Native runtime:
+
+#### The Node.js Dependency Problem
+
+**jest-expect Issues:**
+```json
+{
+  "name": "@jest/expect",
+  "dependencies": {
+    "jest-get-type": "^29.0.0",
+    "jest-matcher-utils": "^29.0.0", 
+    "jest-message-util": "^29.0.0"
+    // These depend on Node.js fs, path, util modules
+  }
+}
+```
+
+**chai Issues:**
+```json
+{
+  "name": "chai", 
+  "dependencies": {
+    "assertion-error": "^1.1.0",
+    "check-error": "^1.0.2",
+    "deep-eql": "^4.1.2"
+    // These transitively depend on Node.js built-ins
+  }
+}
+```
+
+**The Core Problem:**
+```typescript
+// What happens when you try to use jest-expect in React Native:
+import { expect } from '@jest/expect';
+
+// ❌ Build Error:
+// "Module not found: Can't resolve 'util' in node_modules/@jest/expect"
+// React Native cannot bundle Node.js built-in modules
+```
+
+#### Our Solution: React Native Compatible Expect
+
+```typescript
+// Our expect implementation - pure JavaScript, zero Node.js dependencies
+export function expect(actual: any): Matchers {
+  return createMatchers(actual);
+}
+
+// Comprehensive matcher support
+expect(value).toBe(expected);           // Strict equality
+expect(value).toEqual(expected);        // Deep equality  
+expect(value).toBeTruthy();             // Truthiness
+expect(value).toContain(item);          // Collections
+expect(() => fn()).toThrow();           // Exceptions
+expect(value).not.toBe(unexpected);     // Negation
+```
+
+This demonstrates why device-side testing requires specialized tooling - existing Node.js testing infrastructure simply cannot run in React Native environments.
 
 ## Device-side Test Exposure
 

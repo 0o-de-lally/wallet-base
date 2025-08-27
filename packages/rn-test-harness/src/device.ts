@@ -11,3 +11,5 @@ export {
 } from './device-test-utils';
 
 export { default as TestModuleExposer } from './TestModuleExposer';
+
+export { expect } from './expect-lib';
