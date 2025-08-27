@@ -13,12 +13,13 @@
     "test:unit:old": "bun ./testing/run-unit-tests.ts",
     "lint": "bun lint:tsc && bun lint:eslint && bun lint:unused",
     "lint:eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:tsc": "bunx tsc --noEmit",
+    "lint:tsc": "bun run build:packages && bunx tsc --noEmit",
     "lint:unused": "bunx ts-prune --ignore '.tsx:' | grep -v 'dist/' | grep -v 'packages/' | grep -v 'testing/debug-harness' | tee /dev/stderr | (! grep -q .)",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --check \"**/*.{ts,tsx}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx}\"",
     "fix": "bun format:fix && bun lint:fix",
+    "build:packages": "cd packages/rn-test-harness && bun run build",
     "ios": "expo run:ios"
   },
   "dependencies": {
