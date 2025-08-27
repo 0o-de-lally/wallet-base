@@ -39,6 +39,9 @@ jobs:
       - name: bun install
         run: bun install
 
+      - name: Build packages
+        run: bun run build:packages
+
       - name: Install expo dependencies
         run: bun expo install --fix
 
