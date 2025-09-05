@@ -136,7 +136,6 @@ function checkRunningEmulators(): boolean {
   }
 }
 
-
 export function spawnEmulator(): ChildProcess | undefined {
   // Check if emulator is already running
   if (checkRunningEmulators()) {
