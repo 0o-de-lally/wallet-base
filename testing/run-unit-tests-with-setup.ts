@@ -12,7 +12,6 @@ import {
   checkEmulatorAvailable,
   spawnEmulator,
   waitForAppInstallation,
-  createEmulatorWithMaestro,
 } from "./emulator-setup";
 
 let emulatorProc: ChildProcess | undefined;
@@ -41,6 +40,8 @@ process.on("SIGINT", () => {
 });
 process.on("exit", killAll);
 
+// Unused function - keeping for potential future use
+/*
 async function startMetroBundler(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     console.log("🚀 Starting Metro bundler...");
@@ -80,11 +81,12 @@ async function startMetroBundler(): Promise<void> {
     });
   });
 }
+*/
 
 async function buildAndInstallApp(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     console.log("📱 Building and installing React Native app...");
-    
+
     const buildProc = spawn("bun", ["android"], {
       stdio: ["pipe", "pipe", "inherit"],
     });
@@ -125,8 +127,10 @@ async function buildAndInstallApp(): Promise<void> {
 async function runUnitTests(): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     console.log("🧪 Running unit tests...");
-    
-    const testCommand = process.argv.includes("--custom") ? "test:unit:custom" : "test:unit";
+
+    const testCommand = process.argv.includes("--custom")
+      ? "test:unit:custom"
+      : "test:unit";
     testProc = spawn("bun", ["run", testCommand], {
       stdio: "inherit",
     });
@@ -145,26 +149,29 @@ async function runUnitTests(): Promise<boolean> {
 
 async function waitForServices(): Promise<void> {
   console.log("⏳ Waiting for services to be ready...");
-  
+
   // Give Metro and the app time to fully initialize
-  await new Promise(resolve => setTimeout(resolve, 10000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
   // Check if app is installed
   try {
     await waitForAppInstallation("app.carpe.wallet_base", 30000);
     console.log("   ✓ App verified on device");
-    
+
     // Launch the app to ensure it's running and exposes debug endpoints
     console.log("🚀 Launching app to activate debug endpoints...");
-    const { spawn } = require("child_process");
-    const launchProc = spawn("adb", ["shell", "am", "start", "-n", "app.carpe.wallet_base/.MainActivity"], {
-      stdio: "inherit"
-    });
-    
+    spawn(
+      "adb",
+      ["shell", "am", "start", "-n", "app.carpe.wallet_base/.MainActivity"],
+      {
+        stdio: "inherit",
+      },
+    );
+
     // Give the app time to start and expose debug endpoints
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     console.log("   ✓ App launched and warming up");
-    
+
     // Check if debug endpoints are now available
     console.log("🔍 Checking for debug endpoints...");
     try {
@@ -172,9 +179,11 @@ async function waitForServices(): Promise<void> {
       const data = await response.text();
       console.log("   ✓ Debug endpoints response:", data.substring(0, 100));
     } catch (error) {
-      console.log("   ⚠️  Debug endpoints not yet available:", error.message);
+      console.log(
+        "   ⚠️  Debug endpoints not yet available:",
+        (error as Error).message,
+      );
     }
-    
   } catch {
     console.log("   ⚠️  App verification timeout, continuing...");
   }
@@ -182,7 +191,7 @@ async function waitForServices(): Promise<void> {
 
 async function main() {
   console.log("🔧 Integrated Unit Test Runner");
-  console.log("=" .repeat(50));
+  console.log("=".repeat(50));
 
   try {
     // Check emulator availability
@@ -196,7 +205,7 @@ async function main() {
     // Start emulator (using existing Maestro-created AVD)
     console.log("📱 Starting Android emulator...");
     emulatorProc = spawnEmulator();
-    
+
     // Wait for device to be fully ready
     await waitForDeviceBoot();
     console.log("   ✓ Emulator booted and ready");
@@ -212,7 +221,7 @@ async function main() {
 
     // Clean up and exit
     killAll();
-    
+
     if (testsPassed) {
       console.log("\n🎉 Unit tests completed successfully!");
       process.exit(0);
@@ -220,7 +229,6 @@ async function main() {
       console.log("\n💥 Unit tests failed!");
       process.exit(1);
     }
-
   } catch (error) {
     console.error("\n❌ Test runner failed:");
     secureError(error);

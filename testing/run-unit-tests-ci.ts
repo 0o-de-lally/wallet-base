@@ -30,6 +30,8 @@ process.on("SIGINT", () => {
 });
 process.on("exit", killAll);
 
+// Unused function - keeping for potential future use
+/*
 async function startMetroBundler(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     console.log("🚀 Starting Metro bundler...");
@@ -69,11 +71,12 @@ async function startMetroBundler(): Promise<void> {
     });
   });
 }
+*/
 
 async function buildAndInstallApp(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     console.log("📱 Building and installing React Native app...");
-    
+
     const buildProc = spawn("bun", ["android"], {
       stdio: ["pipe", "pipe", "inherit"],
     });
@@ -114,7 +117,7 @@ async function buildAndInstallApp(): Promise<void> {
 async function runUnitTests(): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     console.log("🧪 Running unit tests...");
-    
+
     // Use the underlying test harness directly
     testProc = spawn("node", ["packages/rn-test-harness/dist/cli.js", "test"], {
       stdio: "inherit",
@@ -134,26 +137,29 @@ async function runUnitTests(): Promise<boolean> {
 
 async function waitForServices(): Promise<void> {
   console.log("⏳ Waiting for services to be ready...");
-  
+
   // Give Metro and the app time to fully initialize
-  await new Promise(resolve => setTimeout(resolve, 10000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
   // Check if app is installed
   try {
     await waitForAppInstallation("app.carpe.wallet_base", 60000); // Extended timeout for CI
     console.log("   ✓ App verified on device");
-    
+
     // Launch the app to ensure it's running and exposes debug endpoints
     console.log("🚀 Launching app to activate debug endpoints...");
-    const { spawn } = require("child_process");
-    spawn("adb", ["shell", "am", "start", "-n", "app.carpe.wallet_base/.MainActivity"], {
-      stdio: "inherit"
-    });
-    
+    spawn(
+      "adb",
+      ["shell", "am", "start", "-n", "app.carpe.wallet_base/.MainActivity"],
+      {
+        stdio: "inherit",
+      },
+    );
+
     // Give the app time to start and expose debug endpoints
-    await new Promise(resolve => setTimeout(resolve, 10000)); // Extended for CI
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // Extended for CI
     console.log("   ✓ App launched and warming up");
-    
+
     // Check if debug endpoints are now available
     console.log("🔍 Checking for debug endpoints...");
     try {
@@ -161,9 +167,11 @@ async function waitForServices(): Promise<void> {
       const data = await response.text();
       console.log("   ✓ Debug endpoints response:", data.substring(0, 100));
     } catch (error) {
-      console.log("   ⚠️  Debug endpoints not yet available:", (error as Error).message);
+      console.log(
+        "   ⚠️  Debug endpoints not yet available:",
+        (error as Error).message,
+      );
     }
-    
   } catch (error) {
     console.log("   ⚠️  App verification timeout, continuing...");
     console.log("   Error details:", (error as Error).message);
@@ -172,12 +180,14 @@ async function waitForServices(): Promise<void> {
 
 async function main() {
   console.log("🔧 CI Unit Test Runner");
-  console.log("=" .repeat(50));
+  console.log("=".repeat(50));
 
   try {
     // In CI, emulator is already started by reactivecircus/android-emulator-runner
-    console.log("📱 Emulator already started by CI, verifying device availability...");
-    
+    console.log(
+      "📱 Emulator already started by CI, verifying device availability...",
+    );
+
     // Wait for device to be fully ready
     await waitForDeviceBoot();
     console.log("   ✓ Emulator booted and ready");
@@ -193,7 +203,7 @@ async function main() {
 
     // Clean up and exit
     killAll();
-    
+
     if (testsPassed) {
       console.log("\n🎉 Unit tests completed successfully!");
       process.exit(0);
@@ -201,7 +211,6 @@ async function main() {
       console.log("\n💥 Unit tests failed!");
       process.exit(1);
     }
-
   } catch (error) {
     console.error("\n❌ Test runner failed:");
     secureError(error);
