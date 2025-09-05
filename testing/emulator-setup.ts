@@ -21,7 +21,7 @@ export async function waitForDeviceBoot() {
   
   console.log("Waiting for device boot to complete...");
   // Poll for sys.boot_completed with timeout
-  for (let i = 0; i < 120; i++) { // 2 minute timeout for boot
+  for (let i = 0; i < 900; i++) { // 15 minute timeout for boot
     const result = spawnSync("adb", ["shell", "getprop", "sys.boot_completed"], { encoding: "utf8" });
     if (result.stdout && result.stdout.toString().trim() === "1") {
       console.log("Device boot completed");
@@ -30,7 +30,7 @@ export async function waitForDeviceBoot() {
     await new Promise((res) => setTimeout(res, 1000));
   }
   
-  throw new Error("Device boot did not complete within 2 minutes");
+  throw new Error("Device boot did not complete within 15 minutes");
 }
 
 export function checkSystemImagesAvailable(): boolean {
