@@ -1,13 +1,59 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
 
 export async function waitForDeviceBoot() {
-  // Wait until device is recognized
-  spawnSync("adb", ["wait-for-device"], { stdio: "inherit" });
-  // Poll for sys.boot_completed
-  while (true) {
-    const result = spawnSync("adb", ["shell", "getprop", "sys.boot_completed"]);
-    if (result.stdout.toString().trim() === "1") break;
+  console.log("Waiting for device to be recognized...");
+  
+  // Wait until device is recognized (with timeout)
+  let deviceFound = false;
+  for (let i = 0; i < 60; i++) { // 60 second timeout
+    const result = spawnSync("adb", ["devices"], { encoding: "utf8" });
+    if (result.stdout && result.stdout.includes("device") && !result.stdout.includes("offline")) {
+      deviceFound = true;
+      console.log("Device found in adb devices");
+      break;
+    }
     await new Promise((res) => setTimeout(res, 1000));
+  }
+  
+  if (!deviceFound) {
+    throw new Error("Device not found in adb devices after 60 seconds");
+  }
+  
+  console.log("Waiting for device boot to complete...");
+  // Poll for sys.boot_completed with timeout
+  for (let i = 0; i < 120; i++) { // 2 minute timeout for boot
+    const result = spawnSync("adb", ["shell", "getprop", "sys.boot_completed"], { encoding: "utf8" });
+    if (result.stdout && result.stdout.toString().trim() === "1") {
+      console.log("Device boot completed");
+      return;
+    }
+    await new Promise((res) => setTimeout(res, 1000));
+  }
+  
+  throw new Error("Device boot did not complete within 2 minutes");
+}
+
+export function checkSystemImagesAvailable(): boolean {
+  try {
+    const result = spawnSync("/opt/android-sdk/cmdline-tools/latest/bin/sdkmanager", ["--list"], { encoding: "utf8" });
+    if (result.error) {
+      console.error("SDK Manager not found or failed");
+      return false;
+    }
+
+    // Check if Android 30 system image is installed
+    const hasAndroid30 = result.stdout.includes("system-images;android-30;google_apis;x86_64");
+    
+    if (hasAndroid30) {
+      console.log("Android 30 system image found");
+      return true;
+    }
+
+    console.log("No suitable system images found");
+    return false;
+  } catch (error) {
+    console.error("Failed to check system images:", error);
+    return false;
   }
 }
 
@@ -21,15 +67,22 @@ export function checkEmulatorAvailable(): boolean {
       return false;
     }
 
-    const avds = result.stdout.trim();
-    if (!avds) {
-      console.error(
-        "No Android Virtual Devices (AVDs) found. Please create an AVD first.",
-      );
-      return false;
+    const output = result.stdout.trim();
+    
+    // Handle case where emulator command returns status messages instead of AVD list
+    if (output.includes("Android Virtual Device Manager") || 
+        output.includes("Emulator started")) {
+      console.log("Emulator command available");
+      // Check if system images are available before proceeding
+      return checkSystemImagesAvailable();
     }
 
-    console.log(`Found AVDs: ${avds.split("\n").join(", ")}`);
+    if (!output) {
+      console.log("No existing AVDs found - checking system images");
+      return checkSystemImagesAvailable();
+    }
+
+    console.log(`Found existing AVDs: ${output.split("\n").join(", ")}`);
     return true;
   } catch (error) {
     console.error("Failed to check emulator availability:", error);
@@ -65,6 +118,41 @@ function checkRunningEmulators(): boolean {
   }
 }
 
+export function createEmulatorWithMaestro(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    console.log("Creating emulator with Maestro...");
+    
+    const maestroProc = spawn("maestro", ["start-device", "--platform", "android"], {
+      stdio: ["pipe", "pipe", "inherit"],
+      env: {
+        ...process.env,
+        PATH: `${process.env.PATH}:${process.env.HOME}/.maestro/bin`
+      }
+    });
+
+    let output = "";
+    maestroProc.stdout?.on("data", (data) => {
+      const text = data.toString();
+      output += text;
+      console.log(text.trim());
+    });
+
+    maestroProc.on("exit", (code) => {
+      if (code === 0) {
+        // Extract AVD name from output
+        const match = output.match(/Created Android emulator: ([^\s]+)/);
+        if (match) {
+          resolve(match[1]);
+        } else {
+          reject(new Error("Could not find created emulator name"));
+        }
+      } else {
+        reject(new Error(`Maestro failed with code ${code}`));
+      }
+    });
+  });
+}
+
 export function spawnEmulator(): ChildProcess | undefined {
   // Check if emulator is already running
   if (checkRunningEmulators()) {
@@ -72,19 +160,37 @@ export function spawnEmulator(): ChildProcess | undefined {
     return;
   }
 
-  const isCI = process.env.CI === "true";
-  const args = ["-avd", "$(emulator -list-avds | head -n 1)"];
-
-  if (isCI) {
-    args.push("-no-window");
-  }
-
-  console.log("Starting emulator...");
-  return spawn("emulator", args, {
-    shell: true,
-    stdio: "inherit",
-    detached: true,
+  console.log("Starting emulator with proper configuration...");
+  
+  // Use the correct AVD name that Maestro created
+  const emulatorProc = spawn("emulator", [
+    "-avd", "Maestro_Pixel_6_API_30_1",
+    "-no-window",
+    "-no-audio", 
+    "-no-boot-anim",
+    "-gpu", "swiftshader_indirect",
+    "-memory", "2048"
+  ], {
+    stdio: ["ignore", "pipe", "pipe"],
+    detached: false // Keep attached so we can monitor it
   });
+
+  // Log emulator output for debugging
+  emulatorProc.stdout?.on('data', (data) => {
+    const output = data.toString().trim();
+    if (output) {
+      console.log(`Emulator: ${output}`);
+    }
+  });
+
+  emulatorProc.stderr?.on('data', (data) => {
+    const output = data.toString().trim();
+    if (output && !output.includes('pulseaudio')) { // Ignore audio warnings
+      console.log(`Emulator stderr: ${output}`);
+    }
+  });
+
+  return emulatorProc;
 }
 
 export function findInstalledAppPackages(): string[] {
