@@ -1,4 +1,79 @@
 import { spawn, spawnSync, ChildProcess } from "child_process";
+import { existsSync, readdirSync } from "fs";
+import { basename } from "path";
+
+export function validateAndroidEnvironment(): { isValid: boolean; errors: string[] } {
+  console.log("🔍 Validating Android environment variables...");
+  
+  const errors: string[] = [];
+  const requiredVars = {
+    ANDROID_HOME: process.env.ANDROID_HOME,
+    ANDROID_SDK_ROOT: process.env.ANDROID_SDK_ROOT,
+    ANDROID_AVD_HOME: process.env.ANDROID_AVD_HOME,
+  };
+
+  // Check if environment variables are set
+  for (const [varName, varValue] of Object.entries(requiredVars)) {
+    if (!varValue) {
+      errors.push(`❌ ${varName} is not set`);
+    } else {
+      console.log(`✅ ${varName}=${varValue}`);
+      
+      // Check if paths exist
+      if (!existsSync(varValue)) {
+        errors.push(`❌ ${varName} path does not exist: ${varValue}`);
+      } else {
+        console.log(`✅ ${varName} path exists`);
+      }
+    }
+  }
+
+  // Additional validation
+  const androidHome = requiredVars.ANDROID_HOME;
+  if (androidHome && existsSync(androidHome)) {
+    // Check for essential SDK components
+    const platformTools = `${androidHome}/platform-tools`;
+    const emulatorDir = `${androidHome}/emulator`;
+    const cmdlineTools = `${androidHome}/cmdline-tools/latest`;
+    
+    if (!existsSync(platformTools)) {
+      errors.push(`❌ Platform-tools not found at: ${platformTools}`);
+    } else {
+      console.log(`✅ Platform-tools found`);
+    }
+    
+    if (!existsSync(emulatorDir)) {
+      errors.push(`❌ Emulator not found at: ${emulatorDir}`);
+    } else {
+      console.log(`✅ Emulator found`);
+    }
+    
+    if (!existsSync(cmdlineTools)) {
+      errors.push(`❌ Command-line tools not found at: ${cmdlineTools}`);
+    } else {
+      console.log(`✅ Command-line tools found`);
+    }
+  }
+
+  const isValid = errors.length === 0;
+  
+  if (isValid) {
+    console.log("✅ Android environment validation passed");
+  } else {
+    console.log("❌ Android environment validation failed:");
+    errors.forEach(error => console.log(`  ${error}`));
+    console.log("\n💡 To fix this:");
+    console.log("  1. Set environment variables in your shell profile:");
+    console.log("     export ANDROID_HOME=/opt/android-sdk");
+    console.log("     export ANDROID_SDK_ROOT=/opt/android-sdk");
+    console.log("     export ANDROID_AVD_HOME=/root/.android/avd");
+    console.log("  2. Or source the .env file if it exists:");
+    console.log("     source .env");
+    console.log("  3. Restart your shell or run: source ~/.bashrc");
+  }
+
+  return { isValid, errors };
+}
 
 export async function waitForDeviceBoot() {
   console.log("🔍 Waiting for device to be recognized...");
@@ -128,6 +203,13 @@ function checkSystemImagesAvailable(): boolean {
 }
 
 export function checkEmulatorAvailable(): boolean {
+  // First validate Android environment
+  const validation = validateAndroidEnvironment();
+  if (!validation.isValid) {
+    console.error("❌ Android environment validation failed. Cannot proceed with emulator check.");
+    return false;
+  }
+
   try {
     console.log("🔍 Checking emulator command availability...");
     const result = spawnSync("emulator", ["-list-avds"], { encoding: "utf8" });
@@ -141,23 +223,40 @@ export function checkEmulatorAvailable(): boolean {
     const output = result.stdout.trim();
     console.log(`📱 Raw emulator output: "${output}"`);
     
+    let avdList: string[] = [];
+    
     // Handle case where emulator command returns status messages instead of AVD list
     if (
       output.includes("Android Virtual Device Manager") ||
-      output.includes("Emulator started")
+      output.includes("Emulator started") ||
+      !output
     ) {
-      console.log("✅ Emulator command available");
-      // Check if system images are available before proceeding
-      return checkSystemImagesAvailable();
+      console.log("⚠️  Emulator -list-avds not working properly, checking filesystem directly...");
+      
+      // Fallback: scan AVD directory for .ini files
+      const avdHome = process.env.ANDROID_AVD_HOME;
+      if (avdHome && existsSync(avdHome)) {
+        try {
+          const files = readdirSync(avdHome);
+          avdList = files
+            .filter(file => file.endsWith('.ini'))
+            .map(file => basename(file, '.ini'));
+          
+          console.log(`📁 Found ${avdList.length} AVDs in filesystem: ${avdList.join(", ")}`);
+        } catch (error) {
+          console.log(`⚠️  Could not read AVD directory: ${error}`);
+        }
+      }
+      
+      if (avdList.length === 0) {
+        console.log("⚠️  No AVDs found, checking system images");
+        return checkSystemImagesAvailable();
+      }
+    } else {
+      // Normal case: emulator command returned AVD list
+      avdList = output.split("\n").filter(line => line.trim());
+      console.log(`✅ Found ${avdList.length} existing AVDs: ${avdList.join(", ")}`);
     }
-
-    if (!output) {
-      console.log("⚠️  No existing AVDs found - checking system images");
-      return checkSystemImagesAvailable();
-    }
-
-    const avdList = output.split("\n").filter(line => line.trim());
-    console.log(`✅ Found ${avdList.length} existing AVDs: ${avdList.join(", ")}`);
     
     // Store the first available AVD for later use
     if (avdList.length > 0) {
