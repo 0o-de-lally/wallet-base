@@ -2,6 +2,7 @@ import "../util/polyfills";
 
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
+import { TestModuleExposer } from "@wallet-test/rn-test-harness/device";
 import { ModalProvider } from "../context/ModalContext";
 import { observer } from "@legendapp/state/react";
 import { initializeApp } from "../util/initialize-app";
@@ -32,6 +33,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       <ScreenCaptureProtectionProvider>
         <View style={styles.appWrapper}>
           <StatusBar backgroundColor={styles.statusBar.backgroundColor} />
+          {/* Render TestModuleExposer at top level in dev mode for testing */}
+          {__DEV__ && <TestModuleExposer />}
           {children}
         </View>
       </ScreenCaptureProtectionProvider>

@@ -1,0 +1,43 @@
+name: Claude Security Audit
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Create reports directory
+      run: mkdir -p .docs/reports
+
+    - name: Run Claude Security Audit
+      uses: anthropics/claude-code-action@beta
+      with:
+        mode: agent
+        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        custom_instructions: |
+          With /security-audit-specialist
+          Conduct a comprehensive security audit of this cryptocurrency wallet application.
+
+          Format the output as a comprehensive markdown report and save it to .docs/reports/ with a timestamped filename.
+
+    - name: Upload security audit report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-audit-report
+        path: .docs/reports/
+        retention-days: 30
