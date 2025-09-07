@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from "child_process";
+import { spawn, spawnSync, ChildProcess } from "child_process";
 
 import { secureError } from "../util/error-utils";
 import {
@@ -68,16 +68,38 @@ function spawnMaestroTest() {
 }
 
 async function main() {
-  // First check if emulator is available
-  console.log("Checking emulator availability...");
-  if (!checkEmulatorAvailable()) {
-    process.exit(1);
-  }
-
-  try {
-    // Start the emulator first
-    emulatorProc = spawnEmulator();
+  console.log("🚀 Starting E2E test harness...");
+  
+  // First check if there's already a device/emulator running (common in CI)
+  console.log("🔍 Checking for existing devices...");
+  const existingDevices = spawnSync("adb", ["devices"], { encoding: "utf8" });
+  console.log(`📱 Current adb devices:\n${existingDevices.stdout}`);
+  
+  const hasRunningDevice = existingDevices.stdout && 
+    existingDevices.stdout.includes("device") && 
+    !existingDevices.stdout.includes("offline");
+    
+  if (hasRunningDevice) {
+    console.log("✅ Found existing device/emulator, proceeding to boot verification...");
     await waitForDeviceBoot();
+  } else {
+    console.log("ℹ️  No existing device found, checking emulator availability...");
+    if (!checkEmulatorAvailable()) {
+      process.exit(1);
+    }
+
+    try {
+      // Start the emulator
+      console.log("🚀 Starting new emulator...");
+      emulatorProc = spawnEmulator();
+      await waitForDeviceBoot();
+    } catch (error) {
+      console.error("❌ Failed to start emulator:", error);
+      throw error;
+    }
+  }
+  
+  try {
 
     // Build and install the Android app
     console.log("Building and installing Android app...");
